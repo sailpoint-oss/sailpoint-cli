@@ -1,0 +1,80 @@
+# github.com/fatih/color v1.7.0
+## explicit
+github.com/fatih/color
+# github.com/fsnotify/fsnotify v1.4.9
+github.com/fsnotify/fsnotify
+# github.com/golang/mock v1.6.0
+## explicit
+github.com/golang/mock/gomock
+# github.com/hashicorp/hcl v1.0.0
+github.com/hashicorp/hcl
+github.com/hashicorp/hcl/hcl/ast
+github.com/hashicorp/hcl/hcl/parser
+github.com/hashicorp/hcl/hcl/printer
+github.com/hashicorp/hcl/hcl/scanner
+github.com/hashicorp/hcl/hcl/strconv
+github.com/hashicorp/hcl/hcl/token
+github.com/hashicorp/hcl/json/parser
+github.com/hashicorp/hcl/json/scanner
+github.com/hashicorp/hcl/json/token
+# github.com/inconshreveable/mousetrap v1.0.0
+github.com/inconshreveable/mousetrap
+# github.com/kr/pretty v0.3.0
+## explicit
+github.com/kr/pretty
+# github.com/kr/text v0.2.0
+github.com/kr/text
+# github.com/logrusorgru/aurora v2.0.3+incompatible
+## explicit
+github.com/logrusorgru/aurora
+# github.com/magiconair/properties v1.8.5
+github.com/magiconair/properties
+# github.com/mattn/go-colorable v0.0.9
+github.com/mattn/go-colorable
+# github.com/mattn/go-isatty v0.0.3
+github.com/mattn/go-isatty
+# github.com/mattn/go-runewidth v0.0.9
+github.com/mattn/go-runewidth
+# github.com/mitchellh/mapstructure v1.4.1
+github.com/mitchellh/mapstructure
+# github.com/olekukonko/tablewriter v0.0.5
+## explicit
+github.com/olekukonko/tablewriter
+# github.com/pelletier/go-toml v1.9.3
+github.com/pelletier/go-toml
+# github.com/pkg/errors v0.9.1
+## explicit
+# github.com/rogpeppe/go-internal v1.6.1
+github.com/rogpeppe/go-internal/fmtsort
+# github.com/spf13/afero v1.6.0
+github.com/spf13/afero
+github.com/spf13/afero/mem
+# github.com/spf13/cast v1.3.1
+github.com/spf13/cast
+# github.com/spf13/cobra v1.2.1
+## explicit
+github.com/spf13/cobra
+# github.com/spf13/jwalterweatherman v1.1.0
+github.com/spf13/jwalterweatherman
+# github.com/spf13/pflag v1.0.5
+## explicit
+github.com/spf13/pflag
+# github.com/spf13/viper v1.8.1
+## explicit
+github.com/spf13/viper
+# github.com/subosito/gotenv v1.2.0
+github.com/subosito/gotenv
+# golang.org/x/sys v0.0.0-20210510120138-977fb7262007
+golang.org/x/sys/internal/unsafeheader
+golang.org/x/sys/unix
+# golang.org/x/text v0.3.5
+golang.org/x/text/transform
+golang.org/x/text/unicode/norm
+# gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
+## explicit
+gopkg.in/alessio/shellescape.v1
+# gopkg.in/ini.v1 v1.62.0
+gopkg.in/ini.v1
+# gopkg.in/yaml.v2 v2.4.0
+## explicit
+gopkg.in/yaml.v2

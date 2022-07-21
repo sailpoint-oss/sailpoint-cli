@@ -1,0 +1,35 @@
+- name: smartsheet
+  repository: git@github.com:sailpoint/saas-conn-smartsheet.git
+  repositoryRef: main
+  readOnly: true
+  config: '{ "access_token" : "your_token_for_smartsheet" }'
+- name: freshservice
+  repository: https://github.com/sailpoint/saas-conn-freshservice
+  repositoryRef: main
+  readOnly: true
+  config: '{ "company": "your_company", "apiKey": "your_api_key" }'
+- name: github
+  repository: git@github.com:sailpoint/saas-conn-github-legit.git
+  repositoryRef: master
+  readOnly: true
+  config: '{ "org": "test", "token": "test" }'
+- name: lastpass
+  repository: git@github.com:sailpoint/saas-conn-lastpass.git
+  repositoryRef: master
+  readOnly: true
+  config: '{ "cid": "test", "provhash": "test", "privateKey": "test", "apiKey": "test" }'
+- name: docusign
+  repository: git@github.com:sailpoint/saas-conn-docusign.git
+  repositoryRef: master
+  readOnly: true
+  config: '{ "apiUrl": "test", "accountId": "test", "clientId": "test", "userId": "test", "privateKey": "test" }'
+- name: aha
+  repository: git@github.com:sailpoint/saas-conn-aha.git
+  repositoryRef: master
+  readOnly: true
+  config: '{ "apiUrl": "test", "accountId": "test", "clientId": "test", "userId": "test", "privateKey": "test" }'
+- name: scim
+  repository: git@github.com:sailpoint/saas-conn-scim.git
+  repositoryRef: master
+  readOnly: true
+  config: '{ "apiUrl": "test", "accountId": "test", "clientId": "test", "userId": "test", "privateKey": "test" }'
