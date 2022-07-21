@@ -1,4 +1,4 @@
-# SP CLI
+# SP CLI (BETA)
 
 SailPoint CLI
 
