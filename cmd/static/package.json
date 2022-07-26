@@ -14,7 +14,7 @@
   },
   "private": true,
   "dependencies": {
-    "@sailpoint/connector-sdk": "github:sailpoint/saas-connector-sdk-js#main"
+    "@sailpoint/connector-sdk": "github:sailpoint-oss/sp-connector-sdk-js#main"
   },
   "devDependencies": {
     "@types/jest": "^27.0.1",
