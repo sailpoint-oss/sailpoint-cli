@@ -19,7 +19,7 @@ $ sp -h
 ### Windows
 Install cli using the following command.
 ```shell
-$ go build -o "C:\Program Files\sp-cli\sp"
+$ go build -o "C:\Program Files\sp-cli\sp.exe"
 ```
 
 After that, add the following directory to the system PATH parameter. This will only need to be done the first time you install the cli.
