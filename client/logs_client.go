@@ -1,3 +1,4 @@
+// Copyright (c) 2022, SailPoint Technologies, Inc. All rights reserved.
 package client
 
 import (
