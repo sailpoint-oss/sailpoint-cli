@@ -72,6 +72,7 @@ func (l LogMessage) RawString() string {
 
 func (l LogMessage) MessageString() string {
 	if msgJson, ok := l.Message.(map[string]interface{}); ok {
+		delete(msgJson, "level")
 		if jsonString, err := json.Marshal(msgJson); err == nil {
 			return fmt.Sprintf("%v", string(jsonString))
 		}
