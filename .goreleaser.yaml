@@ -17,7 +17,7 @@ archives:
 
 dockers:
   - image_templates:
-    - sailpoint/connector-cli:0.0.1
+    - sailpoint/connector-cli:{{.Tag}}
     use: buildx
     dockerfile: Dockerfile
     build_flag_templates:

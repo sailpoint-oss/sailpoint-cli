@@ -16,5 +16,5 @@ RUN apk add --no-cache \
 ADD . /app
 WORKDIR /app
 
-# Copy cli binary to correct location
+# Copy cli to bin location
 RUN cp connector-cli /usr/local/bin/sp
