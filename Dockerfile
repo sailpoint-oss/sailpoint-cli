@@ -12,8 +12,9 @@ RUN apk add --no-cache \
         awscli \
     && rm -rf /var/cache/apk/*
 
-# Install sp cli
+# Add cli binary
 ADD . /app
 WORKDIR /app
-RUN go build .
-RUN cp sp-cli /usr/local/bin/sp
+
+# Copy cli to bin location
+RUN cp connector-cli /usr/local/bin/sp
