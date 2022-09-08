@@ -4,9 +4,8 @@ package main
 import (
 	"os"
 	"path/filepath"
-
-	"github.com/sailpoint/sp-cli/client"
-	"github.com/sailpoint/sp-cli/cmd"
+	"github.com/sailpoint-oss/sp-cli/client"
+	"github.com/sailpoint-oss/sp-cli/cmd"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

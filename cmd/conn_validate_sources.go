@@ -18,8 +18,8 @@ import (
 
 	"github.com/logrusorgru/aurora"
 	"github.com/olekukonko/tablewriter"
-	"github.com/sailpoint/sp-cli/client"
-	"github.com/sailpoint/sp-cli/validate"
+	"github.com/sailpoint-oss/sp-cli/client"
+	"github.com/sailpoint-oss/sp-cli/validate"
 	"github.com/spf13/cobra"
 	"gopkg.in/alessio/shellescape.v1"
 	"gopkg.in/yaml.v2"

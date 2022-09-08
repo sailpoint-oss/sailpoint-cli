@@ -6,7 +6,7 @@ import (
 	"github.com/kr/pretty"
 	"strconv"
 
-	"github.com/sailpoint/sp-cli/client"
+	"github.com/sailpoint-oss/sp-cli/client"
 )
 
 var accountReadChecks = []Check{

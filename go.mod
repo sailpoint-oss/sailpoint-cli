@@ -1,4 +1,4 @@
-module github.com/sailpoint/sp-cli
+module github.com/sailpoint-oss/sp-cli
 
 go 1.16
 

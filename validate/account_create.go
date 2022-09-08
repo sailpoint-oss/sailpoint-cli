@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/kr/pretty"
-	"github.com/sailpoint/sp-cli/client"
+	"github.com/sailpoint-oss/sp-cli/client"
 )
 
 var accountCreateChecks = []Check{

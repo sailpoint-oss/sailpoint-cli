@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sailpoint/sp-cli/client"
+	"github.com/sailpoint-oss/sp-cli/client"
 )
 
 // entitlementAttr returns the attribute for entitlements
