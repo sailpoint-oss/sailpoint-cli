@@ -14,7 +14,7 @@ import (
 // Unit tests for conn.go
 
 // Expected number of subcommands to `connectors`
-const numConnSubcommands = 13
+const numConnSubcommands = 14
 
 func TestConnResourceUrl(t *testing.T) {
 	testEndpoint := "http://localhost:7100/resources"
