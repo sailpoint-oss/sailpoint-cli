@@ -55,6 +55,7 @@ func newConnCmd(client client.Client) *cobra.Command {
 		newConnValidateSourcesCmd(client),
 		newConnLogsCmd(client),
 		newConnStatsCmd(client),
+		newConnDeleteCmd(client),
 	)
 
 	return conn
