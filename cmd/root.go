@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/sailpoint-oss/sp-cli/client"
+	"github.com/sailpoint-oss/sp-cli/cmd/transform"
 	"github.com/spf13/cobra"
 )
 
@@ -25,6 +26,7 @@ func NewRootCmd(client client.Client) *cobra.Command {
 	root.AddCommand(
 		newConnCmd(client),
 		newConfigureCmd(client),
+		transform.NewTransformCmd(client),
 	)
 	return root
 }
