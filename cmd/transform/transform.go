@@ -29,6 +29,7 @@ func NewTransformCmd(client client.Client) *cobra.Command {
 		newListCmd(client),
 		newDownloadCmd(client),
 		newCreateCmd(client),
+		newDeleteCmd(client),
 	)
 
 	return cmd

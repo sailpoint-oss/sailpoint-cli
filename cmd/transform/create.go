@@ -16,13 +16,6 @@ import (
 )
 
 func newCreateCmd(client client.Client) *cobra.Command {
-
-	// TODO: Clean up and not send display name
-	type create struct {
-		DisplayName string `json:"displayName"`
-		Alias       string `json:"alias"`
-	}
-
 	cmd := &cobra.Command{
 		Use:     "create <transform data>",
 		Short:   "Create transform",

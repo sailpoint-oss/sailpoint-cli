@@ -16,6 +16,7 @@ type Client interface {
 	Get(ctx context.Context, url string) (*http.Response, error)
 	Post(ctx context.Context, url string, contentType string, body io.Reader) (*http.Response, error)
 	Put(ctx context.Context, url string, contentType string, body io.Reader) (*http.Response, error)
+	Delete(ctx context.Context, url string) (*http.Response, error)
 	VerifyToken(ctx context.Context, tokenUrl, clientID, secret string) error
 }
 
@@ -128,6 +129,34 @@ func (c *SpClient) Put(ctx context.Context, url string, contentType string, body
 	}
 
 	resp, err := c.client.Do(req)
+	if c.cfg.Debug {
+		dbg, _ := httputil.DumpResponse(resp, true)
+		fmt.Println(string(dbg))
+	}
+	return resp, nil
+}
+
+func (c *SpClient) Delete(ctx context.Context, url string) (*http.Response, error) {
+	if err := c.ensureAccessToken(ctx); err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Authorization", "Bearer "+c.accessToken)
+
+	if c.cfg.Debug {
+		dbg, _ := httputil.DumpRequest(req, true)
+		fmt.Println(string(dbg))
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
 	if c.cfg.Debug {
 		dbg, _ := httputil.DumpResponse(resp, true)
 		fmt.Println(string(dbg))
