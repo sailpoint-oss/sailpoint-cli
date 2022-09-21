@@ -15,13 +15,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newCreateCmd(client client.Client) *cobra.Command {
+func newUpdateCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "create <transform data>",
-		Short:   "Create transform",
-		Long:    "Create a transform",
-		Example: "sp transforms create < transform.json",
-		Aliases: []string{"c"},
+		Use:     "update <transform-data>",
+		Short:   "Update transform",
+		Long:    "Update a transform specified by the id in the input.",
+		Example: "sp transforms update < /path/to/transform.json",
+		Aliases: []string{"u"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var data map[string]interface{}
@@ -31,10 +31,13 @@ func newCreateCmd(client client.Client) *cobra.Command {
 				log.Fatal(err)
 			}
 
-			if data["name"] == nil {
-				log.Fatal("The transform must have a name.")
+			if data["id"] == nil {
+				log.Fatal("The input must contain an id.")
 				return nil
 			}
+
+			id := data["id"].(string)
+			delete(data, "id") // ID can't be present in the update payload
 
 			raw, err := json.Marshal(data)
 			if err != nil {
@@ -42,7 +45,7 @@ func newCreateCmd(client client.Client) *cobra.Command {
 			}
 
 			endpoint := cmd.Flags().Lookup("transforms-endpoint").Value.String()
-			resp, err := client.Post(cmd.Context(), util.ResourceUrl(endpoint), "application/json", bytes.NewReader(raw))
+			resp, err := client.Put(cmd.Context(), util.ResourceUrl(endpoint, id), "application/json", bytes.NewReader(raw))
 			if err != nil {
 				return err
 			}
@@ -50,9 +53,9 @@ func newCreateCmd(client client.Client) *cobra.Command {
 				_ = Body.Close()
 			}(resp.Body)
 
-			if resp.StatusCode != http.StatusCreated {
+			if resp.StatusCode != http.StatusOK {
 				body, _ := io.ReadAll(resp.Body)
-				return fmt.Errorf("create transform failed. status: %s\nbody: %s", resp.Status, body)
+				return fmt.Errorf("update transform failed. status: %s\nbody: %s", resp.Status, body)
 			}
 
 			return nil
