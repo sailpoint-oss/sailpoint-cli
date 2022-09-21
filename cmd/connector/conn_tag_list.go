@@ -9,6 +9,7 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/sailpoint-oss/sp-cli/client"
+	"github.com/sailpoint-oss/sp-cli/util"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +23,7 @@ func newConnTagListCmd(client client.Client) *cobra.Command {
 			connectorRef := cmd.Flags().Lookup("id").Value.String()
 			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
 
-			resp, err := client.Get(cmd.Context(), connResourceUrl(endpoint, connectorRef, "tags"))
+			resp, err := client.Get(cmd.Context(), util.ResourceUrl(endpoint, connectorRef, "tags"))
 			if err != nil {
 				return err
 			}

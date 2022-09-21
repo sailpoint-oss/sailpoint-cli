@@ -13,11 +13,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newTransformDownloadCmd(client client.Client) *cobra.Command {
+func newDownloadCmd(client client.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:     "download",
-		Short:   "Download Transforms",
-		Long:    "Download Transforms To Local Storage",
+		Short:   "Download transforms",
+		Long:    "Download transforms to local storage",
 		Aliases: []string{"dl"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

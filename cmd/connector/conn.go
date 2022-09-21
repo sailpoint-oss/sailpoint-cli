@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/url"
 	"os"
-	"path"
 
 	"github.com/sailpoint-oss/sp-cli/client"
 	"github.com/spf13/cobra"
@@ -19,15 +17,6 @@ import (
 const (
 	connectorsEndpoint = "/beta/platform-connectors"
 )
-
-func connResourceUrl(endpoint string, resourceParts ...string) string {
-	u, err := url.Parse(endpoint)
-	if err != nil {
-		log.Fatalf("invalid endpoint: %s (%q)", err, endpoint)
-	}
-	u.Path = path.Join(append([]string{u.Path}, resourceParts...)...)
-	return u.String()
-}
 
 func NewConnCmd(client client.Client) *cobra.Command {
 	conn := &cobra.Command{

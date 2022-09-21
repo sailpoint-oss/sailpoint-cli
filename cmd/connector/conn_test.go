@@ -9,6 +9,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/sailpoint-oss/sp-cli/mocks"
+	"github.com/sailpoint-oss/sp-cli/util"
 )
 
 // Unit tests for conn.go
@@ -21,7 +22,7 @@ func TestConnResourceUrl(t *testing.T) {
 	testResource := "123"
 
 	expected := "http://localhost:7100/resources/123"
-	actual := connResourceUrl(testEndpoint, testResource)
+	actual := util.ResourceUrl(testEndpoint, testResource)
 
 	if expected != actual {
 		t.Errorf("expected: %s, actual: %s", expected, actual)

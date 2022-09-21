@@ -12,6 +12,7 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/sailpoint-oss/sp-cli/client"
+	"github.com/sailpoint-oss/sp-cli/util"
 	"github.com/spf13/cobra"
 )
 
@@ -47,7 +48,7 @@ func newConnCreateVersionCmd(client client.Client) *cobra.Command {
 			}
 
 			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
-			resp, err := client.Post(cmd.Context(), connResourceUrl(endpoint, connectorRef, "versions"), "application/zip", f)
+			resp, err := client.Post(cmd.Context(), util.ResourceUrl(endpoint, connectorRef, "versions"), "application/zip", f)
 			if err != nil {
 				return err
 			}
@@ -76,7 +77,7 @@ func newConnCreateVersionCmd(client client.Client) *cobra.Command {
 			table.Render()
 
 			if tagName != "" {
-				resp, err := client.Get(cmd.Context(), connResourceUrl(endpoint, connectorRef, "tags", tagName))
+				resp, err := client.Get(cmd.Context(), util.ResourceUrl(endpoint, connectorRef, "tags", tagName))
 				if err != nil {
 					return err
 				}
@@ -121,7 +122,7 @@ func updateTagWithVersion(cmd *cobra.Command, client client.Client, endpoint str
 		return err
 	}
 
-	resp, err := client.Put(cmd.Context(), connResourceUrl(endpoint, connectorID, "tags", tagName), "application/json", bytes.NewReader(raw))
+	resp, err := client.Put(cmd.Context(), util.ResourceUrl(endpoint, connectorID, "tags", tagName), "application/json", bytes.NewReader(raw))
 	if err != nil {
 		return err
 	}
@@ -159,7 +160,7 @@ func createTagWithVersion(cmd *cobra.Command, client client.Client, endpoint str
 		return err
 	}
 
-	resp, err := client.Post(cmd.Context(), connResourceUrl(endpoint, connectorID, "tags"), "application/json", bytes.NewReader(raw))
+	resp, err := client.Post(cmd.Context(), util.ResourceUrl(endpoint, connectorID, "tags"), "application/json", bytes.NewReader(raw))
 	if err != nil {
 		return err
 	}

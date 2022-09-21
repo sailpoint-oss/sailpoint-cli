@@ -10,6 +10,7 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/sailpoint-oss/sp-cli/client"
+	"github.com/sailpoint-oss/sp-cli/util"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +40,7 @@ func newConnCreateCmd(client client.Client) *cobra.Command {
 			}
 
 			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
-			resp, err := client.Post(cmd.Context(), connResourceUrl(endpoint), "application/json", bytes.NewReader(raw))
+			resp, err := client.Post(cmd.Context(), util.ResourceUrl(endpoint), "application/json", bytes.NewReader(raw))
 			if err != nil {
 				return err
 			}

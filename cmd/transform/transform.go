@@ -16,7 +16,7 @@ const (
 func NewTransformCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "transforms",
-		Short:   "Manage Transforms",
+		Short:   "Manage transforms",
 		Aliases: []string{"trans"},
 		Run: func(cmd *cobra.Command, args []string) {
 			_, _ = fmt.Fprintf(cmd.OutOrStdout(), cmd.UsageString())
@@ -26,8 +26,9 @@ func NewTransformCmd(client client.Client) *cobra.Command {
 	cmd.PersistentFlags().StringP("transforms-endpoint", "e", viper.GetString("baseurl")+transformsEndpoint, "Override transforms endpoint")
 
 	cmd.AddCommand(
-		newTransformListCmd(client),
-		newTransformDownloadCmd(client),
+		newListCmd(client),
+		newDownloadCmd(client),
+		newCreateCmd(client),
 	)
 
 	return cmd

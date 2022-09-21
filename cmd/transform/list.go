@@ -12,11 +12,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newTransformListCmd(client client.Client) *cobra.Command {
+func newListCmd(client client.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:     "list",
-		Short:   "List Transforms",
-		Long:    "List Transforms For Tenant",
+		Short:   "List transforms",
+		Long:    "List transforms for tenant",
 		Aliases: []string{"ls"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
