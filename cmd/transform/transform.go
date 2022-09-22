@@ -10,7 +10,10 @@ import (
 )
 
 const (
-	transformsEndpoint = "/v3/transforms"
+	transformsEndpoint      = "/v3/transforms"
+	previewEndpoint         = "/cc/api/user/preview"
+	identityProfileEndpoint = "/v3/identity-profiles"
+	userEndpoint            = "/cc/api/identity/list"
 )
 
 func NewTransformCmd(client client.Client) *cobra.Command {
@@ -24,6 +27,9 @@ func NewTransformCmd(client client.Client) *cobra.Command {
 	}
 
 	cmd.PersistentFlags().StringP("transforms-endpoint", "e", viper.GetString("baseurl")+transformsEndpoint, "Override transforms endpoint")
+	cmd.PersistentFlags().StringP("preview-endpoint", "", viper.GetString("baseurl")+previewEndpoint, "Override preview endpoint")
+	cmd.PersistentFlags().StringP("identity-profile-endpoint", "", viper.GetString("baseurl")+identityProfileEndpoint, "Override identity profile endpoint")
+	cmd.PersistentFlags().StringP("user-endpoint", "", viper.GetString("baseurl")+userEndpoint, "Override user endpoint")
 
 	cmd.AddCommand(
 		newListCmd(client),
@@ -31,6 +37,7 @@ func NewTransformCmd(client client.Client) *cobra.Command {
 		newCreateCmd(client),
 		newUpdateCmd(client),
 		newDeleteCmd(client),
+		newPreviewCmd(client),
 	)
 
 	return cmd
