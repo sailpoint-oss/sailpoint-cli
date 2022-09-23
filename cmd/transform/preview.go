@@ -9,18 +9,21 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 
 	"github.com/sailpoint-oss/sp-cli/client"
 	"github.com/sailpoint-oss/sp-cli/util"
 	"github.com/spf13/cobra"
 )
 
+var implicitInput bool
+
 func newPreviewCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "preview -i <identity-profile-id> -a <attribute-name> -n <transform-name>",
+		Use:     "preview -i <identity-profile-id> -a <attribute-name> --implicit <transform data>",
 		Short:   "Preview transform",
 		Long:    "Preview the final output of a transform",
-		Example: "sp transforms preview -i 12a199b967b64ffe992ef4ecfd076728 -a lastname -n ToLower",
+		Example: "sp transforms preview -i 12a199b967b64ffe992ef4ecfd076728 -a lastname < /path/to/transform.json",
 		Aliases: []string{"p"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -34,9 +37,13 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 				return fmt.Errorf("attribute must be specified")
 			}
 
-			name := cmd.Flags().Lookup("name").Value.String()
-			if name == "" {
-				return fmt.Errorf("name must be specified")
+			var transform map[string]interface{}
+
+			if !implicitInput {
+				err := json.NewDecoder(os.Stdin).Decode(&transform)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
 
 			// Get the identity profile so we can obtain the authoritative source and
@@ -109,37 +116,53 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 			// 	log.Fatal(err)
 			// }
 
-			// Form the request body that will be sent to the preview endpoint
-			var accountAttName string
-			var sourceName string
-			for _, t := range profile.IdentityAttributeConfig.AttributeTransforms {
-				if t.IdentityAttributeName == attribute {
-					transType := t.TransformDefinition.Type
-					if transType == "accountAttribute" {
-						def := makeAttributesOfAccount(t.TransformDefinition.Attributes)
-						accountAttName = def.AttributeName
-						sourceName = def.SourceName
-					} else if transType == "reference" {
-						def := makeReference(t.TransformDefinition.Attributes)
-						accountAttName = def.Input.Attributes.AttributeName
-						sourceName = def.Input.Attributes.SourceName
-					} else {
-						log.Fatal("Unknown transform definition encountered when parsing identity profile: " + transType)
-						return nil
+			var previewBodyRaw []byte
+			// If using implicit input, then attempt to grab the implicit
+			// input from the identity profile mapping.
+			if implicitInput {
+				var accountAttName string
+				var sourceName string
+				for _, t := range profile.IdentityAttributeConfig.AttributeTransforms {
+					if t.IdentityAttributeName == attribute {
+						transType := t.TransformDefinition.Type
+						if transType == "accountAttribute" {
+							def := makeAttributesOfAccount(t.TransformDefinition.Attributes)
+							accountAttName = def.AttributeName
+							sourceName = def.SourceName
+						} else if transType == "reference" {
+							def := makeReference(t.TransformDefinition.Attributes)
+							accountAttName = def.Input.Attributes.AttributeName
+							sourceName = def.Input.Attributes.SourceName
+						} else {
+							log.Fatal("Unknown transform definition encountered when parsing identity profile: " + transType)
+							return nil
+						}
 					}
 				}
-			}
 
-			previewBody := makePreviewBody(attribute, name, accountAttName, sourceName)
+				name := cmd.Flags().Lookup("name").Value.String()
+				if name == "" {
+					return fmt.Errorf("The transform name must be specified when previewing with implicit input.")
+				}
 
-			raw, err = json.Marshal(previewBody)
-			if err != nil {
-				return err
+				previewBody := makePreviewBodyImplicit(attribute, name, accountAttName, sourceName)
+
+				previewBodyRaw, err = json.Marshal(previewBody)
+				if err != nil {
+					return err
+				}
+			} else {
+				previewBody := makePreviewBodyExplicit(attribute, transform)
+
+				previewBodyRaw, err = json.Marshal(previewBody)
+				if err != nil {
+					return err
+				}
 			}
 
 			// Call the preview endpoint to get the raw and transformed attribute values
 			endpoint = cmd.Flags().Lookup("preview-endpoint").Value.String()
-			resp, err = client.Post(cmd.Context(), util.ResourceUrl(endpoint, user[0].Id), "application/json", bytes.NewReader(raw))
+			resp, err = client.Post(cmd.Context(), util.ResourceUrl(endpoint, user[0].Id), "application/json", bytes.NewReader(previewBodyRaw))
 			if err != nil {
 				return err
 			}
@@ -175,12 +198,12 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 
 	cmd.Flags().StringP("identity-profile", "i", "", "The GUID of an identity profile (required)")
 	cmd.Flags().StringP("attribute", "a", "", "Attribute name (required)")
-	cmd.Flags().StringP("name", "n", "", "Transform name (required)")
+	cmd.Flags().StringP("name", "n", "", "Transform name if using implicit input.  The transform must be uploaded to IDN.")
+	cmd.Flags().BoolVar(&implicitInput, "implicit", false, "Use implicit input.  Default is explicit input defined by the transform.")
 	// cmd.Flags().StringP("file", "f", "", "The path to the transform file (required)")
 
 	cmd.MarkFlagRequired("identity-profile")
 	cmd.MarkFlagRequired("attribute")
-	cmd.MarkFlagRequired("name")
 	// cmd.MarkFlagRequired("file")
 
 	return cmd

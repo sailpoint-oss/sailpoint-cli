@@ -7,6 +7,9 @@ type transform struct {
 	Type string `json:"type"`
 }
 
+type operation struct {
+}
+
 func (t transform) transformToColumns() []string {
 	return []string{t.ID, t.Name}
 }
@@ -49,8 +52,12 @@ type attributeTransformPreview struct {
 	Type          string                `json:"type"`
 }
 
-type previewBody struct {
+type previewBodyImplicit struct {
 	AttributeTransforms []attributeTransformPreview `json:"attributeTransforms"`
+}
+
+type previewBodyExplicit struct {
+	AttributeTransforms []map[string]interface{} `json:"attributeTransforms"`
 }
 
 type identityAttributeConfig struct {
@@ -104,7 +111,7 @@ func makeReference(data interface{}) attributesOfReference {
 	return reference
 }
 
-func makePreviewBody(identityAttribute string, transformName string, accountAttribute string, sourceName string) previewBody {
+func makePreviewBodyImplicit(identityAttribute string, transformName string, accountAttribute string, sourceName string) previewBodyImplicit {
 	attributeTransform := attributeTransformPreview{}
 	attributeTransform.AttributeName = identityAttribute
 	attributeTransform.Attributes.Id = transformName
@@ -113,8 +120,17 @@ func makePreviewBody(identityAttribute string, transformName string, accountAttr
 	attributeTransform.Attributes.Input.Attributes.SourceName = sourceName
 	attributeTransform.Type = "reference"
 
-	previewBody := previewBody{}
+	previewBody := previewBodyImplicit{}
 	previewBody.AttributeTransforms = append(previewBody.AttributeTransforms, attributeTransform)
+
+	return previewBody
+}
+
+func makePreviewBodyExplicit(identityAttribute string, transformData map[string]interface{}) previewBodyExplicit {
+	transformData["attributeName"] = identityAttribute
+
+	previewBody := previewBodyExplicit{}
+	previewBody.AttributeTransforms = append(previewBody.AttributeTransforms, transformData)
 
 	return previewBody
 }
