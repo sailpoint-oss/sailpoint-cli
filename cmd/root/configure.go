@@ -1,5 +1,5 @@
 // Copyright (c) 2021, SailPoint Technologies, Inc. All rights reserved.
-package cmd
+package root
 
 import (
 	"bufio"

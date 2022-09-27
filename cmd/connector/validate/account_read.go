@@ -1,12 +1,12 @@
-package validate
+package connvalidate
 
 import (
 	"context"
 	"fmt"
-	"github.com/kr/pretty"
 	"strconv"
 
-	"github.com/sailpoint-oss/sp-cli/client"
+	"github.com/kr/pretty"
+	connclient "github.com/sailpoint-oss/sp-cli/cmd/connector/client"
 )
 
 var accountReadChecks = []Check{
@@ -18,7 +18,7 @@ var accountReadChecks = []Check{
 			"std:account:read",
 			"std:account:list",
 		},
-		Run: func(ctx context.Context, spec *client.ConnSpec, cc *client.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
 			accounts, _, err := cc.AccountList(ctx)
 			if err != nil {
 				res.err(err)
@@ -55,7 +55,7 @@ var accountReadChecks = []Check{
 		RequiredCommands: []string{
 			"std:account:read",
 		},
-		Run: func(ctx context.Context, spec *client.ConnSpec, cc *client.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
 			_, _, err := cc.AccountRead(ctx, "__sailpoint__not__found__", "")
 			if err == nil {
 				res.errf("expected error for non-existant identity")
@@ -69,10 +69,10 @@ var accountReadChecks = []Check{
 		RequiredCommands: []string{
 			"std:account:list",
 		},
-		Run: func(ctx context.Context, spec *client.ConnSpec, cc *client.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
 			additionalAttributes := map[string]string{}
 
-			attrsByName := map[string]client.AccountSchemaAttribute{}
+			attrsByName := map[string]connclient.AccountSchemaAttribute{}
 			for _, value := range spec.AccountSchema.Attributes {
 				attrsByName[value.Name] = value
 			}

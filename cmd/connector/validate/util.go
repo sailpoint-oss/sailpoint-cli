@@ -1,4 +1,4 @@
-package validate
+package connvalidate
 
 import (
 	"fmt"
@@ -9,11 +9,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sailpoint-oss/sp-cli/client"
+	connclient "github.com/sailpoint-oss/sp-cli/cmd/connector/client"
 )
 
 // entitlementAttr returns the attribute for entitlements
-func entitlementAttr(spec *client.ConnSpec) string {
+func entitlementAttr(spec *connclient.ConnSpec) string {
 	for _, attr := range spec.AccountSchema.Attributes {
 		if attr.Entitlement {
 			return attr.Name
@@ -23,7 +23,7 @@ func entitlementAttr(spec *client.ConnSpec) string {
 }
 
 // accountEntitlements returns all entitlements on the account
-func accountEntitlements(account *client.Account, spec *client.ConnSpec) ([]string, error) {
+func accountEntitlements(account *connclient.Account, spec *connclient.ConnSpec) ([]string, error) {
 	entitlementAttr := entitlementAttr(spec)
 	if entitlementAttr == "" {
 		return nil, fmt.Errorf("no entitlement attr found")
@@ -36,7 +36,7 @@ func accountEntitlements(account *client.Account, spec *client.ConnSpec) ([]stri
 }
 
 // accountHasEntitlement returns whether or not an account has a specific entitlement
-func accountHasEntitlement(account *client.Account, spec *client.ConnSpec, entitlementID string) bool {
+func accountHasEntitlement(account *connclient.Account, spec *connclient.ConnSpec, entitlementID string) bool {
 	entitlements, err := accountEntitlements(account, spec)
 	if err != nil {
 		panic(err.Error())
@@ -106,7 +106,7 @@ const (
 )
 
 // genCreateField generates a value for the provided account create template field
-func genCreateField(field client.AccountCreateTemplateField) interface{} {
+func genCreateField(field connclient.AccountCreateTemplateField) interface{} {
 
 	// Return typed based value if the field is in deprecated format
 	// TODO: Once we move away from the old format, this should also be removed
@@ -144,7 +144,7 @@ func genCreateField(field client.AccountCreateTemplateField) interface{} {
 
 // getFieldName returns the name of the field
 // TODO: This is to support both key and name base field. Once the name based filds are gone, we can remove this helper method
-func getFieldName(field client.AccountCreateTemplateField) string {
+func getFieldName(field connclient.AccountCreateTemplateField) string {
 	if field.Key == "" {
 		return field.Name
 	}
@@ -152,7 +152,7 @@ func getFieldName(field client.AccountCreateTemplateField) string {
 }
 
 // genValueByTypeAndName generates attribute values base on field type and name
-func genValueByTypeAndName(field client.AccountCreateTemplateField) interface{} {
+func genValueByTypeAndName(field connclient.AccountCreateTemplateField) interface{} {
 	switch field.Type {
 	case "string":
 		if getFieldName(field) == "email" || getFieldName(field) == "name" {
@@ -236,7 +236,7 @@ func testSchema(res *CheckResult, attrName string, value interface{}, expectedMu
 
 // attrChange generates an attribute change event for the provided account and
 // attribute.
-func attrChange(acct *client.Account, attr *client.AccountSchemaAttribute) client.AttributeChange {
+func attrChange(acct *connclient.Account, attr *connclient.AccountSchemaAttribute) connclient.AttributeChange {
 	var op string
 	switch attr.Multi {
 	case true:
@@ -268,7 +268,7 @@ func attrChange(acct *client.Account, attr *client.AccountSchemaAttribute) clien
 		}
 	}
 
-	return client.AttributeChange{
+	return connclient.AttributeChange{
 		Op:        op,
 		Attribute: attr.Name,
 		Value:     newValue,

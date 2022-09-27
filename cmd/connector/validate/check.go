@@ -1,10 +1,10 @@
-package validate
+package connvalidate
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/sailpoint-oss/sp-cli/client"
+	connclient "github.com/sailpoint-oss/sp-cli/cmd/connector/client"
 )
 
 var Checks = []Check{}
@@ -24,7 +24,7 @@ type Check struct {
 
 	// IsDataModifier determines a checking that will modify connectors data after applying
 	IsDataModifier bool
-	Run            func(ctx context.Context, spec *client.ConnSpec, cc *client.ConnClient, res *CheckResult)
+	Run            func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult)
 	// RequiredCommands represents a list of commands that use for this check
 	RequiredCommands []string
 }

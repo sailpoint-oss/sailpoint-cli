@@ -7,6 +7,7 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/sailpoint-oss/sp-cli/client"
+	connclient "github.com/sailpoint-oss/sp-cli/cmd/connector/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -36,7 +37,7 @@ func newConnStatsCmd(spClient client.Client) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.PersistentFlags().StringP("stats-endpoint", "o", viper.GetString("baseurl")+client.StatsEndpoint, "Override stats endpoint")
+	cmd.PersistentFlags().StringP("stats-endpoint", "o", viper.GetString("baseurl")+connclient.StatsEndpoint, "Override stats endpoint")
 	cmd.Flags().StringP("duration", "d", "", `Length of time represented by an integer(1-9) and a duration unit. Supported duration units: d,w. eg 1d, 3w`)
 	cmd.Flags().StringP("id", "c", "", "Connector ID")
 	return cmd
@@ -44,7 +45,7 @@ func newConnStatsCmd(spClient client.Client) *cobra.Command {
 
 func getTenantStats(spClient client.Client, cmd *cobra.Command) error {
 	endpoint := cmd.Flags().Lookup("stats-endpoint").Value.String()
-	lc := client.NewLogsClient(spClient, endpoint)
+	lc := connclient.NewLogsClient(spClient, endpoint)
 
 	connectorID := cmd.Flags().Lookup("id").Value.String()
 	durationStr := cmd.Flags().Lookup("duration").Value.String()

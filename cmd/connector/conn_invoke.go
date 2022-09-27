@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/sailpoint-oss/sp-cli/client"
+	connclient "github.com/sailpoint-oss/sp-cli/cmd/connector/client"
 	"github.com/spf13/cobra"
 )
 
@@ -69,16 +70,7 @@ func invokeConfig(cmd *cobra.Command) (json.RawMessage, error) {
 	return os.ReadFile(cmd.Flags().Lookup("config-path").Value.String())
 }
 
-type invokeCommand struct {
-	ConnectorID string `json:"connectorID"`
-	Version     *int   `json:"version"`
-
-	Type   string          `json:"type"`
-	Config json.RawMessage `json:"config"`
-	Input  json.RawMessage `json:"input"`
-}
-
-func connClient(cmd *cobra.Command, spClient client.Client) (*client.ConnClient, error) {
+func connClient(cmd *cobra.Command, spClient client.Client) (*connclient.ConnClient, error) {
 	connectorRef := cmd.Flags().Lookup("id").Value.String()
 	version := cmd.Flags().Lookup("version").Value.String()
 	endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
@@ -96,18 +88,18 @@ func connClient(cmd *cobra.Command, spClient client.Client) (*client.ConnClient,
 	if err != nil {
 		return nil, err
 	}
-	cc := client.NewConnClient(spClient, v, cfg, connectorRef, endpoint)
+	cc := connclient.NewConnClient(spClient, v, cfg, connectorRef, endpoint)
 
 	return cc, nil
 }
 
-func connClientWithCustomParams(spClient client.Client, cfg json.RawMessage, connectorID, version, endpoint string) (*client.ConnClient, error) {
+func connClientWithCustomParams(spClient client.Client, cfg json.RawMessage, connectorID, version, endpoint string) (*connclient.ConnClient, error) {
 	v, err := strconv.Atoi(version)
 	if err != nil {
 		return nil, err
 	}
 
-	cc := client.NewConnClient(spClient, &v, cfg, connectorID, endpoint)
+	cc := connclient.NewConnClient(spClient, &v, cfg, connectorID, endpoint)
 
 	return cc, nil
 }

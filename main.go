@@ -4,8 +4,9 @@ package main
 import (
 	"os"
 	"path/filepath"
+
 	"github.com/sailpoint-oss/sp-cli/client"
-	"github.com/sailpoint-oss/sp-cli/cmd"
+	"github.com/sailpoint-oss/sp-cli/cmd/root"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -45,7 +46,7 @@ func init() {
 		Debug:        viper.GetBool("debug"),
 	})
 
-	rootCmd = cmd.NewRootCmd(c)
+	rootCmd = root.NewRootCmd(c)
 }
 
 // main the entry point for commands. Note that we do not need to do cobra.CheckErr(err)

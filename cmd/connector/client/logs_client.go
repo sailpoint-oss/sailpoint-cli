@@ -1,5 +1,5 @@
 // Copyright (c) 2022, SailPoint Technologies, Inc. All rights reserved.
-package client
+package connclient
 
 import (
 	"bytes"
@@ -13,18 +13,20 @@ import (
 	"net/url"
 	"path"
 	"time"
+
+	"github.com/sailpoint-oss/sp-cli/client"
 )
 
 const TimeFormatLocal = `2006-01-02T15:04:05.000-07:00`
 const TimeLocationLocal = "Local"
 
 type LogsClient struct {
-	client   Client
+	client   client.Client
 	endpoint string
 }
 
 // NewConnClient returns a client for the provided (connectorID, version, config)
-func NewLogsClient(client Client, endpoint string) *LogsClient {
+func NewLogsClient(client client.Client, endpoint string) *LogsClient {
 	return &LogsClient{
 		client:   client,
 		endpoint: endpoint,

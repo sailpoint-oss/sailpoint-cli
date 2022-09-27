@@ -1,10 +1,10 @@
-package validate
+package connvalidate
 
 import (
 	"context"
 	"encoding/json"
 
-	"github.com/sailpoint-oss/sp-cli/client"
+	connclient "github.com/sailpoint-oss/sp-cli/cmd/connector/client"
 )
 
 var testConnChecks = []Check{
@@ -15,7 +15,7 @@ var testConnChecks = []Check{
 		RequiredCommands: []string{
 			"std:test-connection",
 		},
-		Run: func(ctx context.Context, spec *client.ConnSpec, cc *client.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
 			err := cc.TestConnectionWithConfig(ctx, json.RawMessage("{}"))
 			if err == nil {
 				res.errf("expected test-connection failure for empty config")
@@ -29,7 +29,7 @@ var testConnChecks = []Check{
 		RequiredCommands: []string{
 			"std:test-connection",
 		},
-		Run: func(ctx context.Context, spec *client.ConnSpec, cc *client.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
 			_, err := cc.TestConnection(ctx)
 			if err != nil {
 				res.err(err)

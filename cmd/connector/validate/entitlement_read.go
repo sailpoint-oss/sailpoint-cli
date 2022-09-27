@@ -1,9 +1,10 @@
-package validate
+package connvalidate
 
 import (
 	"context"
+
 	"github.com/kr/pretty"
-	"github.com/sailpoint-oss/sp-cli/client"
+	connclient "github.com/sailpoint-oss/sp-cli/cmd/connector/client"
 )
 
 var entitlementReadChecks = []Check{
@@ -14,7 +15,7 @@ var entitlementReadChecks = []Check{
 		RequiredCommands: []string{
 			"std:entitlement:read",
 		},
-		Run: func(ctx context.Context, spec *client.ConnSpec, cc *client.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
 			_, _, err := cc.EntitlementRead(ctx, "__sailpoint__not__found__", "", "group")
 			if err == nil {
 				res.errf("expected error for non-existant entitlement")
@@ -30,7 +31,7 @@ var entitlementReadChecks = []Check{
 			"std:entitlement:read",
 			"std:entitlement:list",
 		},
-		Run: func(ctx context.Context, spec *client.ConnSpec, cc *client.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
 			entitlements, _, err := cc.EntitlementList(ctx, "group")
 			if err != nil {
 				res.err(err)
@@ -68,10 +69,10 @@ var entitlementReadChecks = []Check{
 		RequiredCommands: []string{
 			"std:entitlement:list",
 		},
-		Run: func(ctx context.Context, spec *client.ConnSpec, cc *client.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
 			additionalAttributes := map[string]string{}
 
-			attrsByName := map[string]client.EntitlementSchemaAttribute{}
+			attrsByName := map[string]connclient.EntitlementSchemaAttribute{}
 			for _, value := range spec.EntitlementSchemas[0].Attributes {
 				attrsByName[value.Name] = value
 			}

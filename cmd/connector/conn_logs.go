@@ -7,11 +7,12 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sp-cli/client"
+	connclient "github.com/sailpoint-oss/sp-cli/cmd/connector/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-var logInput = client.LogInput{}
+var logInput = connclient.LogInput{}
 
 func newConnLogsCmd(spClient client.Client) *cobra.Command {
 
@@ -33,7 +34,7 @@ func newConnLogsCmd(spClient client.Client) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.PersistentFlags().StringP("logs-endpoint", "o", viper.GetString("baseurl")+client.LogsEndpoint, "Override logs endpoint")
+	cmd.PersistentFlags().StringP("logs-endpoint", "o", viper.GetString("baseurl")+connclient.LogsEndpoint, "Override logs endpoint")
 	//date filters
 	cmd.Flags().StringP("start", "s", "", `start time - get the logs from this point. An absolute timestamp in RFC3339 format, or a relative time (eg. 2h). Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".`)
 	cmd.Flags().StringP("stop", "", "", `end time - get the logs upto this point. An absolute timestamp in RFC3339 format, or a relative time (eg. 2h). Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".`)
@@ -51,7 +52,7 @@ func newConnLogsCmd(spClient client.Client) *cobra.Command {
 	return cmd
 }
 
-func printLogs(logEvents *client.LogEvents, cmd *cobra.Command) error {
+func printLogs(logEvents *connclient.LogEvents, cmd *cobra.Command) error {
 	rawPrint, _ := cmd.Flags().GetBool("raw")
 
 	if rawPrint {
@@ -66,9 +67,9 @@ func printLogs(logEvents *client.LogEvents, cmd *cobra.Command) error {
 	return nil
 }
 
-func getAllLogs(spClient client.Client, cmd *cobra.Command, fn func(logEvents *client.LogEvents, cmd *cobra.Command) error) error {
+func getAllLogs(spClient client.Client, cmd *cobra.Command, fn func(logEvents *connclient.LogEvents, cmd *cobra.Command) error) error {
 	endpoint := cmd.Flags().Lookup("logs-endpoint").Value.String()
-	lc := client.NewLogsClient(spClient, endpoint)
+	lc := connclient.NewLogsClient(spClient, endpoint)
 
 	logInput.NextToken = ""
 	for {
@@ -97,14 +98,14 @@ func formatDates(cmd *cobra.Command) error {
 		return fmt.Errorf(`must provide a "--start" time when "--stop" specified`)
 	}
 	if startTimeFlag != "" {
-		retTime, err := client.ParseTime(startTimeFlag, now)
+		retTime, err := connclient.ParseTime(startTimeFlag, now)
 		if err != nil {
 			return err
 		}
 		logInput.Filter.StartTime = &retTime
 	}
 	if stopTimeFlag != "" {
-		retTime, err := client.ParseTime(stopTimeFlag, now)
+		retTime, err := connclient.ParseTime(stopTimeFlag, now)
 		if err != nil {
 			return err
 		}
@@ -114,7 +115,7 @@ func formatDates(cmd *cobra.Command) error {
 }
 
 // Format log message for display
-func formatLog(logMessage client.LogMessage) string {
+func formatLog(logMessage connclient.LogMessage) string {
 	green := color.New(color.FgGreen).SprintFunc()
 	yellow := color.New(color.FgYellow).SprintFunc()
 

@@ -1,5 +1,5 @@
 // Copyright (c) 2021, SailPoint Technologies, Inc. All rights reserved.
-package validate
+package connvalidate
 
 import (
 	"context"
@@ -9,14 +9,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sailpoint-oss/sp-cli/client"
+	connclient "github.com/sailpoint-oss/sp-cli/cmd/connector/client"
 )
 
 // Validator runs checks for a specific connector
 type Validator struct {
 	cfg      Config
-	cc       *client.ConnClient
-	connSpec *client.ConnSpec
+	cc       *connclient.ConnClient
+	connSpec *connclient.ConnSpec
 }
 
 // Config provides options for how the validator runs
@@ -31,7 +31,7 @@ type Config struct {
 }
 
 // NewValidator creates a new validator with provided config and ConnClient
-func NewValidator(cfg Config, cc *client.ConnClient) *Validator {
+func NewValidator(cfg Config, cc *connclient.ConnClient) *Validator {
 	return &Validator{
 		cfg: cfg,
 		cc:  cc,

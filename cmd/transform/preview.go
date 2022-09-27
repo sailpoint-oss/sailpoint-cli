@@ -12,6 +12,7 @@ import (
 	"os"
 
 	"github.com/sailpoint-oss/sp-cli/client"
+	transmodel "github.com/sailpoint-oss/sp-cli/cmd/transform/model"
 	"github.com/sailpoint-oss/sp-cli/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -83,7 +84,7 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			var profile identityProfile
+			var profile transmodel.IdentityProfile
 			err = json.Unmarshal(raw, &profile)
 			if err != nil {
 				return err
@@ -119,7 +120,7 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			var user []user
+			var user []transmodel.User
 			err = json.Unmarshal(raw, &user)
 			if err != nil {
 				return err
@@ -141,11 +142,11 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 					if t.IdentityAttributeName == attribute {
 						transType := t.TransformDefinition.Type
 						if transType == "accountAttribute" {
-							def := makeAttributesOfAccount(t.TransformDefinition.Attributes)
+							def := transmodel.MakeAttributesOfAccount(t.TransformDefinition.Attributes)
 							accountAttName = def.AttributeName
 							sourceName = def.SourceName
 						} else if transType == "reference" {
-							def := makeReference(t.TransformDefinition.Attributes)
+							def := transmodel.MakeReference(t.TransformDefinition.Attributes)
 							accountAttName = def.Input.Attributes.AttributeName
 							sourceName = def.Input.Attributes.SourceName
 						} else {
@@ -160,14 +161,14 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 					return fmt.Errorf("The transform name must be specified when previewing with implicit input.")
 				}
 
-				previewBody := makePreviewBodyImplicit(attribute, name, accountAttName, sourceName)
+				previewBody := transmodel.MakePreviewBodyImplicit(attribute, name, accountAttName, sourceName)
 
 				previewBodyRaw, err = json.Marshal(previewBody)
 				if err != nil {
 					return err
 				}
 			} else {
-				previewBody := makePreviewBodyExplicit(attribute, transform)
+				previewBody := transmodel.MakePreviewBodyExplicit(attribute, transform)
 
 				previewBodyRaw, err = json.Marshal(previewBody)
 				if err != nil {
@@ -195,7 +196,7 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			var response previewResponse
+			var response transmodel.PreviewResponse
 			err = json.Unmarshal(raw, &response)
 			if err != nil {
 				return err

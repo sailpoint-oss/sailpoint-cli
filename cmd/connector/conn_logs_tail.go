@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/sailpoint-oss/sp-cli/client"
+	connclient "github.com/sailpoint-oss/sp-cli/cmd/connector/client"
 	"github.com/spf13/cobra"
 )
 
@@ -26,7 +27,7 @@ func newConnLogsTailCmd(client client.Client) *cobra.Command {
 }
 
 func tailLogs(spClient client.Client, cmd *cobra.Command) error {
-	handleLogs := func(logEvents *client.LogEvents, cmd *cobra.Command) error {
+	handleLogs := func(logEvents *connclient.LogEvents, cmd *cobra.Command) error {
 		if err := printLogs(logEvents, cmd); err != nil {
 			return err
 		}

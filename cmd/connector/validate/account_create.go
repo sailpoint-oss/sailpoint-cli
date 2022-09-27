@@ -1,11 +1,11 @@
-package validate
+package connvalidate
 
 import (
 	"context"
 	"time"
 
 	"github.com/kr/pretty"
-	"github.com/sailpoint-oss/sp-cli/client"
+	connclient "github.com/sailpoint-oss/sp-cli/cmd/connector/client"
 )
 
 var accountCreateChecks = []Check{
@@ -16,7 +16,7 @@ var accountCreateChecks = []Check{
 		RequiredCommands: []string{
 			"std:account:create",
 		},
-		Run: func(ctx context.Context, spec *client.ConnSpec, cc *client.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
 			input := map[string]interface{}{}
 			_, _, err := cc.AccountCreate(ctx, nil, input)
 			if err == nil {
@@ -33,7 +33,7 @@ var accountCreateChecks = []Check{
 			"std:account:read",
 			"std:account:delete",
 		},
-		Run: func(ctx context.Context, spec *client.ConnSpec, cc *client.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
 			input := map[string]interface{}{}
 			for _, field := range spec.AccountCreateTemplate.Fields {
 				if field.Required {
@@ -79,7 +79,7 @@ var accountCreateChecks = []Check{
 			"std:account:read",
 			"std:account:delete",
 		},
-		Run: func(ctx context.Context, spec *client.ConnSpec, cc *client.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
 			input := map[string]interface{}{}
 			for _, field := range spec.AccountCreateTemplate.Fields {
 				input[getFieldName(field)] = genCreateField(field)
@@ -124,7 +124,7 @@ var accountCreateChecks = []Check{
 			"std:account:delete",
 			"std:account:list",
 		},
-		Run: func(ctx context.Context, spec *client.ConnSpec, cc *client.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
 			accountsPreCreate, _, err := cc.AccountList(ctx)
 			if err != nil {
 				res.err(err)

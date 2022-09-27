@@ -1,4 +1,4 @@
-package client
+package connclient
 
 import (
 	"bytes"
@@ -10,11 +10,13 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+
+	"github.com/sailpoint-oss/sp-cli/client"
 )
 
 // ConnClient is an sp connect client for a specific connector
 type ConnClient struct {
-	client       Client
+	client       client.Client
 	version      *int
 	config       json.RawMessage
 	connectorRef string
@@ -22,7 +24,7 @@ type ConnClient struct {
 }
 
 // NewConnClient returns a client for the provided (connectorID, version, config)
-func NewConnClient(client Client, version *int, config json.RawMessage, connectorRef string, endpoint string) *ConnClient {
+func NewConnClient(client client.Client, version *int, config json.RawMessage, connectorRef string, endpoint string) *ConnClient {
 	return &ConnClient{
 		client:       client,
 		version:      version,
@@ -690,8 +692,6 @@ func (cc *ConnClient) rawInvokeWithConfig(cmdType string, input json.RawMessage,
 
 	return json.Marshal(invokeCmd)
 }
-
-const connectorsEndpoint = "/beta/platform-connectors"
 
 func connResourceUrl(endpoint string, resourceParts ...string) string {
 	u, err := url.Parse(endpoint)

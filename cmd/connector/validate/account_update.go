@@ -1,10 +1,10 @@
-package validate
+package connvalidate
 
 import (
 	"context"
 	"time"
 
-	"github.com/sailpoint-oss/sp-cli/client"
+	connclient "github.com/sailpoint-oss/sp-cli/cmd/connector/client"
 )
 
 var accountUpdateChecks = []Check{
@@ -17,7 +17,7 @@ var accountUpdateChecks = []Check{
 			"std:account:list",
 			"std:account:update",
 		},
-		Run: func(ctx context.Context, spec *client.ConnSpec, cc *client.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
 			accounts, _, err := cc.AccountList(ctx)
 			if err != nil {
 				res.err(err)
@@ -38,7 +38,7 @@ var accountUpdateChecks = []Check{
 					}
 					change := attrChange(&acct, &attr)
 
-					_, _, err = cc.AccountUpdate(ctx, acct.ID(), acct.UniqueID(), []client.AttributeChange{change})
+					_, _, err = cc.AccountUpdate(ctx, acct.ID(), acct.UniqueID(), []connclient.AttributeChange{change})
 					if err != nil {
 						res.errf("update for %q failed: %s", attr.Name, err.Error())
 						continue
@@ -72,7 +72,7 @@ var accountUpdateChecks = []Check{
 			"std:account:update",
 			"std:account:delete",
 		},
-		Run: func(ctx context.Context, spec *client.ConnSpec, cc *client.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
 			entitlementAttr := entitlementAttr(spec)
 			if entitlementAttr == "" {
 				res.warnf("no entitlement attribute")
@@ -122,7 +122,7 @@ var accountUpdateChecks = []Check{
 				}
 
 				if isAvailableForUpdating(accEntitlements, e.ID()) {
-					_, _, err = cc.AccountUpdate(ctx, acct.ID(), acct.UniqueID(), []client.AttributeChange{
+					_, _, err = cc.AccountUpdate(ctx, acct.ID(), acct.UniqueID(), []connclient.AttributeChange{
 						{
 							Op:        "Add",
 							Attribute: entitlementAttr,
@@ -151,7 +151,7 @@ var accountUpdateChecks = []Check{
 					res.errf("failed to get acc entitlements")
 				}
 				if len(accEntitlements) != 1 {
-					_, _, err = cc.AccountUpdate(ctx, acct.ID(), acct.UniqueID(), []client.AttributeChange{
+					_, _, err = cc.AccountUpdate(ctx, acct.ID(), acct.UniqueID(), []connclient.AttributeChange{
 						{
 							Op:        "Remove",
 							Attribute: entitlementAttr,

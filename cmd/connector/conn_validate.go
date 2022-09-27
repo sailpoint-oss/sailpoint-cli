@@ -9,7 +9,7 @@ import (
 	"github.com/logrusorgru/aurora"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sailpoint-oss/sp-cli/client"
-	"github.com/sailpoint-oss/sp-cli/validate"
+	connvalidate "github.com/sailpoint-oss/sp-cli/cmd/connector/validate"
 	"github.com/spf13/cobra"
 )
 
@@ -25,7 +25,7 @@ func newConnValidateCmd(apiClient client.Client) *cobra.Command {
 			if list {
 				table := tablewriter.NewWriter(os.Stdout)
 				table.SetHeader([]string{"ID", "Description"})
-				for _, c := range validate.Checks {
+				for _, c := range connvalidate.Checks {
 					table.Append([]string{
 						c.ID,
 						c.Description,
@@ -43,7 +43,7 @@ func newConnValidateCmd(apiClient client.Client) *cobra.Command {
 			check := cmd.Flags().Lookup("check").Value.String()
 
 			isReadOnly, _ := strconv.ParseBool(cmd.Flags().Lookup("read-only").Value.String())
-			valid := validate.NewValidator(validate.Config{
+			valid := connvalidate.NewValidator(connvalidate.Config{
 				Check:    check,
 				ReadOnly: isReadOnly,
 			}, cc)

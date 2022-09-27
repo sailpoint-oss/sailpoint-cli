@@ -19,8 +19,8 @@ import (
 	"github.com/logrusorgru/aurora"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sailpoint-oss/sp-cli/client"
+	connvalidate "github.com/sailpoint-oss/sp-cli/cmd/connector/validate"
 	"github.com/sailpoint-oss/sp-cli/util"
-	"github.com/sailpoint-oss/sp-cli/validate"
 	"github.com/spf13/cobra"
 	"gopkg.in/alessio/shellescape.v1"
 	"gopkg.in/yaml.v2"
@@ -170,7 +170,7 @@ func validateConnectors(ctx context.Context, apiClient client.Client, source Sou
 		log.Println(err)
 	}
 
-	validator := validate.NewValidator(validate.Config{
+	validator := connvalidate.NewValidator(connvalidate.Config{
 		Check:    "",
 		ReadOnly: source.ReadOnly,
 	}, cc)

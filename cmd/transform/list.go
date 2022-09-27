@@ -9,6 +9,7 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/sailpoint-oss/sp-cli/client"
+	transmodel "github.com/sailpoint-oss/sp-cli/cmd/transform/model"
 	"github.com/spf13/cobra"
 )
 
@@ -40,16 +41,16 @@ func newListCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			var transforms []transform
+			var transforms []transmodel.Transform
 			err = json.Unmarshal(raw, &transforms)
 			if err != nil {
 				return err
 			}
 
 			table := tablewriter.NewWriter(cmd.OutOrStdout())
-			table.SetHeader(transformColumns)
+			table.SetHeader(transmodel.TransformColumns)
 			for _, v := range transforms {
-				table.Append(v.transformToColumns())
+				table.Append(v.TransformToColumns())
 			}
 			table.Render()
 

@@ -23,8 +23,8 @@ func NewConnCmd(client client.Client) *cobra.Command {
 		Use:     "connectors",
 		Short:   "Manage Connectors",
 		Aliases: []string{"conn"},
-		Run: func(cmd *cobra.Command, args []string) {
-			_, _ = fmt.Fprintf(cmd.OutOrStdout(), cmd.UsageString())
+		Run: func(command *cobra.Command, args []string) {
+			_, _ = fmt.Fprintf(command.OutOrStdout(), command.UsageString())
 		},
 	}
 

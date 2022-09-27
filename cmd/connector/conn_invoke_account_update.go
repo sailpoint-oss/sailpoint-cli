@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/sailpoint-oss/sp-cli/client"
+	connclient "github.com/sailpoint-oss/sp-cli/cmd/connector/client"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +25,7 @@ func newConnInvokeAccountUpdateCmd(spClient client.Client) *cobra.Command {
 			}
 
 			changesRaw := cmd.Flags().Lookup("changes").Value.String()
-			var changes []client.AttributeChange
+			var changes []connclient.AttributeChange
 			if err := json.Unmarshal([]byte(changesRaw), &changes); err != nil {
 				return err
 			}
