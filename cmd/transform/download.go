@@ -8,13 +8,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/sailpoint-oss/sp-cli/client"
 	"github.com/spf13/cobra"
 )
 
 func newDownloadCmd(client client.Client) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "download",
 		Short:   "Download transforms",
 		Long:    "Download transforms to local storage",
@@ -50,10 +51,20 @@ func newDownloadCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
+			outputpath := cmd.Flags().Lookup("output").Value.String()
+
 			for _, v := range transforms {
 				filename := v["name"].(string) + ".json"
 				content, _ := json.MarshalIndent(v, "", "    ")
-				err := ioutil.WriteFile(filename, content, os.ModePerm)
+
+				var err error
+				if outputpath != "" {
+					_ = os.Mkdir(outputpath, os.ModePerm) // Make sure the output dir exists first
+					err = ioutil.WriteFile(filepath.Join(outputpath, filename), content, os.ModePerm)
+				} else {
+					err = ioutil.WriteFile(filename, content, os.ModePerm)
+				}
+
 				if err != nil {
 					return err
 				}
@@ -62,4 +73,8 @@ func newDownloadCmd(client client.Client) *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.Flags().StringP("output", "o", "", "The path to the directory to save the files in (default current working directory).")
+
+	return cmd
 }

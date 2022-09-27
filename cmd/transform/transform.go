@@ -27,9 +27,6 @@ func NewTransformCmd(client client.Client) *cobra.Command {
 	}
 
 	cmd.PersistentFlags().StringP("transforms-endpoint", "e", viper.GetString("baseurl")+transformsEndpoint, "Override transforms endpoint")
-	cmd.PersistentFlags().String("preview-endpoint", viper.GetString("baseurl")+previewEndpoint, "Override preview endpoint")
-	cmd.PersistentFlags().String("identity-profile-endpoint", viper.GetString("baseurl")+identityProfileEndpoint, "Override identity profile endpoint")
-	cmd.PersistentFlags().String("user-endpoint", viper.GetString("baseurl")+userEndpoint, "Override user endpoint")
 
 	cmd.AddCommand(
 		newListCmd(client),

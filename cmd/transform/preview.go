@@ -14,16 +14,17 @@ import (
 	"github.com/sailpoint-oss/sp-cli/client"
 	"github.com/sailpoint-oss/sp-cli/util"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var implicitInput bool
 
 func newPreviewCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "preview -i <identity-profile-id> -a <attribute-name> --implicit <transform data>",
+		Use:     "preview",
 		Short:   "Preview transform",
-		Long:    "Preview the final output of a transform",
-		Example: "sp transforms preview -i 12a199b967b64ffe992ef4ecfd076728 -a lastname < /path/to/transform.json",
+		Long:    "Preview the final output of a transform.",
+		Example: "sp transforms preview -i 12a199b967b64ffe992ef4ecfd076728 -a lastname -f /path/to/transform.json",
 		Aliases: []string{"p"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -40,9 +41,23 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 			var transform map[string]interface{}
 
 			if !implicitInput {
-				err := json.NewDecoder(os.Stdin).Decode(&transform)
-				if err != nil {
-					log.Fatal(err)
+				filepath := cmd.Flags().Lookup("file").Value.String()
+				if filepath != "" {
+					file, err := os.Open(filepath)
+					if err != nil {
+						log.Fatal(err)
+					}
+					defer file.Close()
+
+					err = json.NewDecoder(file).Decode(&transform)
+					if err != nil {
+						log.Fatal(err)
+					}
+				} else {
+					err := json.NewDecoder(os.Stdin).Decode(&transform)
+					if err != nil {
+						log.Fatal(err)
+					}
 				}
 			}
 
@@ -198,13 +213,15 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 
 	cmd.Flags().StringP("identity-profile", "i", "", "The GUID of an identity profile (required)")
 	cmd.Flags().StringP("attribute", "a", "", "Attribute name (required)")
-	cmd.Flags().StringP("name", "n", "", "Transform name if using implicit input.  The transform must be uploaded to IDN.")
+	cmd.Flags().StringP("name", "n", "", "Transform name.  Only needed if using implicit input.  The transform must be uploaded to IDN first.")
 	cmd.Flags().BoolVar(&implicitInput, "implicit", false, "Use implicit input.  Default is explicit input defined by the transform.")
-	// cmd.Flags().StringP("file", "f", "", "The path to the transform file (required)")
+	cmd.Flags().String("preview-endpoint", viper.GetString("baseurl")+previewEndpoint, "Override preview endpoint")
+	cmd.Flags().String("identity-profile-endpoint", viper.GetString("baseurl")+identityProfileEndpoint, "Override identity profile endpoint")
+	cmd.Flags().String("user-endpoint", viper.GetString("baseurl")+userEndpoint, "Override user endpoint")
+	cmd.Flags().StringP("file", "f", "", "The path to the transform file.  Only needed if using explicit input.")
 
 	cmd.MarkFlagRequired("identity-profile")
 	cmd.MarkFlagRequired("attribute")
-	// cmd.MarkFlagRequired("file")
 
 	return cmd
 }

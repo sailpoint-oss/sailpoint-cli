@@ -13,7 +13,7 @@ import (
 
 func newDeleteCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "delete <transform-id>",
+		Use:     "delete [TRANSFORM-ID]",
 		Short:   "Delete transform",
 		Long:    "Delete a transform",
 		Example: "sp transforms delete 03d5187b-ab96-402c-b5a1-40b74285d77a",

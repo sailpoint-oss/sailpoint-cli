@@ -17,18 +17,32 @@ import (
 
 func newCreateCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "create <transform data>",
+		Use:     "create",
 		Short:   "Create transform",
-		Long:    "Create a transform",
-		Example: "sp transforms create < transform.json",
+		Long:    "Create a transform from a file [-f] or standard input (if no file is specified).",
+		Example: "sp transforms create -f /path/to/transform.json",
 		Aliases: []string{"c"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var data map[string]interface{}
 
-			err := json.NewDecoder(os.Stdin).Decode(&data)
-			if err != nil {
-				log.Fatal(err)
+			filepath := cmd.Flags().Lookup("file").Value.String()
+			if filepath != "" {
+				file, err := os.Open(filepath)
+				if err != nil {
+					log.Fatal(err)
+				}
+				defer file.Close()
+
+				err = json.NewDecoder(file).Decode(&data)
+				if err != nil {
+					log.Fatal(err)
+				}
+			} else {
+				err := json.NewDecoder(os.Stdin).Decode(&data)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
 
 			if data["name"] == nil {
@@ -58,6 +72,8 @@ func newCreateCmd(client client.Client) *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.Flags().StringP("file", "f", "", "The path to the transform file")
 
 	return cmd
 }

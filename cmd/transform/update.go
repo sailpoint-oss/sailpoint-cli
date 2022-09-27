@@ -17,18 +17,32 @@ import (
 
 func newUpdateCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "update <transform-data>",
+		Use:     "update",
 		Short:   "Update transform",
-		Long:    "Update a transform specified by the id in the input.",
-		Example: "sp transforms update < /path/to/transform.json",
+		Long:    "Update a transform from a file [-f] or standard input (if no file is specified).",
+		Example: "sp transforms update -f /path/to/transform.json",
 		Aliases: []string{"u"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var data map[string]interface{}
 
-			err := json.NewDecoder(os.Stdin).Decode(&data)
-			if err != nil {
-				log.Fatal(err)
+			filepath := cmd.Flags().Lookup("file").Value.String()
+			if filepath != "" {
+				file, err := os.Open(filepath)
+				if err != nil {
+					log.Fatal(err)
+				}
+				defer file.Close()
+
+				err = json.NewDecoder(file).Decode(&data)
+				if err != nil {
+					log.Fatal(err)
+				}
+			} else {
+				err := json.NewDecoder(os.Stdin).Decode(&data)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
 
 			if data["id"] == nil {
@@ -61,6 +75,8 @@ func newUpdateCmd(client client.Client) *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.Flags().StringP("file", "f", "", "The path to the transform file")
 
 	return cmd
 }
