@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/sailpoint-oss/sp-cli/client"
-	"github.com/sailpoint-oss/sp-cli/util"
+	"github.com/sailpoint-oss/sailpoint-cli/client"
+	"github.com/sailpoint-oss/sailpoint-cli/util"
 	"github.com/spf13/cobra"
 )
 

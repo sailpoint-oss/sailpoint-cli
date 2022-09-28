@@ -2,6 +2,6 @@
 .vscode
 
 # CLI binary
-sp-cli
+sailpoint-cli
 
 data

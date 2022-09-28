@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/sailpoint-oss/sp-cli/mocks"
+	"github.com/sailpoint-oss/sailpoint-cli/mocks"
 )
 
 func TestNewConnGetCmd_missingRequiredFlags(t *testing.T) {

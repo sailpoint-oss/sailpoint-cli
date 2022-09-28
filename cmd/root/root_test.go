@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/sailpoint-oss/sp-cli/mocks"
+	"github.com/sailpoint-oss/sailpoint-cli/mocks"
 )
 
 // Expected number of subcommands to `sp` root command

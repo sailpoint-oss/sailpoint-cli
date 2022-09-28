@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	connclient "github.com/sailpoint-oss/sp-cli/cmd/connector/client"
+	connclient "github.com/sailpoint-oss/sailpoint-cli/cmd/connector/client"
 )
 
 // Validator runs checks for a specific connector

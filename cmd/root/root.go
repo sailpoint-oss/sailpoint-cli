@@ -4,9 +4,9 @@ package root
 import (
 	"fmt"
 
-	"github.com/sailpoint-oss/sp-cli/client"
-	"github.com/sailpoint-oss/sp-cli/cmd/connector"
-	"github.com/sailpoint-oss/sp-cli/cmd/transform"
+	"github.com/sailpoint-oss/sailpoint-cli/client"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/connector"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/transform"
 	"github.com/spf13/cobra"
 )
 

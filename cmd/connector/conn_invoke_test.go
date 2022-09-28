@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/sailpoint-oss/sp-cli/mocks"
+	"github.com/sailpoint-oss/sailpoint-cli/mocks"
 )
 
 // Unit tests for conn_invoke.go and its subcommands

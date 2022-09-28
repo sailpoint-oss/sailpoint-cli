@@ -7,8 +7,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/sailpoint-oss/sp-cli/client"
-	connclient "github.com/sailpoint-oss/sp-cli/cmd/connector/client"
+	"github.com/sailpoint-oss/sailpoint-cli/client"
+	connclient "github.com/sailpoint-oss/sailpoint-cli/cmd/connector/client"
 	"github.com/spf13/cobra"
 )
 

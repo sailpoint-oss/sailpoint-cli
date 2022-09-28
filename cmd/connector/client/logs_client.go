@@ -14,7 +14,7 @@ import (
 	"path"
 	"time"
 
-	"github.com/sailpoint-oss/sp-cli/client"
+	"github.com/sailpoint-oss/sailpoint-cli/client"
 )
 
 const TimeFormatLocal = `2006-01-02T15:04:05.000-07:00`

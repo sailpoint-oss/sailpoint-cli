@@ -8,7 +8,7 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/sailpoint-oss/sp-cli/client"
+	"github.com/sailpoint-oss/sailpoint-cli/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 

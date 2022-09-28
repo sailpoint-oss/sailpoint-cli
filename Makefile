@@ -22,10 +22,10 @@ else
 endif
 
 docker/build: docker/login
-	docker build -t sailpoint-oss/sp-cli:$(VERSION) -f Dockerfile .
+	docker build -t sailpoint-oss/sailpoint-cli:$(VERSION) -f Dockerfile .
 
 docker/push: docker/build
-	docker tag sailpoint-oss/sp-cli:$(VERSION) 406205545357.dkr.ecr.us-east-1.amazonaws.com/sailpoint-oss/sp-cli:$(VERSION)
-	docker push 406205545357.dkr.ecr.us-east-1.amazonaws.com/sailpoint-oss/sp-cli:$(VERSION)
+	docker tag sailpoint-oss/sailpoint-cli:$(VERSION) 406205545357.dkr.ecr.us-east-1.amazonaws.com/sailpoint-oss/sailpoint-cli:$(VERSION)
+	docker push 406205545357.dkr.ecr.us-east-1.amazonaws.com/sailpoint-oss/sailpoint-cli:$(VERSION)
 
 .PHONY: clean mocks test install .docker/login .docker/build .docker/push

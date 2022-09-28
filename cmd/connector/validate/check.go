@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	connclient "github.com/sailpoint-oss/sp-cli/cmd/connector/client"
+	connclient "github.com/sailpoint-oss/sailpoint-cli/cmd/connector/client"
 )
 
 var Checks = []Check{}

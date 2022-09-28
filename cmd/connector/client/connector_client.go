@@ -11,7 +11,7 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/sailpoint-oss/sp-cli/client"
+	"github.com/sailpoint-oss/sailpoint-cli/client"
 )
 
 // ConnClient is an sp connect client for a specific connector
