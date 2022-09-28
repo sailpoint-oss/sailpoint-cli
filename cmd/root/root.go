@@ -12,8 +12,8 @@ import (
 
 func NewRootCmd(client client.Client) *cobra.Command {
 	root := &cobra.Command{
-		Use:          "sp",
-		Short:        "sp",
+		Use:          "sail",
+		Short:        "sail",
 		SilenceUsage: true,
 		CompletionOptions: cobra.CompletionOptions{
 			DisableDefaultCmd:   true,

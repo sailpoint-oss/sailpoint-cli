@@ -12,7 +12,7 @@ test:
 	docker run --rm cli go test -v -count=1 ./...
 
 install:
-	go build -o /usr/local/bin/sp
+	go build -o /usr/local/bin/sail
 
 docker/login:
 ifeq ($(JENKINS_URL),) # if $JENKINS_URL is empty

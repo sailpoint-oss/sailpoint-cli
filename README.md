@@ -1,43 +1,70 @@
-# SP CLI (BETA)
-
-SailPoint CLI
+```
+   _____       _ _ _____      _       _      _____ _      _____ 
+  / ____|     (_) |  __ \    (_)     | |    / ____| |    |_   _|
+ | (___   __ _ _| | |__) |__  _ _ __ | |_  | |    | |      | |  
+  \___ \ / _` | | |  ___/ _ \| | '_ \| __| | |    | |      | |  
+  ____) | (_| | | | |  | (_) | | | | | |_  | |____| |____ _| |_ 
+ |_____/ \__,_|_|_|_|   \___/|_|_| |_|\__|  \_____|______|_____|
+                                                                
+```
+The SailPoint Command Line Interface (CLI) makes it easy to interact with SailPoint's SaaS Platform in a programmatic way.  Many functions that use to be accomplished through tools like Postman or from custom scripts can now be done directly on the command line with minimal setup.
 
 ## Install
-Installation of cli requires Golang. Make sure Golang is installed on your system with version 1.17 or above.
+
+Installation of the CLI requires [Golang](https://go.dev/doc/install) version 1.17 or above.
 
 ### MacOS and Linux
-Run the following make command.
+
+Open your terminal app, navigate to the project directory, and run the following command.
+
 ```shell
-$ make install
+make install
 ```
 
-After that, make sure you can run the `sp` command.
+After that, make sure you can run the `sail` command.
+
 ```shell
-$ sp -h
+sail -h
 ```
 
 ### Windows
-Install cli using the following command.
+
+Open PowerShell, navigate to the project directory, and run the following command.
+
 ```shell
-$ go build -o "C:\Program Files\sp-cli\sp.exe"
+go build -o "C:\Program Files\sailpoint\sail.exe"
 ```
 
-After that, add the following directory to the system PATH parameter. This will only need to be done the first time you install the cli.
-```
-C:\Program Files\sp-cli
+After that, add the following directory to the system PATH parameter. You can find instructions on how to do this from [this article](https://medium.com/@kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53). This will only need to be done the first time you install the CLI.
+
+```text
+C:\Program Files\sailpoint
 ```
 
-Once installed, make sure to use a bash-like shell to run cli commands. You can use MinGW or Git Bash. Make sure you can run the `sp` command.
+Once installed, make sure PowerShell can run the `sail` command.
+
 ```shell
-$ sp -h
+sail -h
 ```
-
 
 ## Configuration
 
-Create personal access token @ https://{org}.identitysoon.com/ui/d/user-preferences/personal-access-tokens
+Create a [personal access token](https://developer.sailpoint.com/docs/authentication.html#personal-access-tokens), which will be used to authenticate the SP CLI to your IdentityNow tenant.
 
-Create a config file at "~/.sp/config.yaml"
+Create a configuration file in your home directory to save your credentials.
+
+On Linux/Mac, run:
+
+```shell
+mkdir ~/.sp
+touch ~/.sp/config.yaml
+```
+
+On Windows PowerShell, run:
+
+```powershell
+
+```
 
 ```yaml
 baseURL: https://{org}.api.cloud.sailpoint.com # or baseURL: https://localhost:7100
