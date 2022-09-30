@@ -24,7 +24,7 @@ make install
 After that, make sure you can run the `sail` command.
 
 ```shell
-sail -h
+sail
 ```
 
 ### Windows
@@ -44,45 +44,62 @@ C:\Program Files\sailpoint
 Once installed, make sure PowerShell can run the `sail` command.
 
 ```shell
-sail -h
+sail
 ```
 
 ## Configuration
 
-Create a [personal access token](https://developer.sailpoint.com/docs/authentication.html#personal-access-tokens), which will be used to authenticate the SP CLI to your IdentityNow tenant.
+Create a [personal access token](https://developer.sailpoint.com/idn/api/authentication#personal-access-tokens), which will be used to authenticate the SP CLI to your IdentityNow tenant.
 
-Create a configuration file in your home directory to save your credentials.
+Run the configure command to configure the CLI for your tenant.  This command will create a configuration file in your home directory to store your tenant's connection details.
+
+```shell
+sail configure
+```
+
+Alternatively, you can manually create a configuration file in your home directory.
 
 On Linux/Mac, run:
 
 ```shell
-mkdir ~/.sp
-touch ~/.sp/config.yaml
+mkdir ~/.sailpoint
+touch ~/.sailpoint/config.yaml
 ```
 
 On Windows PowerShell, run:
 
 ```powershell
-
+New-Item -ItemType Directory -Path 'C:\Users\<username>\.sp'
+New-Item -ItemType File -Path 'C:\Users\<username>\.sp\config.yaml' 
 ```
+
+The `config.yaml` should contain the following information.
 
 ```yaml
-baseURL: https://{org}.api.cloud.sailpoint.com # or baseURL: https://localhost:7100
-tokenURL: https://{org}.api.cloud.sailpoint.com/oauth/token
-clientSecret: [clientSecret]
-clientID: [clientID]
+baseURL: https://{org}.api.identitynow.com # or baseURL: https://localhost:7100
+tokenURL: https://{org}.api.identitynow.com/oauth/token
+clientSecret: {clientSecret}
+clientID: {clientID}
 ```
 
-You may also specify the config as environment variables:
+> TODO: Env variables aren't working yet
+
+You may specify environment variables for your configuration.  This can useful when using the CLI in an automated environment, like a CI/CD pipeline, where consuming the configuration from environment variables would be easier than creating the config file.  Environment variables will override values defined in a config file.
+
+On Linux/Mac, set the following environment variables:
 
 ```shell
-$ SP_CLI_BASEURL=http://localhost:7100 \
-  SP_CLI_TOKENURL=http://{org}.api.cloud.sailpoint.com \
-  SP_CLI_CLIENTSECRET=xxxx sp conn list
+SAIL_BASEURL=https://{org}.api.identitynow.com
+SAIL_TOKENURL=https://{org}.api.identitynow.com/oauth/token
+SAIL_CLIENTID={clientID}
+SAIL_CLIENTSECRET={clientSecret}
 ```
 
-This can useful for cases like CI pipelines to avoid having to write the config
-file.
+On Windows PowerShell run:
+
+```powershell
+
+```
 
 ## Usage
 

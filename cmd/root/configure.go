@@ -16,18 +16,18 @@ import (
 )
 
 const (
-	baseURLTemplate  = "https://%s.api.cloud.sailpoint.com"
+	baseURLTemplate  = "https://%s.api.identitynow.com"
 	tokenURLTemplate = "%s/oauth/token"
-	configFolder     = ".sp"
+	configFolder     = ".sailpoint"
 	configYamlFile   = "config.yaml"
 )
 
 type OrgConfig struct {
-	Org          string `mapstructure:"org"`
 	BaseUrl      string `mapstructure:"baseURL"`
 	TokenUrl     string `mapstructure:"tokenURL"`
 	ClientSecret string `mapstructure:"clientSecret"`
 	ClientID     string `mapstructure:"clientID"`
+	Debug        bool   `mapstructure:"debug"`
 }
 
 func newConfigureCmd(client client.Client) *cobra.Command {
@@ -65,18 +65,18 @@ func updateConfigFile(conf *OrgConfig) error {
 		return err
 	}
 
-	if _, err := os.Stat(filepath.Join(home, ".sp")); os.IsNotExist(err) {
-		err = os.Mkdir(filepath.Join(home, ".sp"), 0777)
+	if _, err := os.Stat(filepath.Join(home, configFolder)); os.IsNotExist(err) {
+		err = os.Mkdir(filepath.Join(home, configFolder), 0777)
 		if err != nil {
-			log.Printf("failed to create .sp folder for config. %v", err)
+			log.Printf("failed to create %s folder for config. %v", configFolder, err)
 		}
 	}
 
-	viper.Set("org", conf.Org)
 	viper.Set("baseUrl", conf.BaseUrl)
 	viper.Set("tokenUrl", conf.TokenUrl)
 	viper.Set("clientSecret", conf.ClientSecret)
 	viper.Set("clientID", conf.ClientID)
+	viper.Set("debug", false)
 
 	err = viper.WriteConfig()
 	if err != nil {
@@ -97,7 +97,7 @@ func getConfigureParamsFromStdin() (*OrgConfig, error) {
 	conf := &OrgConfig{}
 
 	paramsNames := []string{
-		"Org Name: ",
+		"Base URL (ex. https://{org}.api.identitynow.com): ",
 		"Personal Access Token Client ID: ",
 		"Personal Access Token Client Secret: ",
 	}
@@ -114,8 +114,7 @@ func getConfigureParamsFromStdin() (*OrgConfig, error) {
 
 		switch pm {
 		case paramsNames[0]:
-			conf.Org = value
-			conf.BaseUrl = fmt.Sprintf(baseURLTemplate, value)
+			conf.BaseUrl = value
 			conf.TokenUrl = fmt.Sprintf(tokenURLTemplate, conf.BaseUrl)
 		case paramsNames[1]:
 			conf.ClientID = value

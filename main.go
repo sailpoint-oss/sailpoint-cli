@@ -20,10 +20,11 @@ func initConfig() {
 	home, err := os.UserHomeDir()
 	cobra.CheckErr(err)
 
-	viper.AddConfigPath(filepath.Join(home, ".sp"))
+	viper.AddConfigPath(filepath.Join(home, ".sailpoint"))
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-	viper.SetEnvPrefix("SP_CLI")
+	viper.SetEnvPrefix("sail")
+
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
