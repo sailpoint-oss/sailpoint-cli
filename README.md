@@ -82,17 +82,15 @@ clientSecret: {clientSecret}
 clientID: {clientID}
 ```
 
-> TODO: Env variables aren't working yet
-
 You may specify environment variables for your configuration.  This can useful when using the CLI in an automated environment, like a CI/CD pipeline, where consuming the configuration from environment variables would be easier than creating the config file.  Environment variables will override values defined in a config file.
 
 On Linux/Mac, set the following environment variables:
 
 ```shell
-SAIL_BASEURL=https://{org}.api.identitynow.com
-SAIL_TOKENURL=https://{org}.api.identitynow.com/oauth/token
-SAIL_CLIENTID={clientID}
-SAIL_CLIENTSECRET={clientSecret}
+export SAIL_BASEURL=https://{org}.api.identitynow.com
+export SAIL_TOKENURL=https://{org}.api.identitynow.com/oauth/token
+export SAIL_CLIENTID={clientID}
+export SAIL_CLIENTSECRET={clientSecret}
 ```
 
 On Windows PowerShell run:
