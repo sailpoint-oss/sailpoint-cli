@@ -13,7 +13,7 @@
 				{
 					"type": "section",
 					"sectionTitle": "Authentication",
-          			"sectionHelpMessage": "Provide connection parameters to interact securely with the target application.",
+					"sectionHelpMessage": "Provide connection parameters to interact securely with the target application.",
 					"items": [
 						{
 							"key": "token",
@@ -46,5 +46,5 @@
 			}
 		]
 	},
-  "entitlementSchemas": []
+	"entitlementSchemas": []
 }
