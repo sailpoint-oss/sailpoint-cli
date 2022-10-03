@@ -9,11 +9,11 @@
 ```
 The SailPoint Command Line Interface (CLI) makes it easy to interact with SailPoint's SaaS Platform in a programmatic way.  Many functions that use to be accomplished through tools like Postman or from custom scripts can now be done directly on the command line with minimal setup.
 
-## Install
+# Install
 
 Installation of the CLI requires [Golang](https://go.dev/doc/install) version 1.17 or above.
 
-### MacOS and Linux
+## MacOS and Linux
 
 Open your terminal app, navigate to the project directory, and run the following command.
 
@@ -27,7 +27,7 @@ After that, make sure you can run the `sail` command.
 sail
 ```
 
-### Windows
+## Windows
 
 Open PowerShell, navigate to the project directory, and run the following command.
 
@@ -47,9 +47,11 @@ Once installed, make sure PowerShell can run the `sail` command.
 sail
 ```
 
-## Configuration
+# Configuration
 
 Create a [personal access token](https://developer.sailpoint.com/idn/api/authentication#personal-access-tokens), which will be used to authenticate the SP CLI to your IdentityNow tenant.
+
+## Assisted configuration
 
 Run the configure command to configure the CLI for your tenant.  This command will create a configuration file in your home directory to store your tenant's connection details.
 
@@ -57,75 +59,69 @@ Run the configure command to configure the CLI for your tenant.  This command wi
 sail configure
 ```
 
+## Manual configuration
+
 Alternatively, you can manually create a configuration file in your home directory.
 
-On Linux/Mac, run:
+On **Linux/Mac**, run:
 
 ```shell
 mkdir ~/.sailpoint
 touch ~/.sailpoint/config.yaml
 ```
 
-On Windows PowerShell, run:
+On **Windows PowerShell**, run:
 
 ```powershell
-New-Item -ItemType Directory -Path 'C:\Users\<username>\.sp'
-New-Item -ItemType File -Path 'C:\Users\<username>\.sp\config.yaml' 
+New-Item -ItemType Directory -Path 'C:\Users\<username>\.sailpoint'
+New-Item -ItemType File -Path 'C:\Users\<username>\.sailpoint\config.yaml' 
 ```
 
-The `config.yaml` should contain the following information.
+The `config.yaml` file should contain the following information.
 
 ```yaml
 baseURL: https://{org}.api.identitynow.com # or baseURL: https://localhost:7100
 tokenURL: https://{org}.api.identitynow.com/oauth/token
 clientSecret: {clientSecret}
 clientID: {clientID}
+debug: false # Set to true for additional output
 ```
 
-You may specify environment variables for your configuration.  This can useful when using the CLI in an automated environment, like a CI/CD pipeline, where consuming the configuration from environment variables would be easier than creating the config file.  Environment variables will override values defined in a config file.
+## Environment variable configuration
 
-On Linux/Mac, set the following environment variables:
+You may also specify environment variables for your configuration.  This can useful when using the CLI in an automated environment, like a CI/CD pipeline, where consuming the configuration from environment variables would be easier than creating the config file.  Environment variables take precedent over values defined in a config file.
+
+On **Linux/Mac**, export the following environment variables:
 
 ```shell
 export SAIL_BASEURL=https://{org}.api.identitynow.com
 export SAIL_TOKENURL=https://{org}.api.identitynow.com/oauth/token
 export SAIL_CLIENTID={clientID}
 export SAIL_CLIENTSECRET={clientSecret}
+export SAIL_DEBUG=false
 ```
 
-On Windows PowerShell run:
+If you want your environment variables to persist across terminal sessions, you will need to add these exports to your shell profile, like `~/.bash_profile`.
+
+On **Windows PowerShell** run:
 
 ```powershell
-
+$env:SAIL_BASEURL = 'https://{org}.api.identitynow.com'
+$env:SAIL_TOKENURL = 'https://{org}.api.identitynow.com/oauth/token'
+$env:SAIL_CLIENTID = '{clientID}'
+$env:SAIL_CLIENTSECRET = '{clientSecret}'
+$env:SAIL_DEBUG = 'false'
 ```
 
-## Usage
+If you want your environment variables to persist across PowerShell sessions, then use the following command instead:
 
-Note that for all invoke commands, the version flag `-v` is optional. If not provided, the cli will run against the version pointed by the `latest` tag.
-
-```shell
-$ sp conn help
-$ sp conn init [connectorProjectName]
-$ sp conn create [connectorAlias]
-$ sp conn update -c [connectorID] -a [connectorAlias]
-$ sp conn list
-$ sp conn upload -c [connectorID | connectorAlias] -f connector.zip
-$ sp conn invoke test-connection -c [connectorID | connectorAlias] -p [config.json] -v [version]
-$ sp conn invoke account-list -c [connectorID | connectorAlias] -p [config.json] -v [version]
-$ sp conn invoke account-read [identity] -c [connectorID | connectorAlias] -p [config.json] -v [version]
-$ sp conn invoke entitlement-list -t [entitlementType] -c [connectorID | connectorAlias] -p [config.json] -v [version]
-$ sp conn invoke entitlement-read [identity] -t [entitlementType] -c [connectorID | connectorAlias] -p [config.json] -v [version]
-$ sp conn tags create -c [connectorID | connectorAlias] -n [tagName] -v [version]
-$ sp conn tags update -c [connectorID | connectorAlias] -n [tagName] -v [version]
-$ sp conn tags list -c [connectorID | connectorAlias]
-$ sp conn logs
-$ sp conn logs tail
-$ sp conn stats
+```powershell
+[System.Environment]::SetEnvironmentVariable('SAIL_BASEURL','https://{org}.api.identitynow.com')
 ```
 
-### Command `conn` is short for `connectors`. Both of the following commands work and they work the exact same way
+# Usage
 
-```shell
-$ sp conn list
-$ sp connectors list
-```
+Run the `sail` command for an overview of the available commands and flags.  You can use the `-h` flag with any available command to see additional options available for each command. You can find more information about each command below.
+
+- [connectors](./cmd/connector/README.md)
+- [transforms](./cmd/transform/README.md)
