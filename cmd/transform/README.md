@@ -1,6 +1,6 @@
 # Transforms
 
-The `transforms` command make it easy to create, manage, and test transforms.  Please [read our transforms guide](https://developer.sailpoint.com/idn/docs/transforms) for more information about transforms.  See below for a description of each command.
+The `transforms` command makes it easy to create, manage, and test transforms.  Please [read our transforms guide](https://developer.sailpoint.com/idn/docs/transforms) for more information about transforms.
 
 - [List transforms](#list-transforms)
 - [Download transforms](#download-transforms)
