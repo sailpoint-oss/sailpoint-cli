@@ -1,4 +1,7 @@
-FROM golang:1.17-alpine3.14
+FROM golang:1.17-alpine3.16
+
+# Update
+RUN apk update && apk upgrade
 
 # Install node, zip, git and make
 RUN apk add --no-cache gcc libc-dev npm nodejs-current zip git openssh make
