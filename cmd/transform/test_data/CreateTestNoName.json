@@ -1,0 +1,7 @@
+{
+    "attributes": {
+        "attributeName": "e-mail",
+        "sourceName": "Employees"
+    },
+    "type": "accountAttribute"
+}
