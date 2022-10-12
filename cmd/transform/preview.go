@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -30,14 +29,7 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			idProfile := cmd.Flags().Lookup("identity-profile").Value.String()
-			if idProfile == "" {
-				return fmt.Errorf("identity-profile must be specified")
-			}
-
 			attribute := cmd.Flags().Lookup("attribute").Value.String()
-			if attribute == "" {
-				return fmt.Errorf("attribute must be specified")
-			}
 
 			var transform map[string]interface{}
 
@@ -46,18 +38,18 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 				if filepath != "" {
 					file, err := os.Open(filepath)
 					if err != nil {
-						log.Fatal(err)
+						return err
 					}
 					defer file.Close()
 
 					err = json.NewDecoder(file).Decode(&transform)
 					if err != nil {
-						log.Fatal(err)
+						return err
 					}
 				} else {
 					err := json.NewDecoder(os.Stdin).Decode(&transform)
 					if err != nil {
-						log.Fatal(err)
+						return err
 					}
 				}
 			}
@@ -126,12 +118,6 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			// enc := json.NewEncoder(os.Stdout)
-			// enc.SetIndent("", "    ")
-			// if err := enc.Encode(previewBody); err != nil {
-			// 	log.Fatal(err)
-			// }
-
 			var previewBodyRaw []byte
 			// If using implicit input, then attempt to grab the implicit
 			// input from the identity profile mapping.
@@ -150,8 +136,7 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 							accountAttName = def.Input.Attributes.AttributeName
 							sourceName = def.Input.Attributes.SourceName
 						} else {
-							log.Fatal("Unknown transform definition encountered when parsing identity profile: " + transType)
-							return nil
+							return fmt.Errorf("Unknown transform definition encountered when parsing identity profile: " + transType)
 						}
 					}
 				}

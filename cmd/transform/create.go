@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 
@@ -30,24 +29,23 @@ func newCreateCmd(client client.Client) *cobra.Command {
 			if filepath != "" {
 				file, err := os.Open(filepath)
 				if err != nil {
-					log.Fatal(err)
+					return err
 				}
 				defer file.Close()
 
 				err = json.NewDecoder(file).Decode(&data)
 				if err != nil {
-					log.Fatal(err)
+					return err
 				}
 			} else {
 				err := json.NewDecoder(os.Stdin).Decode(&data)
 				if err != nil {
-					log.Fatal(err)
+					return err
 				}
 			}
 
 			if data["name"] == nil {
-				log.Fatal("The transform must have a name.")
-				return nil
+				return fmt.Errorf("The transform must have a name.")
 			}
 
 			raw, err := json.Marshal(data)
