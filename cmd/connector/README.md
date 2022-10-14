@@ -8,6 +8,7 @@ The `connectors` command is a CLI interface for the SaaS Connectivity Platform. 
 - [Invoke command](#invoke-command)
 - [List connectors](#list-connectors)
 - [Update connector](#update-connector)
+- [Delete connector](#delete-connector)
 - [Manage tags](#manage-tags)
 - [Get logs](#get-logs)
 
@@ -71,6 +72,14 @@ To change the alias of a connector, run the following command.
 
 ```shell
 sail conn update -c [connectorID] -a [newConnectorAlias]
+```
+
+## Delete connector
+
+To delete a connector, run the following command.
+
+```shell
+sail conn delete -c [connectorID]
 ```
 
 ## Manage tags
