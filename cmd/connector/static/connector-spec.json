@@ -7,12 +7,20 @@
 	],
 	"sourceConfig": [
 		{
-			"type": "section",
+			"type": "menu",
+			"label": "Configuration",
 			"items": [
 				{
-					"key": "token",
-					"label": "Token",
-					"type": "text"
+					"type": "section",
+					"sectionTitle": "Authentication",
+					"sectionHelpMessage": "Provide connection parameters to interact securely with the target application.",
+					"items": [
+						{
+							"key": "token",
+							"label": "Token",
+							"type": "text"
+						}
+					]
 				}
 			]
 		}
@@ -38,5 +46,5 @@
 			}
 		]
 	},
-  "entitlementSchemas": []
+	"entitlementSchemas": []
 }

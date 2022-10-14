@@ -37,18 +37,18 @@ func (m *MockClient) EXPECT() *MockClientMockRecorder {
 }
 
 // Delete mocks base method.
-func (m *MockClient) Delete(ctx context.Context, url string) (*http.Response, error) {
+func (m *MockClient) Delete(ctx context.Context, url string, params map[string]string) (*http.Response, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, url)
+	ret := m.ctrl.Call(m, "Delete", ctx, url, params)
 	ret0, _ := ret[0].(*http.Response)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockClientMockRecorder) Delete(ctx, url interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) Delete(ctx, url, params interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockClient)(nil).Delete), ctx, url)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockClient)(nil).Delete), ctx, url, params)
 }
 
 // Get mocks base method.

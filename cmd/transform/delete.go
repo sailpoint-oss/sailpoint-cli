@@ -26,7 +26,7 @@ func newDeleteCmd(client client.Client) *cobra.Command {
 			}
 
 			endpoint := cmd.Flags().Lookup("transforms-endpoint").Value.String()
-			resp, err := client.Delete(cmd.Context(), util.ResourceUrl(endpoint, id))
+			resp, err := client.Delete(cmd.Context(), util.ResourceUrl(endpoint, id), nil)
 			if err != nil {
 				return err
 			}

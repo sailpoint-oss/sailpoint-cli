@@ -18,7 +18,7 @@ func TestNewDeleteCmd(t *testing.T) {
 
 	client := mocks.NewMockClient(ctrl)
 	client.EXPECT().
-		Delete(gomock.Any(), gomock.Any()).
+		Delete(gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(&http.Response{StatusCode: http.StatusNoContent, Body: io.NopCloser(bytes.NewReader([]byte("")))}, nil).
 		Times(1)
 
