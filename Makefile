@@ -14,18 +14,4 @@ test:
 install:
 	go build -o /usr/local/bin/sail
 
-docker/login:
-ifeq ($(JENKINS_URL),) # if $JENKINS_URL is empty
-	aws ecr --region us-east-1 get-login-password | docker login --username AWS --password-stdin 406205545357.dkr.ecr.us-east-1.amazonaws.com
-else
-	$$(aws ecr get-login --no-include-email --region us-east-1)
-endif
-
-docker/build: docker/login
-	docker build -t sailpoint-oss/sailpoint-cli:$(VERSION) -f Dockerfile .
-
-docker/push: docker/build
-	docker tag sailpoint-oss/sailpoint-cli:$(VERSION) 406205545357.dkr.ecr.us-east-1.amazonaws.com/sailpoint-oss/sailpoint-cli:$(VERSION)
-	docker push 406205545357.dkr.ecr.us-east-1.amazonaws.com/sailpoint-oss/sailpoint-cli:$(VERSION)
-
 .PHONY: clean mocks test install .docker/login .docker/build .docker/push
