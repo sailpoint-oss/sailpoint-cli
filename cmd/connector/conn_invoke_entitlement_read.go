@@ -12,7 +12,7 @@ func newConnInvokeEntitlementReadCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "entitlement-read [id/lookupId] [uniqueId]",
 		Short:   "Invoke a std:entitlement:read command",
-		Example: `sp connectors invoke entitlement-read john.doe --type group`,
+		Example: `sail connectors invoke entitlement-read john.doe --type group`,
 		Args:    cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()

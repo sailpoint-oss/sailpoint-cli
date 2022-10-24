@@ -29,7 +29,7 @@ func newConnStatsCmd(spClient client.Client) *cobra.Command {
 		Use:     "stats",
 		Short:   "Command Stats",
 		Long:    "Command execution stats for a tenant, default to last 24hs if duration not specified",
-		Example: "sp conn stats",
+		Example: "sail conn stats",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := getTenantStats(spClient, cmd); err != nil {
 				return err

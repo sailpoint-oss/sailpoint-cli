@@ -18,6 +18,7 @@ func newListCmd(client client.Client) *cobra.Command {
 		Use:     "list",
 		Short:   "List transforms",
 		Long:    "List transforms for tenant",
+		Example: "sail trans ls",
 		Aliases: []string{"ls"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

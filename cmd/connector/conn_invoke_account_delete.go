@@ -13,7 +13,7 @@ func newConnInvokeAccountDeleteCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "account-delete <identity>",
 		Short:   "Invoke a std:account:delete command",
-		Example: `sp connectors invoke account-delete john.doe`,
+		Example: `sail connectors invoke account-delete john.doe`,
 		Args:    cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()

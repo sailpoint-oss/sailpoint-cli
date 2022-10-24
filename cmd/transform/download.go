@@ -19,6 +19,7 @@ func newDownloadCmd(client client.Client) *cobra.Command {
 		Use:     "download",
 		Short:   "Download transforms",
 		Long:    "Download transforms to local storage",
+		Example: "sail trans dl",
 		Aliases: []string{"dl"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

@@ -17,7 +17,7 @@ func newConnTagListCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "list",
 		Short:   "List tags for a connector",
-		Example: "sp conn tags list -c 1234",
+		Example: "sail conn tags list -c 1234",
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			connectorRef := cmd.Flags().Lookup("id").Value.String()

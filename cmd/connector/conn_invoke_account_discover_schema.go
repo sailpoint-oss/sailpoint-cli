@@ -12,7 +12,7 @@ func newConnInvokeAccountDiscoverSchemaCmd(client client.Client) *cobra.Command 
 	cmd := &cobra.Command{
 		Use:     "account-discover-schema",
 		Short:   "Invoke a std:account:discover-schema command",
-		Example: `sp connectors invoke account-discover-schema`,
+		Example: `sail connectors invoke account-discover-schema`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			cc, err := connClient(cmd, client)

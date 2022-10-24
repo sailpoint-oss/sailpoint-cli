@@ -15,7 +15,7 @@ func newConnInvokeAccountUpdateCmd(spClient client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "account-update [id/lookupId] [uniqueId] [--changes <value>]",
 		Short:   "Invoke a std:account:update command",
-		Example: `sp connectors invoke account-update john.doe --changes '[{"op":"Add","attribute":"groups","value":["Group1","Group2"]},{"op":"Set","attribute":"phone","value":2223334444},{"op":"Remove","attribute":"location"}]'`,
+		Example: `sail connectors invoke account-update john.doe --changes '[{"op":"Add","attribute":"groups","value":["Group1","Group2"]},{"op":"Set","attribute":"phone","value":2223334444},{"op":"Remove","attribute":"location"}]'`,
 		Args:    cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()

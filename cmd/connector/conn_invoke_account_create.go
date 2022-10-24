@@ -14,7 +14,7 @@ func newConnInvokeAccountCreateCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "account-create [identity] [--attributes <value>]",
 		Short:   "Invoke a std:account:create command",
-		Example: `sp connectors invoke account-create john.doe --attributes '{"email": "john.doe@example.com"}'`,
+		Example: `sail connectors invoke account-create john.doe --attributes '{"email": "john.doe@example.com"}'`,
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()

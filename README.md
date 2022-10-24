@@ -7,6 +7,7 @@
  |_____/ \__,_|_|_|_|   \___/|_|_| |_|\__|  \_____|______|_____|
                                                                 
 ```
+
 The SailPoint Command Line Interface (CLI) makes it easy to interact with SailPoint's SaaS Platform in a programmatic way.  Many functions that use to be accomplished through tools like Postman or from custom scripts can now be done directly on the command line with minimal setup.
 
 # Install
@@ -49,7 +50,7 @@ sail
 
 # Configuration
 
-Create a [personal access token](https://developer.sailpoint.com/idn/api/authentication#personal-access-tokens), which will be used to authenticate the SP CLI to your IdentityNow tenant.
+Create a [personal access token](https://developer.sailpoint.com/idn/api/authentication#personal-access-tokens), which will be used to authenticate the SailPoint CLI to your IdentityNow tenant.
 
 ## Assisted configuration
 

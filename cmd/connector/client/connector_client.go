@@ -14,7 +14,7 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/client"
 )
 
-// ConnClient is an sp connect client for a specific connector
+// ConnClient is an sail connect client for a specific connector
 type ConnClient struct {
 	client       client.Client
 	version      *int
@@ -109,7 +109,7 @@ func NewCompoundKey(lookupID string, uniqueID string) Key {
 	}
 }
 
-// Account is an sp connect account. The is used for AccountList, AccountRead
+// Account is an sail connect account. The is used for AccountList, AccountRead
 // and AccountUpdate commands.
 type Account struct {
 	Identity   string                 `json:"identity"`
@@ -406,7 +406,7 @@ func (cc *ConnClient) AccountDiscoverSchema(ctx context.Context) (accountSchema 
 	return schema, rawResponse, nil
 }
 
-// Entitlement is an sp connect entitlement, used for EntitlementList and
+// Entitlement is an sail connect entitlement, used for EntitlementList and
 // EntitlementRead
 type Entitlement struct {
 	Identity   string                 `json:"identity"`

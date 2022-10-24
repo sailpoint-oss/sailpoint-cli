@@ -12,7 +12,7 @@ func newConnInvokeEntitlementListCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "entitlement-list [--type <value>]",
 		Short:   "Invoke a std:entitlement:list command",
-		Example: `sp connectors invoke entitlement-list --type group`,
+		Example: `sail connectors invoke entitlement-list --type group`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			cc, err := connClient(cmd, client)

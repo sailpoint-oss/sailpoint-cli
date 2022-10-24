@@ -64,7 +64,7 @@ func newConnValidateSourcesCmd(apiClient client.Client) *cobra.Command {
 		Use:     "validate-sources",
 		Short:   "Validate connectors behavior",
 		Long:    "Validate connectors behavior from a list that stores in sources.yaml",
-		Example: "sp conn validate-sources",
+		Example: "sail conn validate-sources",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 

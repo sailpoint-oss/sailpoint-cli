@@ -19,7 +19,7 @@ func newConnTagCreateCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "create",
 		Short:   "Create Connector Tag",
-		Example: "sp conn tags create -n rc -v 10",
+		Example: "sail conn tags create -n rc -v 10",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			connectorRef := cmd.Flags().Lookup("id").Value.String()
 			tagName := cmd.Flags().Lookup("name").Value.String()

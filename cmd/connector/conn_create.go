@@ -26,7 +26,7 @@ func newConnCreateCmd(client client.Client) *cobra.Command {
 		Use:     "create <connector-name>",
 		Short:   "Create Connector",
 		Long:    "Create Connector",
-		Example: "sp connectors create \"My-Connector\"",
+		Example: "sail connectors create \"My-Connector\"",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			alias := args[0]
