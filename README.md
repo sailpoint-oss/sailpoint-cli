@@ -10,6 +10,8 @@
 
 The SailPoint Command Line Interface (CLI) makes it easy to interact with SailPoint's SaaS Platform in a programmatic way.  Many functions that use to be accomplished through tools like Postman or from custom scripts can now be done directly on the command line with minimal setup.
 
+> :warning The SailPoint CLI is currently in pre-production and undergoing heavy development.  Until the CLI reaches version 1.0.0, breaking changes may be introduced at any time while we work on refining the CLI.
+
 # Install
 
 Installation of the CLI requires [Golang](https://go.dev/doc/install) version 1.17 or above.
@@ -126,3 +128,11 @@ Run the `sail` command for an overview of the available commands and flags.  You
 
 - [connectors](./cmd/connector/README.md)
 - [transforms](./cmd/transform/README.md)
+
+# Contributing
+
+Before you contribute you [must sign our CLA](https://cla-assistant.io/sailpoint-oss/sailpoint-cli). Please read our [contribution guidelines](https://github.com/sailpoint-oss/sailpoint-cli/blob/main/CONTRIBUTING.md) to learn how to contribute to this tool.
+
+# Code of Conduct
+
+We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community. Read our [code of conduct](https://github.com/sailpoint-oss/sailpoint-cli/blob/main/CODE_OF_CONDUCT.md) to learn more.
