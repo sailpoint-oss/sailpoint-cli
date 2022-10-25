@@ -1,4 +1,4 @@
-VERSION ?= dev
+VERSION = 0.0.2
 
 clean:
 	go clean ./...
@@ -12,6 +12,6 @@ test:
 	docker run --rm cli go test -v -count=1 ./...
 
 install:
-	go build -o /usr/local/bin/sail
+	go build -o /usr/local/bin/sail -ldflags="-X 'github.com/sailpoint-oss/sailpoint-cli/cmd/root.version=$(VERSION)'"
 
 .PHONY: clean mocks test install .docker/login .docker/build .docker/push

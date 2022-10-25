@@ -52,7 +52,7 @@ func newDownloadCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			destination := cmd.Flags().Lookup("output").Value.String()
+			destination := cmd.Flags().Lookup("destination").Value.String()
 
 			for _, v := range transforms {
 				filename := v["name"].(string) + ".json"

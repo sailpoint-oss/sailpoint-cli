@@ -10,10 +10,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var version = "0.0.1"
+
 func NewRootCmd(client client.Client) *cobra.Command {
 	root := &cobra.Command{
 		Use:          "sail",
 		Short:        "sail",
+		Version:      version,
 		SilenceUsage: true,
 		CompletionOptions: cobra.CompletionOptions{
 			DisableDefaultCmd:   true,
