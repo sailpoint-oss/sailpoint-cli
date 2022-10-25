@@ -12,7 +12,17 @@ The SailPoint Command Line Interface (CLI) makes it easy to interact with SailPo
 
 > **CAUTION:** The SailPoint CLI is currently in pre-production and undergoing heavy development.  Until the CLI reaches version 1.0.0, breaking changes may be introduced at any time while we work on refining the CLI.
 
-# Install
+## Contents
+
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [Code of Conduct](#code-of-conduct)
+
+# Installation
+
+## Prerequisites
 
 Installation of the CLI requires [Golang](https://go.dev/doc/install) version 1.17 or above.
 
