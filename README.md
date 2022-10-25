@@ -10,7 +10,7 @@
 
 The SailPoint Command Line Interface (CLI) makes it easy to interact with SailPoint's SaaS Platform in a programmatic way.  Many functions that use to be accomplished through tools like Postman or from custom scripts can now be done directly on the command line with minimal setup.
 
-> :warning The SailPoint CLI is currently in pre-production and undergoing heavy development.  Until the CLI reaches version 1.0.0, breaking changes may be introduced at any time while we work on refining the CLI.
+> **CAUTION:** The SailPoint CLI is currently in pre-production and undergoing heavy development.  Until the CLI reaches version 1.0.0, breaking changes may be introduced at any time while we work on refining the CLI.
 
 # Install
 
