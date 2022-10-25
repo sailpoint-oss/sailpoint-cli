@@ -16,7 +16,7 @@ func newDeleteCmd(client client.Client) *cobra.Command {
 		Use:     "delete [TRANSFORM-ID]",
 		Short:   "Delete transform",
 		Long:    "Delete a transform",
-		Example: "sail trans d 03d5187b-ab96-402c-b5a1-40b74285d77a",
+		Example: "sail transform d 03d5187b-ab96-402c-b5a1-40b74285d77a",
 		Aliases: []string{"d"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

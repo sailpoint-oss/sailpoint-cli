@@ -14,7 +14,7 @@ The `transforms` command makes it easy to create, manage, and test transforms.  
 Run the following command to get a list of transforms available in your tenant.
 
 ```shell
-sail trans ls
+sail transform ls
 ```
 
 This will produce a table of the available transforms.
@@ -34,7 +34,7 @@ This will produce a table of the available transforms.
 Run the following command to download all of the transforms in your tenant and save them as `json` files on your computer.  By default, this command will save the files in the current working directory.  Use the `-d` flag to specify a path to an output directory.
 
 ```shell
-sail trans dl -d transform_files
+sail transform dl -d transform_files
 ```
 
 This command will overwrite any existing files with the same name, so take care when running this in a directory that has modified transforms that have not yet been saved.
@@ -44,14 +44,14 @@ This command will overwrite any existing files with the same name, so take care 
 Run the following command to create a new transform from a `json` file.  Use the `-f` flag to specify the path to the `json` file.
 
 ```shell
-sail trans c -f transform.json
+sail transform c -f transform.json
 ```
 
 Alternatively, you can pipe or redirect a transform specification into this command.
 
 ```shell
-sail trans c < transform.json
-cat transform.json | sail trans c
+sail transform c < transform.json
+cat transform.json | sail transform c
 ```
 
 ## Update transform
@@ -59,14 +59,14 @@ cat transform.json | sail trans c
 Run the following command to update a transform from a `json` file.  Use the `-f` flag to specify the path to the `json` file.
 
 ```shell
-sail trans u -f transform.json
+sail transform u -f transform.json
 ```
 
 Alternatively, you can pipe or redirect a transform specification into this command.
 
 ```shell
-sail trans u < transform.json
-cat transform.json | sail trans u
+sail transform u < transform.json
+cat transform.json | sail transform u
 ```
 
 A common workflow is to download the transforms first, make edits to the transform file, and then use the update command to save those edits in IdentityNow.
@@ -85,7 +85,7 @@ Transforms that have **explicit input** will reference the account attribute to 
 Run the following command to preview an **explicit input** transform.
 
 ```shell
-sail trans p -i 2c91808876628b6201767b4bfea61dbb -a department -f transform.json
+sail transform p -i 2c91808876628b6201767b4bfea61dbb -a department -f transform.json
 ```
 
 ### Implicit input
@@ -96,7 +96,7 @@ Transforms that use **implicit input** will rely on the identity profile mapping
 - `-n <transform-name>` The name of the transform.  The transform must be saved in IdentityNow before running this command.
 
 ```shell
-sail trans p -i 2c91808876628b6201767b4bfea61dbb -a department -n ToUpper --implicit
+sail transform p -i 2c91808876628b6201767b4bfea61dbb -a department -n ToUpper --implicit
 ```
 
 ### Output
@@ -117,13 +117,13 @@ The `Transformed value` is a result of the account attribute from the source bei
 To delete a single transform, run the following command.
 
 ```shell
-sail trans d <transform-id>
+sail transform d <transform-id>
 ```
 
 This command is commonly used in conjuction with the `ls` command to find the ID of the transform you wish to delete.
 
 ```shell
-sail trans ls
+sail transform ls
 +--------------------------------------+--------------------------+
 |                  ID                  |           NAME           |
 +--------------------------------------+--------------------------+
@@ -131,5 +131,5 @@ sail trans ls
 | 06d589cf-4d7d-4b40-8617-c221092ceb2c | Remove Diacritical Marks |
 | 1f3a97cf-e58b-4fad-b2f2-0dcc19fb1627 | NETID                    |
 +--------------------------------------+--------------------------+
-sail trans d 03d5187b-ab96-402c-b5a1-40b74285d77a
+sail transform d 03d5187b-ab96-402c-b5a1-40b74285d77a
 ```

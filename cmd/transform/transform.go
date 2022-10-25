@@ -18,7 +18,7 @@ const (
 
 func NewTransformCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "transforms",
+		Use:     "transform",
 		Short:   "Manage transforms",
 		Aliases: []string{"trans"},
 		Run: func(cmd *cobra.Command, args []string) {

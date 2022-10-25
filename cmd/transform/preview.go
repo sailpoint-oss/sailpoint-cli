@@ -24,7 +24,7 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 		Use:     "preview",
 		Short:   "Preview transform",
 		Long:    "Preview the final output of a transform.",
-		Example: "sail trans p -i 12a199b967b64ffe992ef4ecfd076728 -a lastname -f /path/to/transform.json\nsail trans p -i 12a199b967b64ffe992ef4ecfd076728 -a lastname -n ToLower --implicit",
+		Example: "sail transform p -i 12a199b967b64ffe992ef4ecfd076728 -a lastname -f /path/to/transform.json\nsail transform p -i 12a199b967b64ffe992ef4ecfd076728 -a lastname -n ToLower --implicit",
 		Aliases: []string{"p"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

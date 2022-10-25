@@ -19,7 +19,7 @@ func newCreateCmd(client client.Client) *cobra.Command {
 		Use:     "create",
 		Short:   "Create transform",
 		Long:    "Create a transform from a file [-f] or standard input (if no file is specified).",
-		Example: "sail trans c -f /path/to/transform.json\nsail trans c < /path/to/transform.json\necho /path/to/transform.json | sail trans c",
+		Example: "sail transform c -f /path/to/transform.json\nsail transform c < /path/to/transform.json\necho /path/to/transform.json | sail transform c",
 		Aliases: []string{"c"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

@@ -19,7 +19,7 @@ func newDownloadCmd(client client.Client) *cobra.Command {
 		Use:     "download",
 		Short:   "Download transforms",
 		Long:    "Download transforms to local storage",
-		Example: "sail trans dl -d transform_files|\nsail trans dl",
+		Example: "sail transform dl -d transform_files|\nsail transform dl",
 		Aliases: []string{"dl"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
