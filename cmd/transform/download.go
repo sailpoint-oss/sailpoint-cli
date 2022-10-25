@@ -19,7 +19,7 @@ func newDownloadCmd(client client.Client) *cobra.Command {
 		Use:     "download",
 		Short:   "Download transforms",
 		Long:    "Download transforms to local storage",
-		Example: "sail trans dl",
+		Example: "sail trans dl -d transform_files|\nsail trans dl",
 		Aliases: []string{"dl"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -52,16 +52,16 @@ func newDownloadCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			outputpath := cmd.Flags().Lookup("output").Value.String()
+			destination := cmd.Flags().Lookup("output").Value.String()
 
 			for _, v := range transforms {
 				filename := v["name"].(string) + ".json"
 				content, _ := json.MarshalIndent(v, "", "    ")
 
 				var err error
-				if outputpath != "" {
-					_ = os.Mkdir(outputpath, os.ModePerm) // Make sure the output dir exists first
-					err = ioutil.WriteFile(filepath.Join(outputpath, filename), content, os.ModePerm)
+				if destination != "" {
+					_ = os.Mkdir(destination, os.ModePerm) // Make sure the output dir exists first
+					err = ioutil.WriteFile(filepath.Join(destination, filename), content, os.ModePerm)
 				} else {
 					err = ioutil.WriteFile(filename, content, os.ModePerm)
 				}
@@ -75,7 +75,7 @@ func newDownloadCmd(client client.Client) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("output", "o", "", "The path to the directory to save the files in (default current working directory).")
+	cmd.Flags().StringP("destination", "d", "", "The path to the directory to save the files in (default current working directory).  If the directory doesn't exist, then it will be automatically created.")
 
 	return cmd
 }

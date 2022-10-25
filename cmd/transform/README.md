@@ -31,10 +31,10 @@ This will produce a table of the available transforms.
 
 ## Download transforms
 
-Run the following command to download all of the transforms in your tenant and save them as `json` files on your computer.  By default, this command will save the files in the current working directory.  Use the `-o` flag to specify an output directory.
+Run the following command to download all of the transforms in your tenant and save them as `json` files on your computer.  By default, this command will save the files in the current working directory.  Use the `-d` flag to specify a path to an output directory.
 
 ```shell
-sail trans dl -o transforms
+sail trans dl -d transform_files
 ```
 
 This command will overwrite any existing files with the same name, so take care when running this in a directory that has modified transforms that have not yet been saved.
