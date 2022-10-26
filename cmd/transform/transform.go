@@ -20,7 +20,7 @@ func NewTransformCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "transform",
 		Short:   "Manage transforms",
-		Aliases: []string{"trans"},
+		Aliases: []string{"tran"},
 		Run: func(cmd *cobra.Command, args []string) {
 			_, _ = fmt.Fprintf(cmd.OutOrStdout(), cmd.UsageString())
 		},
