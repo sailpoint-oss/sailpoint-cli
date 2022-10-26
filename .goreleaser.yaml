@@ -1,4 +1,4 @@
-project_name: connector-cli
+project_name: sailpoint-cli
 builds:
   - env: [CGO_ENABLED=0]
     goos:
@@ -17,7 +17,7 @@ archives:
 
 dockers:
   - image_templates:
-    - sailpoint/connector-cli:{{.Tag}}
+    - sailpoint/sailpoint-cli:{{.Tag}}
     use: buildx
     dockerfile: Dockerfile
     build_flag_templates:
