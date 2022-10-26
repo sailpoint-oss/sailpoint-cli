@@ -35,9 +35,9 @@ The SailPoint Command Line Interface (CLI) makes it easy to interact with SailPo
 
 # Installation
 
-## Prerequisites
+Before you begin, you will need to install the following tools to build and install the CLI.
 
-Installation of the CLI requires [Golang](https://go.dev/doc/install) version 1.17 or above.
+- [Golang](https://go.dev/doc/install) version 1.17 or above.
 
 ## MacOS and Linux
 
@@ -75,7 +75,10 @@ sail
 
 # Configuration
 
-Create a [personal access token](https://developer.sailpoint.com/idn/api/authentication#personal-access-tokens), which will be used to authenticate the SailPoint CLI to your IdentityNow tenant.
+Before you begin, you will need to gather the following information.
+
+- Create a [personal access token](https://developer.sailpoint.com/idn/api/authentication#personal-access-tokens), which will be used to authenticate the SailPoint CLI to your IdentityNow tenant.  Take note of the **Client ID** and the **Client Secret**.
+- [Find your org/tenant name](https://developer.sailpoint.com/idn/api/getting-started#find-your-tenant-name).
 
 ## Assisted configuration
 
