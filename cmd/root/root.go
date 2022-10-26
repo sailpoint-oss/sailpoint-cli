@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var version = "0.0.1"
+var version = "0.2.0"
 
 func NewRootCmd(client client.Client) *cobra.Command {
 	root := &cobra.Command{
