@@ -20,4 +20,5 @@ ADD . /app
 WORKDIR /app
 
 # Copy cli to bin location
-RUN cp connector-cli /usr/local/bin/sp
+RUN make install
+# RUN cp connector-cli /usr/local/bin/sp

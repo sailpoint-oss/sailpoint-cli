@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/sailpoint/sp-cli/client"
-	"github.com/sailpoint/sp-cli/cmd"
+	"github.com/sailpoint-oss/sailpoint-cli/client"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/root"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -20,10 +20,11 @@ func initConfig() {
 	home, err := os.UserHomeDir()
 	cobra.CheckErr(err)
 
-	viper.AddConfigPath(filepath.Join(home, ".sp"))
+	viper.AddConfigPath(filepath.Join(home, ".sailpoint"))
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-	viper.SetEnvPrefix("SP_CLI")
+	viper.SetEnvPrefix("sail")
+
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
@@ -46,7 +47,7 @@ func init() {
 		Debug:        viper.GetBool("debug"),
 	})
 
-	rootCmd = cmd.NewRootCmd(c)
+	rootCmd = root.NewRootCmd(c)
 }
 
 // main the entry point for commands. Note that we do not need to do cobra.CheckErr(err)

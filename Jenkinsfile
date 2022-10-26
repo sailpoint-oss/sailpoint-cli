@@ -4,7 +4,7 @@
 @Library('sailpoint/jenkins-release-utils')_
 
 /**
- * Jenkins pipeline for building and uploading sp-cli docker image.
+ * Jenkins pipeline for building and uploading sailpoint-cli docker image.
  */
 pipeline {
 	agent none
@@ -51,11 +51,11 @@ pipeline {
 		RELEASE_BRANCH = "main"
 
 		// The name of service being released
-		SERVICE_NAME = "sp-cli"
+		SERVICE_NAME = "sailpoint-cli"
 	}
 
 	stages {
-		stage('Build and push sp-cli') {
+		stage('Build and push sailpoint-cli') {
 			when {
 				branch env.RELEASE_BRANCH
 			}
