@@ -20,5 +20,4 @@ ADD . /app
 WORKDIR /app
 
 # Copy cli to bin location
-RUN make install
-# RUN cp sailpoint-cli /usr/local/bin/sp
+RUN cp sailpoint-cli /usr/local/bin/sail
