@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  connector-cli-linux:
+  sailpoint-cli-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
