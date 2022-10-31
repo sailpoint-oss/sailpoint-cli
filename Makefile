@@ -6,8 +6,7 @@ mocks:
 	mockgen -source=client/client.go -destination=mocks/client.go -package=mocks
 
 test:
-	docker build -t cli .
-	docker run --rm cli go test -v -count=1 ./...
+	go test -v -count=1 ./...
 
 install:
 	go build -o /usr/local/bin/sail
