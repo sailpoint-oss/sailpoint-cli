@@ -6,11 +6,11 @@
     "clean": "shx rm -rf ./dist",
     "prebuild": "npm run clean",
     "build": "npx ncc build ./src/index.ts -o ./dist -m -C",
-    "dev": "cross-env NODE_OPTIONS=--enable-source-maps spcx dist/index.js",
+    "dev": "cross-env NODE_OPTIONS=--enable-source-maps spcx run dist/index.js",
     "prettier": "npx prettier --write .",
     "test": "jest --coverage",
     "prepack-zip": "npm ci && npm run build",
-    "pack-zip": "(cp connector-spec.json ./dist/ && cd ./dist && bestzip $npm_package_name-$npm_package_version.zip ./index.js ./connector-spec.json)"
+    "pack-zip": "spcx package"
   },
   "private": true,
   "dependencies": {
@@ -19,7 +19,6 @@
   "devDependencies": {
     "@types/jest": "^27.0.1",
     "@vercel/ncc": "^0.28.6",
-    "bestzip": "^2.2.0",
     "jest": "^27.0.6",
     "prettier": "^2.3.2",
     "shx": "^0.3.3",

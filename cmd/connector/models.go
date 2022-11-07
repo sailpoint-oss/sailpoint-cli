@@ -7,9 +7,8 @@ import (
 )
 
 type connector struct {
-	ID          string `json:"id"`
-	DisplayName string `json:"displayName"`
-	Alias       string `json:"alias"`
+	ID    string `json:"id"`
+	Alias string `json:"alias"`
 }
 
 func (c connector) columns() []string {
@@ -24,8 +23,7 @@ type connectorVersion struct {
 }
 
 type connectorUpdate struct {
-	DisplayName string `json:"displayName"`
-	Alias       string `json:"alias"`
+	Alias string `json:"alias"`
 }
 
 func (v connectorVersion) columns() []string {

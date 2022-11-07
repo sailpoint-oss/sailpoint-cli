@@ -29,8 +29,7 @@ func newConnUpdateCmd(client client.Client) *cobra.Command {
 			}
 
 			u := connectorUpdate{
-				DisplayName: alias,
-				Alias:       alias,
+				Alias: alias,
 			}
 
 			raw, err := json.Marshal(u)
