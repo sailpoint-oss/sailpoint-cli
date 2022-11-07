@@ -16,10 +16,8 @@ import (
 
 func newConnCreateCmd(client client.Client) *cobra.Command {
 
-	// TODO: Clean up and not send display name
 	type create struct {
-		DisplayName string `json:"displayName"`
-		Alias       string `json:"alias"`
+		Alias string `json:"alias"`
 	}
 
 	cmd := &cobra.Command{
@@ -34,7 +32,7 @@ func newConnCreateCmd(client client.Client) *cobra.Command {
 				return fmt.Errorf("connector alias cannot be empty")
 			}
 
-			raw, err := json.Marshal(create{DisplayName: alias, Alias: alias})
+			raw, err := json.Marshal(create{Alias: alias})
 			if err != nil {
 				return err
 			}
