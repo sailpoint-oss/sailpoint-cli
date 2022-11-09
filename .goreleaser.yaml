@@ -1,4 +1,4 @@
-project_name: sailpoint-cli
+project_name: sail
 builds:
   - env: [CGO_ENABLED=0]
     goos:
