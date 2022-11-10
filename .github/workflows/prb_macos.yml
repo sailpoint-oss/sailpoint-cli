@@ -2,13 +2,13 @@ name: PRB
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  sailpoint-cli-linux:
-    runs-on: ubuntu-latest
+  sailpoint-cli-macos:
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
 
@@ -27,7 +27,7 @@ jobs:
 
       - name: Install
         run: make install
-
+      
       - name: Init connector project
         run: sail conn init connTest
 

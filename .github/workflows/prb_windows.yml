@@ -1,4 +1,4 @@
-name: PRB Windows
+name: PRB
 
 on:
   push:
