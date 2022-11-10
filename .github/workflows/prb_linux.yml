@@ -17,8 +17,22 @@ jobs:
         with:
           go-version: 1.17
 
+      - name: Set up node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
       - name: Test
         run: go test -v -count=1 ./...
 
       - name: Install
         run: make install
+
+      - name: Init connector project
+        run: sail conn init connTest
+
+      - name: Build and package connector zip file
+        working-directory: ./connTest
+        run: |
+          npm install
+          npm run pack-zip
