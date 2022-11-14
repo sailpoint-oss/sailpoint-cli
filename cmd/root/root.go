@@ -7,6 +7,7 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/client"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/connector"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/transform"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/log"
 	"github.com/spf13/cobra"
 )
 
@@ -31,6 +32,7 @@ func NewRootCmd(client client.Client) *cobra.Command {
 		newConfigureCmd(client),
 		connector.NewConnCmd(client),
 		transform.NewTransformCmd(client),
+		log.NewLogCmd(client),
 	)
 	return root
 }
