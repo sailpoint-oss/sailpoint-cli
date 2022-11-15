@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -74,20 +75,19 @@ func newParseCmd(client client.Client) *cobra.Command {
 					return err
 				}
 				fmt.Printf("Name:  %+v\nBytes: %+v\n", fileinfo.Name(), fileinfo.Size())
-				bar := progressbar.DefaultBytes(fileinfo.Size(), "Parsing")
 				defer file.Close()
 
 				dir, base := path.Split(filepath)
 
 				fmt.Printf("Parsing %s, Output will be in %s\n", base, dir)
-
+				bar := progressbar.DefaultBytes(fileinfo.Size(), "Parsing")
 				scanner := bufio.NewScanner(file)
+				barWriter := io.Writer(bar)
 				if err := scanner.Err(); err != nil {
 					return err
 				}
 
 				for scanner.Scan() {
-					bar.Add(1)
 					lineCount++
 					err := json.Unmarshal(scanner.Bytes(), &line)
 					if err != nil {
@@ -96,10 +96,12 @@ func newParseCmd(client client.Client) *cobra.Command {
 					}
 					// fmt.Printf("%+v\n", line)
 					str := fmt.Sprintf("%#v", line)
-					iserror := strings.Contains(str, "error") || strings.Contains(str, "exception")
-					date := line.Timestamp.Format("2006-01-02")
-					if iserror {
-						filename := dir + line.Org + "/" + date + "/Errors/" + strings.ReplaceAll(line.Logger_name, ".", "-") + "/log.log"
+					folder := "/Standard/"
+					if strings.Contains(str, "error") || strings.Contains(str, "exception") {
+						folder = "/Errors/"
+					}
+					if line.Org != "" {
+						filename := dir + line.Org + "/" + line.Timestamp.Format("2006-01-02") + folder + strings.ReplaceAll(line.Logger_name, ".", "-") + "/log.json"
 						tempdir, _ := path.Split(filename)
 						if _, err := os.Stat(tempdir); errors.Is(err, os.ErrNotExist) {
 							err := os.MkdirAll(tempdir, os.ModePerm)
@@ -107,37 +109,21 @@ func newParseCmd(client client.Client) *cobra.Command {
 								log.Println(err)
 							}
 						}
-						f, err := os.Create(filename)
+						f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 						if err != nil {
 							panic(err)
 						}
-
-						if _, err = f.WriteString(str); err != nil {
+						barWriter.Write(scanner.Bytes())
+						if _, err = f.WriteString(strings.ReplaceAll(str, "log.CCG", "") + "\n"); err != nil {
 							panic(err)
 						}
 						f.Close()
 					}
-					filename := dir + line.Org + "/" + date + "/Everything/" + strings.ReplaceAll(line.Logger_name, ".", "-") + "/log.log"
-					tempdir, _ := path.Split(filename)
-					if _, err := os.Stat(tempdir); errors.Is(err, os.ErrNotExist) {
-						err := os.MkdirAll(tempdir, os.ModePerm)
-						if err != nil {
-							log.Println(err)
-						}
-					}
-					f, err := os.Create(filename)
-					if err != nil {
-						panic(err)
-					}
-					if _, err = f.WriteString(str); err != nil {
-						panic(err)
-					}
-					f.Close()
 				}
 				fmt.Println("Finished Processing " + fmt.Sprint(lineCount) + " Lines")
 
 			} else {
-				return fmt.Errorf("The input currently must be a filepath.")
+				return fmt.Errorf("the input currently must be a filepath")
 			}
 
 			return nil
