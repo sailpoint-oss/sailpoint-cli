@@ -65,6 +65,11 @@ func newParseCmd(client client.Client) *cobra.Command {
 				if err != nil {
 					return err
 				}
+				fileinfo, err := os.Stat(filepath)
+				if err != nil {
+					return err
+				}
+				fmt.Println(fileinfo)
 				defer file.Close()
 
 				dir, base := path.Split(filepath)
