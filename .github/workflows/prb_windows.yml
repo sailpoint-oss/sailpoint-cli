@@ -15,7 +15,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.17
+          go-version: 1.18
 
       - name: Set up node
         uses: actions/setup-node@v3
@@ -27,7 +27,7 @@ jobs:
 
       - name: Install
         run: go build -o sail.exe
-      
+
       - name: Init connector project
         run: ./sail.exe conn init connTest
 
