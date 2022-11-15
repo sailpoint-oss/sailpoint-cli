@@ -3,9 +3,12 @@ package log
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/sailpoint-oss/sailpoint-cli/client"
@@ -58,7 +61,7 @@ func newParseCmd(client client.Client) *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var line CCG
-
+			var lineCount int
 			filepath := cmd.Flags().Lookup("file").Value.String()
 			if filepath != "" {
 				file, err := os.Open(filepath)
@@ -69,7 +72,7 @@ func newParseCmd(client client.Client) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				fmt.Println(fileinfo)
+				fmt.Printf("Name:  %+v\nBytes: %+v\n", fileinfo.Name(), fileinfo.Size())
 				defer file.Close()
 
 				dir, base := path.Split(filepath)
@@ -82,27 +85,56 @@ func newParseCmd(client client.Client) *cobra.Command {
 				}
 
 				for scanner.Scan() {
+					lineCount++
 					err := json.Unmarshal(scanner.Bytes(), &line)
 					if err != nil {
 						// fmt.Println(err)
 						// fmt.Println(scanner.Text())
 					}
-					fmt.Printf("%+v\n", line)
-				}
-			} else {
-				scanner := bufio.NewScanner(os.Stdin)
-				if err := scanner.Err(); err != nil {
-					return err
-				}
+					// fmt.Printf("%+v\n", line)
+					str := fmt.Sprintf("%#v", line)
+					iserror := strings.Contains(str, "error") || strings.Contains(str, "exception")
+					date := line.Timestamp.Format("2006-01-02")
+					if iserror {
+						filename := dir + line.Org + "/" + date + "/Errors/" + strings.ReplaceAll(line.Logger_name, ".", "-") + "/log.log"
+						tempdir, _ := path.Split(filename)
+						if _, err := os.Stat(tempdir); errors.Is(err, os.ErrNotExist) {
+							err := os.MkdirAll(tempdir, os.ModePerm)
+							if err != nil {
+								log.Println(err)
+							}
+						}
+						f, err := os.Create(filename)
+						if err != nil {
+							panic(err)
+						}
 
-				for scanner.Scan() {
-					err := json.Unmarshal(scanner.Bytes(), &line)
-					if err != nil {
-						// fmt.Println(err)
-						// fmt.Println(scanner.Text())
+						if _, err = f.WriteString(str); err != nil {
+							panic(err)
+						}
+						f.Close()
 					}
-					fmt.Printf("%+v\n", line)
+					filename := dir + line.Org + "/" + date + "/Everything/" + strings.ReplaceAll(line.Logger_name, ".", "-") + "/log.log"
+					tempdir, _ := path.Split(filename)
+					if _, err := os.Stat(tempdir); errors.Is(err, os.ErrNotExist) {
+						err := os.MkdirAll(tempdir, os.ModePerm)
+						if err != nil {
+							log.Println(err)
+						}
+					}
+					f, err := os.Create(filename)
+					if err != nil {
+						panic(err)
+					}
+					if _, err = f.WriteString(str); err != nil {
+						panic(err)
+					}
+					f.Close()
 				}
+				fmt.Println("Finished Processing " + fmt.Sprint(lineCount) + " Lines")
+
+			} else {
+				return fmt.Errorf("The input currently must be a filepath.")
 			}
 
 			return nil
