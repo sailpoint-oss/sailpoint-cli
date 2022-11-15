@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/sailpoint-oss/sailpoint-cli/client"
+	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
 )
 
@@ -73,6 +74,7 @@ func newParseCmd(client client.Client) *cobra.Command {
 					return err
 				}
 				fmt.Printf("Name:  %+v\nBytes: %+v\n", fileinfo.Name(), fileinfo.Size())
+				bar := progressbar.DefaultBytes(fileinfo.Size(), "Parsing")
 				defer file.Close()
 
 				dir, base := path.Split(filepath)
@@ -85,6 +87,7 @@ func newParseCmd(client client.Client) *cobra.Command {
 				}
 
 				for scanner.Scan() {
+					bar.Add(1)
 					lineCount++
 					err := json.Unmarshal(scanner.Bytes(), &line)
 					if err != nil {
