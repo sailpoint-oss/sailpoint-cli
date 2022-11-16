@@ -76,7 +76,7 @@ you want to build this project locally, follow the steps below.
 
 ### Prerequisites
 
-- [Golang](https://go.dev/doc/install) version 1.17 or above.
+- [Golang](https://go.dev/doc/install) version 1.18 or above.
 
 ### MacOS and Linux
 
