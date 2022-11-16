@@ -1,4 +1,4 @@
-FROM golang:1.17-alpine3.16
+FROM golang:1.18-alpine3.16
 
 # Update
 RUN apk update && apk upgrade --no-cache
