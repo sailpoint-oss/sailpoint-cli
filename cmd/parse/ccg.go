@@ -1,4 +1,4 @@
-package log
+package parse
 
 import (
 	"bufio"
@@ -49,17 +49,13 @@ type CCG struct {
 	SCIMCommon                string    `json:"SCIM Common"`
 }
 
-func saveLine() {
-
-}
-
-func newParseCmd(client client.Client) *cobra.Command {
+func newCCGCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "parse",
-		Short:   "parse a log file",
-		Long:    "Parse a log file Currently only supports CCG Logs.",
-		Example: "sail log p /path/to/log.text | /path/to/log.log",
-		Aliases: []string{"p"},
+		Use:     "ccg",
+		Short:   "parse a CCG log file",
+		Long:    "Parse a CCG log file.",
+		Example: "sail parse ccg /path/to/log.text | /path/to/log.log",
+		Aliases: []string{"c"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var line CCG
@@ -123,7 +119,7 @@ func newParseCmd(client client.Client) *cobra.Command {
 				fmt.Println("Finished Processing " + fmt.Sprint(lineCount) + " Lines")
 
 			} else {
-				return fmt.Errorf("the input currently must be a filepath")
+				return fmt.Errorf("please provide a filepath to the CCG log file you wish to parse")
 			}
 
 			return nil

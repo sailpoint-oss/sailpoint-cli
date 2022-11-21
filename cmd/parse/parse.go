@@ -1,5 +1,5 @@
 // Copyright (c) 2021, SailPoint Technologies, Inc. All rights reserved.
-package log
+package parse
 
 import (
 	"fmt"
@@ -8,18 +8,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewLogCmd(client client.Client) *cobra.Command {
+func NewParseCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "log",
+		Use:     "parse",
 		Short:   "Parse logs",
-		Aliases: []string{"log"},
+		Aliases: []string{"parse"},
 		Run: func(cmd *cobra.Command, args []string) {
 			_, _ = fmt.Fprintf(cmd.OutOrStdout(), cmd.UsageString())
 		},
 	}
 
 	cmd.AddCommand(
-		newParseCmd(client),
+		newCCGCmd(client),
 	)
 
 	return cmd
