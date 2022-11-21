@@ -9,6 +9,6 @@ test:
 	go test -v -count=1 ./...
 
 install:
-	go build -o /usr/local/bin/sail
+	go build -o /usr/local/bin/sail -buildvcs=false
 
 .PHONY: clean mocks test install .docker/login .docker/build .docker/push
