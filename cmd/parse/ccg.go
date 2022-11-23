@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path"
@@ -49,6 +48,41 @@ type CCG struct {
 	SCIMCommon                string    `json:"SCIM Common"`
 }
 
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
+func saveLine(line CCG, dir string) {
+
+	// str := fmt.Sprintf("%#v", line)
+	folder := "/Standard/"
+	if strings.Contains(line.Message, "error") || strings.Contains(line.Message, "exception") {
+		folder = "/Errors/"
+	}
+	if line.Org != "" {
+		filename := dir + line.Org + "/" + line.Timestamp.Format("2006-01-02") + folder + strings.ReplaceAll(line.Logger_name, ".", "-") + "/log.json"
+		bytes, _ := json.MarshalIndent(line, "", " ")
+		tempdir, _ := path.Split(filename)
+		if _, err := os.Stat(tempdir); errors.Is(err, os.ErrNotExist) {
+			err := os.MkdirAll(tempdir, 0700)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+		f, openErr := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		check(openErr)
+		fileWriter := bufio.NewWriter(f)
+		_, writeErr := fileWriter.Write(bytes)
+		check(writeErr)
+		// if _, err = f.Write(bytes); err != nil {
+		// 	panic(err)
+		// }
+		f.Close()
+	}
+}
+
 func newCCGCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "ccg",
@@ -58,7 +92,6 @@ func newCCGCmd(client client.Client) *cobra.Command {
 		Aliases: []string{"c"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var line CCG
 			var lineCount int
 			filepath := cmd.Flags().Lookup("file").Value.String()
 			if filepath != "" {
@@ -78,43 +111,18 @@ func newCCGCmd(client client.Client) *cobra.Command {
 				fmt.Printf("Parsing %s, Output will be in %s\n", base, dir)
 				bar := progressbar.DefaultBytes(fileinfo.Size(), "Parsing")
 				scanner := bufio.NewScanner(file)
-				barWriter := io.Writer(bar)
+				barWriter := bufio.NewWriter(bar)
 				if err := scanner.Err(); err != nil {
 					return err
 				}
 
 				for scanner.Scan() {
 					lineCount++
-					err := json.Unmarshal(scanner.Bytes(), &line)
-					if err != nil {
-						// fmt.Println(err)
-						// fmt.Println(scanner.Text())
-					}
-					// fmt.Printf("%+v\n", line)
-					str := fmt.Sprintf("%#v", line)
-					folder := "/Standard/"
-					if strings.Contains(str, "error") || strings.Contains(str, "exception") {
-						folder = "/Errors/"
-					}
-					if line.Org != "" {
-						filename := dir + line.Org + "/" + line.Timestamp.Format("2006-01-02") + folder + strings.ReplaceAll(line.Logger_name, ".", "-") + "/log.json"
-						tempdir, _ := path.Split(filename)
-						if _, err := os.Stat(tempdir); errors.Is(err, os.ErrNotExist) {
-							err := os.MkdirAll(tempdir, os.ModePerm)
-							if err != nil {
-								log.Println(err)
-							}
-						}
-						f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-						if err != nil {
-							panic(err)
-						}
-						barWriter.Write(scanner.Bytes())
-						if _, err = f.WriteString(strings.ReplaceAll(str, "log.CCG", "") + "\n"); err != nil {
-							panic(err)
-						}
-						f.Close()
-					}
+					bytes := scanner.Bytes()
+					barWriter.Write(bytes)
+					var line CCG
+					json.Unmarshal(bytes, &line)
+					go saveLine(line, dir)
 				}
 				fmt.Println("Finished Processing " + fmt.Sprint(lineCount) + " Lines")
 
