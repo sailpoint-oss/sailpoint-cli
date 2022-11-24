@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -48,22 +49,16 @@ type CCG struct {
 	SCIMCommon                string    `json:"SCIM Common"`
 }
 
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
-
-func saveLine(line CCG, dir string) {
-
-	// str := fmt.Sprintf("%#v", line)
+func saveCCGLine(bytes []byte, dir string) {
+	line := CCG{}
+	json.Unmarshal(bytes, &line)
 	folder := "/Standard/"
 	if strings.Contains(line.Message, "error") || strings.Contains(line.Message, "exception") {
 		folder = "/Errors/"
 	}
 	if line.Org != "" {
 		filename := dir + line.Org + "/" + line.Timestamp.Format("2006-01-02") + folder + strings.ReplaceAll(line.Logger_name, ".", "-") + "/log.json"
-		bytes, _ := json.MarshalIndent(line, "", " ")
+		jsonBytes, _ := json.MarshalIndent(line, "", " ")
 		tempdir, _ := path.Split(filename)
 		if _, err := os.Stat(tempdir); errors.Is(err, os.ErrNotExist) {
 			err := os.MkdirAll(tempdir, 0700)
@@ -72,14 +67,14 @@ func saveLine(line CCG, dir string) {
 			}
 		}
 		f, openErr := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		check(openErr)
-		fileWriter := bufio.NewWriter(f)
-		_, writeErr := fileWriter.Write(bytes)
-		check(writeErr)
-		// if _, err = f.Write(bytes); err != nil {
-		// 	panic(err)
-		// }
-		f.Close()
+		if openErr != nil {
+			panic(openErr)
+		}
+
+		if _, writeErr := f.Write(jsonBytes); writeErr != nil {
+			panic(writeErr)
+		}
+		defer f.Close()
 	}
 }
 
@@ -89,7 +84,6 @@ func newCCGCmd(client client.Client) *cobra.Command {
 		Short:   "parse a CCG log file",
 		Long:    "Parse a CCG log file.",
 		Example: "sail parse ccg /path/to/log.text | /path/to/log.log",
-		Aliases: []string{"c"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var lineCount int
@@ -99,35 +93,33 @@ func newCCGCmd(client client.Client) *cobra.Command {
 				if err != nil {
 					return err
 				}
+				defer file.Close()
 				fileinfo, err := os.Stat(filepath)
 				if err != nil {
 					return err
 				}
 				fmt.Printf("Name:  %+v\nBytes: %+v\n", fileinfo.Name(), fileinfo.Size())
-				defer file.Close()
 
 				dir, base := path.Split(filepath)
 
-				fmt.Printf("Parsing %s, Output will be in %s\n", base, dir)
-				bar := progressbar.DefaultBytes(fileinfo.Size(), "Parsing")
-				scanner := bufio.NewScanner(file)
-				barWriter := bufio.NewWriter(bar)
-				if err := scanner.Err(); err != nil {
-					return err
-				}
+				fmt.Printf("Parsing %s\nOutput will be in %s\n", base, dir)
 
-				for scanner.Scan() {
+				bar := progressbar.DefaultBytes(fileinfo.Size(), "Parsing CCG")
+				barWriter := io.Writer(bar)
+
+				reader := bufio.NewReader(file)
+
+				for {
 					lineCount++
-					bytes := scanner.Bytes()
-					barWriter.Write(bytes)
-					var line CCG
-					json.Unmarshal(bytes, &line)
-					go saveLine(line, dir)
+					token, err := reader.ReadBytes('\n')
+					barWriter.Write(token)
+					go saveCCGLine(token, dir)
+					if err != nil {
+						break
+					}
 				}
-				fmt.Println("Finished Processing " + fmt.Sprint(lineCount) + " Lines")
 
-			} else {
-				return fmt.Errorf("please provide a filepath to the CCG log file you wish to parse")
+				fmt.Println("Finished Processing " + fmt.Sprint(lineCount) + " Lines")
 			}
 
 			return nil

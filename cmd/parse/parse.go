@@ -20,6 +20,7 @@ func NewParseCmd(client client.Client) *cobra.Command {
 
 	cmd.AddCommand(
 		newCCGCmd(client),
+		newCanalCmd(client),
 	)
 
 	return cmd
