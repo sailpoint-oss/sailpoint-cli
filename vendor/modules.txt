@@ -1,7 +1,9 @@
 # github.com/alessio/shellescape v1.4.1
 ## explicit; go 1.14
-# github.com/fatih/color v1.7.0
-## explicit
+# github.com/bramvdbogaerde/go-scp v1.2.0
+## explicit; go 1.13
+# github.com/fatih/color v1.13.0
+## explicit; go 1.13
 github.com/fatih/color
 # github.com/fsnotify/fsnotify v1.4.9
 ## explicit; go 1.13
@@ -24,6 +26,9 @@ github.com/hashicorp/hcl/json/token
 # github.com/inconshreveable/mousetrap v1.0.0
 ## explicit
 github.com/inconshreveable/mousetrap
+# github.com/kr/fs v0.1.0
+## explicit
+github.com/kr/fs
 # github.com/kr/pretty v0.3.0
 ## explicit; go 1.12
 github.com/kr/pretty
@@ -36,8 +41,8 @@ github.com/logrusorgru/aurora
 # github.com/magiconair/properties v1.8.5
 ## explicit; go 1.13
 github.com/magiconair/properties
-# github.com/mattn/go-colorable v0.0.9
-## explicit
+# github.com/mattn/go-colorable v0.1.9
+## explicit; go 1.13
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.16
 ## explicit; go 1.15
@@ -57,6 +62,10 @@ github.com/olekukonko/tablewriter
 # github.com/pelletier/go-toml v1.9.3
 ## explicit; go 1.12
 github.com/pelletier/go-toml
+# github.com/pkg/sftp v1.13.5
+## explicit; go 1.15
+github.com/pkg/sftp
+github.com/pkg/sftp/internal/encoding/ssh/filexfer
 # github.com/rivo/uniseg v0.4.2
 ## explicit; go 1.18
 github.com/rivo/uniseg
@@ -88,8 +97,20 @@ github.com/spf13/viper
 # github.com/subosito/gotenv v1.2.0
 ## explicit
 github.com/subosito/gotenv
+# golang.org/x/crypto v0.3.0
+## explicit; go 1.17
+golang.org/x/crypto/blowfish
+golang.org/x/crypto/chacha20
+golang.org/x/crypto/curve25519
+golang.org/x/crypto/curve25519/internal/field
+golang.org/x/crypto/ed25519
+golang.org/x/crypto/internal/alias
+golang.org/x/crypto/internal/poly1305
+golang.org/x/crypto/ssh
+golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 # golang.org/x/sys v0.2.0
 ## explicit; go 1.17
+golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
@@ -97,8 +118,8 @@ golang.org/x/sys/windows
 # golang.org/x/term v0.2.0
 ## explicit; go 1.17
 golang.org/x/term
-# golang.org/x/text v0.3.5
-## explicit; go 1.11
+# golang.org/x/text v0.4.0
+## explicit; go 1.17
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
 # gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
