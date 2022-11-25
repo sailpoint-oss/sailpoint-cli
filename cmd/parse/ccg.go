@@ -10,14 +10,17 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sailpoint-cli/client"
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
 )
 
 type CCG struct {
+	Exception                 string    `json:"exception"`
 	Stack                     string    `json:"stack"`
 	Pod                       string    `json:"pod"`
 	ConnectorLogging          string    `json:"connector-logging"`
@@ -53,7 +56,7 @@ func saveCCGLine(bytes []byte, dir string) {
 	line := CCG{}
 	json.Unmarshal(bytes, &line)
 	folder := "/Standard/"
-	if strings.Contains(line.Message, "error") || strings.Contains(line.Message, "exception") {
+	if strings.Contains(line.Message, "error") || strings.Contains(line.Message, "exception") || line.Exception != "" {
 		folder = "/Errors/"
 	}
 	if line.Org != "" {
@@ -98,28 +101,34 @@ func newCCGCmd(client client.Client) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				fmt.Printf("Name:  %+v\nBytes: %+v\n", fileinfo.Name(), fileinfo.Size())
+				color.Green("Name:  %+v\nBytes: %+v\n", fileinfo.Name(), fileinfo.Size())
 
 				dir, base := path.Split(filepath)
 
-				fmt.Printf("Parsing %s\nOutput will be in %s\n", base, dir)
+				color.Green("Parsing %s\nOutput will be in %s\n", base, dir)
 
 				bar := progressbar.DefaultBytes(fileinfo.Size(), "Parsing CCG")
 				barWriter := io.Writer(bar)
 
 				reader := bufio.NewReader(file)
-
+				var wg sync.WaitGroup
 				for {
 					lineCount++
+					wg.Add(1)
 					token, err := reader.ReadBytes('\n')
 					barWriter.Write(token)
-					go saveCCGLine(token, dir)
+					go func(token []byte, dir string) {
+						defer wg.Done()
+						saveCCGLine(token, dir)
+					}(token, dir)
 					if err != nil {
 						break
 					}
 				}
 
-				fmt.Println("Finished Processing " + fmt.Sprint(lineCount) + " Lines")
+				color.Green("Finished Processing " + fmt.Sprint(lineCount) + " Lines")
+			} else {
+				return fmt.Errorf("please provide a filepath to the CCG log file you wish to parse")
 			}
 
 			return nil
