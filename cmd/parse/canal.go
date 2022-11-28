@@ -4,17 +4,18 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sailpoint-cli/client"
-	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
+	"github.com/vbauerster/mpb/v8"
+	"github.com/vbauerster/mpb/v8/decor"
 )
 
 type CANAL struct {
@@ -97,26 +98,51 @@ func newCanalCmd(client client.Client) *cobra.Command {
 
 				color.Green("Parsing %s\nOutput will be in %s\n", base, dir)
 
-				bar := progressbar.DefaultBytes(fileinfo.Size(), "Parsing Canal")
-				barWriter := io.Writer(bar)
-
-				reader := bufio.NewReader(file)
 				var wg sync.WaitGroup
+				p := mpb.New(
+					mpb.WithWidth(60),
+					mpb.WithRefreshRate(180*time.Millisecond),
+				)
+
+				bar := p.AddBar(fileinfo.Size(),
+					mpb.PrependDecorators(
+						decor.Name(fmt.Sprintf("%v | ", base)),
+						decor.CountersKiloByte("% .2f / % .2f"),
+					),
+					mpb.AppendDecorators(
+						decor.Name("["),
+						decor.Percentage(),
+						decor.Name("]"),
+						decor.Name("["),
+						decor.Elapsed(decor.ET_STYLE_GO),
+						decor.Name(" Elapsed]"),
+					),
+				)
+
+				proxyReader := bar.ProxyReader(file)
+				defer proxyReader.Close()
+
+				bufReader := bufio.NewReader(proxyReader)
+
+				log.SetOutput(p)
+
 				for {
 					lineCount++
-					wg.Add(1)
-					token, err := reader.ReadBytes('\n')
-					barWriter.Write(token)
-					go func(token []byte, dir string) {
-						saveCanalLine(token, dir)
-						defer wg.Done()
-					}(token, dir)
+					token, err := bufReader.ReadBytes('\n')
 					if err != nil {
 						break
+					} else {
+						wg.Add(1)
+						go func() {
+							defer wg.Done()
+							saveCanalLine(token, dir)
+						}()
 					}
-				}
 
-				color.Green("Finished Processing " + fmt.Sprint(lineCount) + " Lines")
+				}
+				wg.Wait()
+				bar.SetTotal(-1, true)
+				log.Println("Finished Processing " + fmt.Sprint(lineCount) + " Lines")
 
 			} else {
 				return fmt.Errorf("please provide a filepath to the CANAL log file you wish to parse")
