@@ -2,10 +2,10 @@ package parse
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path"
@@ -13,10 +13,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sailpoint-cli/client"
-	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
+	"github.com/vbauerster/mpb/v8"
+	"github.com/vbauerster/mpb/v8/decor"
 )
 
 type CCG struct {
@@ -52,90 +52,210 @@ type CCG struct {
 	SCIMCommon                string    `json:"SCIM Common"`
 }
 
-func saveCCGLine(bytes []byte, dir string) {
-	line := CCG{}
-	json.Unmarshal(bytes, &line)
-	folder := "/Standard/"
-	if strings.Contains(line.Message, "error") || strings.Contains(line.Message, "exception") || line.Exception != "" {
-		folder = "/Errors/"
+func CreateFolder(filepath string) error {
+	tempdir, _ := path.Split(filepath)
+	if _, err := os.Stat(tempdir); errors.Is(err, os.ErrNotExist) {
+		err := os.MkdirAll(tempdir, 0700)
+		if err != nil {
+			return err
+		}
 	}
-	if line.Org != "" {
-		filename := dir + line.Org + "/" + line.Timestamp.Format("2006-01-02") + folder + strings.ReplaceAll(line.Logger_name, ".", "-") + "/log.json"
-		jsonBytes, _ := json.MarshalIndent(line, "", " ")
-		tempdir, _ := path.Split(filename)
-		if _, err := os.Stat(tempdir); errors.Is(err, os.ErrNotExist) {
-			err := os.MkdirAll(tempdir, 0700)
-			if err != nil {
-				log.Println(err)
-			}
-		}
-		f, openErr := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if openErr != nil {
-			panic(openErr)
-		}
+	return nil
+}
 
-		if _, writeErr := f.Write(jsonBytes); writeErr != nil {
-			panic(writeErr)
-		}
-		defer f.Close()
+func saveCCGLine(line CCG, dir string, isErr bool) error {
+	folder := "Standard"
+	if isErr {
+		folder = "Errors"
 	}
+	filename := path.Join(dir, line.Org, folder, line.Timestamp.Format("2006-01-02"), strings.ReplaceAll(line.Logger_name, ".", "-"), "log.json")
+	jsonBytes, _ := json.MarshalIndent(line, "", " ")
+	err := CreateFolder(filename)
+	if err != nil {
+		return err
+	}
+	f, openErr := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if openErr != nil {
+		return openErr
+	}
+	if _, writeErr := f.Write(jsonBytes); writeErr != nil {
+		return writeErr
+	}
+	f.Close()
+	return nil
+}
+
+func ParseJSON(str string) []byte {
+	var js json.RawMessage
+	json.Unmarshal([]byte(str), &js)
+	if js != nil {
+		return js
+	}
+	return nil
+}
+
+func ErrorCheck(token []byte) bool {
+	errorString := []byte("error")
+	exceptionString := []byte("exception")
+	return bytes.Contains(token, errorString) || bytes.Contains(token, exceptionString)
 }
 
 func newCCGCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "ccg",
 		Short:   "parse a CCG log file",
-		Long:    "Parse a CCG log file.",
-		Example: "sail parse ccg /path/to/log.text | /path/to/log.log",
-		Args:    cobra.NoArgs,
+		Long:    "Parse a CCG log file.\n\nBy default, only errors are parsed out\nTo parse everything use -e",
+		Example: "sail parse ccg /path/to/log.text | /path/to/log.log (-e parse all traffic)",
+		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var lineCount int
-			filepath := cmd.Flags().Lookup("file").Value.String()
-			if filepath != "" {
-				file, err := os.Open(filepath)
-				if err != nil {
-					return err
-				}
-				defer file.Close()
-				fileinfo, err := os.Stat(filepath)
-				if err != nil {
-					return err
-				}
-				color.Green("Name:  %+v\nBytes: %+v\n", fileinfo.Name(), fileinfo.Size())
+			everything := cmd.Flags().Lookup("everything").Value.String()
 
-				dir, base := path.Split(filepath)
+			var wg sync.WaitGroup
 
-				color.Green("Parsing %s\nOutput will be in %s\n", base, dir)
+			p := mpb.New(
+				mpb.PopCompletedMode(),
+				mpb.WithWidth(60),
+				mpb.WithRefreshRate(180*time.Millisecond),
+			)
 
-				bar := progressbar.DefaultBytes(fileinfo.Size(), "Parsing CCG")
-				barWriter := io.Writer(bar)
+			log.SetOutput(p)
 
-				reader := bufio.NewReader(file)
-				var wg sync.WaitGroup
-				for {
-					lineCount++
-					wg.Add(1)
-					token, err := reader.ReadBytes('\n')
-					barWriter.Write(token)
-					go func(token []byte, dir string) {
-						defer wg.Done()
-						saveCCGLine(token, dir)
-					}(token, dir)
+			fmt.Printf("Parsing %s\n", args)
+			for i := 0; i < len(args); i++ {
+				wg.Add(1)
+
+				go func(i int) error {
+					defer wg.Done()
+					filepath := args[i]
+					var lineCount int
+					var processCount int
+
+					file, err := os.Open(filepath)
 					if err != nil {
-						break
+						return err
 					}
-				}
+					defer file.Close()
+					fileinfo, err := os.Stat(filepath)
+					if err != nil {
+						return err
+					}
 
-				color.Green("Finished Processing " + fmt.Sprint(lineCount) + " Lines")
-			} else {
-				return fmt.Errorf("please provide a filepath to the CCG log file you wish to parse")
+					dir, base := path.Split(filepath)
+
+					bar := p.AddBar(fileinfo.Size(),
+						mpb.PrependDecorators(
+							decor.Name(fmt.Sprintf("%v", base), decor.WCSyncSpaceR),
+							decor.CountersKiloByte("% .2f / % .2f", decor.WCSyncSpaceR),
+						),
+						mpb.AppendDecorators(
+							decor.Name("["),
+							decor.Percentage(),
+							decor.Name("]["),
+							decor.Elapsed(decor.ET_STYLE_GO),
+							decor.Name(" Elapsed]"),
+						),
+					)
+
+					proxyReader := bar.ProxyReader(file)
+					defer proxyReader.Close()
+
+					bufReader := bufio.NewReader(proxyReader)
+
+					var iwg sync.WaitGroup
+
+					for {
+						lineCount++
+						token, err := bufReader.ReadBytes('\n')
+						if err != nil {
+							break
+						} else {
+							if ErrorCheck(token) || everything == "true" {
+								var line CCG
+								unErr := json.Unmarshal(token, &line)
+								if unErr == nil {
+									if line.Org != "" {
+										processCount++
+										iwg.Add(1)
+										go func() {
+											defer iwg.Done()
+											if ErrorCheck(token) {
+												saveCCGLine(line, dir, true)
+											} else {
+												saveCCGLine(line, dir, false)
+											}
+										}()
+										// if date == "" {
+										// 	date = line.Timestamp.Format("2006-01-02")
+										// }
+										// if date != line.Timestamp.Format("2006-01-02") {
+										// wg.Add(1)
+										// funcQueue, funcDate := queue, date
+										// queue = []CCG{}
+										// go func(funcQueue []CCG, funcDate string) {
+										// 	queueCount = queueCount + len(funcQueue)
+										// 	for i := 0; i < len(funcQueue)-1; i++ {
+										// 		err := saveCCGLine(funcQueue[i], dir)
+										// 		if err != nil {
+										// 			log.Panic(err)
+										// 		}
+										// 	}
+										// 	// defer log.Println("FinishedProcessing Queue (", funcDate, ") (", len(funcQueue), ")")
+										// 	defer wg.Done()
+										// }(funcQueue, funcDate)
+										// date = line.Timestamp.Format("2006-01-02")
+										// }
+										// queue = append(queue, line)
+										// filename := dir + line.Org + "/" + line.Timestamp.Format("2006-01-02") + folder + strings.ReplaceAll(line.Logger_name, ".", "-") + "/log.json"
+										// index := indexOfPath(filename, Files)
+										// if index != -1 {
+										// 	Files[index].CCGEntries = append(Files[index].CCGEntries, line)
+										// } else {
+										// 	Files = append(Files, OutputFile{[]CCG{line}, filename})
+										// }
+										// bar.IncrBy(1)
+										// bar.SetTotal(int64(lineCount), false)
+									}
+								}
+							}
+
+							// 	folder := "/Standard/"
+							// 	if strings.Contains(line.Message, "error") || strings.Contains(line.Message, "exception") {
+							// 		folder = "/Errors/"
+							// 	}
+
+							// 	if line.Org != "" {
+							// 		filename := dir + line.Org + "/" + line.Timestamp.Format("2006-01-02") + folder + strings.ReplaceAll(line.Logger_name, ".", "-") + "/log.json"
+							// 		jsonBytes, _ := json.MarshalIndent(line, "", " ")
+
+							// 		f, openErr := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+							// 		if openErr != nil {
+							// 			panic(openErr)
+							// 		}
+
+							// 		if _, writeErr := f.Write(jsonBytes); writeErr != nil {
+							// 			panic(writeErr)
+							// 		}
+							// 		defer f.Close()
+							// 		bar.EwmaIncrBy(len(token), time.Since(start))
+							// 	}
+
+						}
+					}
+					iwg.Wait()
+					bar.SetTotal(-1, true)
+					// fmt.Println("Processed", processCount, "lines of", lineCount, "Total Lines")
+
+					return nil
+				}(i)
 			}
+			wg.Wait()
 
 			return nil
 		},
 	}
 
 	cmd.Flags().StringP("file", "f", "", "The path to the transform file")
+	cmd.Flags().BoolP("everything", "e", false, "parse all logs contents")
 
 	return cmd
 }
