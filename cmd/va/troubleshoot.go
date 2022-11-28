@@ -17,19 +17,23 @@ func newTroubleshootCmd(client client.Client) *cobra.Command {
 		Use:     "troubleshoot",
 		Short:   "troubleshoot a va",
 		Long:    "Troubleshoot a Virtual Appliance.",
-		Example: "sail va troubleshoot -e 10.10.10.10",
-		Args:    cobra.NoArgs,
+		Example: "sail va troubleshoot 10.10.10.10",
+		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			endpoint := cmd.Flags().Lookup("endpoint").Value.String()
 			output := cmd.Flags().Lookup("output").Value.String()
-
 			header := "\n================== %v ==================\n"
+			if output == "" {
+				output, _ = os.Getwd()
+			}
+			var credentials []string
+			for credential := 0; credential < len(args); credential++ {
+				fmt.Printf("Enter Password for %v:", args[credential])
+				password, _ := password()
+				credentials = append(credentials, password)
+			}
 
-			if endpoint != "" {
-				if output == "" {
-					output, _ = os.Getwd()
-				}
-
+			for host := 0; host < len(args); host++ {
+				endpoint := args[host]
 				outputDir := path.Join(output, endpoint)
 				outputFile := path.Join(outputDir, "Troubleshooting Log.log")
 
@@ -47,7 +51,7 @@ func newTroubleshootCmd(client client.Client) *cobra.Command {
 				}
 				defer logFile.Close()
 
-				password, _ := password()
+				password := credentials[host]
 
 				orgname, orgErr := runVACmd(endpoint, password, "awk '/org/' /home/sailpoint/config.yaml | sed 's/org: //' | sed 's/\r$//'")
 				if orgErr != nil {
@@ -196,7 +200,6 @@ func newTroubleshootCmd(client client.Client) *cobra.Command {
 				logFile.WriteString(fmt.Sprintf(header, "dynamodb Test"))
 				logFile.WriteString(dynamodbTest)
 			}
-
 			return nil
 		},
 	}

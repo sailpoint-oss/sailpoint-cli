@@ -1,11 +1,23 @@
 package va
 
 import (
+	"errors"
+	"fmt"
+	"io"
+	"log"
+	"net"
 	"os"
+	"path"
+	"sync"
+	"time"
 
 	"github.com/fatih/color"
+	"github.com/pkg/sftp"
 	"github.com/sailpoint-oss/sailpoint-cli/client"
 	"github.com/spf13/cobra"
+	"github.com/vbauerster/mpb/v8"
+	"github.com/vbauerster/mpb/v8/decor"
+	"golang.org/x/crypto/ssh"
 )
 
 func newCollectCmd(client client.Client) *cobra.Command {
@@ -13,72 +25,133 @@ func newCollectCmd(client client.Client) *cobra.Command {
 		Use:     "collect",
 		Short:   "collect files from a va",
 		Long:    "Collect files from a Virtual Appliance.",
-		Example: "sail va collect -e 10.10.10.10 (-l log files) (-c config files) (-a all files)  (-o /path/to/save/files)",
-		Args:    cobra.NoArgs,
+		Example: "sail va collect 10.10.10.10, 10.10.10.11 (-l log files) (-c config files) (-o /path/to/save/files)\n\nLog Files:\n/home/sailpoint/log/ccg.log\n/home/sailpoint/log/charon.log\n/home/sailpoint/stuntlog.txt\n\nConfig Files:\n/home/sailpoint/proxy.yaml\n/etc/systemd/network/static.network\n/etc/resolv.conf\n",
+		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			endpoint := cmd.Flags().Lookup("endpoint").Value.String()
 			output := cmd.Flags().Lookup("output").Value.String()
 			collectLogs := cmd.Flags().Lookup("logs").Value.String()
 			collectConfig := cmd.Flags().Lookup("config").Value.String()
-			collectAll := cmd.Flags().Lookup("all").Value.String()
+			var credentials []string
 
-			if endpoint != "" {
-				if output == "" {
-					output, _ = os.Getwd()
-				}
-				password, _ := password()
-
-				if collectLogs == "true" || collectAll == "true" {
-					ccgErr := getVAFile(endpoint, password, "/home/sailpoint/log/ccg.log", output)
-					if ccgErr != nil {
-						return ccgErr
-					}
-
-					charonErr := getVAFile(endpoint, password, "/home/sailpoint/log/charon.log", output)
-					if charonErr != nil {
-						return charonErr
-					}
-
-					stuntErr := getVAFile(endpoint, password, "/home/sailpoint/stuntlog.txt", output)
-					if stuntErr != nil {
-						color.Yellow("stuntlog.txt not found")
-					}
-				}
-				if collectConfig == "true" || collectAll == "true" {
-					configErr := getVAFile(endpoint, password, "/home/sailpoint/config.yaml", output)
-					if configErr != nil {
-						return configErr
-					}
-
-					proxyErr := getVAFile(endpoint, password, "/home/sailpoint/proxy.yaml", output)
-					if proxyErr != nil {
-						color.Yellow("proxy.yaml not found")
-					}
-
-					staticErr := getVAFile(endpoint, password, "/etc/systemd/network/static.network", output)
-					if staticErr != nil {
-						return staticErr
-					}
-
-					resolveErr := getVAFile(endpoint, password, "/etc/resolv.conf", output)
-					if resolveErr != nil {
-						return resolveErr
-					}
-				}
-
-			} else {
-				color.Red("an endpoint must be specified")
+			if output == "" {
+				output, _ = os.Getwd()
 			}
+			var files []string
+			if collectLogs == "true" {
+				files = []string{"/home/sailpoint/log/ccg.log", "/home/sailpoint/log/charon.log", "/home/sailpoint/stuntlog.txt"}
+			} else if collectConfig == "true" {
+				files = []string{"/home/sailpoint/proxy.yaml", "/etc/systemd/network/static.network", "/etc/resolv.conf"}
+			} else {
+				files = []string{"/home/sailpoint/log/ccg.log", "/home/sailpoint/log/charon.log", "/home/sailpoint/stuntlog.txt", "/home/sailpoint/proxy.yaml", "/etc/systemd/network/static.network", "/etc/resolv.conf"}
+			}
+
+			var wg sync.WaitGroup
+			// passed wg will be accounted at p.Wait() call
+			p := mpb.New(mpb.WithWidth(60),
+				mpb.PopCompletedMode(),
+				mpb.WithRefreshRate(180*time.Millisecond),
+				mpb.WithWaitGroup(&wg))
+
+			log.SetOutput(p)
+
+			for credential := 0; credential < len(args); credential++ {
+				fmt.Printf("Enter Password for %v:", args[credential])
+				password, _ := password()
+				credentials = append(credentials, password)
+			}
+
+			for host := 0; host < len(args); host++ {
+				endpoint := args[host]
+				log.Printf("Starting Collection for %v\n", endpoint)
+				config := &ssh.ClientConfig{
+					User:            "sailpoint",
+					HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+					Auth: []ssh.AuthMethod{
+						ssh.Password(credentials[host]),
+					},
+				}
+
+				outputFolder := path.Join(output, endpoint)
+
+				for file := 0; file < len(files); file++ {
+					wg.Add(1)
+					go func(file int) {
+						// Connect
+						client, err := ssh.Dial("tcp", net.JoinHostPort(endpoint, "22"), config)
+						if err != nil {
+							fmt.Println(err)
+						}
+
+						sftp, err := sftp.NewClient(client)
+						if err != nil {
+							fmt.Println(err)
+						}
+						defer sftp.Close()
+
+						defer wg.Done()
+
+						_, base := path.Split(files[file])
+						outputFile := path.Join(outputFolder, base)
+						if _, err := os.Stat(outputFolder); errors.Is(err, os.ErrNotExist) {
+							err := os.MkdirAll(outputFolder, 0700)
+							if err != nil {
+								fmt.Println(err)
+							}
+						}
+						remoteFileStats, statErr := sftp.Stat(files[file])
+						if statErr == nil {
+							name := fmt.Sprintf("%v - %v", endpoint, base)
+							bar := p.AddBar(remoteFileStats.Size(),
+								mpb.BarFillerClearOnComplete(),
+								mpb.PrependDecorators(
+									// simple name decorator
+									decor.Name(name, decor.WCSyncSpaceR),
+									decor.Name(":", decor.WCSyncSpaceR),
+									decor.OnComplete(decor.CountersKiloByte("% .2f / % .2f", decor.WCSyncSpaceR), "Complete"),
+									decor.TotalKiloByte("% .2f", decor.WCSyncSpaceR),
+								),
+								mpb.AppendDecorators(
+									decor.OnComplete(decor.EwmaSpeed(decor.UnitKB, "% .2f", 90, decor.WCSyncWidth), ""),
+									decor.OnComplete(decor.Percentage(decor.WC{W: 5}), ""),
+								),
+							)
+
+							// Open the source file
+							srcFile, err := sftp.Open(files[file])
+							if err != nil {
+								log.Println(err)
+							}
+							defer srcFile.Close()
+
+							// Create the destination file
+							dstFile, err := os.Create(outputFile)
+							if err != nil {
+								fmt.Println(err)
+							}
+							defer dstFile.Close()
+
+							writer := io.Writer(dstFile)
+
+							// create proxy reader
+							proxyWriter := bar.ProxyWriter(writer)
+							defer proxyWriter.Close()
+
+							io.Copy(proxyWriter, srcFile)
+						}
+					}(file)
+				}
+
+			}
+			p.Wait()
+			color.Green("All Operations Complete")
 
 			return nil
 		},
 	}
 
-	cmd.Flags().StringP("endpoint", "e", "", "The host to collect logs from")
 	cmd.Flags().StringP("output", "o", "", "The path to save the log files")
 	cmd.Flags().BoolP("logs", "l", false, "Retrieve log files")
 	cmd.Flags().BoolP("config", "c", false, "Retrieve config files")
-	cmd.Flags().BoolP("all", "a", false, "Retrieve config files")
 
 	return cmd
 }
