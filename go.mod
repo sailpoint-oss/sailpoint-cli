@@ -10,10 +10,13 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pkg/sftp v1.13.5
 	github.com/schollz/progressbar/v3 v3.12.1
+	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.8.1
+	github.com/vbauerster/mpb/v8 v8.1.4
 	golang.org/x/crypto v0.3.0
+	golang.org/x/oauth2 v0.2.0
 	golang.org/x/term v0.2.0
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
 	gopkg.in/yaml.v2 v2.4.0
@@ -24,6 +27,7 @@ require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/kr/fs v0.1.0 // indirect
@@ -42,9 +46,10 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/stretchr/testify v1.8.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
-	github.com/vbauerster/mpb v3.4.0+incompatible // indirect
-	github.com/vbauerster/mpb/v8 v8.1.4 // indirect
+	golang.org/x/net v0.2.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
+	google.golang.org/appengine v1.6.7 // indirect
+	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 )
