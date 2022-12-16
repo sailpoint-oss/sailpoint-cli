@@ -21,25 +21,25 @@ import (
 )
 
 func newCollectCmd(client client.Client) *cobra.Command {
+	var output string
+	var logs bool
+	var config bool
 	cmd := &cobra.Command{
 		Use:     "collect",
 		Short:   "collect files from a va",
 		Long:    "Collect files from a Virtual Appliance.",
-		Example: "sail va collect 10.10.10.10, 10.10.10.11 (-l log files) (-c config files) (-o /path/to/save/files)\n\nLog Files:\n/home/sailpoint/log/ccg.log\n/home/sailpoint/log/charon.log\n/home/sailpoint/stuntlog.txt\n\nConfig Files:\n/home/sailpoint/proxy.yaml\n/etc/systemd/network/static.network\n/etc/resolv.conf\n",
+		Example: "sail va collect 10.10.10.10, 10.10.10.11 (-l only collect log files) (-c only collect config files) (-o /path/to/save/files)\n\nLog Files:\n/home/sailpoint/log/ccg.log\n/home/sailpoint/log/charon.log\n/home/sailpoint/stuntlog.txt\n\nConfig Files:\n/home/sailpoint/proxy.yaml\n/etc/systemd/network/static.network\n/etc/resolv.conf\n",
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			output := cmd.Flags().Lookup("output").Value.String()
-			collectLogs := cmd.Flags().Lookup("logs").Value.String()
-			collectConfig := cmd.Flags().Lookup("config").Value.String()
 			var credentials []string
 
 			if output == "" {
 				output, _ = os.Getwd()
 			}
 			var files []string
-			if collectLogs == "true" {
+			if logs {
 				files = []string{"/home/sailpoint/log/ccg.log", "/home/sailpoint/log/charon.log", "/home/sailpoint/stuntlog.txt"}
-			} else if collectConfig == "true" {
+			} else if config {
 				files = []string{"/home/sailpoint/proxy.yaml", "/etc/systemd/network/static.network", "/etc/resolv.conf"}
 			} else {
 				files = []string{"/home/sailpoint/log/ccg.log", "/home/sailpoint/log/charon.log", "/home/sailpoint/stuntlog.txt", "/home/sailpoint/proxy.yaml", "/etc/systemd/network/static.network", "/etc/resolv.conf"}
@@ -149,9 +149,10 @@ func newCollectCmd(client client.Client) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("output", "o", "", "The path to save the log files")
-	cmd.Flags().BoolP("logs", "l", false, "Retrieve log files")
-	cmd.Flags().BoolP("config", "c", false, "Retrieve config files")
+	cmd.Flags().StringVarP(&output, "Output", "o", "", "The path to save the log files")
+	cmd.Flags().BoolVarP(&logs, "logs", "l", false, "Retrieve log files")
+	cmd.Flags().BoolVarP(&config, "config", "c", false, "Retrieve config files")
+	cmd.MarkFlagsMutuallyExclusive("config", "logs")
 
 	return cmd
 }
