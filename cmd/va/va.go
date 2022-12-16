@@ -22,6 +22,7 @@ func NewVACmd(client client.Client) *cobra.Command {
 		newCollectCmd(client),
 		newTroubleshootCmd(client),
 		newUpdateCmd(client),
+		newParseCmd(client),
 	)
 
 	return cmd
