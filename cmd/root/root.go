@@ -6,6 +6,7 @@ import (
 
 	"github.com/sailpoint-oss/sailpoint-cli/client"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/connector"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/oauth"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/parse"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/transform"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/va"
@@ -35,6 +36,7 @@ func NewRootCmd(client client.Client) *cobra.Command {
 		transform.NewTransformCmd(client),
 		parse.NewParseCmd(client),
 		va.NewVACmd(client),
+		oauth.NewOauthCmd(client),
 	)
 	return root
 }
