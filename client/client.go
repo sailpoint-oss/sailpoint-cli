@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httputil"
+	"time"
 
 	"github.com/sailpoint-oss/sailpoint-cli/auth"
 	"github.com/sailpoint-oss/sailpoint-cli/types"
@@ -193,6 +194,27 @@ func (c *SpClient) ensureAccessToken(ctx context.Context) error {
 	err := c.cfg.Validate()
 	if err != nil {
 		return err
+	}
+
+	if c.accessToken != "" {
+		return nil
+	}
+
+	var cachedTokenExpiry time.Time
+	switch c.cfg.AuthType {
+	case "PAT":
+		cachedTokenExpiry = viper.GetTime("pat.token.expiry")
+		if cachedTokenExpiry.After(time.Now()) {
+			c.accessToken = viper.GetString("pat.token.accesstoken")
+		}
+	case "OAuth":
+		cachedTokenExpiry = viper.GetTime("oauth.token.expiry")
+		if cachedTokenExpiry.After(time.Now()) {
+			c.accessToken = viper.GetString("oauth.token.accesstoken")
+		}
+	default:
+		return errors.New("invalid authtype configured")
+
 	}
 
 	if c.accessToken != "" {
