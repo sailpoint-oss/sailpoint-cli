@@ -45,7 +45,7 @@ func newCreateCmd(client client.Client) *cobra.Command {
 			}
 
 			if data["name"] == nil {
-				return fmt.Errorf("The transform must have a name.")
+				return fmt.Errorf("the transform must have a name")
 			}
 
 			raw, err := json.Marshal(data)

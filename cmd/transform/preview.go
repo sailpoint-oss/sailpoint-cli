@@ -68,7 +68,7 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 
 			if resp.StatusCode != http.StatusOK {
 				body, _ := io.ReadAll(resp.Body)
-				return fmt.Errorf("Get identity profile failed. status: %s\nbody: %s", resp.Status, body)
+				return fmt.Errorf("get identity profile failed. status: %s\nbody: %s", resp.Status, body)
 			}
 
 			raw, err := io.ReadAll(resp.Body)
@@ -104,7 +104,7 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 
 			if resp.StatusCode != http.StatusOK {
 				body, _ := io.ReadAll(resp.Body)
-				return fmt.Errorf("Get users failed. status: %s\nbody: %s", resp.Status, body)
+				return fmt.Errorf("get users failed. status: %s\nbody: %s", resp.Status, body)
 			}
 
 			raw, err = io.ReadAll(resp.Body)
@@ -143,7 +143,7 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 
 				name := cmd.Flags().Lookup("name").Value.String()
 				if name == "" {
-					return fmt.Errorf("The transform name must be specified when previewing with implicit input.")
+					return fmt.Errorf("the transform name must be specified when previewing with implicit input")
 				}
 
 				previewBody := transmodel.MakePreviewBodyImplicit(attribute, name, accountAttName, sourceName)
