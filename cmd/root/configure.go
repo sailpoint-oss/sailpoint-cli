@@ -3,12 +3,15 @@ package root
 
 import (
 	"bufio"
-	"context"
+	"errors"
 	"fmt"
 	"log"
 	"path/filepath"
+	"strconv"
 
+	"github.com/sailpoint-oss/sailpoint-cli/auth"
 	"github.com/sailpoint-oss/sailpoint-cli/client"
+	"github.com/sailpoint-oss/sailpoint-cli/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -17,49 +20,63 @@ import (
 
 const (
 	baseURLTemplate  = "https://%s.api.identitynow.com"
-	tokenURLTemplate = "%s/oauth/token"
+	tokenURLTemplate = "https://%s.api.identitynow.com/oauth/token"
+	authUrlTemplate  = "https://%s.identitynow.com/oauth/authorize"
 	configFolder     = ".sailpoint"
 	configYamlFile   = "config.yaml"
 )
 
-type OrgConfig struct {
-	BaseUrl      string `mapstructure:"baseURL"`
-	TokenUrl     string `mapstructure:"tokenURL"`
-	ClientSecret string `mapstructure:"clientSecret"`
-	ClientID     string `mapstructure:"clientID"`
-	Debug        bool   `mapstructure:"debug"`
-}
-
 func newConfigureCmd(client client.Client) *cobra.Command {
-	conn := &cobra.Command{
+	var AuthType string
+	var debug bool
+	cmd := &cobra.Command{
 		Use:     "configure",
 		Short:   "Configure CLI",
 		Aliases: []string{"conf"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			config, err := getConfigureParamsFromStdin()
+			fmt.Println(AuthType)
+
+			config, err := getConfigureParamsFromStdin(AuthType, debug)
 			if err != nil {
 				return err
 			}
+
+			fmt.Println("Finished getting config")
 
 			err = updateConfigFile(config)
 			if err != nil {
 				return err
 			}
 
-			err = client.VerifyToken(context.Background(), config.TokenUrl, config.ClientID, config.ClientSecret)
-			if err != nil {
-				return err
+			fmt.Println("Finished writing config")
+
+			switch AuthType {
+			case "PAT":
+				_, err = auth.PATLogin(config, cmd.Context())
+				if err != nil {
+					return err
+				}
+			case "OAuth":
+				_, err := auth.OAuthLogin(config)
+				if err != nil {
+					return err
+				}
+			default:
+				return errors.New("invalid authtype")
 			}
 
 			return nil
+
 		},
 	}
+	cmd.Flags().StringVarP(&AuthType, "AuthType", "t", "", "Specifies the Authentication method that should be configured (PAT, OAuth)")
+	cmd.Flags().BoolVarP(&debug, "Debug", "d", false, "Specifies if the debug flag should be set")
 
-	return conn
+	return cmd
 }
 
-func updateConfigFile(conf *OrgConfig) error {
+func updateConfigFile(conf types.OrgConfig) error {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
@@ -72,11 +89,15 @@ func updateConfigFile(conf *OrgConfig) error {
 		}
 	}
 
-	viper.Set("baseUrl", conf.BaseUrl)
-	viper.Set("tokenUrl", conf.TokenUrl)
-	viper.Set("clientSecret", conf.ClientSecret)
-	viper.Set("clientID", conf.ClientID)
-	viper.Set("debug", false)
+	viper.Set("authtype", conf.AuthType)
+	viper.Set("debug", conf.Debug)
+
+	switch conf.AuthType {
+	case "PAT":
+		viper.Set("pat", conf.Pat)
+	case "OAuth":
+		viper.Set("oauth", conf.OAuth)
+	}
 
 	err = viper.WriteConfig()
 	if err != nil {
@@ -93,35 +114,83 @@ func updateConfigFile(conf *OrgConfig) error {
 	return nil
 }
 
-func getConfigureParamsFromStdin() (*OrgConfig, error) {
-	conf := &OrgConfig{}
+func getConfigureParamsFromStdin(AuthType string, debug bool) (types.OrgConfig, error) {
+	var conf types.OrgConfig
 
-	paramsNames := []string{
-		"Base URL (ex. https://{org}.api.identitynow.com): ",
-		"Personal Access Token Client ID: ",
-		"Personal Access Token Client Secret: ",
-	}
-
-	scanner := bufio.NewScanner(os.Stdin)
-	for _, pm := range paramsNames {
-		fmt.Print(pm)
-		scanner.Scan()
-		value := scanner.Text()
-
-		if value == "" {
-			return nil, fmt.Errorf("%s parameter is empty", pm[:len(pm)-2])
+	switch AuthType {
+	case "PAT":
+		paramsNames := []string{
+			"Tenant (ex. {tenant}.identitynow.com): ",
+			"Personal Access Token Client ID: ",
+			"Personal Access Token Client Secret: ",
 		}
 
-		switch pm {
-		case paramsNames[0]:
-			conf.BaseUrl = value
-			conf.TokenUrl = fmt.Sprintf(tokenURLTemplate, conf.BaseUrl)
-		case paramsNames[1]:
-			conf.ClientID = value
-		case paramsNames[2]:
-			conf.ClientSecret = value
-		}
-	}
+		scanner := bufio.NewScanner(os.Stdin)
+		for _, pm := range paramsNames {
+			fmt.Print(pm)
+			scanner.Scan()
+			value := scanner.Text()
 
-	return conf, nil
+			if value == "" {
+				return conf, fmt.Errorf("%s parameter is empty", pm[:len(pm)-2])
+			}
+
+			switch pm {
+			case paramsNames[0]:
+				conf.Pat.Tenant = value
+				conf.Pat.BaseUrl = fmt.Sprintf(baseURLTemplate, value)
+				conf.Pat.TokenUrl = fmt.Sprintf(tokenURLTemplate, value)
+			case paramsNames[1]:
+				conf.Pat.ClientID = value
+			case paramsNames[2]:
+				conf.Pat.ClientSecret = value
+			}
+		}
+		conf.AuthType = AuthType
+
+		fmt.Println("got here")
+
+		return conf, nil
+	case "OAuth":
+		paramsNames := []string{
+			"Tenant (ex. {tenant}.identitynow.com): ",
+			"OAuth Client ID: ",
+			"OAuth Client Secret: ",
+			"OAuth Redirect Port (ex. http://localhost:{3000}/callback): ",
+			"OAuth Redirect Path (ex. http://localhost:3000{/callback}): ",
+		}
+
+		scanner := bufio.NewScanner(os.Stdin)
+		var OAuth types.OAuthConfig
+		for _, pm := range paramsNames {
+			fmt.Print(pm)
+			scanner.Scan()
+			value := scanner.Text()
+
+			if value == "" && pm != paramsNames[2] {
+				return conf, fmt.Errorf("%s parameter is empty", pm[:len(pm)-2])
+			}
+
+			switch pm {
+			case paramsNames[0]:
+				OAuth.Tenant = value
+				OAuth.BaseUrl = fmt.Sprintf(baseURLTemplate, value)
+				OAuth.TokenUrl = fmt.Sprintf(tokenURLTemplate, value)
+				OAuth.AuthUrl = fmt.Sprintf(authUrlTemplate, value)
+			case paramsNames[1]:
+				OAuth.ClientID = value
+			case paramsNames[2]:
+				OAuth.ClientSecret = value
+			case paramsNames[3]:
+				OAuth.Redirect.Port, _ = strconv.Atoi(value)
+			case paramsNames[4]:
+				OAuth.Redirect.Path = value
+			}
+		}
+		conf.OAuth = OAuth
+		conf.AuthType = AuthType
+
+		return conf, nil
+	}
+	return conf, errors.New("invalid auth type provided")
 }
