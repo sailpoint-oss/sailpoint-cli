@@ -113,7 +113,7 @@ func OAuthLogin(config types.OrgConfig) (types.Token, error) {
 
 	token.AccessToken = accessToken
 	token.Expiry = expiry
-	color.Blue("%+v", token)
+
 	return token, nil
 }
 
