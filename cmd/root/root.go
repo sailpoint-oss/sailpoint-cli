@@ -30,6 +30,7 @@ func NewRootCmd(client client.Client) *cobra.Command {
 	}
 	root.AddCommand(
 		newConfigureCmd(client),
+		newDebugCommand(),
 		connector.NewConnCmd(client),
 		transform.NewTransformCmd(client),
 		va.NewVACmd(client),
