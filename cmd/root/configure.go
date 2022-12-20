@@ -35,8 +35,6 @@ func newConfigureCmd(client client.Client) *cobra.Command {
 		Aliases: []string{"conf"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			fmt.Println(AuthType)
-
 			config, err := getConfigureParamsFromStdin(AuthType, debug)
 			if err != nil {
 				return err
