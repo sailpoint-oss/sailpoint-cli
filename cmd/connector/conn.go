@@ -10,7 +10,6 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
 )
 
@@ -28,7 +27,7 @@ func NewConnCmd(client client.Client) *cobra.Command {
 		},
 	}
 
-	conn.PersistentFlags().StringP("conn-endpoint", "e", viper.GetString("baseurl")+connectorsEndpoint, "Override connectors endpoint")
+	conn.PersistentFlags().StringP("conn-endpoint", "e", connectorsEndpoint, "Override connectors endpoint")
 
 	conn.AddCommand(
 		newConnInitCmd(),

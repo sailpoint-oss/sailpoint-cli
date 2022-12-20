@@ -11,4 +11,9 @@ test:
 install:
 	go build -o /usr/local/bin/sail -buildvcs=false
 
-.PHONY: clean mocks test install .docker/login .docker/build .docker/push
+vhs:
+	vhs < vhs/linuxMake.tape
+	vhs < vhs/sail.tape
+
+
+.PHONY: clean mocks test install vhs .docker/login .docker/build .docker/push

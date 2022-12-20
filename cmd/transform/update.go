@@ -45,7 +45,7 @@ func newUpdateCmd(client client.Client) *cobra.Command {
 			}
 
 			if data["id"] == nil {
-				return fmt.Errorf("The input must contain an id.")
+				return fmt.Errorf("the input must contain an id")
 			}
 
 			id := data["id"].(string)

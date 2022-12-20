@@ -2,11 +2,13 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/sailpoint-oss/sailpoint-cli/client"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/root"
+	"github.com/sailpoint-oss/sailpoint-cli/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -40,14 +42,22 @@ func initConfig() {
 
 func init() {
 	initConfig()
-	c = client.NewSpClient(client.SpClientConfig{
-		TokenURL:     viper.GetString("tokenurl"),
-		ClientID:     viper.GetString("clientid"),
-		ClientSecret: viper.GetString("clientsecret"),
-		Debug:        viper.GetBool("debug"),
-	})
 
+	var config types.OrgConfig
+
+	err := viper.Unmarshal(&config)
+	if err != nil {
+		panic(fmt.Errorf("Unable to decode Config: %s \n", err))
+	}
+
+	c = client.NewSpClient(types.OrgConfig{
+		AuthType: config.AuthType,
+		Debug:    config.Debug,
+		Pat:      config.Pat,
+		OAuth:    config.OAuth,
+	})
 	rootCmd = root.NewRootCmd(c)
+
 }
 
 // main the entry point for commands. Note that we do not need to do cobra.CheckErr(err)

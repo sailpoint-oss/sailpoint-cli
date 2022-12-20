@@ -27,7 +27,7 @@ jobs:
 
       - name: Install
         run: make install
-      
+
       - name: Init connector project
         run: sail conn init connTest
 

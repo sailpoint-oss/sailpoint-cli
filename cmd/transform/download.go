@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -60,10 +59,24 @@ func newDownloadCmd(client client.Client) *cobra.Command {
 
 				var err error
 				if destination != "" {
-					_ = os.Mkdir(destination, os.ModePerm) // Make sure the output dir exists first
-					err = ioutil.WriteFile(filepath.Join(destination, filename), content, os.ModePerm)
+					_ = os.MkdirAll(destination, os.ModePerm) // Make sure the output dir exists first
+					file, err := os.Open(filepath.Join(destination, filename))
+					if err != nil {
+						return err
+					}
+					_, err = file.Write(content)
+					if err != nil {
+						return err
+					}
 				} else {
-					err = ioutil.WriteFile(filename, content, os.ModePerm)
+					file, err := os.Open(filename)
+					if err != nil {
+						return err
+					}
+					_, err = file.Write(content)
+					if err != nil {
+						return err
+					}
 				}
 
 				if err != nil {
