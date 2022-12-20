@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/spf13/viper"
 )
 
 type TokenResponse struct {
@@ -51,6 +52,7 @@ type OrgConfig struct {
 }
 
 func (c OrgConfig) Validate() error {
+	debug := viper.GetBool("debug")
 	switch c.AuthType {
 	case "PAT":
 		if c.Pat.TokenUrl == "" {
@@ -70,7 +72,7 @@ func (c OrgConfig) Validate() error {
 		if c.OAuth.ClientID == "" {
 			return fmt.Errorf("missing OAuth ClientID configuration value")
 		}
-		if c.OAuth.ClientSecret == "" {
+		if c.OAuth.ClientSecret == "" && debug {
 			color.Yellow("missing OAuth ClientSecret configuration value")
 		}
 		if c.OAuth.Redirect.Path == "" {
