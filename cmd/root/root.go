@@ -25,12 +25,13 @@ func NewRootCmd(client client.Client) *cobra.Command {
 			DisableDescriptions: true,
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			_, _ = fmt.Fprintf(cmd.OutOrStdout(), cmd.UsageString())
+			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
 		},
 	}
 	root.AddCommand(
 		newConfigureCmd(client),
 		newDebugCommand(),
+		newAuthCommand(),
 		connector.NewConnCmd(client),
 		transform.NewTransformCmd(client),
 		va.NewVACmd(client),

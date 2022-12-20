@@ -12,7 +12,7 @@ import (
 )
 
 // Expected number of subcommands to `sp` root command
-const numRootSubcommands = 5
+const numRootSubcommands = 6
 
 func TestNewRootCmd_noArgs(t *testing.T) {
 	ctrl := gomock.NewController(t)
