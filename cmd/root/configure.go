@@ -8,6 +8,7 @@ import (
 	"log"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/auth"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
@@ -36,29 +37,29 @@ func newConfigureCmd(client client.Client) *cobra.Command {
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			AuthType := args[0]
+			var AuthType string
+
+			if len(args) > 0 {
+				AuthType = args[0]
+			}
 
 			config, err := getConfigureParamsFromStdin(AuthType, debug)
 			if err != nil {
 				return err
 			}
 
-			fmt.Println("Finished getting config")
-
 			err = updateConfigFile(config)
 			if err != nil {
 				return err
 			}
 
-			fmt.Println("Finished writing config")
-
-			switch AuthType {
-			case "PAT":
+			switch strings.ToLower(AuthType) {
+			case "pat":
 				_, err = auth.PATLogin(config, cmd.Context())
 				if err != nil {
 					return err
 				}
-			case "OAuth":
+			case "oauth":
 				_, err := auth.OAuthLogin(config)
 				if err != nil {
 					return err
@@ -92,10 +93,10 @@ func updateConfigFile(conf types.OrgConfig) error {
 	viper.Set("authtype", conf.AuthType)
 	viper.Set("debug", conf.Debug)
 
-	switch conf.AuthType {
-	case "PAT":
+	switch strings.ToLower(conf.AuthType) {
+	case "pat":
 		viper.Set("pat", conf.Pat)
-	case "OAuth":
+	case "oauth":
 		viper.Set("oauth", conf.OAuth)
 	}
 
@@ -117,8 +118,8 @@ func updateConfigFile(conf types.OrgConfig) error {
 func getConfigureParamsFromStdin(AuthType string, debug bool) (types.OrgConfig, error) {
 	var conf types.OrgConfig
 
-	switch AuthType {
-	case "PAT":
+	switch strings.ToLower(AuthType) {
+	case "pat":
 		paramsNames := []string{
 			"Tenant (ex. {tenant}.identitynow.com): ",
 			"Personal Access Token Client ID: ",
@@ -148,10 +149,8 @@ func getConfigureParamsFromStdin(AuthType string, debug bool) (types.OrgConfig, 
 		}
 		conf.AuthType = AuthType
 
-		fmt.Println("got here")
-
 		return conf, nil
-	case "OAuth":
+	case "oauth":
 		paramsNames := []string{
 			"Tenant (ex. {tenant}.identitynow.com): ",
 			"OAuth Client ID: ",

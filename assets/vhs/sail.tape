@@ -1,5 +1,5 @@
 # Where should we write the GIF?
-Output img/Sail.gif
+Output assets/img/Sail.gif
 
 # Set up a 1200x600 terminal with 46px font.
 Set FontSize 16

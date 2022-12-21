@@ -12,8 +12,10 @@ install:
 	go build -o /usr/local/bin/sail -buildvcs=false
 
 vhs:
-	vhs < vhs/linuxMake.tape
-	vhs < vhs/sail.tape
+	vhs < assets/vhs/linuxMake.tape
+	vhs < assets/vhs/sail.tape
+	vhs < assets/vhs/configure-pat.tape
+	vhs < assets/vhs/configure-oauth.tape
 
 
 .PHONY: clean mocks test install vhs .docker/login .docker/build .docker/push

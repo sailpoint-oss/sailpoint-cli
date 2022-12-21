@@ -1,12 +1,12 @@
 # Where should we write the GIF?
-Output assets/img/MacOSAndLinux.gif
+Output assets/img/configure-pat.gif
 
 # Set up a 1200x600 terminal with 46px font.
 Set FontSize 16
 Set Width 1200
-Set Height 600
+Set Height 300
 
-Hide Sleep 1s Show
+Hide Sleep 2s Show
 
 # Start ...
 
@@ -14,25 +14,34 @@ Hide Sleep 1s Show
 Sleep 300ms
 
 # Type a command in the terminal.
-Type "make install"
+Type "sail configure pat"
 
 # Pause for dramatic effect...
-Sleep 800ms
+Sleep 1s
 
 # Run the command by pressing enter.
 Enter 
 
-# Pause for dramatic effect...
-Sleep 500ms
-
 # Type a command in the terminal.
-Type "sail"
+Type "example-tenant"
 
 # Pause for dramatic effect...
-Sleep 700ms
+Sleep 1s
 
 # Run the command by pressing enter.
-Enter
+Enter 
+
+# Type a command in the terminal.
+Type "example-client-id"
+
+# Pause for dramatic effect...
+Sleep 1s
+
+# Run the command by pressing enter.
+Enter 
+
+# Type a command in the terminal.
+Type "example-client-secret"
 
 # Admire the output for a bit.
 Sleep 5s
