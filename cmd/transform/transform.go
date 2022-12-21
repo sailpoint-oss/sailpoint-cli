@@ -4,7 +4,7 @@ package transform
 import (
 	"fmt"
 
-	"github.com/sailpoint-oss/sailpoint-cli/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

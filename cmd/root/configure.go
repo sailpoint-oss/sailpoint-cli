@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/sailpoint-oss/sailpoint-cli/auth"
-	"github.com/sailpoint-oss/sailpoint-cli/client"
-	"github.com/sailpoint-oss/sailpoint-cli/types"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/auth"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -27,13 +27,16 @@ const (
 )
 
 func newConfigureCmd(client client.Client) *cobra.Command {
-	var AuthType string
 	var debug bool
 	cmd := &cobra.Command{
 		Use:     "configure",
 		Short:   "Configure CLI",
+		Long:    "Configure Authentication for the CLI Supported Methods: (PAT, OAuth)",
 		Aliases: []string{"conf"},
+		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+
+			AuthType := args[0]
 
 			config, err := getConfigureParamsFromStdin(AuthType, debug)
 			if err != nil {
@@ -68,7 +71,6 @@ func newConfigureCmd(client client.Client) *cobra.Command {
 
 		},
 	}
-	cmd.Flags().StringVarP(&AuthType, "AuthType", "t", "", "Specifies the Authentication method that should be configured (PAT, OAuth)")
 	cmd.Flags().BoolVarP(&debug, "Debug", "d", false, "Specifies if the debug flag should be set")
 
 	return cmd

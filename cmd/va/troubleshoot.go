@@ -8,11 +8,10 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/sailpoint-oss/sailpoint-cli/client"
 	"github.com/spf13/cobra"
 )
 
-func newTroubleshootCmd(client client.Client) *cobra.Command {
+func newTroubleshootCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "troubleshoot",
 		Short:   "troubleshoot a va",

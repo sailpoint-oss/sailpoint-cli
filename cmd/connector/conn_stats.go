@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/sailpoint-oss/sailpoint-cli/client"
 	connclient "github.com/sailpoint-oss/sailpoint-cli/cmd/connector/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

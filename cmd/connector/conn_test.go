@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/sailpoint-oss/sailpoint-cli/mocks"
-	"github.com/sailpoint-oss/sailpoint-cli/util"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/mocks"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 )
 
 // Unit tests for conn.go

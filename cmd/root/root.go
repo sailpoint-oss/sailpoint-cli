@@ -4,10 +4,10 @@ package root
 import (
 	"fmt"
 
-	"github.com/sailpoint-oss/sailpoint-cli/client"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/connector"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/transform"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/va"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/spf13/cobra"
 )
 
@@ -34,7 +34,7 @@ func NewRootCmd(client client.Client) *cobra.Command {
 		newAuthCommand(),
 		connector.NewConnCmd(client),
 		transform.NewTransformCmd(client),
-		va.NewVACmd(client),
+		va.NewVACmd(),
 	)
 	return root
 }

@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/sailpoint-oss/sailpoint-cli/client"
 	"github.com/spf13/cobra"
 	"github.com/vbauerster/mpb/v8"
 	"github.com/vbauerster/mpb/v8/decor"
@@ -279,7 +278,7 @@ func ParseCanalFile(p *mpb.Progress, filepath string, everything bool) error {
 	return nil
 }
 
-func newParseCmd(client client.Client) *cobra.Command {
+func newParseCmd() *cobra.Command {
 	var ccg bool
 	var canal bool
 	var everything bool

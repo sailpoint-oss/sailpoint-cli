@@ -6,9 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/sailpoint-oss/sailpoint-cli/client"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/root"
-	"github.com/sailpoint-oss/sailpoint-cli/types"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

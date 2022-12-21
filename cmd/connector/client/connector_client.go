@@ -11,7 +11,7 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/sailpoint-oss/sailpoint-cli/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 )
 
 // ConnClient is an sail connect client for a specific connector

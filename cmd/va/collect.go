@@ -13,14 +13,13 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/pkg/sftp"
-	"github.com/sailpoint-oss/sailpoint-cli/client"
 	"github.com/spf13/cobra"
 	"github.com/vbauerster/mpb/v8"
 	"github.com/vbauerster/mpb/v8/decor"
 	"golang.org/x/crypto/ssh"
 )
 
-func newCollectCmd(client client.Client) *cobra.Command {
+func newCollectCmd() *cobra.Command {
 	var output string
 	var logs bool
 	var config bool

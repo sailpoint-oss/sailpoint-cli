@@ -4,11 +4,10 @@ import (
 	"fmt"
 
 	"github.com/fatih/color"
-	"github.com/sailpoint-oss/sailpoint-cli/client"
 	"github.com/spf13/cobra"
 )
 
-func newUpdateCmd(client client.Client) *cobra.Command {
+func newUpdateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "update",
 		Short:   "update a va",

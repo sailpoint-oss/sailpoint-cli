@@ -10,9 +10,9 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/sailpoint-oss/sailpoint-cli/client"
 	transmodel "github.com/sailpoint-oss/sailpoint-cli/cmd/transform/model"
-	"github.com/sailpoint-oss/sailpoint-cli/util"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
