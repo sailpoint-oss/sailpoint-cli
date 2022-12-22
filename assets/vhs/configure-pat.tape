@@ -4,7 +4,7 @@ Output assets/img/configure-pat.gif
 # Set up a 1200x600 terminal with 46px font.
 Set FontSize 16
 Set Width 1200
-Set Height 300
+Set Height 500
 
 Hide Sleep 2s Show
 
@@ -14,7 +14,7 @@ Hide Sleep 2s Show
 Sleep 300ms
 
 # Type a command in the terminal.
-Type "sail configure pat"
+Type "sail configure"
 
 # Pause for dramatic effect...
 Sleep 1s

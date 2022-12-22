@@ -10,8 +10,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/auth"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -27,6 +30,33 @@ const (
 	configYamlFile   = "config.yaml"
 )
 
+func PromptAuth() (string, error) {
+	items := []list.Item{
+		tui.Item("PAT"),
+		tui.Item("OAuth"),
+	}
+
+	const defaultWidth = 20
+
+	l := list.New(items, tui.ItemDelegate{}, defaultWidth, tui.ListHeight)
+	l.Title = "What authentication method do you want to use?"
+	l.SetShowStatusBar(false)
+	l.SetFilteringEnabled(false)
+	l.Styles.Title = tui.TitleStyle
+	l.Styles.PaginationStyle = tui.PaginationStyle
+	l.Styles.HelpStyle = tui.HelpStyle
+
+	m := tui.Model{List: l}
+	_, err := tea.NewProgram(m).Run()
+	if err != nil {
+		return "", err
+	}
+
+	choice := m.Retrieve()
+
+	return choice, nil
+}
+
 func newConfigureCmd(client client.Client) *cobra.Command {
 	var debug bool
 	cmd := &cobra.Command{
@@ -38,9 +68,15 @@ func newConfigureCmd(client client.Client) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			var AuthType string
+			var err error
 
 			if len(args) > 0 {
 				AuthType = args[0]
+			} else {
+				AuthType, err = PromptAuth()
+				if err != nil {
+					return err
+				}
 			}
 
 			config, err := getConfigureParamsFromStdin(AuthType, debug)
