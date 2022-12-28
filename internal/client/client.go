@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httputil"
+	"strings"
 	"time"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/auth"
@@ -38,10 +39,10 @@ func NewSpClient(cfg types.OrgConfig) Client {
 }
 
 func getBaseUrl(c *SpClient) (string, error) {
-	switch c.cfg.AuthType {
-	case "PAT":
+	switch strings.ToLower(c.cfg.AuthType) {
+	case "pat":
 		return c.cfg.Pat.BaseUrl, nil
-	case "OAuth":
+	case "oauth":
 		return c.cfg.OAuth.BaseUrl, nil
 	}
 	return "", errors.New("invalid authtype configured")
@@ -201,13 +202,13 @@ func (c *SpClient) ensureAccessToken(ctx context.Context) error {
 	}
 
 	var cachedTokenExpiry time.Time
-	switch c.cfg.AuthType {
-	case "PAT":
+	switch strings.ToLower(c.cfg.AuthType) {
+	case "pat":
 		cachedTokenExpiry = viper.GetTime("pat.token.expiry")
 		if cachedTokenExpiry.After(time.Now()) {
 			c.accessToken = viper.GetString("pat.token.accesstoken")
 		}
-	case "OAuth":
+	case "oauth":
 		cachedTokenExpiry = viper.GetTime("oauth.token.expiry")
 		if cachedTokenExpiry.After(time.Now()) {
 			c.accessToken = viper.GetString("oauth.token.accesstoken")
@@ -222,8 +223,8 @@ func (c *SpClient) ensureAccessToken(ctx context.Context) error {
 	}
 
 	var token types.Token
-	switch c.cfg.AuthType {
-	case "PAT":
+	switch strings.ToLower(c.cfg.AuthType) {
+	case "pat":
 		token, err = auth.PATLogin(c.cfg, ctx)
 		if err != nil {
 			return err
@@ -231,7 +232,7 @@ func (c *SpClient) ensureAccessToken(ctx context.Context) error {
 		c.accessToken = token.AccessToken
 		viper.Set("pat.token", token)
 
-	case "OAuth":
+	case "oauth":
 
 		token, err = auth.OAuthLogin(c.cfg)
 		if err != nil {

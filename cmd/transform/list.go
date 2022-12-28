@@ -13,6 +13,41 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func listTransforms(client client.Client, endpoint string, cmd *cobra.Command) error {
+	resp, err := client.Get(cmd.Context(), endpoint)
+	if err != nil {
+		return err
+	}
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(resp.Body)
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("non-200 response: %s\nbody: %s", resp.Status, body)
+	}
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	var transforms []transmodel.Transform
+	err = json.Unmarshal(raw, &transforms)
+	if err != nil {
+		return err
+	}
+
+	table := tablewriter.NewWriter(cmd.OutOrStdout())
+	table.SetHeader(transmodel.TransformColumns)
+	for _, v := range transforms {
+		table.Append(v.TransformToColumns())
+	}
+	table.Render()
+
+	return nil
+}
+
 func newListCmd(client client.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:     "list",
@@ -24,36 +59,10 @@ func newListCmd(client client.Client) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			endpoint := cmd.Flags().Lookup("transforms-endpoint").Value.String()
 
-			resp, err := client.Get(cmd.Context(), endpoint)
+			err := listTransforms(client, endpoint, cmd)
 			if err != nil {
 				return err
 			}
-			defer func(Body io.ReadCloser) {
-				_ = Body.Close()
-			}(resp.Body)
-
-			if resp.StatusCode != http.StatusOK {
-				body, _ := io.ReadAll(resp.Body)
-				return fmt.Errorf("non-200 response: %s\nbody: %s", resp.Status, body)
-			}
-
-			raw, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return err
-			}
-
-			var transforms []transmodel.Transform
-			err = json.Unmarshal(raw, &transforms)
-			if err != nil {
-				return err
-			}
-
-			table := tablewriter.NewWriter(cmd.OutOrStdout())
-			table.SetHeader(transmodel.TransformColumns)
-			for _, v := range transforms {
-				table.Append(v.TransformToColumns())
-			}
-			table.Render()
 
 			return nil
 		},

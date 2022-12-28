@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
@@ -66,6 +67,13 @@ func newCreateCmd(client client.Client) *cobra.Command {
 				body, _ := io.ReadAll(resp.Body)
 				return fmt.Errorf("create transform failed. status: %s\nbody: %s", resp.Status, body)
 			}
+
+			err = listTransforms(client, endpoint, cmd)
+			if err != nil {
+				return err
+			}
+
+			color.Green("Transform created successfully")
 
 			return nil
 		},

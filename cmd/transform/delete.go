@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
@@ -38,6 +39,13 @@ func newDeleteCmd(client client.Client) *cobra.Command {
 				body, _ := io.ReadAll(resp.Body)
 				return fmt.Errorf("delete transform failed. status: %s\nbody: %s", resp.Status, body)
 			}
+
+			err = listTransforms(client, endpoint, cmd)
+			if err != nil {
+				return err
+			}
+
+			color.Green("Transform successfully deleted")
 
 			return nil
 		},

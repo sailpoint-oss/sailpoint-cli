@@ -1,5 +1,5 @@
 # Where should we write the GIF?
-Output assets/img/configure-pat.gif
+Output assets/img/va/va-troubleshoot.gif
 
 # Set up a 1200x600 terminal with 46px font.
 Set FontSize 16
@@ -14,7 +14,7 @@ Hide Sleep 2s Show
 Sleep 300ms
 
 # Type a command in the terminal.
-Type "sail configure"
+Type "sail va troubleshoot 10.10.10.5"
 
 # Pause for dramatic effect...
 Sleep 1s
@@ -22,26 +22,17 @@ Sleep 1s
 # Run the command by pressing enter.
 Enter 
 
+# Pause for dramatic effect...
+Sleep 1s
+
 # Type a command in the terminal.
-Type "example-tenant"
+Type "S@ilp0int"
 
 # Pause for dramatic effect...
 Sleep 1s
 
 # Run the command by pressing enter.
 Enter 
-
-# Type a command in the terminal.
-Type "example-client-id"
-
-# Pause for dramatic effect...
-Sleep 1s
-
-# Run the command by pressing enter.
-Enter 
-
-# Type a command in the terminal.
-Type "example-client-secret"
 
 # Admire the output for a bit.
-Sleep 5s
+Sleep 15s

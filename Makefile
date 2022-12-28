@@ -14,8 +14,14 @@ install:
 vhs:
 	vhs < assets/vhs/linuxMake.tape
 	vhs < assets/vhs/sail.tape
-	vhs < assets/vhs/configure-pat.tape
-	vhs < assets/vhs/configure-oauth.tape
+	vhs < assets/vhs/configure/configure-pat.tape
+	vhs < assets/vhs/configure/configure-oauth.tape
+	vhs < assets/vhs/va/va-collect.tape
+	vhs < assets/vhs/va/va-update.tape
+	vhs < assets/vhs/va/va-parse.tape
+	vhs < assets/vhs/va/va-troubleshoot.tape
+	vhs < assets/vhs/transform/transform-list.tape
+	vhs < assets/vhs/transform/transform-download.tape
 
 
 .PHONY: clean mocks test install vhs .docker/login .docker/build .docker/push

@@ -8,7 +8,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/spf13/cobra"
 )
@@ -53,36 +55,42 @@ func newDownloadCmd(client client.Client) *cobra.Command {
 
 			destination := cmd.Flags().Lookup("destination").Value.String()
 
+			err = listTransforms(client, endpoint, cmd)
+			if err != nil {
+				return err
+			}
+
 			for _, v := range transforms {
-				filename := v["name"].(string) + ".json"
+				filename := strings.ReplaceAll(v["name"].(string), " ", "") + ".json"
 				content, _ := json.MarshalIndent(v, "", "    ")
 
 				var err error
-				if destination != "" {
-					_ = os.MkdirAll(destination, os.ModePerm) // Make sure the output dir exists first
-					file, err := os.Open(filepath.Join(destination, filename))
-					if err != nil {
-						return err
-					}
-					_, err = file.Write(content)
-					if err != nil {
-						return err
-					}
-				} else {
-					file, err := os.Open(filename)
-					if err != nil {
-						return err
-					}
-					_, err = file.Write(content)
-					if err != nil {
-						return err
-					}
+				if destination == "" {
+					destination = "transform_files"
+				}
+
+				// Make sure the output dir exists first
+				err = os.MkdirAll(destination, os.ModePerm)
+				if err != nil {
+					return err
+				}
+
+				// Make sure to create the files if they dont exist
+				file, err := os.OpenFile((filepath.Join(destination, filename)), os.O_RDWR|os.O_CREATE, 0777)
+				if err != nil {
+					return err
+				}
+				_, err = file.Write(content)
+				if err != nil {
+					return err
 				}
 
 				if err != nil {
 					return err
 				}
 			}
+
+			color.Green("Transforms downloaded successfully to %v", destination)
 
 			return nil
 		},

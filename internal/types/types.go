@@ -3,6 +3,7 @@ package types
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -53,8 +54,8 @@ type OrgConfig struct {
 
 func (c OrgConfig) Validate() error {
 	debug := viper.GetBool("debug")
-	switch c.AuthType {
-	case "PAT":
+	switch strings.ToLower(c.AuthType) {
+	case "pat":
 		if c.Pat.TokenUrl == "" {
 			return fmt.Errorf("missing PAT TokenURL configuration value")
 		}
@@ -65,7 +66,7 @@ func (c OrgConfig) Validate() error {
 			return fmt.Errorf("missing PAT ClientSecret configuration value")
 		}
 		return nil
-	case "OAuth":
+	case "oauth":
 		if c.OAuth.AuthUrl == "" {
 			return fmt.Errorf("missing OAuth URL configuration value")
 		}

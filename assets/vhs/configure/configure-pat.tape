@@ -1,5 +1,5 @@
 # Where should we write the GIF?
-Output assets/img/configure-oauth.gif
+Output assets/img/configure/configure-pat.gif
 
 # Set up a 1200x600 terminal with 46px font.
 Set FontSize 16
@@ -15,18 +15,6 @@ Sleep 300ms
 
 # Type a command in the terminal.
 Type "sail configure"
-
-# Pause for dramatic effect...
-Sleep 1s
-
-# Run the command by pressing enter.
-Enter 
-
-# Pause for dramatic effect...
-Sleep 1s
-
-# Type a command in the terminal.
-Down
 
 # Pause for dramatic effect...
 Sleep 1s
@@ -54,24 +42,6 @@ Enter
 
 # Type a command in the terminal.
 Type "example-client-secret"
-
-# Pause for dramatic effect...
-Sleep 1s
-
-# Run the command by pressing enter.
-Enter 
-
-# Type a command in the terminal.
-Type "3000"
-
-# Pause for dramatic effect...
-Sleep 1s
-
-# Run the command by pressing enter.
-Enter 
-
-# Type a command in the terminal.
-Type "/callback"
 
 # Admire the output for a bit.
 Sleep 5s
