@@ -1,5 +1,5 @@
 # Where should we write the GIF?
-Output assets/img/configure/configure-pat.gif
+Output assets/img/vhs/configure/configure-pat.gif
 
 # Set up a 1200x600 terminal with 46px font.
 Set FontSize 16

@@ -1,4 +1,4 @@
-package tui
+package tuilist
 
 import (
 	"fmt"

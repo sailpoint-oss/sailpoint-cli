@@ -19,7 +19,9 @@ github.com/charmbracelet/bubbles/key
 github.com/charmbracelet/bubbles/list
 github.com/charmbracelet/bubbles/paginator
 github.com/charmbracelet/bubbles/spinner
+github.com/charmbracelet/bubbles/table
 github.com/charmbracelet/bubbles/textinput
+github.com/charmbracelet/bubbles/viewport
 # github.com/charmbracelet/bubbletea v0.23.1
 ## explicit; go 1.16
 github.com/charmbracelet/bubbletea

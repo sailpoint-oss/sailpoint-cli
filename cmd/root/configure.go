@@ -14,7 +14,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/auth"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
+	tuilist "github.com/sailpoint-oss/sailpoint-cli/internal/tui/list"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -32,21 +32,21 @@ const (
 
 func PromptAuth() (string, error) {
 	items := []list.Item{
-		tui.Item("PAT"),
-		tui.Item("OAuth"),
+		tuilist.Item("PAT"),
+		tuilist.Item("OAuth"),
 	}
 
 	const defaultWidth = 20
 
-	l := list.New(items, tui.ItemDelegate{}, defaultWidth, tui.ListHeight)
+	l := list.New(items, tuilist.ItemDelegate{}, defaultWidth, tuilist.ListHeight)
 	l.Title = "What authentication method do you want to use?"
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(false)
-	l.Styles.Title = tui.TitleStyle
-	l.Styles.PaginationStyle = tui.PaginationStyle
-	l.Styles.HelpStyle = tui.HelpStyle
+	l.Styles.Title = tuilist.TitleStyle
+	l.Styles.PaginationStyle = tuilist.PaginationStyle
+	l.Styles.HelpStyle = tuilist.HelpStyle
 
-	m := tui.Model{List: l}
+	m := tuilist.Model{List: l}
 	_, err := tea.NewProgram(m).Run()
 	if err != nil {
 		return "", err

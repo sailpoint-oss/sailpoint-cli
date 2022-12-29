@@ -1,5 +1,5 @@
 # Where should we write the GIF?
-Output assets/img/transform/transform-download.gif
+Output assets/img/vhs/transform/transform-download.gif
 
 # Set up a 1200x600 terminal with 46px font.
 Set FontSize 16

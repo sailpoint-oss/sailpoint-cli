@@ -11,6 +11,10 @@ func (t Transform) TransformToColumns() []string {
 	return []string{t.ID, t.Name}
 }
 
+func (t Transform) TransformToRows() []string {
+	return []string{t.Name, t.ID, t.Type}
+}
+
 var TransformColumns = []string{"ID", "Name"}
 
 type AttributesOfAccount struct {

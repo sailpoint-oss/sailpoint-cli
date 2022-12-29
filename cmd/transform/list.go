@@ -13,10 +13,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func listTransforms(client client.Client, endpoint string, cmd *cobra.Command) error {
+func getTransforms(client client.Client, endpoint string, cmd *cobra.Command) ([]transmodel.Transform, error) {
 	resp, err := client.Get(cmd.Context(), endpoint)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
@@ -24,16 +24,26 @@ func listTransforms(client client.Client, endpoint string, cmd *cobra.Command) e
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("non-200 response: %s\nbody: %s", resp.Status, body)
+		return nil, fmt.Errorf("non-200 response: %s\nbody: %s", resp.Status, body)
 	}
 
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var transforms []transmodel.Transform
 	err = json.Unmarshal(raw, &transforms)
+	if err != nil {
+		return nil, err
+	}
+
+	return transforms, nil
+}
+
+func listTransforms(client client.Client, endpoint string, cmd *cobra.Command) error {
+
+	transforms, err := getTransforms(client, endpoint, cmd)
 	if err != nil {
 		return err
 	}
