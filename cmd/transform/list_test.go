@@ -17,6 +17,7 @@ func TestNewListCmd(t *testing.T) {
 	defer ctrl.Finish()
 
 	client := mocks.NewMockClient(ctrl)
+
 	client.EXPECT().
 		Get(gomock.Any(), gomock.Any()).
 		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("[]")))}, nil).

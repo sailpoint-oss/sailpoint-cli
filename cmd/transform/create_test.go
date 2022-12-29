@@ -17,9 +17,15 @@ func TestNewCreateCmd(t *testing.T) {
 	defer ctrl.Finish()
 
 	client := mocks.NewMockClient(ctrl)
+
 	client.EXPECT().
 		Post(gomock.Any(), gomock.Any(), "application/json", gomock.Any()).
 		Return(&http.Response{StatusCode: http.StatusCreated, Body: io.NopCloser(bytes.NewReader([]byte("{}")))}, nil).
+		Times(1)
+
+	client.EXPECT().
+		Get(gomock.Any(), gomock.Any()).
+		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("[]")))}, nil).
 		Times(1)
 
 	cmd := newCreateCmd(client)
