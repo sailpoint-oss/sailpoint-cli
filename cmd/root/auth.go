@@ -1,6 +1,7 @@
 package root
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -13,17 +14,29 @@ func newAuthCommand() *cobra.Command {
 		Short:   "Change active authentication mode",
 		Long:    "Change Auth Mode configured (pat, oauth).",
 		Example: "sail auth pat | oauth",
-		Args:    cobra.ExactArgs(1),
+		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			var selection string
+			var err error
+			if len(args) > 0 {
+				selection = args[0]
+			} else {
+				selection, err = PromptAuth()
+				if err != nil {
+					return err
+				}
+			}
 
-			switch strings.ToLower(args[0]) {
+			switch strings.ToLower(selection) {
 			case "pat":
 				viper.Set("authtype", "pat")
 			case "oauth":
 				viper.Set("authtype", "oauth")
+			default:
+				return errors.New("invalid selection")
 			}
 
-			err := viper.WriteConfig()
+			err = viper.WriteConfig()
 			if err != nil {
 				if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 					err = viper.SafeWriteConfig()
