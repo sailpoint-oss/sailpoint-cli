@@ -23,7 +23,7 @@
   <h3 align="center">SailPoint CLI - README</h3>
   <br/>
 <div align="center">
-<img src="./assets/img/sail.gif"  style="text-align:center">
+<img src="./assets/img/vhs/sail.gif"  style="text-align:center">
 </div>
 </div>
 
@@ -51,10 +51,12 @@ contribution guidelines below, first!
 - [Contents](#contents)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
-  - [MacOS and Linux](#macos-and-linux)
+  - [Manual Installation](#manual-installation)
+    - [Prerequisites](#prerequisites-1)
+    - [MacOS and Linux](#macos-and-linux)
   - [Windows](#windows)
 - [Configuration](#configuration)
-  - [Prerequisites](#prerequisites-1)
+  - [Prerequisites](#prerequisites-2)
   - [Assisted configuration](#assisted-configuration)
     - [Personal Access Token](#personal-access-token)
     - [OAuth](#oauth)
@@ -76,9 +78,21 @@ you want to build this project locally, follow the steps below.
 
 ### Prerequisites
 
-- [Golang](https://go.dev/doc/install) version 1.18 or above.
+For Mac OS users, you can use [Homebrew](https://brew.sh/) to install the CLI. Please run the following command in your terminal:
 
-### MacOS and Linux
+```sh
+brew install sailpoint-oss/homebrew-sailpoint-oss/sailpoint-cli
+```
+
+### Manual Installation
+
+Prebuilt binaries for OS X, Windows, and Linux are provided in our [releases](https://github.com/sailpoint-oss/sailpoint-cli/releases) section. If you download the prebuilt binary, you can skip to the [configuration](#configuration) section. If you want to manually build this project, please follow the steps below.
+
+#### Prerequisites
+
+You will need to install [Golang](https://go.dev/doc/install) version 1.18 or above.
+
+#### MacOS and Linux
 
 Open your terminal app, navigate to the project directory, and run the following
 command:
@@ -146,7 +160,7 @@ This command will create a configuration file in your home directory to store yo
 sail configure pat
 ```
 
-<img src="./assets/img/configure-pat.gif" alt="linux make gif">
+<img src="./assets/img/vhs/configure-pat.gif" alt="linux make gif">
 
 #### OAuth
 
@@ -154,7 +168,7 @@ sail configure pat
 sail configure oauth
 ```
 
-<img src="./assets/img/configure-oauth.gif" alt="linux make gif">
+<img src="./assets/img/vhs/configure-oauth.gif" alt="linux make gif">
 
 ### Manual configuration
 

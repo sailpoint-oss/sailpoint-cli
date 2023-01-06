@@ -1,5 +1,5 @@
 # Where should we write the GIF?
-Output assets/img/vhs/Sail.gif
+Output assets/img/vhs/brewinstall.gif
 
 # Set up a 1200x600 terminal with 46px font.
 Set FontSize 16
@@ -14,13 +14,13 @@ Hide Sleep 1.5s Show
 Sleep 300ms
 
 # Type a command in the terminal.
-Type "sail"
+Type "brew install sailpoint-oss/homebrew-sailpoint-oss/sailpoint-cli"
 
 # Pause for dramatic effect...
-Sleep 800ms
+Sleep 500ms
 
 # Run the command by pressing enter.
-Enter
+Enter 
 
-# Admire the output for a bit.
-Sleep 5s
+# Pause for dramatic effect...
+Sleep 20s
