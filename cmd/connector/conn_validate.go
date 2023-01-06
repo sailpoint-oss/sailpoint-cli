@@ -8,8 +8,8 @@ import (
 
 	"github.com/logrusorgru/aurora"
 	"github.com/olekukonko/tablewriter"
-	"github.com/sailpoint-oss/sailpoint-cli/client"
 	connvalidate "github.com/sailpoint-oss/sailpoint-cli/cmd/connector/validate"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/spf13/cobra"
 )
 

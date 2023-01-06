@@ -4,13 +4,14 @@ package root
 import (
 	"fmt"
 
-	"github.com/sailpoint-oss/sailpoint-cli/client"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/connector"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/transform"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/va"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/spf13/cobra"
 )
 
-var version = "0.2.2"
+var version = "0.3.0"
 
 func NewRootCmd(client client.Client) *cobra.Command {
 	root := &cobra.Command{
@@ -24,13 +25,16 @@ func NewRootCmd(client client.Client) *cobra.Command {
 			DisableDescriptions: true,
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			_, _ = fmt.Fprintf(cmd.OutOrStdout(), cmd.UsageString())
+			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
 		},
 	}
 	root.AddCommand(
 		newConfigureCmd(client),
+		newDebugCommand(),
+		newAuthCommand(),
 		connector.NewConnCmd(client),
 		transform.NewTransformCmd(client),
+		va.NewVACmd(),
 	)
 	return root
 }

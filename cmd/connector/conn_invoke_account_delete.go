@@ -5,7 +5,7 @@ package connector
 import (
 	"fmt"
 
-	"github.com/sailpoint-oss/sailpoint-cli/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/spf13/cobra"
 )
 

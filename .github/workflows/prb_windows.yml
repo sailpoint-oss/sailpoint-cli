@@ -27,7 +27,7 @@ jobs:
 
       - name: Install
         run: go build -o sail.exe
-      
+
       - name: Init connector project
         run: ./sail.exe conn init connTest
 

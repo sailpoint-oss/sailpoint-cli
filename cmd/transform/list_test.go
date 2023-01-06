@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/sailpoint-oss/sailpoint-cli/mocks"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/mocks"
 )
 
 func TestNewListCmd(t *testing.T) {
@@ -17,6 +17,7 @@ func TestNewListCmd(t *testing.T) {
 	defer ctrl.Finish()
 
 	client := mocks.NewMockClient(ctrl)
+
 	client.EXPECT().
 		Get(gomock.Any(), gomock.Any()).
 		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("[]")))}, nil).

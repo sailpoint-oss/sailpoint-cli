@@ -18,9 +18,9 @@ import (
 
 	"github.com/logrusorgru/aurora"
 	"github.com/olekukonko/tablewriter"
-	"github.com/sailpoint-oss/sailpoint-cli/client"
 	connvalidate "github.com/sailpoint-oss/sailpoint-cli/cmd/connector/validate"
-	"github.com/sailpoint-oss/sailpoint-cli/util"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 	"gopkg.in/alessio/shellescape.v1"
 	"gopkg.in/yaml.v2"

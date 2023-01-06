@@ -3,17 +3,12 @@
 ![Latest Releases][release-shield] ![Contributor Shield][contributor-shield]
 ![License Shield][license-shield]
 
-[discourse-shield]:
-  https://img.shields.io/discourse/topics?label=Discuss%20This%20Tool&server=https%3A%2F%2Fdeveloper.sailpoint.com%2Fdiscuss
+[discourse-shield]: https://img.shields.io/discourse/topics?label=Discuss%20This%20Tool&server=https%3A%2F%2Fdeveloper.sailpoint.com%2Fdiscuss
 [discourse-url]: https://developer.sailpoint.com/discuss
-[downloads-shield]:
-  https://img.shields.io/github/downloads/sailpoint-oss/sailpoint-cli/total?label=Downloads
-[issues-shield]:
-  https://img.shields.io/github/issues/sailpoint-oss/sailpoint-cli?label=Issues
-[release-shield]:
-  https://img.shields.io/github/v/release/sailpoint-oss/sailpoint-cli?label=Current%20Release
-[contributor-shield]:
-  https://img.shields.io/github/contributors/sailpoint-oss/sailpoint-cli?label=Contributors
+[downloads-shield]: https://img.shields.io/github/downloads/sailpoint-oss/sailpoint-cli/total?label=Downloads
+[issues-shield]: https://img.shields.io/github/issues/sailpoint-oss/sailpoint-cli?label=Issues
+[release-shield]: https://img.shields.io/github/v/release/sailpoint-oss/sailpoint-cli?label=Current%20Release
+[contributor-shield]: https://img.shields.io/github/contributors/sailpoint-oss/sailpoint-cli?label=Contributors
 [license-shield]: https://img.shields.io/badge/MIT-License-green
 
 > **CAUTION:** The SailPoint CLI is currently in pre-production and undergoing
@@ -23,12 +18,12 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-    <img src="./img/icon.png" alt="Logo">
+    <img src="./assets/img/icon.png" alt="Logo">
 
   <h3 align="center">SailPoint CLI - README</h3>
   <br/>
 <div align="center">
-<img src="./img/screenshot.png" width="500" height="" style="text-align:center">
+<img src="./assets/img/sail.gif"  style="text-align:center">
 </div>
 </div>
 
@@ -52,14 +47,19 @@ contribution guidelines below, first!
 
 ## Contents
 
+- [About The Project](#about-the-project)
+- [Contents](#contents)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [MacOS and Linux](#macos-and-linux)
   - [Windows](#windows)
 - [Configuration](#configuration)
-  - [Assisted Configuration](#assisted-configuration)
-  - [Manual Configuration](#manual-configuration)
-  - [Environment Variable Configuration](#environment-variable-configuration)
+  - [Prerequisites](#prerequisites-1)
+  - [Assisted configuration](#assisted-configuration)
+    - [Personal Access Token](#personal-access-token)
+    - [OAuth](#oauth)
+  - [Manual configuration](#manual-configuration)
+  - [Environment variable configuration](#environment-variable-configuration)
 - [Usage](#usage)
 - [Discuss](#discuss)
 - [License](#license)
@@ -93,6 +93,8 @@ After that, make sure you can run the `sail` command.
 sail
 ```
 
+ <img src="./assets/img/MacOSAndLinux.gif" alt="linux make gif">
+
 ### Windows
 
 Open PowerShell **as administrator**, navigate to the project directory, and run
@@ -121,23 +123,38 @@ sail
 
 ## Configuration
 
+### Prerequisites
+
 Before you begin, you will need to gather the following information.
 
-- Create a
-  [personal access token](https://developer.sailpoint.com/idn/api/authentication#personal-access-tokens),
-  which will be used to authenticate the SailPoint CLI to your IdentityNow
-  tenant. Take note of the **Client ID** and the **Client Secret**.
 - [Find your org/tenant name](https://developer.sailpoint.com/idn/api/getting-started#find-your-tenant-name).
+- Pick an Authentication method:
+  - PAT: Create a [Personal Access Token](https://developer.sailpoint.com/idn/api/authentication#personal-access-tokens)
+  - OAuth: Create an [OAuth Client](https://developer.sailpoint.com/idn/api/authentication/#authentication-details)
+
+Whichever authentication method you choose will be used to authenticate the SailPoint CLI to your IdentityNow tenant.
+Take note of the **Client ID** and the **Client Secret**. If configuring OAuth additionally note the **Redirect Port** and **Redirect Path**
 
 ### Assisted configuration
 
-Run the configure command to configure the CLI for your tenant. This command
-will create a configuration file in your home directory to store your tenant's
-connection details.
+After you have created the Auth Method, run the configure command the corresponds to your chosen authentication method to configure the CLI for your tenant.
+This command will create a configuration file in your home directory to store your tenant's connection details.
+
+#### Personal Access Token
 
 ```shell
-sail configure
+sail configure pat
 ```
+
+<img src="./assets/img/configure-pat.gif" alt="linux make gif">
+
+#### OAuth
+
+```shell
+sail configure oauth
+```
+
+<img src="./assets/img/configure-oauth.gif" alt="linux make gif">
 
 ### Manual configuration
 
@@ -161,11 +178,30 @@ New-Item -ItemType File -Path 'C:\Users\<username>\.sailpoint\config.yaml'
 The `config.yaml` file should contain the following information.
 
 ```yaml
-baseURL: https://{org}.api.identitynow.com # or baseURL: https://localhost:7100
-tokenURL: https://{org}.api.identitynow.com/oauth/token
-clientSecret: { clientSecret }
-clientID: { clientID }
-debug: false # Set to true for additional output
+authtype: pat # Can be either pat or oauth, both methods can be configured, with only one being active at a time.
+debug: false # Setting debug to true, will result in more verbose output
+oauth: # All OAuth specific configuration information
+  authurl: https://example.identitynow.com/oauth/authorize
+  baseurl: https://example.api.identitynow.com
+  clientid: example-client-id
+  clientsecret: ""
+  redirect:
+    path: /callback
+    port: 3000
+  tenant: example
+  token:
+    accesstoken: example-access-token
+    expiry: example-token-expiry-date
+  tokenurl: https://example.api.identitynow.com/oauth/token
+pat: # All Personal Access Token specific configuration information
+  tenant: example
+  baseurl: https://example.api.identitynow.com
+  tokenurl: https://example.api.identitynow.com/oauth/token
+  clientsecret: example-client-secret
+  clientid: example-client-id
+  token:
+    accesstoken: example-access-token
+    expiry: example-token-expiry-date
 ```
 
 ### Environment variable configuration

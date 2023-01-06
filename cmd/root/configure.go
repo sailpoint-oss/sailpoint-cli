@@ -3,12 +3,19 @@ package root
 
 import (
 	"bufio"
-	"context"
+	"errors"
 	"fmt"
 	"log"
 	"path/filepath"
+	"strconv"
+	"strings"
 
-	"github.com/sailpoint-oss/sailpoint-cli/client"
+	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/auth"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	tuilist "github.com/sailpoint-oss/sailpoint-cli/internal/tui/list"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -17,27 +24,62 @@ import (
 
 const (
 	baseURLTemplate  = "https://%s.api.identitynow.com"
-	tokenURLTemplate = "%s/oauth/token"
+	tokenURLTemplate = "https://%s.api.identitynow.com/oauth/token"
+	authUrlTemplate  = "https://%s.identitynow.com/oauth/authorize"
 	configFolder     = ".sailpoint"
 	configYamlFile   = "config.yaml"
 )
 
-type OrgConfig struct {
-	BaseUrl      string `mapstructure:"baseURL"`
-	TokenUrl     string `mapstructure:"tokenURL"`
-	ClientSecret string `mapstructure:"clientSecret"`
-	ClientID     string `mapstructure:"clientID"`
-	Debug        bool   `mapstructure:"debug"`
+func PromptAuth() (string, error) {
+	items := []list.Item{
+		tuilist.Item("PAT"),
+		tuilist.Item("OAuth"),
+	}
+
+	const defaultWidth = 20
+
+	l := list.New(items, tuilist.ItemDelegate{}, defaultWidth, tuilist.ListHeight)
+	l.Title = "What authentication method do you want to use?"
+	l.SetShowStatusBar(false)
+	l.SetFilteringEnabled(false)
+	l.Styles.Title = tuilist.TitleStyle
+	l.Styles.PaginationStyle = tuilist.PaginationStyle
+	l.Styles.HelpStyle = tuilist.HelpStyle
+
+	m := tuilist.Model{List: l}
+	_, err := tea.NewProgram(m).Run()
+	if err != nil {
+		return "", err
+	}
+
+	choice := m.Retrieve()
+
+	return choice, nil
 }
 
 func newConfigureCmd(client client.Client) *cobra.Command {
-	conn := &cobra.Command{
+	var debug bool
+	cmd := &cobra.Command{
 		Use:     "configure",
-		Short:   "Configure CLI",
+		Short:   "Configure Authentication for the CLI",
+		Long:    "\nConfigure Authentication for the CLI\nSupported Methods: (PAT, OAuth)\n\nPrerequisites:\n\nPAT:\n	Tenant\n	Client ID\n	Client Secret\n\nOAuth:\n	Tenant\n	Client ID\n	Client Secret - Optional Depending on configuration\n	Callback Port (ex. http://localhost:{3000}/callback)\n	Callback Path (ex. http://localhost:3000{/callback})",
 		Aliases: []string{"conf"},
+		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			config, err := getConfigureParamsFromStdin()
+			var AuthType string
+			var err error
+
+			if len(args) > 0 {
+				AuthType = args[0]
+			} else {
+				AuthType, err = PromptAuth()
+				if err != nil {
+					return err
+				}
+			}
+
+			config, err := getConfigureParamsFromStdin(AuthType, debug)
 			if err != nil {
 				return err
 			}
@@ -47,19 +89,31 @@ func newConfigureCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			err = client.VerifyToken(context.Background(), config.TokenUrl, config.ClientID, config.ClientSecret)
-			if err != nil {
-				return err
+			switch strings.ToLower(AuthType) {
+			case "pat":
+				_, err = auth.PATLogin(config, cmd.Context())
+				if err != nil {
+					return err
+				}
+			case "oauth":
+				_, err := auth.OAuthLogin(config)
+				if err != nil {
+					return err
+				}
+			default:
+				return errors.New("invalid authtype")
 			}
 
 			return nil
+
 		},
 	}
+	cmd.Flags().BoolVarP(&debug, "Debug", "d", false, "Specifies if the debug flag should be set")
 
-	return conn
+	return cmd
 }
 
-func updateConfigFile(conf *OrgConfig) error {
+func updateConfigFile(conf types.OrgConfig) error {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
@@ -72,11 +126,15 @@ func updateConfigFile(conf *OrgConfig) error {
 		}
 	}
 
-	viper.Set("baseUrl", conf.BaseUrl)
-	viper.Set("tokenUrl", conf.TokenUrl)
-	viper.Set("clientSecret", conf.ClientSecret)
-	viper.Set("clientID", conf.ClientID)
-	viper.Set("debug", false)
+	viper.Set("authtype", conf.AuthType)
+	viper.Set("debug", conf.Debug)
+
+	switch strings.ToLower(conf.AuthType) {
+	case "pat":
+		viper.Set("pat", conf.Pat)
+	case "oauth":
+		viper.Set("oauth", conf.OAuth)
+	}
 
 	err = viper.WriteConfig()
 	if err != nil {
@@ -93,35 +151,81 @@ func updateConfigFile(conf *OrgConfig) error {
 	return nil
 }
 
-func getConfigureParamsFromStdin() (*OrgConfig, error) {
-	conf := &OrgConfig{}
+func getConfigureParamsFromStdin(AuthType string, debug bool) (types.OrgConfig, error) {
+	var conf types.OrgConfig
 
-	paramsNames := []string{
-		"Base URL (ex. https://{org}.api.identitynow.com): ",
-		"Personal Access Token Client ID: ",
-		"Personal Access Token Client Secret: ",
-	}
-
-	scanner := bufio.NewScanner(os.Stdin)
-	for _, pm := range paramsNames {
-		fmt.Print(pm)
-		scanner.Scan()
-		value := scanner.Text()
-
-		if value == "" {
-			return nil, fmt.Errorf("%s parameter is empty", pm[:len(pm)-2])
+	switch strings.ToLower(AuthType) {
+	case "pat":
+		paramsNames := []string{
+			"Tenant (ex. {tenant}.identitynow.com): ",
+			"Personal Access Token Client ID: ",
+			"Personal Access Token Client Secret: ",
 		}
 
-		switch pm {
-		case paramsNames[0]:
-			conf.BaseUrl = value
-			conf.TokenUrl = fmt.Sprintf(tokenURLTemplate, conf.BaseUrl)
-		case paramsNames[1]:
-			conf.ClientID = value
-		case paramsNames[2]:
-			conf.ClientSecret = value
-		}
-	}
+		scanner := bufio.NewScanner(os.Stdin)
+		for _, pm := range paramsNames {
+			fmt.Print(pm)
+			scanner.Scan()
+			value := scanner.Text()
 
-	return conf, nil
+			if value == "" {
+				return conf, fmt.Errorf("%s parameter is empty", pm[:len(pm)-2])
+			}
+
+			switch pm {
+			case paramsNames[0]:
+				conf.Pat.Tenant = value
+				conf.Pat.BaseUrl = fmt.Sprintf(baseURLTemplate, value)
+				conf.Pat.TokenUrl = fmt.Sprintf(tokenURLTemplate, value)
+			case paramsNames[1]:
+				conf.Pat.ClientID = value
+			case paramsNames[2]:
+				conf.Pat.ClientSecret = value
+			}
+		}
+		conf.AuthType = AuthType
+
+		return conf, nil
+	case "oauth":
+		paramsNames := []string{
+			"Tenant (ex. {tenant}.identitynow.com): ",
+			"OAuth Client ID: ",
+			"OAuth Client Secret: ",
+			"OAuth Redirect Port (ex. http://localhost:{3000}/callback): ",
+			"OAuth Redirect Path (ex. http://localhost:3000{/callback}): ",
+		}
+
+		scanner := bufio.NewScanner(os.Stdin)
+		var OAuth types.OAuthConfig
+		for _, pm := range paramsNames {
+			fmt.Print(pm)
+			scanner.Scan()
+			value := scanner.Text()
+
+			if value == "" && pm != paramsNames[2] {
+				return conf, fmt.Errorf("%s parameter is empty", pm[:len(pm)-2])
+			}
+
+			switch pm {
+			case paramsNames[0]:
+				OAuth.Tenant = value
+				OAuth.BaseUrl = fmt.Sprintf(baseURLTemplate, value)
+				OAuth.TokenUrl = fmt.Sprintf(tokenURLTemplate, value)
+				OAuth.AuthUrl = fmt.Sprintf(authUrlTemplate, value)
+			case paramsNames[1]:
+				OAuth.ClientID = value
+			case paramsNames[2]:
+				OAuth.ClientSecret = value
+			case paramsNames[3]:
+				OAuth.Redirect.Port, _ = strconv.Atoi(value)
+			case paramsNames[4]:
+				OAuth.Redirect.Path = value
+			}
+		}
+		conf.OAuth = OAuth
+		conf.AuthType = AuthType
+
+		return conf, nil
+	}
+	return conf, errors.New("invalid auth type provided")
 }
