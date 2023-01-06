@@ -12,6 +12,7 @@ install:
 	go build -o /usr/local/bin/sail -buildvcs=false
 
 vhs:
+	vhs < assets/vhs/brewinstall.tape
 	vhs < assets/vhs/linuxMake.tape
 	vhs < assets/vhs/sail.tape
 	vhs < assets/vhs/configure/configure-pat.tape
