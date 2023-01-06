@@ -6,7 +6,29 @@ Set FontSize 16
 Set Width 1200
 Set Height 600
 
-Hide Sleep 1.5s Show
+Hide 
+
+Sleep 1s 
+
+Type "brew update"
+
+Enter
+
+Sleep 20s
+
+Type "brew uninstall sailpoint-cli"
+
+Enter
+
+Sleep 20s
+
+Type "clear"
+
+Enter
+
+Sleep 500ms
+
+Show
 
 # Start ...
 

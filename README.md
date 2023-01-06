@@ -107,7 +107,7 @@ After that, make sure you can run the `sail` command.
 sail
 ```
 
- <img src="./assets/img/MacOSAndLinux.gif" alt="linux make gif">
+ <img src="./assets/img/vhs/MacOSAndLinux.gif" alt="linux make gif">
 
 ### Windows
 
@@ -160,7 +160,7 @@ This command will create a configuration file in your home directory to store yo
 sail configure pat
 ```
 
-<img src="./assets/img/vhs/configure-pat.gif" alt="linux make gif">
+<img src="./assets/img/vhs/configure/configure-pat.gif" alt="configure PAT">
 
 #### OAuth
 
@@ -168,7 +168,7 @@ sail configure pat
 sail configure oauth
 ```
 
-<img src="./assets/img/vhs/configure-oauth.gif" alt="linux make gif">
+<img src="./assets/img/vhs/configure/configure-oauth.gif" alt="configure OAuth">
 
 ### Manual configuration
 
