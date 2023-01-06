@@ -29,7 +29,7 @@
 
 <!-- ABOUT THE PROJECT -->
 
-## About The Project
+# About The Project
 
 The SailPoint Command Line Interface (CLI) makes it easy to interact with
 SailPoint's SaaS Platform in a programmatic way. Many functions that use to be
@@ -45,16 +45,16 @@ or make
 If you'd like to contribute directly (which we encourage!) please read the
 contribution guidelines below, first!
 
-## Contents
+# Contents
 
 - [About The Project](#about-the-project)
 - [Contents](#contents)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [MacOS and Linux](#macos-and-linux)
-  - [Windows](#windows)
+- [Installation](#installation)
+  - [Homebrew](#homebrew)
+  - [Manual Installation](#manual-installation)
+    - [Mac OS and Linux](#macos-and-linux)
+    - [Windows](#windows)
 - [Configuration](#configuration)
-  - [Prerequisites](#prerequisites-1)
   - [Assisted configuration](#assisted-configuration)
     - [Personal Access Token](#personal-access-token)
     - [OAuth](#oauth)
@@ -68,17 +68,27 @@ contribution guidelines below, first!
 
 <!-- GETTING STARTED -->
 
-## Getting Started
+## Installation
 
-If you are looking to use the SailPoint CLI, please use the
-[Releases](https://github.com/sailpoint-oss/sailpoint-cli/releases) section. If
-you want to build this project locally, follow the steps below.
+There are several ways to install the SailPoint CLI, including through a package manager for your OS of choice or manual installation.
 
-### Prerequisites
+### Homebrew
 
-- [Golang](https://go.dev/doc/install) version 1.18 or above.
+For Mac OS users, you can use [Homebrew](https://brew.sh/) to install the CLI.  Please run the following command in your terminal:
 
-### MacOS and Linux
+```sh
+brew install sailpoint-oss/homebrew-sailpoint-oss/sailpoint-cli
+```
+
+### Manual Installation
+
+Prebuilt binaries for OS X, Windows, and Linux are provided in our [releases](https://github.com/sailpoint-oss/sailpoint-cli/releases) section.  If you download the prebuilt binary, you can skip to the [configuration](#configuration) section.  If you want to manually build this project, please follow the steps below.
+
+#### Prerequisites
+
+You will need to install [Golang](https://go.dev/doc/install) version 1.18 or above.
+
+#### MacOS and Linux
 
 Open your terminal app, navigate to the project directory, and run the following
 command:
@@ -95,7 +105,7 @@ sail
 
  <img src="./assets/img/MacOSAndLinux.gif" alt="linux make gif">
 
-### Windows
+#### Windows
 
 Open PowerShell **as administrator**, navigate to the project directory, and run
 the following command.
@@ -122,8 +132,6 @@ sail
 ```
 
 ## Configuration
-
-### Prerequisites
 
 Before you begin, you will need to gather the following information.
 
