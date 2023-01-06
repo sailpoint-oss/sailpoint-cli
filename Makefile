@@ -11,7 +11,8 @@ test:
 install:
 	go build -o /usr/local/bin/sail -buildvcs=false
 
-vhs:
+vhs-auto:
+	vhs < assets/vhs/brewinstall.tape
 	vhs < assets/vhs/linuxMake.tape
 	vhs < assets/vhs/sail.tape
 	vhs < assets/vhs/configure/configure-pat.tape
@@ -24,4 +25,4 @@ vhs:
 	vhs < assets/vhs/transform/transform-download.tape
 
 
-.PHONY: clean mocks test install vhs .docker/login .docker/build .docker/push
+.PHONY: clean mocks test install vhs-auto .docker/login .docker/build .docker/push
