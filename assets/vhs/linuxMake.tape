@@ -6,7 +6,11 @@ Set FontSize 16
 Set Width 1200
 Set Height 600
 
-Hide Sleep 1s Show
+Hide 
+
+Sleep 2s 
+
+Show
 
 # Start ...
 

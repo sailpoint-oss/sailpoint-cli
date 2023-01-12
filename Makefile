@@ -24,5 +24,4 @@ vhs:
 	vhs < assets/vhs/transform/transform-list.tape
 	vhs < assets/vhs/transform/transform-download.tape
 
-
-.PHONY: clean mocks test install vhs .docker/login .docker/build .docker/push
+.PHONY: clean mocks test install .docker/login .docker/build .docker/push

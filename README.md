@@ -23,7 +23,7 @@
   <h3 align="center">SailPoint CLI - README</h3>
   <br/>
 <div align="center">
-<img src="./assets/img/sail.gif"  style="text-align:center">
+<img src="./assets/img/vhs/sail.gif"  style="text-align:center">
 </div>
 </div>
 
@@ -49,22 +49,26 @@ contribution guidelines below, first!
 
 - [About The Project](#about-the-project)
 - [Contents](#contents)
-- [Installation](#installation)
-  - [Homebrew](#homebrew)
-  - [Manual Installation](#manual-installation)
-    - [Mac OS and Linux](#macos-and-linux)
-    - [Windows](#windows)
-- [Configuration](#configuration)
-  - [Assisted configuration](#assisted-configuration)
-    - [Personal Access Token](#personal-access-token)
-    - [OAuth](#oauth)
-  - [Manual configuration](#manual-configuration)
-  - [Environment variable configuration](#environment-variable-configuration)
-- [Usage](#usage)
-- [Discuss](#discuss)
-- [License](#license)
-- [Contributing](#contributing)
-- [Code of Conduct](#code-of-conduct)
+  - [Installation](#installation)
+    - [Homebrew](#homebrew)
+    - [Manual Installation](#manual-installation)
+      - [Prerequisites](#prerequisites)
+    - [Manual Installation](#manual-installation-1)
+      - [Prerequisites](#prerequisites-1)
+      - [MacOS and Linux](#macos-and-linux)
+      - [MacOS and Linux](#macos-and-linux-1)
+      - [Windows](#windows)
+  - [Configuration](#configuration)
+    - [Assisted configuration](#assisted-configuration)
+      - [Personal Access Token](#personal-access-token)
+      - [OAuth](#oauth)
+    - [Manual configuration](#manual-configuration)
+    - [Environment variable configuration](#environment-variable-configuration)
+  - [Usage](#usage)
+  - [Discuss](#discuss)
+  - [License](#license)
+  - [Contributing](#contributing)
+  - [Code of Conduct](#code-of-conduct)
 
 <!-- GETTING STARTED -->
 
@@ -74,7 +78,7 @@ There are several ways to install the SailPoint CLI, including through a package
 
 ### Homebrew
 
-For Mac OS users, you can use [Homebrew](https://brew.sh/) to install the CLI.  Please run the following command in your terminal:
+For Mac OS users, you can use [Homebrew](https://brew.sh/) to install the CLI. Please run the following command in your terminal:
 
 ```sh
 brew install sailpoint-oss/homebrew-sailpoint-oss/sailpoint-cli
@@ -82,11 +86,25 @@ brew install sailpoint-oss/homebrew-sailpoint-oss/sailpoint-cli
 
 ### Manual Installation
 
-Prebuilt binaries for OS X, Windows, and Linux are provided in our [releases](https://github.com/sailpoint-oss/sailpoint-cli/releases) section.  If you download the prebuilt binary, you can skip to the [configuration](#configuration) section.  If you want to manually build this project, please follow the steps below.
+Prebuilt binaries for OS X, Windows, and Linux are provided in our [releases](https://github.com/sailpoint-oss/sailpoint-cli/releases) section. If you download the prebuilt binary, you can skip to the [configuration](#configuration) section. If you want to manually build this project, please follow the steps below.
+
+#### Prerequisites
+
+For Mac OS users, you can use [Homebrew](https://brew.sh/) to install the CLI. Please run the following command in your terminal:
+
+```sh
+brew install sailpoint-oss/homebrew-sailpoint-oss/sailpoint-cli
+```
+
+### Manual Installation
+
+Prebuilt binaries for OS X, Windows, and Linux are provided in our [releases](https://github.com/sailpoint-oss/sailpoint-cli/releases) section. If you download the prebuilt binary, you can skip to the [configuration](#configuration) section. If you want to manually build this project, please follow the steps below.
 
 #### Prerequisites
 
 You will need to install [Golang](https://go.dev/doc/install) version 1.18 or above.
+
+#### MacOS and Linux
 
 #### MacOS and Linux
 
@@ -103,7 +121,7 @@ After that, make sure you can run the `sail` command.
 sail
 ```
 
- <img src="./assets/img/MacOSAndLinux.gif" alt="linux make gif">
+ <img src="./assets/img/vhs/MacOSAndLinux.gif" alt="linux make gif">
 
 #### Windows
 
@@ -154,7 +172,7 @@ This command will create a configuration file in your home directory to store yo
 sail configure pat
 ```
 
-<img src="./assets/img/configure-pat.gif" alt="linux make gif">
+<img src="./assets/img/vhs/configure/configure-pat.gif" alt="configure PAT">
 
 #### OAuth
 
@@ -162,7 +180,7 @@ sail configure pat
 sail configure oauth
 ```
 
-<img src="./assets/img/configure-oauth.gif" alt="linux make gif">
+<img src="./assets/img/vhs/configure/configure-oauth.gif" alt="configure OAuth">
 
 ### Manual configuration
 
