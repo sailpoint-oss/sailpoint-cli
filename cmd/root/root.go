@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/connector"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/search"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/transform"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/va"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
@@ -35,6 +36,7 @@ func NewRootCmd(client client.Client) *cobra.Command {
 		connector.NewConnCmd(client),
 		transform.NewTransformCmd(client),
 		va.NewVACmd(),
+		search.NewSearchCmd(client),
 	)
 	return root
 }
