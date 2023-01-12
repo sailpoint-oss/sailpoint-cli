@@ -4,7 +4,6 @@ package search
 import (
 	"fmt"
 
-	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
@@ -38,14 +37,21 @@ func NewSearchCmd(client client.Client) *cobra.Command {
 			searchQuery := args[0]
 			fmt.Println(searchQuery)
 
-			color.Green("Search Results saved successfully to %v", output)
+			if len(indicies) == 0 {
+				indicies = []string{"accessprofiles", "accountactivities", "entitlements", "events", "identities", "roles"}
+			}
+			fmt.Println(indicies)
+
+			fmt.Println(formats)
+
+			// color.Green("Search Results saved successfully to %v", output)
 
 			return nil
 		},
 	}
 	cmd.Flags().BoolVarP(&count, "count", "c", false, "Return result count")
 	cmd.Flags().StringArrayVarP(&formats, "formats", "f", []string{"csv"}, "Format to Save the search results")
-	cmd.Flags().StringArrayVarP(&indicies, "formats", "f", []string{}, "Indicies to search on (accessprofiles, accountactivities, entitlements, events, identities, roles)")
+	cmd.Flags().StringArrayVarP(&indicies, "indicies", "i", []string{}, "Indicies to search on (accessprofiles, accountactivities, entitlements, events, identities, roles)")
 	cmd.Flags().StringVarP(&output, "output", "o", "", "Path to save the searchin (default current working directory).  If the directory doesn't exist, then it will be automatically created.")
 	cmd.PersistentFlags().StringP("search-endpoint", "e", util.GetBasePath()+searchEndpoint, "Override search endpoint")
 
