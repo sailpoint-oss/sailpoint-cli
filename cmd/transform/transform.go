@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 const (
@@ -26,7 +26,7 @@ func NewTransformCmd(client client.Client) *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringP("transforms-endpoint", "e", viper.GetString("baseurl")+transformsEndpoint, "Override transforms endpoint")
+	cmd.PersistentFlags().StringP("transforms-endpoint", "e", util.GetBasePath()+transformsEndpoint, "Override transforms endpoint")
 
 	cmd.AddCommand(
 		newListCmd(client),
