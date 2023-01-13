@@ -1,6 +1,33 @@
 // Copyright (c) 2021, SailPoint Technologies, Inc. All rights reserved.
 package transmodel
 
+type SearchRequestBody struct {
+	Query             SearchQuery `json:"query"`
+	Indices           []string    `json:"indices"`
+	QueryResultFilter Includes    `json:"queryResultFilter"`
+}
+type SearchQuery struct {
+	Query string `json:"query"`
+}
+type Includes struct {
+	Includes []string `json:"includes"`
+}
+
+func MakeSearchQuery(authoritativeSourceId string) SearchRequestBody {
+	includes := Includes{}
+	includes.Includes = []string{"id"}
+
+	searchQuery := SearchQuery{}
+	searchQuery.Query = "source.id:" + authoritativeSourceId
+
+	searchBody := SearchRequestBody{}
+	searchBody.QueryResultFilter = includes
+	searchBody.Query = searchQuery
+	searchBody.Indices = []string{"identities"}
+
+	return searchBody
+}
+
 type Transform struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
@@ -84,7 +111,7 @@ type PreviewResponse struct {
 	PreviewAttributes []PreviewAttribute `json:"previewAttributes"`
 }
 
-type User struct {
+type Identity struct {
 	Id string `json:"id"`
 }
 

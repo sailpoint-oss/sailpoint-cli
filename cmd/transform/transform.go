@@ -10,10 +10,12 @@ import (
 )
 
 const (
-	transformsEndpoint      = "/v3/transforms"
-	previewEndpoint         = "/cc/api/user/preview"
+	transformsEndpoint = "/v3/transforms"
+	//previewEndpoint         = "/cc/api/user/preview"
+	previewEndpoint         = "/beta/identity-profiles/identity-preview"
 	identityProfileEndpoint = "/v3/identity-profiles"
-	userEndpoint            = "/cc/api/identity/list"
+	searchEndpoint          = "/v3/search"
+	//userEndpoint            = "/cc/api/identity/list"
 )
 
 func NewTransformCmd(client client.Client) *cobra.Command {

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 
 	transmodel "github.com/sailpoint-oss/sailpoint-cli/cmd/transform/model"
@@ -57,7 +56,7 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 			// Get the identity profile so we can obtain the authoritative source and
 			// original transform for the attribute, which will contain the account attribute
 			// name and source name that will be used in the preview body.
-			endpoint := cmd.Flags().Lookup("identity-profile-endpoint").Value.String()
+			endpoint := viper.GetString("baseurl") + identityProfileEndpoint
 			resp, err := client.Get(cmd.Context(), util.ResourceUrl(endpoint, idProfile))
 			if err != nil {
 				return err
@@ -82,19 +81,15 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			// Get a list of users in the source specified by the identity profile.
-			// These users will be used to preview the transform.
-			endpoint = cmd.Flags().Lookup("user-endpoint").Value.String()
-			uri, err := url.Parse(endpoint)
+			// Get a list of identities in the authoritative source attached to the identity profile.
+			// These identities will be used to preview the transform.
+			endpoint = viper.GetString("baseurl") + searchEndpoint
+			data := transmodel.MakeSearchQuery(profile.AuthoritativeSource.Id)
+			raw, err = json.Marshal(data)
 			if err != nil {
 				return err
 			}
-
-			query := &url.Values{}
-			query.Add("filters", "[{\"property\":\"links.application.id\",\"operation\":\"EQ\",\"value\":\""+profile.AuthoritativeSource.Id+"\"}]")
-			uri.RawQuery = query.Encode()
-
-			resp, err = client.Get(cmd.Context(), uri.String())
+			resp, err = client.Post(cmd.Context(), util.ResourceUrl(endpoint), "application/json", bytes.NewReader(raw))
 			if err != nil {
 				return err
 			}
@@ -104,7 +99,7 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 
 			if resp.StatusCode != http.StatusOK {
 				body, _ := io.ReadAll(resp.Body)
-				return fmt.Errorf("get users failed. status: %s\nbody: %s", resp.Status, body)
+				return fmt.Errorf("get identity failed. status: %s\nbody: %s", resp.Status, body)
 			}
 
 			raw, err = io.ReadAll(resp.Body)
@@ -112,8 +107,8 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			var user []transmodel.User
-			err = json.Unmarshal(raw, &user)
+			var identity []transmodel.Identity
+			err = json.Unmarshal(raw, &identity)
 			if err != nil {
 				return err
 			}
@@ -163,7 +158,7 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 
 			// Call the preview endpoint to get the raw and transformed attribute values
 			endpoint = cmd.Flags().Lookup("preview-endpoint").Value.String()
-			resp, err = client.Post(cmd.Context(), util.ResourceUrl(endpoint, user[0].Id), "application/json", bytes.NewReader(previewBodyRaw))
+			resp, err = client.Post(cmd.Context(), util.ResourceUrl(endpoint, identity[0].Id), "application/json", bytes.NewReader(previewBodyRaw))
 			if err != nil {
 				return err
 			}
@@ -201,9 +196,6 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 	cmd.Flags().StringP("attribute", "a", "", "Attribute name (required)")
 	cmd.Flags().StringP("name", "n", "", "Transform name.  Only needed if using implicit input.  The transform must be uploaded to IDN first.")
 	cmd.Flags().BoolVar(&implicitInput, "implicit", false, "Use implicit input.  Default is explicit input defined by the transform.")
-	cmd.Flags().String("preview-endpoint", viper.GetString("baseurl")+previewEndpoint, "Override preview endpoint")
-	cmd.Flags().String("identity-profile-endpoint", viper.GetString("baseurl")+identityProfileEndpoint, "Override identity profile endpoint")
-	cmd.Flags().String("user-endpoint", viper.GetString("baseurl")+userEndpoint, "Override user endpoint")
 	cmd.Flags().StringP("file", "f", "", "The path to the transform file.  Only needed if using explicit input.")
 
 	cmd.MarkFlagRequired("identity-profile")
