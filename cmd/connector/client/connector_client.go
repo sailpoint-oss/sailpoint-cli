@@ -78,6 +78,37 @@ func (cc *ConnClient) TestConnection(ctx context.Context) (rawResponse []byte, e
 	return io.ReadAll(resp.Body)
 }
 
+// ChangePassword runs the std:change-password command
+func (cc *ConnClient) ChangePassword(ctx context.Context, identity string, uniqueID string, password string) (rawResponse []byte, err error) {
+
+	input, err := json.Marshal(map[string]interface{}{
+		"identity": identity,
+		"password": password,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	cmdRaw, err := cc.rawInvoke("std:change-password", input)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw))
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode != 200 {
+		return nil, newResponseError(resp)
+	}
+
+	return io.ReadAll(resp.Body)
+}
+
 type SimpleKey struct {
 	ID string `json:"id"`
 }
