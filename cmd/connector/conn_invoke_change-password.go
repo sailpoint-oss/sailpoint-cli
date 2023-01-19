@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// newConnInvokeChangePasswordCmd defines a command to perform change password operation
 func newConnInvokeChangePasswordCmd(spClient client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "change-password",
