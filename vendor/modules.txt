@@ -28,8 +28,6 @@ github.com/charmbracelet/bubbletea
 # github.com/charmbracelet/lipgloss v0.6.0
 ## explicit; go 1.15
 github.com/charmbracelet/lipgloss
-# github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
-## explicit
 # github.com/containerd/console v1.0.3
 ## explicit; go 1.13
 github.com/containerd/console
