@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/fatih/color"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -17,8 +18,7 @@ func newUpdateCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var credentials []string
 			for credential := 0; credential < len(args); credential++ {
-				fmt.Printf("Enter Password for %v:", args[credential])
-				password, _ := password()
+				password, _ := util.PromptPassword(fmt.Sprintf("Enter Password for %v:", args[credential]))
 				credentials = append(credentials, password)
 			}
 			for i := 0; i < len(args); i++ {
