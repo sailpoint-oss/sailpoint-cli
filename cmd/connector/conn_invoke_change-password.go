@@ -4,8 +4,8 @@ package connector
 import (
 	"fmt"
 
-	"github.com/sailpoint-oss/sailpoint-cli/cmd/utilities"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +24,7 @@ func newConnInvokeChangePasswordCmd(spClient client.Client) *cobra.Command {
 				return err
 			}
 
-			password, err := utilities.PromptPassword("Enter Password:")
+			password, err := util.PromptPassword("Enter Password:")
 			if err != nil {
 				return err
 			}

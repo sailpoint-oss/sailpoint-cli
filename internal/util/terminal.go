@@ -1,5 +1,5 @@
 // Copyright (c) 2023, SailPoint Technologies, Inc. All rights reserved.
-package utilities
+package util
 
 import (
 	"fmt"
