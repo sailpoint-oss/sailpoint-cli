@@ -4,7 +4,7 @@ package connector
 import (
 	"fmt"
 
-	"github.com/manifoldco/promptui"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/utilities"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/spf13/cobra"
 )
@@ -24,13 +24,7 @@ func newConnInvokeChangePasswordCmd(spClient client.Client) *cobra.Command {
 				return err
 			}
 
-			// prompt the user for the password
-			prompt := promptui.Prompt{
-				Label: "Enter the password",
-				Mask:  '*',
-			}
-
-			password, err := prompt.Run()
+			password, err := utilities.PromptPassword("Enter Password:")
 			if err != nil {
 				return err
 			}

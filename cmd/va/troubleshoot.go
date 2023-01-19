@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/utilities"
 	"github.com/spf13/cobra"
 )
 
@@ -26,8 +27,7 @@ func newTroubleshootCmd() *cobra.Command {
 			}
 			var credentials []string
 			for credential := 0; credential < len(args); credential++ {
-				fmt.Printf("Enter Password for %v:", args[credential])
-				password, _ := password()
+				password, _ := utilities.PromptPassword(fmt.Sprintf("Enter Password for %v:", args[credential]))
 				credentials = append(credentials, password)
 			}
 
