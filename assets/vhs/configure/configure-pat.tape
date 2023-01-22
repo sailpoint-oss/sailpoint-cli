@@ -22,6 +22,12 @@ Sleep 1s
 # Run the command by pressing enter.
 Enter 
 
+Sleep 500ms
+
+Enter 
+
+Sleep 500ms
+
 # Type a command in the terminal.
 Type "example-tenant"
 
