@@ -17,7 +17,7 @@ import (
 func newUpdateCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "update",
-		Short:   "Update transform",
+		Short:   "update transform",
 		Long:    "Update a transform from a file [-f] or standard input (if no file is specified).",
 		Example: "sail transform u -f /path/to/transform.json\nsail transform u < /path/to/transform.json\necho /path/to/transform.json | sail transform u",
 		Aliases: []string{"u"},

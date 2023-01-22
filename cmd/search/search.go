@@ -2,58 +2,112 @@
 package search
 
 import (
+	"bufio"
+	"context"
+	"encoding/json"
 	"fmt"
+	"os"
+	"path"
 
-	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
+	"github.com/fatih/color"
+	sailpoint "github.com/sailpoint-oss/golang-sdk/sdk-output"
+	sailpointsdk "github.com/sailpoint-oss/golang-sdk/sdk-output/v3"
 	"github.com/spf13/cobra"
 )
 
-const (
-	searchEndpoint = "/v3/transforms"
-)
+// const (
+// 	searchEndpoint = "/v3/search"
+// )
 
-func NewSearchCmd(client client.Client) *cobra.Command {
-	var formats []string
-	var indicies []string
+func NewSearchCmd(apiClient *sailpoint.APIClient) *cobra.Command {
+	var Formats []string
+	var Indicie string
 	var output string
-	var count bool
+	var sort string
 	cmd := &cobra.Command{
 		Use:     "search",
-		Short:   "Search IDN with a search string",
+		Short:   "perform search in identitynow with a search string",
 		Long:    "Search IdentityNow with a provided search string",
 		Example: "sail search \"\"",
 		Aliases: []string{"se"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			endpoint := cmd.Flags().Lookup("search-endpoint").Value.String()
-			fmt.Println(endpoint)
 
 			if output == "" {
 				output = "search_results"
 			}
-			fmt.Println(output)
 
 			searchQuery := args[0]
-			fmt.Println(searchQuery)
+			color.Blue("Running search \nQuery: \"%s\"\nIndicie: %s", searchQuery, Indicie)
 
-			if len(indicies) == 0 {
-				indicies = []string{"accessprofiles", "accountactivities", "entitlements", "events", "identities", "roles"}
+			search := sailpointsdk.NewSearch1()
+			search.Query = sailpointsdk.NewQuery()
+			search.Query.Query = &searchQuery
+			search.Indices = []sailpointsdk.Index{}
+
+			switch Indicie {
+			case "accessprofiles":
+				search.Indices = append(search.Indices, sailpointsdk.INDEX_ACCESSPROFILES)
+			case "accountactivities":
+				search.Indices = append(search.Indices, sailpointsdk.INDEX_ACCOUNTACTIVITIES)
+			case "entitlements":
+				search.Indices = append(search.Indices, sailpointsdk.INDEX_ENTITLEMENTS)
+			case "events":
+				search.Indices = append(search.Indices, sailpointsdk.INDEX_EVENTS)
+			case "identities":
+				search.Indices = append(search.Indices, sailpointsdk.INDEX_IDENTITIES)
+			case "roles":
+				search.Indices = append(search.Indices, sailpointsdk.INDEX_ROLES)
+			default:
+				return fmt.Errorf("provided search indicie \"%s\" is invalid", Indicie)
 			}
-			fmt.Println(indicies)
 
-			fmt.Println(formats)
+			ctx := context.TODO()
+			resp, r, err := sailpoint.PaginateWithDefaults[map[string]interface{}](apiClient.V3.SearchApi.SearchPost(ctx).Search1(*search))
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+				fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+			}
 
-			// color.Green("Search Results saved successfully to %v", output)
+			color.Green("Search complete, saving results")
+
+			formatted, err := json.MarshalIndent(resp, "", " ")
+			if err != nil {
+				return err
+			}
+
+			savePath := path.Join(output, fmt.Sprintf("query=%sindicie=%s.json", searchQuery, Indicie))
+			fmt.Println(savePath)
+
+			// Make sure the output dir exists first
+			err = os.MkdirAll(output, os.ModePerm)
+			if err != nil {
+				return err
+			}
+
+			file, err := os.OpenFile(savePath, os.O_CREATE|os.O_RDWR, 0777)
+			if err != nil {
+				return err
+			}
+
+			fileWriter := bufio.NewWriter(file)
+
+			_, err = fileWriter.Write(formatted)
+			if err != nil {
+				return err
+			}
+
+			color.Green("Search Results saved to %s", savePath)
 
 			return nil
 		},
 	}
-	cmd.Flags().BoolVarP(&count, "count", "c", false, "Return result count")
-	cmd.Flags().StringArrayVarP(&formats, "formats", "f", []string{"csv"}, "Format to Save the search results")
-	cmd.Flags().StringArrayVarP(&indicies, "indicies", "i", []string{}, "Indicies to search on (accessprofiles, accountactivities, entitlements, events, identities, roles)")
-	cmd.Flags().StringVarP(&output, "output", "o", "", "Path to save the searchin (default current working directory).  If the directory doesn't exist, then it will be automatically created.")
-	cmd.PersistentFlags().StringP("search-endpoint", "e", util.GetBasePath()+searchEndpoint, "Override search endpoint")
+	cmd.Flags().StringArrayVarP(&Formats, "formats", "f", []string{"json"}, "formats to save the search results in")
+	cmd.Flags().StringVarP(&Indicie, "indicie", "i", "", "indicie to perform the search query on")
+	cmd.Flags().StringVarP(&output, "output", "o", "", "path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
+	cmd.Flags().StringVarP(&sort, "sort", "s", "", "the sort value for the api call (examples)")
+	cmd.MarkFlagRequired("indicie")
+	// cmd.PersistentFlags().StringP("search-endpoint", "e", searchEndpoint+"?count=true&limit=250", "override search endpoint")
 
 	return cmd
 

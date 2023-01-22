@@ -18,7 +18,7 @@ import (
 func newCreateCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "create",
-		Short:   "Create transform",
+		Short:   "create transform",
 		Long:    "Create a transform from a file [-f] or standard input (if no file is specified).",
 		Example: "sail transform c -f /path/to/transform.json\nsail transform c < /path/to/transform.json\necho /path/to/transform.json | sail transform c",
 		Aliases: []string{"c"},

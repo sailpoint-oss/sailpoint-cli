@@ -4,6 +4,7 @@ package root
 import (
 	"fmt"
 
+	sailpoint "github.com/sailpoint-oss/golang-sdk/sdk-output"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/connector"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/search"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/transform"
@@ -14,7 +15,7 @@ import (
 
 var version = "0.4.0"
 
-func NewRootCmd(client client.Client) *cobra.Command {
+func NewRootCmd(client client.Client, apiClient *sailpoint.APIClient) *cobra.Command {
 	root := &cobra.Command{
 		Use:          "sail",
 		Short:        "The SailPoint CLI allows you to administer your IdentityNow tenant from the command line.\n\nNavigate to developer.sailpoint.com to learn more.",
@@ -36,7 +37,7 @@ func NewRootCmd(client client.Client) *cobra.Command {
 		connector.NewConnCmd(client),
 		transform.NewTransformCmd(client),
 		va.NewVACmd(),
-		search.NewSearchCmd(client),
+		search.NewSearchCmd(apiClient),
 	)
 	return root
 }

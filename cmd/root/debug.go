@@ -10,7 +10,7 @@ import (
 func newDebugCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "debug",
-		Short:   "Enable/Disable debug mode",
+		Short:   "enable or disable debug mode",
 		Long:    "Enable/Disable debug mode.",
 		Example: "sail debug enable | disable",
 		Args:    cobra.ExactArgs(1),

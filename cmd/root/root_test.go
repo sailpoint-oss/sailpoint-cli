@@ -18,7 +18,7 @@ func TestNewRootCmd_noArgs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cmd := NewRootCmd(mocks.NewMockClient(ctrl))
+	cmd := NewRootCmd(mocks.NewMockClient(ctrl), nil)
 	if len(cmd.Commands()) != numRootSubcommands {
 		t.Fatalf("expected: %d, actual: %d", len(cmd.Commands()), numRootSubcommands)
 	}
@@ -46,7 +46,7 @@ func TestNewRootCmd_completionDisabled(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cmd := NewRootCmd(mocks.NewMockClient(ctrl))
+	cmd := NewRootCmd(mocks.NewMockClient(ctrl), nil)
 
 	b := new(bytes.Buffer)
 	cmd.SetOut(b)

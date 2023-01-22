@@ -2,20 +2,25 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	sailpoint "github.com/sailpoint-oss/golang-sdk/sdk-output"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/root"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/auth"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var (
-	c       client.Client
-	rootCmd *cobra.Command
+	c         client.Client
+	apiClient sailpoint.APIClient
+	rootCmd   *cobra.Command
 )
 
 func initConfig() {
@@ -50,13 +55,13 @@ func init() {
 		panic(fmt.Errorf("Unable to decode Config: %s \n", err))
 	}
 
-	c = client.NewSpClient(types.OrgConfig{
-		AuthType: config.AuthType,
-		Debug:    config.Debug,
-		Pat:      config.Pat,
-		OAuth:    config.OAuth,
-	})
-	rootCmd = root.NewRootCmd(c)
+	auth.EnsureAccessToken(config, context.TODO())
+	c = client.NewSpClient(config)
+
+	configuration := sailpoint.NewConfiguration(sailpoint.ClientConfiguration{Token: util.GetAuthToken(), BaseURL: util.GetBaseUrl()})
+	apiClient := sailpoint.NewAPIClient(configuration)
+
+	rootCmd = root.NewRootCmd(c, apiClient)
 
 }
 

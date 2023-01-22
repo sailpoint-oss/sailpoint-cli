@@ -11,7 +11,7 @@ import (
 func newAuthCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "auth",
-		Short:   "Change active authentication mode",
+		Short:   "change currently active authentication mode",
 		Long:    "Change Auth Mode configured (pat, oauth).",
 		Example: "sail auth pat | oauth",
 		Args:    cobra.MaximumNArgs(1),

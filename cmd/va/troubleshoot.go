@@ -14,7 +14,7 @@ import (
 func newTroubleshootCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "troubleshoot",
-		Short:   "troubleshoot a va",
+		Short:   "perform troubleshooting operations on a virtual appliance",
 		Long:    "Troubleshoot a Virtual Appliance.",
 		Example: "sail va troubleshoot 10.10.10.10",
 		Args:    cobra.MinimumNArgs(1),

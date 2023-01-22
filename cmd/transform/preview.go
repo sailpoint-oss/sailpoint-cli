@@ -22,7 +22,7 @@ var implicitInput bool
 func newPreviewCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "preview",
-		Short:   "Preview transform",
+		Short:   "preview transform",
 		Long:    "Preview the final output of a transform.",
 		Example: "sail transform p -i 12a199b967b64ffe992ef4ecfd076728 -a lastname -f /path/to/transform.json\nsail transform p -i 12a199b967b64ffe992ef4ecfd076728 -a lastname -n ToLower --implicit",
 		Aliases: []string{"p"},

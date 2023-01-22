@@ -19,14 +19,14 @@ const (
 func NewTransformCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "transform",
-		Short:   "Manage transforms",
+		Short:   "manage transforms",
 		Aliases: []string{"tran"},
 		Run: func(cmd *cobra.Command, args []string) {
 			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
 		},
 	}
 
-	cmd.PersistentFlags().StringP("transforms-endpoint", "e", util.GetBasePath()+transformsEndpoint, "Override transforms endpoint")
+	cmd.PersistentFlags().StringP("transforms-endpoint", "e", util.GetBaseUrl()+transformsEndpoint, "Override transforms endpoint")
 
 	cmd.AddCommand(
 		newListCmd(client),

@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -15,7 +16,9 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/skratchdot/open-golang/open"
+	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 )
 
@@ -171,4 +174,64 @@ func PATLogin(config types.OrgConfig, ctx context.Context) (types.Token, error) 
 	token.Expiry = now.Add(time.Second * time.Duration(tResponse.ExpiresIn))
 
 	return token, nil
+}
+
+func EnsureAccessToken(cfg types.OrgConfig, ctx context.Context) error {
+	err := cfg.Validate()
+	if err != nil {
+		return err
+	}
+
+	var cachedTokenExpiry time.Time
+	switch util.GetAuthType() {
+	case "pat":
+		cachedTokenExpiry = viper.GetTime("pat.token.expiry")
+		if cachedTokenExpiry.After(time.Now()) {
+			return nil
+		}
+	case "oauth":
+		cachedTokenExpiry = viper.GetTime("oauth.token.expiry")
+		if cachedTokenExpiry.After(time.Now()) {
+			return nil
+		}
+	default:
+		return errors.New("invalid authtype configured")
+
+	}
+
+	var token types.Token
+	switch util.GetAuthType() {
+	case "pat":
+		token, err = PATLogin(cfg, ctx)
+		if err != nil {
+			return err
+		}
+		viper.Set("pat.token", token)
+
+	case "oauth":
+
+		token, err = OAuthLogin(cfg)
+		if err != nil {
+			return err
+		}
+		viper.Set("oauth.token", token)
+
+	default:
+		return errors.New("invalid authtype configured")
+	}
+
+	err = viper.WriteConfig()
+	if err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			err = viper.SafeWriteConfig()
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
+
+	return nil
+
 }

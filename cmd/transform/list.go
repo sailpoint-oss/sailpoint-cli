@@ -61,7 +61,7 @@ func listTransforms(client client.Client, endpoint string, cmd *cobra.Command) e
 func newListCmd(client client.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:     "list",
-		Short:   "List transforms",
+		Short:   "list transforms",
 		Long:    "List transforms for tenant",
 		Example: "sail transform ls",
 		Aliases: []string{"ls"},

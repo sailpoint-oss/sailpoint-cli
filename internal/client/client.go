@@ -13,6 +13,7 @@ import (
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/auth"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/viper"
 )
 
@@ -202,7 +203,7 @@ func (c *SpClient) ensureAccessToken(ctx context.Context) error {
 	}
 
 	var cachedTokenExpiry time.Time
-	switch strings.ToLower(c.cfg.AuthType) {
+	switch util.GetAuthType() {
 	case "pat":
 		cachedTokenExpiry = viper.GetTime("pat.token.expiry")
 		if cachedTokenExpiry.After(time.Now()) {

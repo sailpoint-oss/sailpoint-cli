@@ -18,7 +18,7 @@ import (
 func newDownloadCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "download",
-		Short:   "Download transforms",
+		Short:   "download transforms",
 		Long:    "Download transforms to local storage",
 		Example: "sail transform dl -d transform_files|\nsail transform dl",
 		Aliases: []string{"dl"},

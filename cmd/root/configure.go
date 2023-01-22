@@ -61,7 +61,7 @@ func newConfigureCmd(client client.Client) *cobra.Command {
 	var debug bool
 	cmd := &cobra.Command{
 		Use:     "configure",
-		Short:   "Configure Authentication for the CLI",
+		Short:   "configure authentication for the cli",
 		Long:    "\nConfigure Authentication for the CLI\nSupported Methods: (PAT, OAuth)\n\nPrerequisites:\n\nPAT:\n	Tenant\n	Client ID\n	Client Secret\n\nOAuth:\n	Tenant\n	Client ID\n	Client Secret - Optional Depending on configuration\n	Callback Port (ex. http://localhost:{3000}/callback)\n	Callback Path (ex. http://localhost:3000{/callback})",
 		Aliases: []string{"conf"},
 		Args:    cobra.MaximumNArgs(1),

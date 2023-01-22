@@ -4,7 +4,6 @@ package connector
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -95,7 +94,7 @@ func newConnValidateSourcesCmd(apiClient client.Client) *cobra.Command {
 				}
 
 				if instance.ProcessState != nil {
-					return errors.New(fmt.Sprintf("%s instance wasn't stopped", source.Name))
+					return fmt.Errorf("%s instance wasn't stopped", source.Name)
 				}
 
 				err = os.RemoveAll(fmt.Sprintf("/%s", tempFolder))

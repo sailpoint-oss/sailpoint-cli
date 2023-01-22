@@ -25,7 +25,7 @@ func newCollectCmd() *cobra.Command {
 	var config bool
 	cmd := &cobra.Command{
 		Use:     "collect",
-		Short:   "collect files from a va",
+		Short:   "collect files from a virtual appliance",
 		Long:    "Collect files from a Virtual Appliance.",
 		Example: "sail va collect 10.10.10.10, 10.10.10.11 (-l only collect log files) (-c only collect config files) (-o /path/to/save/files)\n\nLog Files:\n/home/sailpoint/log/ccg.log\n/home/sailpoint/log/charon.log\n/home/sailpoint/stuntlog.txt\n\nConfig Files:\n/home/sailpoint/proxy.yaml\n/etc/systemd/network/static.network\n/etc/resolv.conf\n",
 		Args:    cobra.MinimumNArgs(1),
