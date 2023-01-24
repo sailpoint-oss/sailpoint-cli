@@ -14,6 +14,8 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 )
 
+const maskedPassword = "******"
+
 // ConnClient is an sail connect client for a specific connector
 type ConnClient struct {
 	client       client.Client
@@ -37,7 +39,7 @@ func NewConnClient(client client.Client, version *int, config json.RawMessage, c
 // TestConnectionWithConfig provides a way to run std:test-connection with an
 // arbitrary config
 func (cc *ConnClient) TestConnectionWithConfig(ctx context.Context, cfg json.RawMessage) error {
-	cmdRaw, err := cc.rawInvokeWithConfig("std:test-connection", []byte("{}"), cfg)
+	cmdRaw, err := cc.rawInvokeWithConfig("std:test-connection", []byte("{}"), cfg, nil)
 	if err != nil {
 		return err
 	}
@@ -59,6 +61,54 @@ func (cc *ConnClient) TestConnectionWithConfig(ctx context.Context, cfg json.Raw
 // TestConnection runs the std:test-connection command
 func (cc *ConnClient) TestConnection(ctx context.Context) (rawResponse []byte, err error) {
 	cmdRaw, err := cc.rawInvoke("std:test-connection", []byte("{}"))
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw))
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode != 200 {
+		return nil, newResponseError(resp)
+	}
+
+	return io.ReadAll(resp.Body)
+}
+
+// ChangePassword runs the std:change-password command
+func (cc *ConnClient) ChangePassword(ctx context.Context, identity string, uniqueID string, password string) (rawResponse []byte, err error) {
+
+	var key Key
+	if uniqueID == "" {
+		key = NewSimpleKey(identity)
+	} else {
+		key = NewCompoundKey(identity, uniqueID)
+	}
+
+	input, err := json.Marshal(map[string]interface{}{
+		"identity": identity,
+		"key":      key,
+		"password": password,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	maskedInput, err := json.Marshal(map[string]interface{}{
+		"identity": identity,
+		"key":      key,
+		"password": maskedPassword,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	cmdRaw, err := cc.rawInvokeWithConfig("std:change-password", input, cc.config, maskedInput)
 	if err != nil {
 		return nil, err
 	}
@@ -672,11 +722,18 @@ type ConnSpec struct {
 }
 
 func (cc *ConnClient) rawInvoke(cmdType string, input json.RawMessage) (json.RawMessage, error) {
-	return cc.rawInvokeWithConfig(cmdType, input, cc.config)
+	return cc.rawInvokeWithConfig(cmdType, input, cc.config, nil)
 }
 
-func (cc *ConnClient) rawInvokeWithConfig(cmdType string, input json.RawMessage, cfg json.RawMessage) (json.RawMessage, error) {
-	log.Printf("Running %q with %q", cmdType, input)
+func (cc *ConnClient) rawInvokeWithConfig(cmdType string, input json.RawMessage, cfg json.RawMessage, maskedInput []byte) (json.RawMessage, error) {
+
+	// if input contains sensitive information, log the masked input to console
+	if maskedInput == nil {
+		log.Printf("Running %q with %q", cmdType, input)
+	} else {
+		log.Printf("Running %q with %q", cmdType, maskedInput)
+	}
+
 	invokeCmd := invokeCommand{
 		ConnectorRef: cc.connectorRef,
 		Type:         cmdType,

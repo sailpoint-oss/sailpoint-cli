@@ -23,11 +23,17 @@ import (
 )
 
 const (
-	baseURLTemplate  = "https://%s.api.identitynow.com"
-	tokenURLTemplate = "https://%s.api.identitynow.com/oauth/token"
-	authUrlTemplate  = "https://%s.identitynow.com/oauth/authorize"
+	baseURLTemplate  = "https://%s"
+	tokenURLTemplate = "https://%s/oauth/token"
+	authURLTemplate  = "https://%s/oauth/authorize"
 	configFolder     = ".sailpoint"
 	configYamlFile   = "config.yaml"
+)
+
+var (
+	baseURL  (string)
+	tokenURL (string)
+	authURL  (string)
 )
 
 func PromptAuth() (string, error) {
@@ -151,13 +157,23 @@ func updateConfigFile(conf types.OrgConfig) error {
 	return nil
 }
 
+func setIDNUrls(tenant string) {
+	var tokens = strings.Split(tenant, ".")
+	tokens = append(tokens[:1+1], tokens[1:]...)
+	tokens[1] = "api"
+	var api_base = strings.Join(tokens, ".")
+	baseURL = fmt.Sprintf(baseURLTemplate, api_base)
+	tokenURL = fmt.Sprintf(tokenURLTemplate, api_base)
+	authURL = fmt.Sprintf(authURLTemplate, tenant)
+}
+
 func getConfigureParamsFromStdin(AuthType string, debug bool) (types.OrgConfig, error) {
 	var conf types.OrgConfig
 
 	switch strings.ToLower(AuthType) {
 	case "pat":
 		paramsNames := []string{
-			"Tenant (ex. {tenant}.identitynow.com): ",
+			"Tenant (ex. tenant.identitynow.com): ",
 			"Personal Access Token Client ID: ",
 			"Personal Access Token Client Secret: ",
 		}
@@ -174,9 +190,10 @@ func getConfigureParamsFromStdin(AuthType string, debug bool) (types.OrgConfig, 
 
 			switch pm {
 			case paramsNames[0]:
+				setIDNUrls(value)
 				conf.Pat.Tenant = value
-				conf.Pat.BaseUrl = fmt.Sprintf(baseURLTemplate, value)
-				conf.Pat.TokenUrl = fmt.Sprintf(tokenURLTemplate, value)
+				conf.Pat.BaseUrl = baseURL
+				conf.Pat.TokenUrl = tokenURL
 			case paramsNames[1]:
 				conf.Pat.ClientID = value
 			case paramsNames[2]:
@@ -188,7 +205,7 @@ func getConfigureParamsFromStdin(AuthType string, debug bool) (types.OrgConfig, 
 		return conf, nil
 	case "oauth":
 		paramsNames := []string{
-			"Tenant (ex. {tenant}.identitynow.com): ",
+			"Tenant (ex. tenant.identitynow.com): ",
 			"OAuth Client ID: ",
 			"OAuth Client Secret: ",
 			"OAuth Redirect Port (ex. http://localhost:{3000}/callback): ",
@@ -208,10 +225,11 @@ func getConfigureParamsFromStdin(AuthType string, debug bool) (types.OrgConfig, 
 
 			switch pm {
 			case paramsNames[0]:
+				setIDNUrls(value)
 				OAuth.Tenant = value
-				OAuth.BaseUrl = fmt.Sprintf(baseURLTemplate, value)
-				OAuth.TokenUrl = fmt.Sprintf(tokenURLTemplate, value)
-				OAuth.AuthUrl = fmt.Sprintf(authUrlTemplate, value)
+				OAuth.BaseUrl = baseURL
+				OAuth.TokenUrl = tokenURL
+				OAuth.AuthUrl = authURL
 			case paramsNames[1]:
 				OAuth.ClientID = value
 			case paramsNames[2]:

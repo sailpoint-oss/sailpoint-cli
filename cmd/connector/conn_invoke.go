@@ -42,6 +42,7 @@ func newConnInvokeCmd(client client.Client) *cobra.Command {
 
 	cmd.AddCommand(
 		newConnInvokeTestConnectionCmd(client),
+		newConnInvokeChangePasswordCmd(client),
 		newConnInvokeAccountCreateCmd(client),
 		newConnInvokeAccountDiscoverSchemaCmd(client),
 		newConnInvokeAccountListCmd(client),

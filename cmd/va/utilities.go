@@ -2,23 +2,10 @@ package va
 
 import (
 	"bytes"
-	"fmt"
 	"net"
-	"strings"
-	"syscall"
 
 	"golang.org/x/crypto/ssh"
-	"golang.org/x/term"
 )
-
-func password() (string, error) {
-	bytePassword, err := term.ReadPassword(int(syscall.Stdin))
-	if err != nil {
-		return "", err
-	}
-	fmt.Println()
-	return strings.TrimSpace(string(bytePassword)), nil
-}
 
 func runVACmd(addr string, password string, cmd string) (string, error) {
 	config := &ssh.ClientConfig{
