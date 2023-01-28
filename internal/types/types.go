@@ -7,8 +7,31 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	sailpointsdk "github.com/sailpoint-oss/golang-sdk/sdk-output/v3"
 	"github.com/spf13/viper"
 )
+
+type Variable struct {
+	Name   string `json:"name"`
+	Prompt string `json:"prompt"`
+}
+
+type SearchTemplate struct {
+	Name        string               `json:"name"`
+	Description string               `json:"description"`
+	Variables   []Variable           `json:"variables"`
+	SearchQuery sailpointsdk.Search1 `json:"searchQuery"`
+	Raw         []byte
+}
+
+type Templates struct {
+	Templates []SearchTemplate `json:"templates"`
+}
+
+type Choice struct {
+	Title       string
+	Description string
+}
 
 type TokenResponse struct {
 	AccessToken string `json:"access_token"`
@@ -46,10 +69,11 @@ type PatConfig struct {
 }
 
 type OrgConfig struct {
-	Pat      PatConfig   `mapstructure:"pat"`
-	OAuth    OAuthConfig `mapstructure:"oauth"`
-	AuthType string      `mapstructure:"authtype"`
-	Debug    bool        `mapstructure:"debug"`
+	Pat                       PatConfig   `mapstructure:"pat"`
+	OAuth                     OAuthConfig `mapstructure:"oauth"`
+	AuthType                  string      `mapstructure:"authtype"`
+	CustomSearchTemplatesPath string      `mapstructure:"customSearchTemplatesPath"`
+	Debug                     bool        `mapstructure:"debug"`
 }
 
 func (c OrgConfig) Validate() error {
@@ -90,4 +114,16 @@ func (c OrgConfig) Validate() error {
 		return errors.New("configured authtype is invalid or missing")
 	}
 
+}
+
+type DevNull interface {
+}
+
+func Filter[T any](ss []T, test func(T) bool) (ret []T) {
+	for _, s := range ss {
+		if test(s) {
+			ret = append(ret, s)
+		}
+	}
+	return
 }

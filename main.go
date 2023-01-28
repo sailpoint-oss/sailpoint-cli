@@ -52,14 +52,18 @@ func init() {
 
 	err := viper.Unmarshal(&config)
 	if err != nil {
-		panic(fmt.Errorf("Unable to decode Config: %s \n", err))
+		panic(fmt.Errorf("unable to decode config: %s ", err))
 	}
 
 	auth.EnsureAccessToken(config, context.TODO())
 	c = client.NewSpClient(config)
 
+	var DevNull types.DevNull
+
 	configuration := sailpoint.NewConfiguration(sailpoint.ClientConfiguration{Token: util.GetAuthToken(), BaseURL: util.GetBaseUrl()})
 	apiClient := sailpoint.NewAPIClient(configuration)
+	apiClient.V3.GetConfig().HTTPClient.Logger = DevNull
+	apiClient.Beta.GetConfig().HTTPClient.Logger = DevNull
 
 	rootCmd = root.NewRootCmd(c, apiClient)
 

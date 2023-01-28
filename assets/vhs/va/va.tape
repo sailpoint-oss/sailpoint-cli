@@ -1,16 +1,12 @@
 # Where should we write the GIF?
-Output assets/img/vhs/MacOSAndLinux.gif
+Output assets/img/vhs/va/va.gif
 
 # Set up a 1200x600 terminal with 46px font.
 Set FontSize 16
 Set Width 1200
-Set Height 600
+Set Height 500
 
-Hide 
-
-Sleep 2s 
-
-Show
+Hide Sleep 2s Show
 
 # Start ...
 
@@ -18,25 +14,13 @@ Show
 Sleep 300ms
 
 # Type a command in the terminal.
-Type "make install"
+Type "sail va "
 
 # Pause for dramatic effect...
-Sleep 500ms
+Sleep 1s
 
 # Run the command by pressing enter.
 Enter 
 
-# Pause for dramatic effect...
-Sleep 800ms
-
-# Type a command in the terminal.
-Type "sail"
-
-# Pause for dramatic effect...
-Sleep 700ms
-
-# Run the command by pressing enter.
-Enter
-
 # Admire the output for a bit.
-Sleep 5s
+Sleep 15s

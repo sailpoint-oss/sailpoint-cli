@@ -1,5 +1,5 @@
 // Copyright (c) 2021, SailPoint Technologies, Inc. All rights reserved.
-package root
+package configure
 
 import (
 	"bufio"
@@ -63,7 +63,7 @@ func PromptAuth() (string, error) {
 	return choice, nil
 }
 
-func newConfigureCmd(client client.Client) *cobra.Command {
+func NewConfigureCmd(client client.Client) *cobra.Command {
 	var debug bool
 	cmd := &cobra.Command{
 		Use:     "configure",
@@ -213,7 +213,6 @@ func getConfigureParamsFromStdin(AuthType string, debug bool) (types.OrgConfig, 
 		}
 
 		scanner := bufio.NewScanner(os.Stdin)
-		var OAuth types.OAuthConfig
 		for _, pm := range paramsNames {
 			fmt.Print(pm)
 			scanner.Scan()
@@ -226,21 +225,20 @@ func getConfigureParamsFromStdin(AuthType string, debug bool) (types.OrgConfig, 
 			switch pm {
 			case paramsNames[0]:
 				setIDNUrls(value)
-				OAuth.Tenant = value
-				OAuth.BaseUrl = baseURL
-				OAuth.TokenUrl = tokenURL
-				OAuth.AuthUrl = authURL
+				conf.OAuth.Tenant = value
+				conf.OAuth.BaseUrl = baseURL
+				conf.OAuth.TokenUrl = tokenURL
+				conf.OAuth.AuthUrl = authURL
 			case paramsNames[1]:
-				OAuth.ClientID = value
+				conf.OAuth.ClientID = value
 			case paramsNames[2]:
-				OAuth.ClientSecret = value
+				conf.OAuth.ClientSecret = value
 			case paramsNames[3]:
-				OAuth.Redirect.Port, _ = strconv.Atoi(value)
+				conf.OAuth.Redirect.Port, _ = strconv.Atoi(value)
 			case paramsNames[4]:
-				OAuth.Redirect.Path = value
+				conf.OAuth.Redirect.Path = value
 			}
 		}
-		conf.OAuth = OAuth
 		conf.AuthType = AuthType
 
 		return conf, nil

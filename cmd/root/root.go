@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	sailpoint "github.com/sailpoint-oss/golang-sdk/sdk-output"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/configure"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/connector"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/search"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/transform"
@@ -31,9 +32,9 @@ func NewRootCmd(client client.Client, apiClient *sailpoint.APIClient) *cobra.Com
 		},
 	}
 	root.AddCommand(
-		newConfigureCmd(client),
 		newDebugCommand(),
 		newAuthCommand(),
+		configure.NewConfigureCmd(client),
 		connector.NewConnCmd(client),
 		transform.NewTransformCmd(client),
 		va.NewVACmd(),

@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -26,7 +25,7 @@ func NewTransformCmd(client client.Client) *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringP("transforms-endpoint", "e", util.GetBaseUrl()+transformsEndpoint, "Override transforms endpoint")
+	cmd.PersistentFlags().StringP("transforms-endpoint", "e", transformsEndpoint, "Override transforms endpoint")
 
 	cmd.AddCommand(
 		newListCmd(client),

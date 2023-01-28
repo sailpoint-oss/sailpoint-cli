@@ -1,5 +1,5 @@
 # Where should we write the GIF?
-Output assets/img/vhs/transform/transform-create.gif
+Output assets/img/vhs/transform/transform.gif
 
 # Set up a 1200x600 terminal with 46px font.
 Set FontSize 16
@@ -14,7 +14,7 @@ Hide Sleep 2s Show
 Sleep 300ms
 
 # Type a command in the terminal.
-Type "sail transform create -f ./transform_files/Transform.json"
+Type "sail transform"
 
 # Pause for dramatic effect...
 Sleep 1s

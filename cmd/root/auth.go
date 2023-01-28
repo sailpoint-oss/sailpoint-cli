@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/configure"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -12,7 +13,7 @@ func newAuthCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "auth",
 		Short:   "change currently active authentication mode",
-		Long:    "Change Auth Mode configured (pat, oauth).",
+		Long:    "Change Auth Mode Configured (pat, oauth).",
 		Example: "sail auth pat | oauth",
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -21,7 +22,7 @@ func newAuthCommand() *cobra.Command {
 			if len(args) > 0 {
 				selection = args[0]
 			} else {
-				selection, err = PromptAuth()
+				selection, err = configure.PromptAuth()
 				if err != nil {
 					return err
 				}
