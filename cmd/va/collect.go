@@ -1,23 +1,13 @@
 package va
 
 import (
-	"errors"
 	"fmt"
-	"io"
-	"log"
-	"net"
 	"os"
 	"path"
-	"sync"
-	"time"
 
 	"github.com/fatih/color"
-	"github.com/pkg/sftp"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
-	"github.com/vbauerster/mpb/v8"
-	"github.com/vbauerster/mpb/v8/decor"
-	"golang.org/x/crypto/ssh"
 )
 
 func newCollectCmd() *cobra.Command {
@@ -45,15 +35,6 @@ func newCollectCmd() *cobra.Command {
 				files = []string{"/home/sailpoint/log/ccg.log", "/home/sailpoint/log/charon.log", "/home/sailpoint/stuntlog.txt", "/home/sailpoint/proxy.yaml", "/etc/systemd/network/static.network", "/etc/resolv.conf"}
 			}
 
-			var wg sync.WaitGroup
-			// passed wg will be accounted at p.Wait() call
-			p := mpb.New(mpb.WithWidth(60),
-				mpb.PopCompletedMode(),
-				mpb.WithRefreshRate(180*time.Millisecond),
-				mpb.WithWaitGroup(&wg))
-
-			log.SetOutput(p)
-
 			for credential := 0; credential < len(args); credential++ {
 				password, _ := util.PromptPassword(fmt.Sprintf("Enter Password for %v:", args[credential]))
 				credentials = append(credentials, password)
@@ -61,87 +42,15 @@ func newCollectCmd() *cobra.Command {
 
 			for host := 0; host < len(args); host++ {
 				endpoint := args[host]
-				log.Printf("Starting Collection for %v\n", endpoint)
-				config := &ssh.ClientConfig{
-					User:            "sailpoint",
-					HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-					Auth: []ssh.AuthMethod{
-						ssh.Password(credentials[host]),
-					},
-				}
-
+				password := credentials[host]
 				outputFolder := path.Join(output, endpoint)
 
-				for file := 0; file < len(files); file++ {
-					wg.Add(1)
-					go func(file int) {
-						// Connect
-						client, err := ssh.Dial("tcp", net.JoinHostPort(endpoint, "22"), config)
-						if err != nil {
-							fmt.Println(err)
-						}
-
-						sftp, err := sftp.NewClient(client)
-						if err != nil {
-							fmt.Println(err)
-						}
-						defer sftp.Close()
-
-						defer wg.Done()
-
-						_, base := path.Split(files[file])
-						outputFile := path.Join(outputFolder, base)
-						if _, err := os.Stat(outputFolder); errors.Is(err, os.ErrNotExist) {
-							err := os.MkdirAll(outputFolder, 0700)
-							if err != nil {
-								fmt.Println(err)
-							}
-						}
-						remoteFileStats, statErr := sftp.Stat(files[file])
-						if statErr == nil {
-							name := fmt.Sprintf("%v - %v", endpoint, base)
-							bar := p.AddBar(remoteFileStats.Size(),
-								mpb.BarFillerClearOnComplete(),
-								mpb.PrependDecorators(
-									// simple name decorator
-									decor.Name(name, decor.WCSyncSpaceR),
-									decor.Name(":", decor.WCSyncSpaceR),
-									decor.OnComplete(decor.CountersKiloByte("% .2f / % .2f", decor.WCSyncSpaceR), "Complete"),
-									decor.TotalKiloByte("% .2f", decor.WCSyncSpaceR),
-								),
-								mpb.AppendDecorators(
-									decor.OnComplete(decor.EwmaSpeed(decor.UnitKB, "% .2f", 90, decor.WCSyncWidth), ""),
-									decor.OnComplete(decor.Percentage(decor.WC{W: 5}), ""),
-								),
-							)
-
-							// Open the source file
-							srcFile, err := sftp.Open(files[file])
-							if err != nil {
-								log.Println(err)
-							}
-							defer srcFile.Close()
-
-							// Create the destination file
-							dstFile, err := os.Create(outputFile)
-							if err != nil {
-								fmt.Println(err)
-							}
-							defer dstFile.Close()
-
-							writer := io.Writer(dstFile)
-
-							// create proxy reader
-							proxyWriter := bar.ProxyWriter(writer)
-							defer proxyWriter.Close()
-
-							io.Copy(proxyWriter, srcFile)
-						}
-					}(file)
+				err := util.CollectVAFiles(endpoint, password, outputFolder, files)
+				if err != nil {
+					return err
 				}
 
 			}
-			p.Wait()
 			color.Green("All Operations Complete")
 
 			return nil

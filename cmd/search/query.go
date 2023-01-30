@@ -6,6 +6,7 @@ import (
 
 	"github.com/fatih/color"
 	sailpoint "github.com/sailpoint-oss/golang-sdk/sdk-output"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -30,21 +31,21 @@ func newQueryCmd(apiClient *sailpoint.APIClient) *cobra.Command {
 			searchQuery = args[0]
 			fmt.Println(searchQuery)
 
-			search, err := BuildSearch(searchQuery, sort, indicies)
+			search, err := util.BuildSearch(searchQuery, sort, indicies)
 			if err != nil {
 				return err
 			}
 
 			color.Blue("\nPerforming Search\nQuery: \"%s\"\nIndicie: %s\n", searchQuery, indicies)
 
-			formattedResponse, err := PerformSearch(*apiClient, search)
+			formattedResponse, err := util.PerformSearch(*apiClient, search)
 			if err != nil {
 				return err
 			}
 
 			fileName := fmt.Sprintf("query=%s&indicie=%s.json", searchQuery, indicies)
 
-			err = SaveResults(formattedResponse, fileName, output)
+			err = util.SaveResults(formattedResponse, fileName, output)
 			if err != nil {
 				return err
 			}

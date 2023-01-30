@@ -29,7 +29,7 @@ Enter
 Sleep 500ms
 
 # Type a command in the terminal.
-Type "example-tenant"
+Type "example-tenant.identitynow.com"
 
 # Pause for dramatic effect...
 Sleep 1s

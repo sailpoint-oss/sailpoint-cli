@@ -86,14 +86,14 @@ func newTemplateCmd(apiClient *sailpoint.APIClient) *cobra.Command {
 
 			color.Blue("\nPerforming Search\nQuery: \"%s\"\nIndicie: %s\n\n", selectedTemplate.SearchQuery.Query.GetQuery(), selectedTemplate.SearchQuery.Indices)
 
-			formattedResponse, err := PerformSearch(*apiClient, selectedTemplate.SearchQuery)
+			formattedResponse, err := util.PerformSearch(*apiClient, selectedTemplate.SearchQuery)
 			if err != nil {
 				return err
 			}
 
 			fileName := fmt.Sprintf("query=%s&indicie=%s.json", selectedTemplate.SearchQuery.Query.GetQuery(), selectedTemplate.SearchQuery.Indices)
 
-			err = SaveResults(formattedResponse, fileName, output)
+			err = util.SaveResults(formattedResponse, fileName, output)
 			if err != nil {
 				return err
 			}
