@@ -8,7 +8,7 @@ builds:
     goarch:
       - amd64
       - arm64
-      
+
 archives:
   - format: tar.gz
     format_overrides:
@@ -17,19 +17,18 @@ archives:
 
 dockers:
   - image_templates:
-    - sailpoint/sailpoint-cli:{{.Tag}}
+      - sailpoint/sailpoint-cli:{{.Tag}}
     use: buildx
     dockerfile: Dockerfile
     build_flag_templates:
       - "--platform=linux/amd64"
 
 brews:
-  -
-    name: sailpoint-cli
+  - name: sailpoint-cli
     homepage: "https://github.com/sailpoint-oss/sailpoint-cli"
     tap:
       owner: sailpoint-oss
-      name: homebrew-sailpoint-oss
+      name: homebrew-tap
     commit_author:
       name: colin-mckibben-sp
       email: colin.mckibben@sailpoint.com

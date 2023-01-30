@@ -52,7 +52,6 @@ contribution guidelines below, first!
   - [Installation](#installation)
     - [Homebrew](#homebrew)
     - [Manual Installation](#manual-installation)
-      - [Prerequisites](#prerequisites)
       - [MacOS and Linux](#macos-and-linux)
       - [Windows](#windows)
   - [Configuration](#configuration)
@@ -84,14 +83,6 @@ brew install sailpoint-oss/homebrew-sailpoint-oss/sailpoint-cli
 ### Manual Installation
 
 Prebuilt binaries for OS X, Windows, and Linux are provided in our [releases](https://github.com/sailpoint-oss/sailpoint-cli/releases) section. If you download the prebuilt binary, you can skip to the [configuration](#configuration) section. If you want to manually build this project, please follow the steps below.
-
-#### Prerequisites
-
-For Mac OS users, you can use [Homebrew](https://brew.sh/) to install the CLI. Please run the following command in your terminal:
-
-```sh
-brew install sailpoint-oss/homebrew-sailpoint-oss/sailpoint-cli
-```
 
 #### MacOS and Linux
 
