@@ -77,7 +77,7 @@ There are several ways to install the SailPoint CLI, including through a package
 For Mac OS users, you can use [Homebrew](https://brew.sh/) to install the CLI. Please run the following command in your terminal:
 
 ```sh
-brew install sailpoint-oss/homebrew-sailpoint-oss/sailpoint-cli
+brew tap sailpoint-oss/tap && brew install sailpoint-cli
 ```
 
 ### Manual Installation
