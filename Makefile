@@ -12,6 +12,6 @@ install:
 	go build -o /usr/local/bin/sail -buildvcs=false
 
 vhs:
-	ls **/*.tape | xargs -n 1 vhs
+	find assets -name "*.tape" | xargs -n 1 vhs
 
 .PHONY: clean mocks test install vhs .docker/login .docker/build .docker/push

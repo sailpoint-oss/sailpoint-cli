@@ -28,7 +28,7 @@ func ParseIndicie(indicie string) (sailpointsdk.Index, error) {
 	case "roles":
 		return sailpointsdk.INDEX_ROLES, nil
 	}
-	return sailpointsdk.INDEX_STAR, fmt.Errorf("indicie provided is invalid")
+	return "*", fmt.Errorf("indicie provided is invalid")
 }
 
 func BuildSearch(searchQuery string, sort []string, indicies []string) (sailpointsdk.Search1, error) {

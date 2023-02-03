@@ -14,15 +14,7 @@ Hide Sleep 2s Show
 Sleep 300ms
 
 # Type a command in the terminal.
-Type "sail configure"
-
-# Pause for dramatic effect...
-Sleep 1s
-
-# Run the command by pressing enter.
-Enter 
-
-Sleep 500ms
+Type "sail configure pat"
 
 Enter 
 

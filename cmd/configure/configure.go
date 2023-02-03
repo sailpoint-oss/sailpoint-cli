@@ -10,11 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/auth"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
-	tuilist "github.com/sailpoint-oss/sailpoint-cli/internal/tui/list"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -37,30 +34,17 @@ var (
 )
 
 func PromptAuth() (string, error) {
-	items := []list.Item{
-		tuilist.Item("PAT"),
-		tuilist.Item("OAuth"),
+	items := []types.Choice{
+		{Title: "PAT", Description: "Person Access Token - Single User"},
+		{Title: "OAuth", Description: "OAuth2.0 Authentication - Sign in via the Website"},
 	}
 
-	const defaultWidth = 20
-
-	l := list.New(items, tuilist.ItemDelegate{}, defaultWidth, tuilist.ListHeight)
-	l.Title = "What authentication method do you want to use?"
-	l.SetShowStatusBar(false)
-	l.SetFilteringEnabled(false)
-	l.Styles.Title = tuilist.TitleStyle
-	l.Styles.PaginationStyle = tuilist.PaginationStyle
-	l.Styles.HelpStyle = tuilist.HelpStyle
-
-	m := tuilist.Model{List: l}
-	_, err := tea.NewProgram(m).Run()
+	choice, err := tui.PromptList(items, "Choose an authentication method to configure")
 	if err != nil {
 		return "", err
 	}
 
-	choice := m.Retrieve()
-
-	return choice, nil
+	return strings.ToLower(choice.Title), nil
 }
 
 func NewConfigureCmd(client client.Client) *cobra.Command {
@@ -97,12 +81,12 @@ func NewConfigureCmd(client client.Client) *cobra.Command {
 
 			switch strings.ToLower(AuthType) {
 			case "pat":
-				_, err = auth.PATLogin(config, cmd.Context())
+				err = config.PATLogin()
 				if err != nil {
 					return err
 				}
 			case "oauth":
-				_, err := auth.OAuthLogin(config)
+				err := config.OAuthLogin()
 				if err != nil {
 					return err
 				}
@@ -119,7 +103,7 @@ func NewConfigureCmd(client client.Client) *cobra.Command {
 	return cmd
 }
 
-func updateConfigFile(conf types.OrgConfig) error {
+func updateConfigFile(conf types.CLIConfig) error {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
@@ -135,12 +119,7 @@ func updateConfigFile(conf types.OrgConfig) error {
 	viper.Set("authtype", conf.AuthType)
 	viper.Set("debug", conf.Debug)
 
-	switch strings.ToLower(conf.AuthType) {
-	case "pat":
-		viper.Set("pat", conf.Pat)
-	case "oauth":
-		viper.Set("oauth", conf.OAuth)
-	}
+	viper.Set(fmt.Sprintf("environments.%s", conf.ActiveEnvironment), conf.Environments[conf.ActiveEnvironment])
 
 	err = viper.WriteConfig()
 	if err != nil {
@@ -167,11 +146,12 @@ func setIDNUrls(tenant string) {
 	authURL = fmt.Sprintf(authURLTemplate, tenant)
 }
 
-func getConfigureParamsFromStdin(AuthType string, debug bool) (types.OrgConfig, error) {
-	var conf types.OrgConfig
+func getConfigureParamsFromStdin(AuthType string, debug bool) (types.CLIConfig, error) {
+	var config types.CLIConfig
 
 	switch strings.ToLower(AuthType) {
 	case "pat":
+		var Pat types.PatConfig
 		paramsNames := []string{
 			"Tenant (ex. tenant.identitynow.com): ",
 			"Personal Access Token Client ID: ",
@@ -185,25 +165,29 @@ func getConfigureParamsFromStdin(AuthType string, debug bool) (types.OrgConfig, 
 			value := scanner.Text()
 
 			if value == "" {
-				return conf, fmt.Errorf("%s parameter is empty", pm[:len(pm)-2])
+				return config, fmt.Errorf("%s parameter is empty", pm[:len(pm)-2])
 			}
 
 			switch pm {
 			case paramsNames[0]:
 				setIDNUrls(value)
-				conf.Pat.Tenant = value
-				conf.Pat.BaseUrl = baseURL
-				conf.Pat.TokenUrl = tokenURL
+				Pat.Tenant = value
+				Pat.BaseUrl = baseURL
+				Pat.TokenUrl = tokenURL
 			case paramsNames[1]:
-				conf.Pat.ClientID = value
+				Pat.ClientID = value
 			case paramsNames[2]:
-				conf.Pat.ClientSecret = value
+				Pat.ClientSecret = value
 			}
 		}
-		conf.AuthType = AuthType
+		config.AuthType = AuthType
+		tempEnv := config.Environments[config.ActiveEnvironment]
+		tempEnv.Pat = Pat
+		config.Environments[config.ActiveEnvironment] = tempEnv
 
-		return conf, nil
+		return config, nil
 	case "oauth":
+		var OAuth types.OAuthConfig
 		paramsNames := []string{
 			"Tenant (ex. tenant.identitynow.com): ",
 			"OAuth Client ID: ",
@@ -219,29 +203,33 @@ func getConfigureParamsFromStdin(AuthType string, debug bool) (types.OrgConfig, 
 			value := scanner.Text()
 
 			if value == "" && pm != paramsNames[2] {
-				return conf, fmt.Errorf("%s parameter is empty", pm[:len(pm)-2])
+				return config, fmt.Errorf("%s parameter is empty", pm[:len(pm)-2])
 			}
 
 			switch pm {
 			case paramsNames[0]:
 				setIDNUrls(value)
-				conf.OAuth.Tenant = value
-				conf.OAuth.BaseUrl = baseURL
-				conf.OAuth.TokenUrl = tokenURL
-				conf.OAuth.AuthUrl = authURL
+				OAuth.Tenant = value
+				OAuth.BaseUrl = baseURL
+				OAuth.TokenUrl = tokenURL
+				OAuth.AuthUrl = authURL
 			case paramsNames[1]:
-				conf.OAuth.ClientID = value
+				OAuth.ClientID = value
 			case paramsNames[2]:
-				conf.OAuth.ClientSecret = value
+				OAuth.ClientSecret = value
 			case paramsNames[3]:
-				conf.OAuth.Redirect.Port, _ = strconv.Atoi(value)
+				OAuth.Redirect.Port, _ = strconv.Atoi(value)
 			case paramsNames[4]:
-				conf.OAuth.Redirect.Path = value
+				OAuth.Redirect.Path = value
 			}
 		}
-		conf.AuthType = AuthType
+		config.AuthType = AuthType
+		tempEnv := config.Environments[config.ActiveEnvironment]
+		tempEnv.OAuth = OAuth
+		config.Environments[config.ActiveEnvironment] = tempEnv
 
-		return conf, nil
+		return config, nil
+	default:
+		return config, errors.New("invalid auth type provided")
 	}
-	return conf, errors.New("invalid auth type provided")
 }

@@ -2,28 +2,27 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	sailpoint "github.com/sailpoint-oss/golang-sdk/sdk-output"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/root"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/auth"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var (
-	c         client.Client
-	apiClient sailpoint.APIClient
-	rootCmd   *cobra.Command
+	c       client.Client
+	rootCmd *cobra.Command
 )
 
-func initConfig() {
+func init() {
+	var Config types.CLIConfig
+	var DevNull types.DevNull
+
 	home, err := os.UserHomeDir()
 	cobra.CheckErr(err)
 
@@ -43,24 +42,26 @@ func initConfig() {
 			cobra.CheckErr(err)
 		}
 	}
-}
 
-func init() {
-	initConfig()
-
-	var config types.OrgConfig
-
-	err := viper.Unmarshal(&config)
+	err = viper.Unmarshal(&Config)
 	if err != nil {
 		panic(fmt.Errorf("unable to decode config: %s ", err))
 	}
 
-	auth.EnsureAccessToken(config, context.TODO())
-	c = client.NewSpClient(config)
+	Config.EnsureAccessToken()
 
-	var DevNull types.DevNull
+	BaseUrl, err := Config.GetBaseUrl()
+	if err != nil {
+		panic(fmt.Errorf("unable to retrieve baseURL: %s ", err))
+	}
 
-	configuration := sailpoint.NewConfiguration(sailpoint.ClientConfiguration{Token: util.GetAuthToken(), BaseURL: util.GetBaseUrl()})
+	Token, err := Config.GetAuthToken()
+	fmt.Println(Token)
+	if err != nil {
+		panic(fmt.Errorf("unable to retrieve accesstoken: %s ", err))
+	}
+
+	configuration := sailpoint.NewConfiguration(sailpoint.ClientConfiguration{Token: Token, BaseURL: BaseUrl})
 	apiClient := sailpoint.NewAPIClient(configuration)
 	apiClient.V3.GetConfig().HTTPClient.Logger = DevNull
 	apiClient.Beta.GetConfig().HTTPClient.Logger = DevNull

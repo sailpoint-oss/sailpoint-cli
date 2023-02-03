@@ -8,7 +8,6 @@ import (
 
 	"github.com/fatih/color"
 	sailpoint "github.com/sailpoint-oss/golang-sdk/sdk-output"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
@@ -39,24 +38,29 @@ func newTemplateCmd(apiClient *sailpoint.APIClient) *cobra.Command {
 			if len(args) > 0 {
 				template = args[0]
 			} else {
-				var prompts []types.Choice
-				for i := 0; i < len(searchTemplates); i++ {
-					temp := searchTemplates[i]
+				// var prompts []types.Choice
+				// for i := 0; i < len(searchTemplates); i++ {
+				// 	temp := searchTemplates[i]
 
-					var description string
-					if len(temp.Variables) > 0 {
-						description = fmt.Sprintf("%s - Accepts Input", temp.Description)
-					} else {
-						description = temp.Description
-					}
-					prompts = append(prompts, types.Choice{Title: temp.Name, Description: description})
-				}
+				// 	var description string
+				// 	if len(temp.Variables) > 0 {
+				// 		description = fmt.Sprintf("%s - Accepts Input", temp.Description)
+				// 	} else {
+				// 		description = temp.Description
+				// 	}
+				// 	prompts = append(prompts, types.Choice{Title: temp.Name, Description: description})
+				// }
 
-				intermediate, err := tui.PromptList(prompts, "Select a Template")
+				// intermediate, err := tui.PromptList(prompts, "Select a Template")
+				// if err != nil {
+				// 	return err
+				// }
+				// template = intermediate.Title
+
+				template, err = util.SelectTemplate(searchTemplates)
 				if err != nil {
 					return err
 				}
-				template = intermediate.Title
 			}
 			if template == "" {
 				return fmt.Errorf("no template specified")

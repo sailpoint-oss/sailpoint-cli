@@ -8,6 +8,7 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/configure"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/connector"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/search"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/spconfig"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/transform"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/va"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
@@ -39,6 +40,7 @@ func NewRootCmd(client client.Client, apiClient *sailpoint.APIClient) *cobra.Com
 		transform.NewTransformCmd(client),
 		va.NewVACmd(),
 		search.NewSearchCmd(apiClient),
+		spconfig.NewSPConfigCmd(apiClient),
 	)
 	return root
 }

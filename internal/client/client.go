@@ -8,12 +8,10 @@ import (
 	"io"
 	"net/http"
 	"net/http/httputil"
-	"strings"
 	"time"
 
-	"github.com/sailpoint-oss/sailpoint-cli/internal/auth"
+	clierrors "github.com/sailpoint-oss/sailpoint-cli/internal/errors"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/viper"
 )
 
@@ -26,27 +24,16 @@ type Client interface {
 
 // SpClient provides access to SP APIs.
 type SpClient struct {
-	cfg         types.OrgConfig
+	cfg         types.CLIConfig
 	client      *http.Client
 	accessToken string
-	// tokenExpiry time.Time
 }
 
-func NewSpClient(cfg types.OrgConfig) Client {
+func NewSpClient(cfg types.CLIConfig) Client {
 	return &SpClient{
 		cfg:    cfg,
 		client: &http.Client{},
 	}
-}
-
-func getBaseUrl(c *SpClient) (string, error) {
-	switch strings.ToLower(c.cfg.AuthType) {
-	case "pat":
-		return c.cfg.Pat.BaseUrl, nil
-	case "oauth":
-		return c.cfg.OAuth.BaseUrl, nil
-	}
-	return "", errors.New("invalid authtype configured")
 }
 
 func (c *SpClient) Get(ctx context.Context, url string) (*http.Response, error) {
@@ -54,7 +41,7 @@ func (c *SpClient) Get(ctx context.Context, url string) (*http.Response, error) 
 		return nil, err
 	}
 
-	baseUrl, err := getBaseUrl(c)
+	baseUrl, err := c.cfg.GetBaseUrl()
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +74,7 @@ func (c *SpClient) Delete(ctx context.Context, url string, params map[string]str
 		return nil, err
 	}
 
-	baseUrl, err := getBaseUrl(c)
+	baseUrl, err := c.cfg.GetBaseUrl()
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +115,7 @@ func (c *SpClient) Post(ctx context.Context, url string, contentType string, bod
 		return nil, err
 	}
 
-	baseUrl, err := getBaseUrl(c)
+	baseUrl, err := c.cfg.GetBaseUrl()
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +149,7 @@ func (c *SpClient) Put(ctx context.Context, url string, contentType string, body
 		return nil, err
 	}
 
-	baseUrl, err := getBaseUrl(c)
+	baseUrl, err := c.cfg.GetBaseUrl()
 	if err != nil {
 		return nil, err
 	}
@@ -203,16 +190,20 @@ func (c *SpClient) ensureAccessToken(ctx context.Context) error {
 	}
 
 	var cachedTokenExpiry time.Time
-	switch util.GetAuthType() {
+	switch c.cfg.GetAuthType() {
 	case "pat":
 		cachedTokenExpiry = viper.GetTime("pat.token.expiry")
 		if cachedTokenExpiry.After(time.Now()) {
 			c.accessToken = viper.GetString("pat.token.accesstoken")
+		} else {
+			return clierrors.ErrAccessTokenExpired
 		}
 	case "oauth":
 		cachedTokenExpiry = viper.GetTime("oauth.token.expiry")
 		if cachedTokenExpiry.After(time.Now()) {
 			c.accessToken = viper.GetString("oauth.token.accesstoken")
+		} else {
+			return clierrors.ErrAccessTokenExpired
 		}
 	default:
 		return errors.New("invalid authtype configured")
@@ -220,42 +211,7 @@ func (c *SpClient) ensureAccessToken(ctx context.Context) error {
 	}
 
 	if c.accessToken != "" {
-		return nil
-	}
-
-	var token types.Token
-	switch strings.ToLower(c.cfg.AuthType) {
-	case "pat":
-		token, err = auth.PATLogin(c.cfg, ctx)
-		if err != nil {
-			return err
-		}
-		c.accessToken = token.AccessToken
-		viper.Set("pat.token", token)
-
-	case "oauth":
-
-		token, err = auth.OAuthLogin(c.cfg)
-		if err != nil {
-			return err
-		}
-		c.accessToken = token.AccessToken
-		viper.Set("oauth.token", token)
-
-	default:
-		return nil
-	}
-
-	err = viper.WriteConfig()
-	if err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			err = viper.SafeWriteConfig()
-			if err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
+		return fmt.Errorf("no token present")
 	}
 
 	return nil
