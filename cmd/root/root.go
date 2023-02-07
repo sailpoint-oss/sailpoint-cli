@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var version = "0.4.0"
+var version = "0.4.1"
 
 func NewRootCmd(client client.Client, apiClient *sailpoint.APIClient) *cobra.Command {
 	root := &cobra.Command{
