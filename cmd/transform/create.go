@@ -2,20 +2,18 @@
 package transform
 
 import (
-	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
+	sailpointsdk "github.com/sailpoint-oss/golang-sdk/sdk-output/v3"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/spf13/cobra"
 )
 
-func newCreateCmd(client client.Client) *cobra.Command {
+func newCreateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "create",
 		Short:   "create transform",
@@ -49,26 +47,15 @@ func newCreateCmd(client client.Client) *cobra.Command {
 				return fmt.Errorf("the transform must have a name")
 			}
 
-			raw, err := json.Marshal(data)
+			transform := sailpointsdk.NewTransform(data["name"].(string), data["type"].(string), data["attributes"].(map[string]interface{}))
+
+			apiClient := config.InitAPIClient()
+			_, _, err := apiClient.V3.TransformsApi.CreateTransform(context.TODO()).Transform(*transform).Execute()
 			if err != nil {
 				return err
 			}
 
-			endpoint := cmd.Flags().Lookup("transforms-endpoint").Value.String()
-			resp, err := client.Post(cmd.Context(), util.ResourceUrl(endpoint), "application/json", bytes.NewReader(raw))
-			if err != nil {
-				return err
-			}
-			defer func(Body io.ReadCloser) {
-				_ = Body.Close()
-			}(resp.Body)
-
-			if resp.StatusCode != http.StatusCreated {
-				body, _ := io.ReadAll(resp.Body)
-				return fmt.Errorf("create transform failed. status: %s\nbody: %s", resp.Status, body)
-			}
-
-			err = listTransforms(client, endpoint, cmd)
+			err = ListTransforms()
 			if err != nil {
 				return err
 			}

@@ -4,11 +4,10 @@ package search
 import (
 	"fmt"
 
-	sailpoint "github.com/sailpoint-oss/golang-sdk/sdk-output"
 	"github.com/spf13/cobra"
 )
 
-func NewSearchCmd(apiClient *sailpoint.APIClient) *cobra.Command {
+func NewSearchCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "search",
 		Short:   "perform search in identitynow with a search string",
@@ -22,8 +21,8 @@ func NewSearchCmd(apiClient *sailpoint.APIClient) *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newQueryCmd(apiClient),
-		newTemplateCmd(apiClient),
+		newQueryCmd(),
+		newTemplateCmd(),
 	)
 
 	return cmd

@@ -4,11 +4,10 @@ package spconfig
 import (
 	"fmt"
 
-	sailpoint "github.com/sailpoint-oss/golang-sdk/sdk-output"
 	"github.com/spf13/cobra"
 )
 
-func NewSPConfigCmd(apiClient *sailpoint.APIClient) *cobra.Command {
+func NewSPConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "spconfig",
 		Short:   "perform spconfig operations in identitynow",
@@ -22,8 +21,11 @@ func NewSPConfigCmd(apiClient *sailpoint.APIClient) *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newExportCmd(apiClient),
-		newExportStatusCmd(apiClient),
+		newExportCmd(),
+		newExportStatusCmd(),
+		newTemplateCmd(),
+		newDownloadCmd(),
+		newImportCommand(),
 	)
 
 	return cmd

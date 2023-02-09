@@ -12,6 +12,7 @@ import (
 
 	transmodel "github.com/sailpoint-oss/sailpoint-cli/cmd/transform/model"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -19,7 +20,7 @@ import (
 
 var implicitInput bool
 
-func newPreviewCmd(client client.Client) *cobra.Command {
+func newPreviewCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "preview",
 		Short:   "preview transform",
@@ -30,6 +31,13 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			idProfile := cmd.Flags().Lookup("identity-profile").Value.String()
 			attribute := cmd.Flags().Lookup("attribute").Value.String()
+
+			Config, err := config.GetConfig()
+			if err != nil {
+				cobra.CheckErr(err)
+			}
+
+			Client := client.NewSpClient(Config)
 
 			var transform map[string]interface{}
 
@@ -58,7 +66,7 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 			// original transform for the attribute, which will contain the account attribute
 			// name and source name that will be used in the preview body.
 			endpoint := cmd.Flags().Lookup("identity-profile-endpoint").Value.String()
-			resp, err := client.Get(cmd.Context(), util.ResourceUrl(endpoint, idProfile))
+			resp, err := Client.Get(cmd.Context(), util.ResourceUrl(endpoint, idProfile))
 			if err != nil {
 				return err
 			}
@@ -94,7 +102,7 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 			query.Add("filters", "[{\"property\":\"links.application.id\",\"operation\":\"EQ\",\"value\":\""+profile.AuthoritativeSource.Id+"\"}]")
 			uri.RawQuery = query.Encode()
 
-			resp, err = client.Get(cmd.Context(), uri.String())
+			resp, err = Client.Get(cmd.Context(), uri.String())
 			if err != nil {
 				return err
 			}
@@ -163,7 +171,7 @@ func newPreviewCmd(client client.Client) *cobra.Command {
 
 			// Call the preview endpoint to get the raw and transformed attribute values
 			endpoint = cmd.Flags().Lookup("preview-endpoint").Value.String()
-			resp, err = client.Post(cmd.Context(), util.ResourceUrl(endpoint, user[0].Id), "application/json", bytes.NewReader(previewBodyRaw))
+			resp, err = Client.Post(cmd.Context(), util.ResourceUrl(endpoint, user[0].Id), "application/json", bytes.NewReader(previewBodyRaw))
 			if err != nil {
 				return err
 			}

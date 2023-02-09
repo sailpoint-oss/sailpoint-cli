@@ -23,18 +23,6 @@ func newDebugCommand() *cobra.Command {
 				viper.Set("debug", false)
 			}
 
-			err := viper.WriteConfig()
-			if err != nil {
-				if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-					err = viper.SafeWriteConfig()
-					if err != nil {
-						return err
-					}
-				} else {
-					return err
-				}
-			}
-
 			return nil
 		},
 	}

@@ -6,7 +6,8 @@ import (
 	"path"
 
 	"github.com/fatih/color"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/va"
 	"github.com/spf13/cobra"
 )
 
@@ -36,7 +37,7 @@ func newCollectCmd() *cobra.Command {
 			}
 
 			for credential := 0; credential < len(args); credential++ {
-				password, _ := util.PromptPassword(fmt.Sprintf("Enter Password for %v:", args[credential]))
+				password, _ := terminal.PromptPassword(fmt.Sprintf("Enter Password for %v:", args[credential]))
 				credentials = append(credentials, password)
 			}
 
@@ -45,7 +46,7 @@ func newCollectCmd() *cobra.Command {
 				password := credentials[host]
 				outputFolder := path.Join(output, endpoint)
 
-				err := util.CollectVAFiles(endpoint, password, outputFolder, files)
+				err := va.CollectVAFiles(endpoint, password, outputFolder, files)
 				if err != nil {
 					return err
 				}

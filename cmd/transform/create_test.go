@@ -28,7 +28,7 @@ func TestNewCreateCmd(t *testing.T) {
 		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("[]")))}, nil).
 		Times(1)
 
-	cmd := newCreateCmd(client)
+	cmd := newCreateCmd()
 
 	b := new(bytes.Buffer)
 	cmd.SetOut(b)

@@ -22,7 +22,7 @@ func TestNewUpdateCmd(t *testing.T) {
 		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("{}")))}, nil).
 		Times(1)
 
-	cmd := newUpdateCmd(client)
+	cmd := newUpdateCmd()
 
 	b := new(bytes.Buffer)
 	cmd.SetOut(b)

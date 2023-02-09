@@ -6,7 +6,6 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 )
 
 var docStyle = lipgloss.NewStyle().Margin(1, 2)
@@ -14,6 +13,11 @@ var docStyle = lipgloss.NewStyle().Margin(1, 2)
 type ListItem struct {
 	title       string
 	description string
+}
+
+type Choice struct {
+	Title       string
+	Description string
 }
 
 var choice ListItem
@@ -69,7 +73,7 @@ func (m model) Retrieve() ListItem {
 	}
 }
 
-func PromptList(choices []types.Choice, Title string) (types.Choice, error) {
+func PromptList(choices []Choice, Title string) (Choice, error) {
 
 	items := []list.Item{}
 	for i := 0; i < len(choices); i++ {
@@ -84,10 +88,10 @@ func PromptList(choices []types.Choice, Title string) (types.Choice, error) {
 	p := tea.NewProgram(m, tea.WithAltScreen())
 
 	if _, err := p.Run(); err != nil {
-		return types.Choice{}, fmt.Errorf("error running program: %s", err)
+		return Choice{}, fmt.Errorf("error running program: %s", err)
 	}
 
 	choice := m.Retrieve()
 
-	return types.Choice{Title: choice.title, Description: choice.description}, nil
+	return Choice{Title: choice.title, Description: choice.description}, nil
 }

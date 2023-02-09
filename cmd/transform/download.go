@@ -3,19 +3,15 @@ package transform
 
 import (
 	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/spf13/cobra"
 )
 
-func newDownloadCmd(client client.Client) *cobra.Command {
+func newDownloadCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "download",
 		Short:   "download transforms",
@@ -24,44 +20,21 @@ func newDownloadCmd(client client.Client) *cobra.Command {
 		Aliases: []string{"dl"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			endpoint := cmd.Flags().Lookup("transforms-endpoint").Value.String()
 
-			resp, err := client.Get(cmd.Context(), endpoint)
-			if err != nil {
-				return err
-			}
-			defer func(Body io.ReadCloser) {
-				_ = Body.Close()
-			}(resp.Body)
-
-			if resp.StatusCode != http.StatusOK {
-				body, _ := io.ReadAll(resp.Body)
-				return fmt.Errorf("non-200 response: %s\nbody: %s", resp.Status, body)
-			}
-
-			raw, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return err
-			}
-
-			// Since we just want to save the content to files, we don't need
-			// to parse individual fields.  Just get the string representation.
-			var transforms []map[string]interface{}
-
-			err = json.Unmarshal(raw, &transforms)
+			transforms, err := GetTransforms()
 			if err != nil {
 				return err
 			}
 
 			destination := cmd.Flags().Lookup("destination").Value.String()
 
-			err = listTransforms(client, endpoint, cmd)
+			err = ListTransforms()
 			if err != nil {
 				return err
 			}
 
 			for _, v := range transforms {
-				filename := strings.ReplaceAll(v["name"].(string), " ", "") + ".json"
+				filename := strings.ReplaceAll(v.Name, " ", "") + ".json"
 				content, _ := json.MarshalIndent(v, "", "    ")
 
 				var err error

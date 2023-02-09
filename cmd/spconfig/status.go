@@ -4,12 +4,12 @@ package spconfig
 import (
 	"context"
 
-	sailpoint "github.com/sailpoint-oss/golang-sdk/sdk-output"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/spconfig"
 	"github.com/spf13/cobra"
 )
 
-func newExportStatusCmd(apiClient *sailpoint.APIClient) *cobra.Command {
+func newExportStatusCmd() *cobra.Command {
 	var exportJobs []string
 	var importJobs []string
 	cmd := &cobra.Command{
@@ -21,6 +21,8 @@ func newExportStatusCmd(apiClient *sailpoint.APIClient) *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
+			apiClient := config.InitAPIClient()
+
 			for i := 0; i < len(exportJobs); i++ {
 				job := exportJobs[i]
 				ctx := context.TODO()
@@ -29,7 +31,7 @@ func newExportStatusCmd(apiClient *sailpoint.APIClient) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				util.PrintJob(*status)
+				spconfig.PrintJob(*status)
 			}
 
 			for i := 0; i < len(importJobs); i++ {
@@ -40,7 +42,7 @@ func newExportStatusCmd(apiClient *sailpoint.APIClient) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				util.PrintJob(*status)
+				spconfig.PrintJob(*status)
 			}
 
 			return nil

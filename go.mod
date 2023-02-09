@@ -7,6 +7,7 @@ require (
 	github.com/charmbracelet/bubbletea v0.23.1
 	github.com/charmbracelet/lipgloss v0.6.0
 	github.com/fatih/color v1.13.0
+	github.com/gocarina/gocsv v0.0.0-20230123225133-763e25b40669
 	github.com/golang/mock v1.6.0
 	github.com/kr/pretty v0.3.1
 	github.com/logrusorgru/aurora v2.0.3+incompatible
@@ -20,6 +21,7 @@ require (
 	github.com/spf13/viper v1.15.0
 	github.com/vbauerster/mpb/v8 v8.1.4
 	golang.org/x/crypto v0.5.0
+	golang.org/x/exp v0.0.0-20230206171751-46f607a40771
 	golang.org/x/oauth2 v0.4.0
 	golang.org/x/term v0.4.0
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61

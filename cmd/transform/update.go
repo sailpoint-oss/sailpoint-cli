@@ -2,19 +2,17 @@
 package transform
 
 import (
-	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 
-	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
+	sailpointsdk "github.com/sailpoint-oss/golang-sdk/sdk-output/v3"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/spf13/cobra"
 )
 
-func newUpdateCmd(client client.Client) *cobra.Command {
+func newUpdateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "update",
 		Short:   "update transform",
@@ -51,23 +49,12 @@ func newUpdateCmd(client client.Client) *cobra.Command {
 			id := data["id"].(string)
 			delete(data, "id") // ID can't be present in the update payload
 
-			raw, err := json.Marshal(data)
+			transform := sailpointsdk.NewTransform(data["name"].(string), data["type"].(string), data["attributes"].(map[string]interface{}))
+
+			apiClient := config.InitAPIClient()
+			_, _, err := apiClient.V3.TransformsApi.UpdateTransform(context.TODO(), id).Transform(*transform).Execute()
 			if err != nil {
 				return err
-			}
-
-			endpoint := cmd.Flags().Lookup("transforms-endpoint").Value.String()
-			resp, err := client.Put(cmd.Context(), util.ResourceUrl(endpoint, id), "application/json", bytes.NewReader(raw))
-			if err != nil {
-				return err
-			}
-			defer func(Body io.ReadCloser) {
-				_ = Body.Close()
-			}(resp.Body)
-
-			if resp.StatusCode != http.StatusOK {
-				body, _ := io.ReadAll(resp.Body)
-				return fmt.Errorf("update transform failed. status: %s\nbody: %s", resp.Status, body)
 			}
 
 			return nil

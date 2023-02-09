@@ -10,8 +10,7 @@ import (
 	"net/http/httputil"
 	"time"
 
-	clierrors "github.com/sailpoint-oss/sailpoint-cli/internal/errors"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/spf13/viper"
 )
 
@@ -24,12 +23,12 @@ type Client interface {
 
 // SpClient provides access to SP APIs.
 type SpClient struct {
-	cfg         types.CLIConfig
+	cfg         config.CLIConfig
 	client      *http.Client
 	accessToken string
 }
 
-func NewSpClient(cfg types.CLIConfig) Client {
+func NewSpClient(cfg config.CLIConfig) Client {
 	return &SpClient{
 		cfg:    cfg,
 		client: &http.Client{},
@@ -41,10 +40,7 @@ func (c *SpClient) Get(ctx context.Context, url string) (*http.Response, error) 
 		return nil, err
 	}
 
-	baseUrl, err := c.cfg.GetBaseUrl()
-	if err != nil {
-		return nil, err
-	}
+	baseUrl := config.GetBaseUrl()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseUrl+url, nil)
 	if err != nil {
@@ -74,10 +70,7 @@ func (c *SpClient) Delete(ctx context.Context, url string, params map[string]str
 		return nil, err
 	}
 
-	baseUrl, err := c.cfg.GetBaseUrl()
-	if err != nil {
-		return nil, err
-	}
+	baseUrl := config.GetBaseUrl()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, baseUrl+url, nil)
 	if err != nil {
@@ -115,10 +108,7 @@ func (c *SpClient) Post(ctx context.Context, url string, contentType string, bod
 		return nil, err
 	}
 
-	baseUrl, err := c.cfg.GetBaseUrl()
-	if err != nil {
-		return nil, err
-	}
+	baseUrl := config.GetBaseUrl()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, baseUrl+url, body)
 	if err != nil {
@@ -149,10 +139,7 @@ func (c *SpClient) Put(ctx context.Context, url string, contentType string, body
 		return nil, err
 	}
 
-	baseUrl, err := c.cfg.GetBaseUrl()
-	if err != nil {
-		return nil, err
-	}
+	baseUrl := config.GetBaseUrl()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPut, baseUrl+url, body)
 	if err != nil {
@@ -180,7 +167,7 @@ func (c *SpClient) Put(ctx context.Context, url string, contentType string, body
 }
 
 func (c *SpClient) ensureAccessToken(ctx context.Context) error {
-	err := c.cfg.Validate()
+	err := config.Validate()
 	if err != nil {
 		return err
 	}
@@ -190,28 +177,30 @@ func (c *SpClient) ensureAccessToken(ctx context.Context) error {
 	}
 
 	var cachedTokenExpiry time.Time
-	switch c.cfg.GetAuthType() {
+	switch config.GetAuthType() {
 	case "pat":
 		cachedTokenExpiry = viper.GetTime("pat.token.expiry")
 		if cachedTokenExpiry.After(time.Now()) {
 			c.accessToken = viper.GetString("pat.token.accesstoken")
 		} else {
-			return clierrors.ErrAccessTokenExpired
+			err := config.PATLogin()
+			if err != nil {
+				return err
+			}
 		}
 	case "oauth":
 		cachedTokenExpiry = viper.GetTime("oauth.token.expiry")
 		if cachedTokenExpiry.After(time.Now()) {
 			c.accessToken = viper.GetString("oauth.token.accesstoken")
 		} else {
-			return clierrors.ErrAccessTokenExpired
+			err := config.OAuthLogin()
+			if err != nil {
+				return err
+			}
 		}
 	default:
 		return errors.New("invalid authtype configured")
 
-	}
-
-	if c.accessToken != "" {
-		return fmt.Errorf("no token present")
 	}
 
 	return nil

@@ -8,7 +8,8 @@ import (
 	"path"
 
 	"github.com/fatih/color"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/va"
 	"github.com/spf13/cobra"
 )
 
@@ -28,7 +29,7 @@ func newTroubleshootCmd() *cobra.Command {
 
 			var credentials []string
 			for credential := 0; credential < len(args); credential++ {
-				password, _ := util.PromptPassword(fmt.Sprintf("Enter Password for %v:", args[credential]))
+				password, _ := terminal.PromptPassword(fmt.Sprintf("Enter Password for %v:", args[credential]))
 				credentials = append(credentials, password)
 			}
 
@@ -45,7 +46,7 @@ func newTroubleshootCmd() *cobra.Command {
 
 				password := credentials[host]
 
-				orgErr := util.RunVACmdLive(endpoint, password, "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/luke-hagar-sp/VA-Scripts/main/stunt.sh)\"")
+				orgErr := va.RunVACmdLive(endpoint, password, "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/luke-hagar-sp/VA-Scripts/main/stunt.sh)\"")
 				if orgErr != nil {
 					return orgErr
 				}
@@ -53,7 +54,7 @@ func newTroubleshootCmd() *cobra.Command {
 				color.Green("Troubleshooting Complete")
 				color.Blue("Collecting stuntlog")
 
-				err := util.CollectVAFiles(endpoint, password, outputDir, []string{"/home/sailpoint/stuntlog.txt"})
+				err := va.CollectVAFiles(endpoint, password, outputDir, []string{"/home/sailpoint/stuntlog.txt"})
 				if err != nil {
 					return err
 				}

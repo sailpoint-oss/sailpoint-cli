@@ -2,23 +2,20 @@
 package transform
 
 import (
-	"errors"
+	"context"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/fatih/color"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	tuitable "github.com/sailpoint-oss/sailpoint-cli/internal/tui/table"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
-func newDeleteCmd(client client.Client) *cobra.Command {
+func newDeleteCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "delete [TRANSFORM-ID]",
 		Short:   "delete transform",
@@ -28,17 +25,13 @@ func newDeleteCmd(client client.Client) *cobra.Command {
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			endpoint := cmd.Flags().Lookup("transforms-endpoint").Value.String()
-
-			id := ""
+			var id string
 
 			if len(args) > 0 {
 				id = args[0]
-			}
+			} else {
 
-			if id == "" {
-
-				transforms, err := getTransforms(client, endpoint, cmd)
+				transforms, err := GetTransforms()
 				if err != nil {
 					return err
 				}
@@ -52,7 +45,8 @@ func newDeleteCmd(client client.Client) *cobra.Command {
 				var rows []table.Row
 
 				for i := 0; i < len(transforms); i++ {
-					rows = append(rows, transforms[i].TransformToRows())
+					transform := transforms[i]
+					rows = append(rows, []string{*transform.Id, transform.Name})
 				}
 
 				t := table.New(
@@ -85,25 +79,18 @@ func newDeleteCmd(client client.Client) *cobra.Command {
 				if len(tempRow) > 0 {
 					id = m.Retrieve()[1]
 				} else {
-					return errors.New("no transform selected")
+					return fmt.Errorf("no transform selected")
 				}
 
 			}
 
-			resp, err := client.Delete(cmd.Context(), util.ResourceUrl(endpoint, id), nil)
+			apiClient := config.InitAPIClient()
+			_, err := apiClient.V3.TransformsApi.DeleteTransform(context.TODO(), id).Execute()
 			if err != nil {
 				return err
 			}
-			defer func(Body io.ReadCloser) {
-				_ = Body.Close()
-			}(resp.Body)
 
-			if resp.StatusCode != http.StatusNoContent {
-				body, _ := io.ReadAll(resp.Body)
-				return fmt.Errorf("delete transform failed. status: %s\nbody: %s", resp.Status, body)
-			}
-
-			err = listTransforms(client, endpoint, cmd)
+			err = ListTransforms()
 			if err != nil {
 				return err
 			}

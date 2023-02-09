@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +24,7 @@ func newConnInvokeChangePasswordCmd(spClient client.Client) *cobra.Command {
 				return err
 			}
 
-			password, err := util.PromptPassword("Enter Password:")
+			password, err := terminal.PromptPassword("Enter Password:")
 			if err != nil {
 				return err
 			}

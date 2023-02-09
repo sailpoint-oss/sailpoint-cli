@@ -23,7 +23,7 @@ func TestNewListCmd(t *testing.T) {
 		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("[]")))}, nil).
 		Times(1)
 
-	cmd := newListCmd(client)
+	cmd := newListCmd()
 
 	b := new(bytes.Buffer)
 	cmd.SetOut(b)
