@@ -4,7 +4,7 @@
     "description": "All account unlocks in the tenant for a given time range",
     "variables": [{ "name": "days", "prompt": "Days before today" }],
     "searchQuery": {
-      "indices": [],
+      "indices": ["events"],
       "queryType": null,
       "queryVersion": null,
       "query": {
@@ -19,7 +19,7 @@
     "description": "All provisioning events in the tenant for a given time range",
     "variables": [{ "name": "days", "prompt": "Days before today" }],
     "searchQuery": {
-      "indices": [],
+      "indices": ["events"],
       "queryType": null,
       "queryVersion": null,
       "query": {
