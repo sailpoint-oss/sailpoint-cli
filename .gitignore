@@ -4,8 +4,11 @@
 10.10.10.5
 transform_files
 search_results
+spconfig-exports
+
 # CLI binary
 sailpoint-cli
+
 
 data
 .DS_Store
