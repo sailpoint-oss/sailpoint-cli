@@ -8,7 +8,7 @@ import (
 
 const rawAccount = `{"identity":"john.doe","uuid":"1","attributes":{"email":"john.doe@example.com","firstName":"john","lastName":"doe"}}`
 
-func TestParseDeprecatedAccountFormat(t *testing.T) {
+func TestParseDeprecatedAccountListFormat(t *testing.T) {
 	response := []byte(rawAccount)
 	rawResps, state, err := parseResponseList(response)
 	if err != nil {
@@ -24,7 +24,7 @@ func TestParseDeprecatedAccountFormat(t *testing.T) {
 	}
 }
 
-func TestParseNewAccountFormat(t *testing.T) {
+func TestParseNewAccountListFormat(t *testing.T) {
 	response := []byte(fmt.Sprintf(`{"type": "output", "data": %s}`, rawAccount))
 	rawResps, state, err := parseResponseList(response)
 	if err != nil {
@@ -40,7 +40,7 @@ func TestParseNewAccountFormat(t *testing.T) {
 	}
 }
 
-func TestParseNewAccountFormatWithState(t *testing.T) {
+func TestParseNewAccountListFormatWithState(t *testing.T) {
 	stateStr := `{"foo": "bar"}`
 	response := []byte(fmt.Sprintf(`{"type": "output", "data": %s}{"type": "state", "data": %s}`, rawAccount, stateStr))
 	// accounts, state, printableResp, err := responseToAccounts(response)
@@ -59,5 +59,29 @@ func TestParseNewAccountFormatWithState(t *testing.T) {
 
 	if string(state.Data[:]) != stateStr {
 		t.Errorf("state is not in correct format. expecting %s, got %s", stateStr, string(state.Data[:]))
+	}
+}
+
+func TestParseDepracatedAccountFormat(t *testing.T) {
+	response := []byte(rawAccount)
+	rawResp, err := parseResponse(response)
+	if err != nil {
+		t.Errorf("failed to parse account in deprecated format: %v", err)
+	}
+
+	if string(rawResp.Data[:]) != rawAccount {
+		t.Errorf("state is not in correct format. expecting %s, got %s", rawAccount, string(rawResp.Data[:]))
+	}
+}
+
+func TestParseNewAccountFormat(t *testing.T) {
+	response := []byte(fmt.Sprintf(`{"type": "output", "data": %s}`, rawAccount))
+	rawResp, err := parseResponse(response)
+	if err != nil {
+		t.Errorf("failed to parse account in deprecated format: %v", err)
+	}
+
+	if string(rawResp.Data[:]) != rawAccount {
+		t.Errorf("state is not in correct format. expecting %s, got %s", rawAccount, string(rawResp.Data[:]))
 	}
 }
