@@ -189,43 +189,50 @@ func (a *Account) UniqueID() string {
 }
 
 // AccountList lists all accounts
-func (cc *ConnClient) AccountList(ctx context.Context) (accounts []Account, rawResponse []byte, err error) {
+func (cc *ConnClient) AccountList(ctx context.Context) (accounts []Account, state json.RawMessage, printable []byte, err error) {
 	cmdRaw, err := cc.rawInvoke("std:account:list", []byte("{}"))
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw))
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	defer func() {
 		_ = resp.Body.Close()
 	}()
 
 	if resp.StatusCode != 200 {
-		return nil, nil, newResponseError(resp)
+		return nil, nil, nil, newResponseError(resp)
 	}
 
-	rawResponse, err = io.ReadAll(resp.Body)
+	rawResponse, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
-	decoder := json.NewDecoder(bytes.NewReader(rawResponse))
-	for {
+	rawResps, s, err := parseResponse(rawResponse)
+
+	for _, r := range rawResps {
 		acct := &Account{}
-		err := decoder.Decode(acct)
+		err := json.Unmarshal(r.Data, acct)
 		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 		accounts = append(accounts, *acct)
+
+		if len(printable) != 0 {
+			printable = append(printable, []byte("\n")...)
+		}
+		printable = append(printable, r.Data...)
 	}
 
-	return accounts, rawResponse, nil
+	if s != nil {
+		state = s.Data
+	}
+
+	return accounts, state, printable, nil
 }
 
 type readInput struct {

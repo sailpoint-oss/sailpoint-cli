@@ -19,7 +19,7 @@ var accountReadChecks = []Check{
 			"std:account:list",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
-			accounts, _, err := cc.AccountList(ctx)
+			accounts, _, _, err := cc.AccountList(ctx)
 			if err != nil {
 				res.err(err)
 				return
@@ -77,7 +77,7 @@ var accountReadChecks = []Check{
 				attrsByName[value.Name] = value
 			}
 
-			accounts, _, err := cc.AccountList(ctx)
+			accounts, _, _, err := cc.AccountList(ctx)
 			if err != nil {
 				res.err(err)
 				return
