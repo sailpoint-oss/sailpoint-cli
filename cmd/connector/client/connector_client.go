@@ -77,7 +77,17 @@ func (cc *ConnClient) TestConnection(ctx context.Context) (rawResponse []byte, e
 		return nil, newResponseError(resp)
 	}
 
-	return io.ReadAll(resp.Body)
+	rawResponse, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	rawResp, err := parseResponse(rawResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	return rawResp.Data, nil
 }
 
 // ChangePassword runs the std:change-password command
@@ -125,7 +135,17 @@ func (cc *ConnClient) ChangePassword(ctx context.Context, identity string, uniqu
 		return nil, newResponseError(resp)
 	}
 
-	return io.ReadAll(resp.Body)
+	rawResponse, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	rawResp, err := parseResponse(rawResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	return rawResp.Data, nil
 }
 
 type SimpleKey struct {
@@ -212,7 +232,10 @@ func (cc *ConnClient) AccountList(ctx context.Context) (accounts []Account, stat
 		return nil, nil, nil, err
 	}
 
-	rawResps, s, err := parseResponse(rawResponse)
+	rawResps, s, err := parseResponseList(rawResponse)
+	if err != nil {
+		return nil, nil, nil, err
+	}
 
 	for _, r := range rawResps {
 		acct := &Account{}
@@ -279,14 +302,18 @@ func (cc *ConnClient) AccountRead(ctx context.Context, id string, uniqueID strin
 		return nil, nil, err
 	}
 
-	decoder := json.NewDecoder(bytes.NewReader(rawResponse))
-	acct := &Account{}
-	err = decoder.Decode(acct)
+	rawResp, err := parseResponse(rawResponse)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return acct, rawResponse, nil
+	acct := &Account{}
+	err = json.Unmarshal(rawResp.Data, acct)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return acct, rawResp.Data, nil
 }
 
 // AccountCreate creats an account
@@ -321,13 +348,18 @@ func (cc *ConnClient) AccountCreate(ctx context.Context, identity *string, attri
 		return nil, nil, err
 	}
 
-	acct := &Account{}
-	err = json.Unmarshal(raw, acct)
+	rawResp, err := parseResponse(raw)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return acct, raw, nil
+	acct := &Account{}
+	err = json.Unmarshal(rawResp.Data, acct)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return acct, rawResp.Data, nil
 }
 
 // AccountDelete deletes an account
@@ -419,14 +451,18 @@ func (cc *ConnClient) AccountUpdate(ctx context.Context, id string, uniqueID str
 		return nil, nil, err
 	}
 
-	decoder := json.NewDecoder(bytes.NewReader(rawResponse))
-	acct := &Account{}
-	err = decoder.Decode(acct)
+	rawResp, err := parseResponse(rawResponse)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return account, rawResponse, nil
+	acct := &Account{}
+	err = json.Unmarshal(rawResp.Data, acct)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return acct, rawResp.Data, nil
 }
 
 // AccountDiscoverSchema discovers schema for accounts
@@ -453,9 +489,13 @@ func (cc *ConnClient) AccountDiscoverSchema(ctx context.Context) (accountSchema 
 		return nil, nil, err
 	}
 
-	decoder := json.NewDecoder(bytes.NewReader(rawResponse))
+	rawResp, err := parseResponse(rawResponse)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	schema := &AccountSchema{}
-	err = decoder.Decode(schema)
+	err = json.Unmarshal(rawResp.Data, schema)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -493,43 +533,53 @@ func (a *Entitlement) UniqueID() string {
 }
 
 // EntitlementList lists all entitlements
-func (cc *ConnClient) EntitlementList(ctx context.Context, t string) (entitlements []Entitlement, rawResponse []byte, err error) {
+func (cc *ConnClient) EntitlementList(ctx context.Context, t string) (entitlements []Entitlement, state json.RawMessage, printable []byte, err error) {
 	cmdRaw, err := cc.rawInvoke("std:entitlement:list", []byte(fmt.Sprintf(`{"type": %q}`, t)))
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw))
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	defer func() {
 		_ = resp.Body.Close()
 	}()
 
 	if resp.StatusCode != 200 {
-		return nil, nil, newResponseError(resp)
+		return nil, nil, nil, newResponseError(resp)
 	}
 
-	rawResponse, err = io.ReadAll(resp.Body)
+	rawResponse, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
-	decoder := json.NewDecoder(bytes.NewReader(rawResponse))
-	for {
+	rawResps, s, err := parseResponseList(rawResponse)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	for _, r := range rawResps {
 		e := &Entitlement{}
-		err := decoder.Decode(e)
+		err := json.Unmarshal(r.Data, e)
 		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 		entitlements = append(entitlements, *e)
+
+		if len(printable) != 0 {
+			printable = append(printable, []byte("\n")...)
+		}
+		printable = append(printable, r.Data...)
 	}
 
-	return entitlements, rawResponse, nil
+	if s != nil {
+		state = s.Data
+	}
+
+	return entitlements, state, printable, nil
 }
 
 // EntitlementRead reads all entitlements
@@ -571,14 +621,18 @@ func (cc *ConnClient) EntitlementRead(ctx context.Context, id string, uniqueID s
 		return nil, nil, err
 	}
 
-	decoder := json.NewDecoder(bytes.NewReader(rawResponse))
-	e := &Entitlement{}
-	err = decoder.Decode(e)
+	rawResp, err := parseResponse(rawResponse)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return e, rawResponse, nil
+	e := &Entitlement{}
+	err = json.Unmarshal(rawResp.Data, e)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return e, rawResp.Data, nil
 }
 
 type ReadSpecOutput struct {
@@ -606,9 +660,18 @@ func (cc *ConnClient) SpecRead(ctx context.Context) (connSpec *ConnSpec, err err
 		return nil, newResponseError(resp)
 	}
 
-	decoder := json.NewDecoder(resp.Body)
+	rawResponse, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	rawResp, err := parseResponse(rawResponse)
+	if err != nil {
+		return nil, err
+	}
+
 	cfg := &ReadSpecOutput{}
-	err = decoder.Decode(cfg)
+	err = json.Unmarshal(rawResp.Data, cfg)
 	if err != nil {
 		return nil, err
 	}

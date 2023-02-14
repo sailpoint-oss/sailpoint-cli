@@ -4,6 +4,7 @@ package connclient
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 )
 
@@ -18,8 +19,22 @@ type RawResponse struct {
 	Data json.RawMessage `json:"data"`
 }
 
-// parseResponse parses responses into the new format if the given response is in deprecated format
-func parseResponse(resp []byte) (rawResps []RawResponse, state *RawResponse, err error) {
+// parseResponse parses a single response into the new format if the given response is in deprecated format
+func parseResponse(resp []byte) (rawResp *RawResponse, err error) {
+	rawResps, _, err := parseResponseList(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(rawResps) != 1 {
+		return nil, fmt.Errorf("failed to parse response")
+	}
+
+	return &rawResps[0], nil
+}
+
+// parseResponseList parses responses into the new format if the given response is in deprecated format
+func parseResponseList(resp []byte) (rawResps []RawResponse, state *RawResponse, err error) {
 	decoder := json.NewDecoder(bytes.NewReader(resp))
 	deprecatedFormat := false
 	for {

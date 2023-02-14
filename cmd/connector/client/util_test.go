@@ -10,7 +10,7 @@ const rawAccount = `{"identity":"john.doe","uuid":"1","attributes":{"email":"joh
 
 func TestParseDeprecatedAccountFormat(t *testing.T) {
 	response := []byte(rawAccount)
-	rawResps, state, err := parseResponse(response)
+	rawResps, state, err := parseResponseList(response)
 	if err != nil {
 		t.Errorf("failed to parse account in deprecated format: %v", err)
 	}
@@ -26,7 +26,7 @@ func TestParseDeprecatedAccountFormat(t *testing.T) {
 
 func TestParseNewAccountFormat(t *testing.T) {
 	response := []byte(fmt.Sprintf(`{"type": "output", "data": %s}`, rawAccount))
-	rawResps, state, err := parseResponse(response)
+	rawResps, state, err := parseResponseList(response)
 	if err != nil {
 		t.Errorf("failed to parse account in deprecated format: %v", err)
 	}
@@ -44,7 +44,7 @@ func TestParseNewAccountFormatWithState(t *testing.T) {
 	stateStr := `{"foo": "bar"}`
 	response := []byte(fmt.Sprintf(`{"type": "output", "data": %s}{"type": "state", "data": %s}`, rawAccount, stateStr))
 	// accounts, state, printableResp, err := responseToAccounts(response)
-	rawResps, state, err := parseResponse(response)
+	rawResps, state, err := parseResponseList(response)
 	if err != nil {
 		t.Errorf("failed to parse account in deprecated format: %v", err)
 	}

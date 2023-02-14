@@ -79,7 +79,7 @@ var accountUpdateChecks = []Check{
 				return
 			}
 
-			entitlements, _, err := cc.EntitlementList(ctx, "group")
+			entitlements, _, _, err := cc.EntitlementList(ctx, "group")
 			if err != nil {
 				res.err(err)
 				return
