@@ -18,7 +18,7 @@ var accountUpdateChecks = []Check{
 			"std:account:update",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
-			accounts, _, err := cc.AccountList(ctx)
+			accounts, _, _, err := cc.AccountList(ctx)
 			if err != nil {
 				res.err(err)
 			}
@@ -79,7 +79,7 @@ var accountUpdateChecks = []Check{
 				return
 			}
 
-			entitlements, _, err := cc.EntitlementList(ctx, "group")
+			entitlements, _, _, err := cc.EntitlementList(ctx, "group")
 			if err != nil {
 				res.err(err)
 				return

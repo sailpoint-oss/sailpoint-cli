@@ -21,12 +21,18 @@ func newConnInvokeEntitlementListCmd(client client.Client) *cobra.Command {
 			}
 
 			t := cmd.Flags().Lookup("type").Value.String()
-			_, rawResponse, err := cc.EntitlementList(ctx, t)
+			_, state, printable, err := cc.EntitlementList(ctx, t)
 			if err != nil {
 				return err
 			}
 
-			_, _ = fmt.Fprintln(cmd.OutOrStdout(), string(rawResponse))
+			_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Entitlements:")
+			_, _ = fmt.Fprintln(cmd.OutOrStdout(), string(printable))
+
+			if state != nil {
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "\nState:\n")
+				_, _ = fmt.Fprintln(cmd.OutOrStdout(), string(state))
+			}
 
 			return nil
 		},
