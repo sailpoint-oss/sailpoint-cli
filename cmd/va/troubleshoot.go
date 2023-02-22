@@ -10,7 +10,36 @@ import (
 	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
+
+var (
+	baseURL    (string)
+	tenantType (string)
+	authtype   (string)
+)
+
+func setTenantType() error {
+	//default tenant type if nothing in config.yaml
+	tenantType = "identitynow.com"
+
+	authtype = viper.GetString("authtype")
+	switch strings.ToLower(authtype) {
+	case "pat":
+		baseURL = viper.GetString("pat.baseurl")
+	case "oauth":
+		baseURL = viper.GetString("oauth.baseurl")
+	default:
+		return errors.New("invalid authtype")
+	}
+
+	if baseURL != "" {
+		var tokens = strings.Split(baseURL, ".api.")
+		tenantType = tokens[len(tokens)-1]
+	}
+
+	return nil
+}
 
 func newTroubleshootCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -179,13 +208,15 @@ func newTroubleshootCmd() *cobra.Command {
 				logFile.WriteString(fmt.Sprintf(header, "SQS Test"))
 				logFile.WriteString(sqsTest)
 
+				setTenantType()
+
 				color.Blue("Running Tenant Test")
-				tenantTest, _ := runVACmd(endpoint, password, fmt.Sprintf(`curl -i "https://%v.identitynow.com"`, orgname))
+				tenantTest, _ := runVACmd(endpoint, password, fmt.Sprintf(`curl -i "https://%v.%v"`, orgname, tenantType))
 				logFile.WriteString(fmt.Sprintf(header, "Tenant Test"))
 				logFile.WriteString(tenantTest)
 
 				color.Blue("Running API Test")
-				apiTest, _ := runVACmd(endpoint, password, fmt.Sprintf(`curl -i "https://%v.api.identitynow.com"`, orgname))
+				apiTest, _ := runVACmd(endpoint, password, fmt.Sprintf(`curl -i "https://%v.api.%v"`, orgname, tenantType))
 				logFile.WriteString(fmt.Sprintf(header, "API Test"))
 				logFile.WriteString(apiTest)
 
