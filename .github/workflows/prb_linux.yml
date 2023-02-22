@@ -1,4 +1,8 @@
 name: PRB
+env:
+  SAIL_AUTHTYPE: pipeline
+  SAIL_CLIENTID: "{{secrets.CLI_TEST_TENANT_CLIENT_ID}}"
+  SAIL_CLIENTSECRET: "{{secrets.CLI_TEST_TENANT_CLIENT_SECRET}}"
 
 on:
   push:

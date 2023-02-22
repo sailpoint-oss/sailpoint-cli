@@ -42,7 +42,7 @@ func SetPipelineClientID(ClientID string) {
 }
 
 func SetPipelineClientSecret(ClientSecret string) {
-	viper.Set("environments.%s.pat.clientsecret", ClientSecret)
+	viper.Set("clientsecret", ClientSecret)
 }
 
 func PipelineLogin() error {
