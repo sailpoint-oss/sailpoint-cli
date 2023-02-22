@@ -1,6 +1,6 @@
 name: PRB
 env:
-  SAIL_AUTHTYPE: pipeline
+  sail_authtype: pipeline
   SAIL_CLIENTID: "{{secrets.CLI_TEST_TENANT_CLIENT_ID}}"
   SAIL_CLIENTSECRET: "{{secrets.CLI_TEST_TENANT_CLIENT_SECRET}}"
   SAIL_BASEURL: https://css-255.api.identitynow.com
@@ -26,9 +26,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-
-      - name: Export ENV
-        run: export SAIL_AUTHTYPE=$SAIL_AUTHTYPE
 
       - name: Test
         run: go test -v -count=1 ./...
