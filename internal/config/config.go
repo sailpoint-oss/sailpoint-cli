@@ -95,6 +95,11 @@ func SetActiveEnvironment(activeEnv string) {
 }
 
 func InitConfig() error {
+	err := Validate()
+	if err != nil {
+		return err
+	}
+
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
