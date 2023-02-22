@@ -1,4 +1,4 @@
-# Go API client for sailpointbetasdk
+# Go API client for beta
 
 Use these APIs to interact with the IdentityNow platform to achieve repeatable, automated processes with greater scalability. These APIs are in beta and are subject to change. We encourage you to join the SailPoint Developer Community forum at https://developer.sailpoint.com/discuss to connect with other developers using our APIs.
 
@@ -23,7 +23,7 @@ go get golang.org/x/net/context
 Put the package under your project folder and add the following in import:
 
 ```golang
-import sailpointbetasdk "github.com/GIT_USER_ID/GIT_REPO_ID"
+import beta "github.com/GIT_USER_ID/GIT_REPO_ID"
 ```
 
 To use a proxy, set the environment variable `HTTP_PROXY`:
@@ -41,7 +41,7 @@ Default configuration comes with `Servers` field that contains server objects as
 For using other server than the one defined on index 0 set context value `sw.ContextServerIndex` of type `int`.
 
 ```golang
-ctx := context.WithValue(context.Background(), sailpointbetasdk.ContextServerIndex, 1)
+ctx := context.WithValue(context.Background(), beta.ContextServerIndex, 1)
 ```
 
 ### Templated Server URL
@@ -49,7 +49,7 @@ ctx := context.WithValue(context.Background(), sailpointbetasdk.ContextServerInd
 Templated server URL is formatted using default variables from configuration or from context value `sw.ContextServerVariables` of type `map[string]string`.
 
 ```golang
-ctx := context.WithValue(context.Background(), sailpointbetasdk.ContextServerVariables, map[string]string{
+ctx := context.WithValue(context.Background(), beta.ContextServerVariables, map[string]string{
 	"basePath": "v2",
 })
 ```
@@ -63,10 +63,10 @@ An operation is uniquely identified by `"{classname}Service.{nickname}"` string.
 Similar rules for overriding default operation server index and variables applies by using `sw.ContextOperationServerIndices` and `sw.ContextOperationServerVariables` context maps.
 
 ```golang
-ctx := context.WithValue(context.Background(), sailpointbetasdk.ContextOperationServerIndices, map[string]int{
+ctx := context.WithValue(context.Background(), beta.ContextOperationServerIndices, map[string]int{
 	"{classname}Service.{nickname}": 2,
 })
-ctx = context.WithValue(context.Background(), sailpointbetasdk.ContextOperationServerVariables, map[string]map[string]string{
+ctx = context.WithValue(context.Background(), beta.ContextOperationServerVariables, map[string]map[string]string{
 	"{classname}Service.{nickname}": {
 		"port": "8443",
 	},
@@ -79,19 +79,19 @@ All URIs are relative to *https://sailpoint.api.identitynow.com/beta*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*AccessProfilesApi* | [**BulkDeleteAccessProfiles**](docs/AccessProfilesApi.md#bulkdeleteaccessprofiles) | **Post** /access-profiles/bulk-delete | Delete Access Profile(s)
 *AccessProfilesApi* | [**CreateAccessProfile**](docs/AccessProfilesApi.md#createaccessprofile) | **Post** /access-profiles | Create an Access Profile
 *AccessProfilesApi* | [**DeleteAccessProfile**](docs/AccessProfilesApi.md#deleteaccessprofile) | **Delete** /access-profiles/{id} | Delete the specified Access Profile
+*AccessProfilesApi* | [**DeleteAccessProfilesInBulk**](docs/AccessProfilesApi.md#deleteaccessprofilesinbulk) | **Post** /access-profiles/bulk-delete | Delete Access Profile(s)
 *AccessProfilesApi* | [**GetAccessProfile**](docs/AccessProfilesApi.md#getaccessprofile) | **Get** /access-profiles/{id} | Get an Access Profile
-*AccessProfilesApi* | [**ListAccessProfileEntitlements**](docs/AccessProfilesApi.md#listaccessprofileentitlements) | **Get** /access-profiles/{id}/entitlements | List Access Profile&#39;s Entitlements
+*AccessProfilesApi* | [**GetAccessProfileEntitlements**](docs/AccessProfilesApi.md#getaccessprofileentitlements) | **Get** /access-profiles/{id}/entitlements | List Access Profile&#39;s Entitlements
 *AccessProfilesApi* | [**ListAccessProfiles**](docs/AccessProfilesApi.md#listaccessprofiles) | **Get** /access-profiles | List Access Profiles
 *AccessProfilesApi* | [**PatchAccessProfile**](docs/AccessProfilesApi.md#patchaccessprofile) | **Patch** /access-profiles/{id} | Patch a specified Access Profile
-*AccessRequestApprovalsApi* | [**ApprovalSummary**](docs/AccessRequestApprovalsApi.md#approvalsummary) | **Get** /access-request-approvals/approval-summary | Get the number of pending, approved and rejected access requests approvals
-*AccessRequestApprovalsApi* | [**ApproveRequest**](docs/AccessRequestApprovalsApi.md#approverequest) | **Post** /access-request-approvals/{approvalId}/approve | Approves an access request approval.
-*AccessRequestApprovalsApi* | [**ForwardRequest**](docs/AccessRequestApprovalsApi.md#forwardrequest) | **Post** /access-request-approvals/{approvalId}/forward | Forwards an access request approval to a new owner.
+*AccessRequestApprovalsApi* | [**ApproveAccessRequest**](docs/AccessRequestApprovalsApi.md#approveaccessrequest) | **Post** /access-request-approvals/{approvalId}/approve | Approves an access request approval.
+*AccessRequestApprovalsApi* | [**ForwardAccessRequest**](docs/AccessRequestApprovalsApi.md#forwardaccessrequest) | **Post** /access-request-approvals/{approvalId}/forward | Forwards an access request approval to a new owner.
+*AccessRequestApprovalsApi* | [**GetAccessRequestApprovalSummary**](docs/AccessRequestApprovalsApi.md#getaccessrequestapprovalsummary) | **Get** /access-request-approvals/approval-summary | Get the number of pending, approved and rejected access requests approvals
 *AccessRequestApprovalsApi* | [**ListCompletedApprovals**](docs/AccessRequestApprovalsApi.md#listcompletedapprovals) | **Get** /access-request-approvals/completed | Completed Access Request Approvals List
 *AccessRequestApprovalsApi* | [**ListPendingApprovals**](docs/AccessRequestApprovalsApi.md#listpendingapprovals) | **Get** /access-request-approvals/pending | Pending Access Request Approvals List
-*AccessRequestApprovalsApi* | [**RejectRequest**](docs/AccessRequestApprovalsApi.md#rejectrequest) | **Post** /access-request-approvals/{approvalId}/reject | Rejects an access request approval.
+*AccessRequestApprovalsApi* | [**RejectAccessRequest**](docs/AccessRequestApprovalsApi.md#rejectaccessrequest) | **Post** /access-request-approvals/{approvalId}/reject | Rejects an access request approval.
 *AccessRequestsApi* | [**CancelAccessRequest**](docs/AccessRequestsApi.md#cancelaccessrequest) | **Post** /access-requests/cancel | Cancel Access Request
 *AccessRequestsApi* | [**CloseAccessRequest**](docs/AccessRequestsApi.md#closeaccessrequest) | **Post** /access-requests/close | Close Access Request
 *AccessRequestsApi* | [**CreateAccessRequest**](docs/AccessRequestsApi.md#createaccessrequest) | **Post** /access-requests | Submit an Access Request
@@ -104,7 +104,11 @@ Class | Method | HTTP request | Description
 *AccountsApi* | [**CreateAccount**](docs/AccountsApi.md#createaccount) | **Post** /accounts | Create Account
 *AccountsApi* | [**DeleteAccount**](docs/AccountsApi.md#deleteaccount) | **Delete** /accounts/{id} | Delete Account
 *AccountsApi* | [**DisableAccount**](docs/AccountsApi.md#disableaccount) | **Post** /accounts/{id}/disable | Disable Account
+*AccountsApi* | [**DisableAccountForIdentity**](docs/AccountsApi.md#disableaccountforidentity) | **Post** /identities-accounts/{id}/disable | Disable IDN Account for Identity
+*AccountsApi* | [**DisableAccountsForIdentities**](docs/AccountsApi.md#disableaccountsforidentities) | **Post** /identities-accounts/disable | Disable IDN Accounts for Identities
 *AccountsApi* | [**EnableAccount**](docs/AccountsApi.md#enableaccount) | **Post** /accounts/{id}/enable | Enable Account
+*AccountsApi* | [**EnableAccountForIdentity**](docs/AccountsApi.md#enableaccountforidentity) | **Post** /identities-accounts/{id}/enable | Enable IDN Account for Identity
+*AccountsApi* | [**EnableAccountsForIdentities**](docs/AccountsApi.md#enableaccountsforidentities) | **Post** /identities-accounts/enable | Enable IDN Accounts for Identities
 *AccountsApi* | [**GetAccount**](docs/AccountsApi.md#getaccount) | **Get** /accounts/{id} | Account Details
 *AccountsApi* | [**GetAccountEntitlements**](docs/AccountsApi.md#getaccountentitlements) | **Get** /accounts/{id}/entitlements | Account Entitlements
 *AccountsApi* | [**ListAccounts**](docs/AccountsApi.md#listaccounts) | **Get** /accounts | Accounts List
@@ -113,7 +117,6 @@ Class | Method | HTTP request | Description
 *AccountsApi* | [**UnlockAccount**](docs/AccountsApi.md#unlockaccount) | **Post** /accounts/{id}/unlock | Unlock Account
 *AccountsApi* | [**UpdateAccount**](docs/AccountsApi.md#updateaccount) | **Patch** /accounts/{id} | Update Account
 *CertificationCampaignsApi* | [**ActivateCampaign**](docs/CertificationCampaignsApi.md#activatecampaign) | **Post** /campaigns/{id}/activate | Activate a Campaign
-*CertificationCampaignsApi* | [**AdminReassign**](docs/CertificationCampaignsApi.md#adminreassign) | **Post** /campaigns/{id}/reassign | Reassign Certifications
 *CertificationCampaignsApi* | [**CompleteCampaign**](docs/CertificationCampaignsApi.md#completecampaign) | **Post** /campaigns/{id}/complete | Complete a Campaign
 *CertificationCampaignsApi* | [**CreateCampaign**](docs/CertificationCampaignsApi.md#createcampaign) | **Post** /campaigns | Create a campaign
 *CertificationCampaignsApi* | [**CreateCampaignTemplate**](docs/CertificationCampaignsApi.md#createcampaigntemplate) | **Post** /campaign-templates | Create a Campaign Template
@@ -129,6 +132,7 @@ Class | Method | HTTP request | Description
 *CertificationCampaignsApi* | [**GetCampaignTemplateSchedule**](docs/CertificationCampaignsApi.md#getcampaigntemplateschedule) | **Get** /campaign-templates/{id}/schedule | Gets a Campaign Template&#39;s Schedule
 *CertificationCampaignsApi* | [**ListCampaignTemplates**](docs/CertificationCampaignsApi.md#listcampaigntemplates) | **Get** /campaign-templates | List Campaign Templates
 *CertificationCampaignsApi* | [**PatchCampaignTemplate**](docs/CertificationCampaignsApi.md#patchcampaigntemplate) | **Patch** /campaign-templates/{id} | Update a Campaign Template
+*CertificationCampaignsApi* | [**ReassignCampaign**](docs/CertificationCampaignsApi.md#reassigncampaign) | **Post** /campaigns/{id}/reassign | Reassign Certifications
 *CertificationCampaignsApi* | [**RunCampaignRemediationScan**](docs/CertificationCampaignsApi.md#runcampaignremediationscan) | **Post** /campaigns/{id}/run-remediation-scan | Run Campaign Remediation Scan
 *CertificationCampaignsApi* | [**RunCampaignReport**](docs/CertificationCampaignsApi.md#runcampaignreport) | **Post** /campaigns/{id}/run-report/{type} | Run Campaign Report
 *CertificationCampaignsApi* | [**SetCampaignReportsConfig**](docs/CertificationCampaignsApi.md#setcampaignreportsconfig) | **Put** /campaigns/reports-configuration | Set Campaign Reports Configuration
@@ -137,7 +141,7 @@ Class | Method | HTTP request | Description
 *CertificationsApi* | [**GetIdentityCertificationItemPermissions**](docs/CertificationsApi.md#getidentitycertificationitempermissions) | **Get** /certifications/{certificationId}/access-review-items/{itemId}/permissions | Permissions for Entitlement Certification Item
 *CertificationsApi* | [**GetIdentityCertificationPendingTasks**](docs/CertificationsApi.md#getidentitycertificationpendingtasks) | **Get** /certifications/{id}/tasks-pending | Pending Certification Tasks
 *CertificationsApi* | [**GetIdentityCertificationTaskStatus**](docs/CertificationsApi.md#getidentitycertificationtaskstatus) | **Get** /certifications/{id}/tasks/{taskId} | Certification Task Status
-*CertificationsApi* | [**ListReviewers**](docs/CertificationsApi.md#listreviewers) | **Get** /certifications/{id}/reviewers | List of Reviewers for the certification
+*CertificationsApi* | [**ListCertificationReviewers**](docs/CertificationsApi.md#listcertificationreviewers) | **Get** /certifications/{id}/reviewers | List of Reviewers for the certification
 *CertificationsApi* | [**ReassignIdentityCertsAsync**](docs/CertificationsApi.md#reassignidentitycertsasync) | **Post** /certifications/{id}/reassign-async | Reassign Certifications Asynchronously
 *ConnectorRuleManagementApi* | [**CreateConnectorRule**](docs/ConnectorRuleManagementApi.md#createconnectorrule) | **Post** /connector-rules | Create Connector Rule
 *ConnectorRuleManagementApi* | [**DeleteConnectorRule**](docs/ConnectorRuleManagementApi.md#deleteconnectorrule) | **Delete** /connector-rules/{id} | Delete a Connector-Rule
@@ -149,39 +153,39 @@ Class | Method | HTTP request | Description
 *CustomPasswordInstructionsApi* | [**CreateCustomPasswordInstructions**](docs/CustomPasswordInstructionsApi.md#createcustompasswordinstructions) | **Post** /custom-password-instructions | Create Custom Password Instructions
 *CustomPasswordInstructionsApi* | [**DeleteCustomPasswordInstructions**](docs/CustomPasswordInstructionsApi.md#deletecustompasswordinstructions) | **Delete** /custom-password-instructions/{pageId} | Delete Custom Password Instructions by page ID
 *CustomPasswordInstructionsApi* | [**GetCustomPasswordInstructions**](docs/CustomPasswordInstructionsApi.md#getcustompasswordinstructions) | **Get** /custom-password-instructions/{pageId} | Get Custom Password Instructions by Page ID
-*EntitlementsApi* | [**EntitlementsBulkUpdate**](docs/EntitlementsApi.md#entitlementsbulkupdate) | **Post** /entitlements/bulk-update | Bulk update an entitlement list
 *EntitlementsApi* | [**GetEntitlement**](docs/EntitlementsApi.md#getentitlement) | **Get** /entitlements/{id} | Get an Entitlement
+*EntitlementsApi* | [**ListEntitlementChildren**](docs/EntitlementsApi.md#listentitlementchildren) | **Get** /entitlements/{id}/children | List of entitlements children
 *EntitlementsApi* | [**ListEntitlementParents**](docs/EntitlementsApi.md#listentitlementparents) | **Get** /entitlements/{id}/parents | List of entitlements parents
-*EntitlementsApi* | [**ListEntitlementchildren**](docs/EntitlementsApi.md#listentitlementchildren) | **Get** /entitlements/{id}/children | List of entitlements children
 *EntitlementsApi* | [**ListEntitlements**](docs/EntitlementsApi.md#listentitlements) | **Get** /entitlements | Gets a list of entitlements.
 *EntitlementsApi* | [**PatchEntitlement**](docs/EntitlementsApi.md#patchentitlement) | **Patch** /entitlements/{id} | Patch a specified Entitlement
-*IAIAccessRequestRecommendationsApi* | [**AccessRequestRecommendations**](docs/IAIAccessRequestRecommendationsApi.md#accessrequestrecommendations) | **Get** /ai-access-request-recommendations | Identity Access Request Recommendations
+*EntitlementsApi* | [**UpdateEntitlementsInBulk**](docs/EntitlementsApi.md#updateentitlementsinbulk) | **Post** /entitlements/bulk-update | Bulk update an entitlement list
 *IAIAccessRequestRecommendationsApi* | [**AddAccessRequestRecommendationsIgnoredItem**](docs/IAIAccessRequestRecommendationsApi.md#addaccessrequestrecommendationsignoreditem) | **Post** /ai-access-request-recommendations/ignored-items | Notification of Ignored Access Request Recommendations
 *IAIAccessRequestRecommendationsApi* | [**AddAccessRequestRecommendationsRequestedItem**](docs/IAIAccessRequestRecommendationsApi.md#addaccessrequestrecommendationsrequesteditem) | **Post** /ai-access-request-recommendations/requested-items | Notification of Requested Access Request Recommendations
 *IAIAccessRequestRecommendationsApi* | [**AddAccessRequestRecommendationsViewedItem**](docs/IAIAccessRequestRecommendationsApi.md#addaccessrequestrecommendationsvieweditem) | **Post** /ai-access-request-recommendations/viewed-items | Notification of Viewed Access Request Recommendations
 *IAIAccessRequestRecommendationsApi* | [**AddAccessRequestRecommendationsViewedItems**](docs/IAIAccessRequestRecommendationsApi.md#addaccessrequestrecommendationsvieweditems) | **Post** /ai-access-request-recommendations/viewed-items/bulk-create | Notification of Viewed Access Request Recommendations in Bulk
+*IAIAccessRequestRecommendationsApi* | [**GetAccessRequestRecommendations**](docs/IAIAccessRequestRecommendationsApi.md#getaccessrequestrecommendations) | **Get** /ai-access-request-recommendations | Identity Access Request Recommendations
 *IAIAccessRequestRecommendationsApi* | [**GetAccessRequestRecommendationsIgnoredItems**](docs/IAIAccessRequestRecommendationsApi.md#getaccessrequestrecommendationsignoreditems) | **Get** /ai-access-request-recommendations/ignored-items | List of Ignored Access Request Recommendations
 *IAIAccessRequestRecommendationsApi* | [**GetAccessRequestRecommendationsRequestedItems**](docs/IAIAccessRequestRecommendationsApi.md#getaccessrequestrecommendationsrequesteditems) | **Get** /ai-access-request-recommendations/requested-items | List of Requested Access Request Recommendations
 *IAIAccessRequestRecommendationsApi* | [**GetAccessRequestRecommendationsViewedItems**](docs/IAIAccessRequestRecommendationsApi.md#getaccessrequestrecommendationsvieweditems) | **Get** /ai-access-request-recommendations/viewed-items | List of Viewed Access Request Recommendations
 *IAIAccessRequestRecommendationsApi* | [**GetMessageCatalogs**](docs/IAIAccessRequestRecommendationsApi.md#getmessagecatalogs) | **Get** /translation-catalogs/{catalog-id} | Get Message catalogs
-*IAICommonAccessApi* | [**CommonAccessBulkUpdateStatus**](docs/IAICommonAccessApi.md#commonaccessbulkupdatestatus) | **Post** /common-access/update-status | Bulk update common access status
 *IAICommonAccessApi* | [**CreateCommonAccess**](docs/IAICommonAccessApi.md#createcommonaccess) | **Post** /common-access | Create common access items
 *IAICommonAccessApi* | [**GetCommonAccess**](docs/IAICommonAccessApi.md#getcommonaccess) | **Get** /common-access | Get a paginated list of common access
+*IAICommonAccessApi* | [**UpdateCommonAccessStatusInBulk**](docs/IAICommonAccessApi.md#updatecommonaccessstatusinbulk) | **Post** /common-access/update-status | Bulk update common access status
 *IAIOutliersApi* | [**ExportOutliersZip**](docs/IAIOutliersApi.md#exportoutlierszip) | **Get** /outliers/export | IAI Identity Outliers Export
-*IAIOutliersApi* | [**GetLatestOutlierSnapshots**](docs/IAIOutliersApi.md#getlatestoutliersnapshots) | **Get** /outlier-summaries/latest | IAI Identity Outliers Latest Summary
-*IAIOutliersApi* | [**GetOutlierSnapshots**](docs/IAIOutliersApi.md#getoutliersnapshots) | **Get** /outlier-summaries | IAI Identity Outliers Summary
-*IAIOutliersApi* | [**GetOutliers**](docs/IAIOutliersApi.md#getoutliers) | **Get** /outliers | IAI Get Identity Outliers
-*IAIOutliersApi* | [**GetOutliersContributingFeatures**](docs/IAIOutliersApi.md#getoutlierscontributingfeatures) | **Get** /outliers/{outlierId}/contributing-features | IAI Get an Identity Outlier&#39;s Contibuting Features
-*IAIOutliersApi* | [**IgnoreOutliers**](docs/IAIOutliersApi.md#ignoreoutliers) | **Post** /outliers/ignore | IAI Identity Outliers Ignore
-*IAIOutliersApi* | [**UnIgnoreOutliers**](docs/IAIOutliersApi.md#unignoreoutliers) | **Post** /outliers/unignore | IAI Identity Outliers Unignore
-*IAIPeerGroupStrategiesApi* | [**GetOutliers**](docs/IAIPeerGroupStrategiesApi.md#getoutliers) | **Get** /peer-group-strategies/{strategy}/identity-outliers | Identity Outliers List
+*IAIOutliersApi* | [**GetIdentityOutlierSnapshots**](docs/IAIOutliersApi.md#getidentityoutliersnapshots) | **Get** /outlier-summaries | IAI Identity Outliers Summary
+*IAIOutliersApi* | [**GetIdentityOutliers**](docs/IAIOutliersApi.md#getidentityoutliers) | **Get** /outliers | IAI Get Identity Outliers
+*IAIOutliersApi* | [**GetLatestIdentityOutlierSnapshots**](docs/IAIOutliersApi.md#getlatestidentityoutliersnapshots) | **Get** /outlier-summaries/latest | IAI Identity Outliers Latest Summary
+*IAIOutliersApi* | [**GetPeerGroupOutliersContributingFeatures**](docs/IAIOutliersApi.md#getpeergroupoutlierscontributingfeatures) | **Get** /outliers/{outlierId}/contributing-features | IAI Get an Identity Outlier&#39;s Contibuting Features
+*IAIOutliersApi* | [**IgnoreIdentityOutliers**](docs/IAIOutliersApi.md#ignoreidentityoutliers) | **Post** /outliers/ignore | IAI Identity Outliers Ignore
+*IAIOutliersApi* | [**UnIgnoreIdentityOutliers**](docs/IAIOutliersApi.md#unignoreidentityoutliers) | **Post** /outliers/unignore | IAI Identity Outliers Unignore
+*IAIPeerGroupStrategiesApi* | [**GetPeerGroupOutliers**](docs/IAIPeerGroupStrategiesApi.md#getpeergroupoutliers) | **Get** /peer-group-strategies/{strategy}/identity-outliers | Identity Outliers List
 *IAIRecommendationsApi* | [**GetMessageCatalogs**](docs/IAIRecommendationsApi.md#getmessagecatalogs) | **Get** /translation-catalogs/{catalog-id} | Get Message catalogs
 *IAIRecommendationsApi* | [**GetRecommendations**](docs/IAIRecommendationsApi.md#getrecommendations) | **Post** /recommendations/request | Returns a Recommendation Based on Object
 *IAIRecommendationsApi* | [**GetRecommendationsConfig**](docs/IAIRecommendationsApi.md#getrecommendationsconfig) | **Get** /recommendations/config | Get certification recommendation config values
 *IAIRecommendationsApi* | [**UpdateRecommendationsConfig**](docs/IAIRecommendationsApi.md#updaterecommendationsconfig) | **Put** /recommendations/config | Update certification recommendation config values
 *IAIRoleMiningApi* | [**CreatePotentialRoleProvisionRequest**](docs/IAIRoleMiningApi.md#createpotentialroleprovisionrequest) | **Post** /role-mining-sessions/{sessionId}/potential-roles/{potentialRoleId}/provision | Create request to provision a potential role into an actual role.
+*IAIRoleMiningApi* | [**CreateRoleMiningSessions**](docs/IAIRoleMiningApi.md#createroleminingsessions) | **Post** /role-mining-sessions | Create a role mining session
 *IAIRoleMiningApi* | [**DownloadRoleMiningPotentialRoleZip**](docs/IAIRoleMiningApi.md#downloadroleminingpotentialrolezip) | **Get** /role-mining-sessions/{sessionId}/potential-roles/{potentialRoleId}/export-async/{exportId}/download | Export (download) details for a potential role in a role mining session
-*IAIRoleMiningApi* | [**EditEntitlementsPotentialRole**](docs/IAIRoleMiningApi.md#editentitlementspotentialrole) | **Post** /role-mining-sessions/{sessionId}/potential-roles/{potentialRoleId}/edit-entitlements | Edit entitlements for a potential role to exclude some entitlements
 *IAIRoleMiningApi* | [**ExportRoleMiningPotentialRole**](docs/IAIRoleMiningApi.md#exportroleminingpotentialrole) | **Get** /role-mining-sessions/{sessionId}/potential-roles/{potentialRoleId}/export | Export (download) details for a potential role in a role mining session
 *IAIRoleMiningApi* | [**ExportRoleMiningPotentialRoleAsync**](docs/IAIRoleMiningApi.md#exportroleminingpotentialroleasync) | **Post** /role-mining-sessions/{sessionId}/potential-roles/{potentialRoleId}/export-async | Asynchronously export details for a potential role in a role mining session and upload to S3
 *IAIRoleMiningApi* | [**ExportRoleMiningPotentialRoleStatus**](docs/IAIRoleMiningApi.md#exportroleminingpotentialrolestatus) | **Get** /role-mining-sessions/{sessionId}/potential-roles/{potentialRoleId}/export-async/{exportId} | Retrieve status of a potential role export job
@@ -189,22 +193,23 @@ Class | Method | HTTP request | Description
 *IAIRoleMiningApi* | [**GetEntitlementsPotentialRole**](docs/IAIRoleMiningApi.md#getentitlementspotentialrole) | **Get** /role-mining-sessions/{sessionId}/potential-roles/{potentialRoleId}/entitlement-popularities | Retrieves entitlements for a potential role in a role mining session
 *IAIRoleMiningApi* | [**GetExcludedEntitlementsPotentialRole**](docs/IAIRoleMiningApi.md#getexcludedentitlementspotentialrole) | **Get** /role-mining-sessions/{sessionId}/potential-roles/{potentialRoleId}/excluded-entitlements | Retrieves excluded entitlements for a potential role in a role mining session
 *IAIRoleMiningApi* | [**GetIdentitiesPotentialRole**](docs/IAIRoleMiningApi.md#getidentitiespotentialrole) | **Get** /role-mining-sessions/{sessionId}/potential-roles/{potentialRoleId}/identities | Retrieves identities for a potential role in a role mining session
+*IAIRoleMiningApi* | [**GetPotentialRole**](docs/IAIRoleMiningApi.md#getpotentialrole) | **Get** /role-mining-sessions/{sessionId}/potential-role-summaries/{potentialRoleId} | Retrieves a specific potential role
 *IAIRoleMiningApi* | [**GetPotentialRoleApplications**](docs/IAIRoleMiningApi.md#getpotentialroleapplications) | **Get** /role-mining-sessions/{sessionId}/potential-role-summaries/{potentialRoleId}/applications | Retrieves the applications of a potential role for a role mining session
-*IAIRoleMiningApi* | [**GetPotentialRoleSummaries**](docs/IAIRoleMiningApi.md#getpotentialrolesummaries) | **Get** /role-mining-sessions/{sessionId}/potential-role-summaries | Retrieves the potential role summaries for a role mining session
-*IAIRoleMiningApi* | [**GetPotentialRoleSummary**](docs/IAIRoleMiningApi.md#getpotentialrolesummary) | **Get** /role-mining-sessions/{sessionId}/potential-role-summaries/{potentialRoleId} | Retrieves a specific potential role for a role mining session
+*IAIRoleMiningApi* | [**GetPotentialRoleSummaries**](docs/IAIRoleMiningApi.md#getpotentialrolesummaries) | **Get** /role-mining-sessions/{sessionId}/potential-role-summaries | Retrieves all potential role summaries
 *IAIRoleMiningApi* | [**GetRoleMiningSession**](docs/IAIRoleMiningApi.md#getroleminingsession) | **Get** /role-mining-sessions/{sessionId} | Get a role mining session
 *IAIRoleMiningApi* | [**GetRoleMiningSessionStatus**](docs/IAIRoleMiningApi.md#getroleminingsessionstatus) | **Get** /role-mining-sessions/{sessionId}/status | Get role mining session status state
 *IAIRoleMiningApi* | [**GetRoleMiningSessions**](docs/IAIRoleMiningApi.md#getroleminingsessions) | **Get** /role-mining-sessions | Retrieves all role mining sessions
+*IAIRoleMiningApi* | [**PatchPotentialRole**](docs/IAIRoleMiningApi.md#patchpotentialrole) | **Patch** /role-mining-sessions/{sessionId}/potential-role-summaries/{potentialRoleId} | Update a potential role
 *IAIRoleMiningApi* | [**PatchRoleMiningSession**](docs/IAIRoleMiningApi.md#patchroleminingsession) | **Patch** /role-mining-sessions/{sessionId} | Patch a role mining session
-*IAIRoleMiningApi* | [**RoleMiningSessions**](docs/IAIRoleMiningApi.md#roleminingsessions) | **Post** /role-mining-sessions | Create a role mining session
+*IAIRoleMiningApi* | [**UpdateEntitlementsPotentialRole**](docs/IAIRoleMiningApi.md#updateentitlementspotentialrole) | **Post** /role-mining-sessions/{sessionId}/potential-roles/{potentialRoleId}/edit-entitlements | Edit entitlements for a potential role to exclude some entitlements
 *IdentitiesApi* | [**SynchronizeAttributesForIdentity**](docs/IdentitiesApi.md#synchronizeattributesforidentity) | **Post** /identities/{identityId}/synchronize-attributes | Attribute synchronization for single identity.
 *IdentityHistoryApi* | [**CompareIdentitySnapshots**](docs/IdentityHistoryApi.md#compareidentitysnapshots) | **Get** /historical-identities/{id}/compare | Gets a difference of count for each access item types for the given identity between 2 snapshots
 *IdentityHistoryApi* | [**CompareIdentitySnapshotsAccessType**](docs/IdentityHistoryApi.md#compareidentitysnapshotsaccesstype) | **Get** /historical-identities/{id}/compare/{access-type} | Gets a list of differences of specific accessType for the given identity between 2 snapshots
-*IdentityHistoryApi* | [**GetEvents**](docs/IdentityHistoryApi.md#getevents) | **Get** /historical-identities/{id}/events | Lists all events for the given identity
+*IdentityHistoryApi* | [**GetHistoricalIdentityEvents**](docs/IdentityHistoryApi.md#gethistoricalidentityevents) | **Get** /historical-identities/{id}/events | Lists all events for the given identity
 *IdentityHistoryApi* | [**GetIdentity**](docs/IdentityHistoryApi.md#getidentity) | **Get** /historical-identities/{id} | Gets the most recent snapshot of a specific identity
 *IdentityHistoryApi* | [**GetIdentitySnapshot**](docs/IdentityHistoryApi.md#getidentitysnapshot) | **Get** /historical-identities/{id}/snapshots/{date} | Gets an identity snapshot at a given date
 *IdentityHistoryApi* | [**GetIdentitySnapshotSummary**](docs/IdentityHistoryApi.md#getidentitysnapshotsummary) | **Get** /historical-identities/{id}/snapshot-summary | Gets the summary for the event count for a specific identity
-*IdentityHistoryApi* | [**GetStartDate**](docs/IdentityHistoryApi.md#getstartdate) | **Get** /historical-identities/{id}/start-date | Gets the start date of the identity
+*IdentityHistoryApi* | [**GetIdentityStartDate**](docs/IdentityHistoryApi.md#getidentitystartdate) | **Get** /historical-identities/{id}/start-date | Gets the start date of the identity
 *IdentityHistoryApi* | [**ListIdentities**](docs/IdentityHistoryApi.md#listidentities) | **Get** /historical-identities | Lists all the identities
 *IdentityHistoryApi* | [**ListIdentityAccessItems**](docs/IdentityHistoryApi.md#listidentityaccessitems) | **Get** /historical-identities/{id}/access-items | Gets a list of access items for the identity filtered by item type
 *IdentityHistoryApi* | [**ListIdentitySnapshotAccessItems**](docs/IdentityHistoryApi.md#listidentitysnapshotaccessitems) | **Get** /historical-identities/{id}/snapshots/{date}/access-items | Gets the list of identity access items at a given date filterd by item type
@@ -225,47 +230,47 @@ Class | Method | HTTP request | Description
 *MFAConfigurationApi* | [**GetMFAConfig**](docs/MFAConfigurationApi.md#getmfaconfig) | **Get** /mfa/{method}/config | Get configuration of a MFA method
 *MFAConfigurationApi* | [**SetMFAConfig**](docs/MFAConfigurationApi.md#setmfaconfig) | **Put** /mfa/{method}/config | Set configuration of a MFA method
 *MFAConfigurationApi* | [**TestMFAConfig**](docs/MFAConfigurationApi.md#testmfaconfig) | **Get** /mfa/{method}/test | Test configuration of a MFA method
-*ManagedClientsApi* | [**GetClientStatus**](docs/ManagedClientsApi.md#getclientstatus) | **Get** /managed-clients/{id}/status | Get a specified Managed Client Status.
-*ManagedClientsApi* | [**UpdateStatus**](docs/ManagedClientsApi.md#updatestatus) | **Post** /managed-clients/{id}/status | Handle a status request from a client
+*ManagedClientsApi* | [**GetManagedClientStatus**](docs/ManagedClientsApi.md#getmanagedclientstatus) | **Get** /managed-clients/{id}/status | Get a specified Managed Client Status.
+*ManagedClientsApi* | [**UpdateManagedClientStatus**](docs/ManagedClientsApi.md#updatemanagedclientstatus) | **Post** /managed-clients/{id}/status | Handle a status request from a client
 *ManagedClustersApi* | [**GetClientLogConfiguration**](docs/ManagedClustersApi.md#getclientlogconfiguration) | **Get** /managed-clusters/{id}/log-config | get ManagedCluster Log Configuration for a specified cluster
 *ManagedClustersApi* | [**GetManagedCluster**](docs/ManagedClustersApi.md#getmanagedcluster) | **Get** /managed-clusters/{id} | Get a specified ManagedCluster.
 *ManagedClustersApi* | [**GetManagedClusters**](docs/ManagedClustersApi.md#getmanagedclusters) | **Get** /managed-clusters | Retrieve all Managed Clusters.
 *ManagedClustersApi* | [**UpdateClientLogConfiguration**](docs/ManagedClustersApi.md#updateclientlogconfiguration) | **Put** /managed-clusters/{id}/log-config | Update log configuration for a specified cluster.
-*NonEmployeeLifecycleManagementApi* | [**CreateSchemaAttribute**](docs/NonEmployeeLifecycleManagementApi.md#createschemaattribute) | **Post** /non-employee-sources/{sourceId}/schema-attributes | Create a new Schema Attribute for Non-Employee Source
-*NonEmployeeLifecycleManagementApi* | [**DeleteSchemaAttribute**](docs/NonEmployeeLifecycleManagementApi.md#deleteschemaattribute) | **Delete** /non-employee-sources/{sourceId}/schema-attributes/{attributeId} | Delete a Schema Attribute for Non-Employee Source
-*NonEmployeeLifecycleManagementApi* | [**DeleteSchemaAttributes**](docs/NonEmployeeLifecycleManagementApi.md#deleteschemaattributes) | **Delete** /non-employee-sources/{sourceId}/schema-attributes | Delete all custom schema attributes for Non-Employee Source
-*NonEmployeeLifecycleManagementApi* | [**GetSchemaAttribute**](docs/NonEmployeeLifecycleManagementApi.md#getschemaattribute) | **Get** /non-employee-sources/{sourceId}/schema-attributes/{attributeId} | Get Schema Attribute Non-Employee Source
-*NonEmployeeLifecycleManagementApi* | [**GetSchemaAttributes**](docs/NonEmployeeLifecycleManagementApi.md#getschemaattributes) | **Get** /non-employee-sources/{sourceId}/schema-attributes | List Schema Attributes Non-Employee Source
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeApprovalGet**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeeapprovalget) | **Get** /non-employee-approvals/{id} | Get a non-employee approval item detail
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeApprovalList**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeeapprovallist) | **Get** /non-employee-approvals | Get List of Non-Employee Approval Requests
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeApprovalSummary**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeeapprovalsummary) | **Get** /non-employee-approvals/summary/{requested-for} | Get Summary of Non-Employee Approval Requests
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeApproveRequest**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeeapproverequest) | **Post** /non-employee-approvals/{id}/approve | Approve a Non-Employee Request
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeBulkUploadStatus**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeebulkuploadstatus) | **Get** /non-employee-sources/{id}/non-employee-bulk-upload/status | Obtain the status of bulk upload on the source
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeExportSourceSchemaTemplate**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeeexportsourceschematemplate) | **Get** /non-employee-sources/{id}/schema-attributes-template/download | Exports Source Schema Template
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeRecordBulkDelete**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeerecordbulkdelete) | **Post** /non-employee-records/bulk-delete | Delete Multiple Non-Employee Records
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeRecordCreation**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeerecordcreation) | **Post** /non-employee-records | Create Non-Employee Record
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeRecordDelete**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeerecorddelete) | **Delete** /non-employee-records/{id} | Delete Non-Employee Record
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeRecordGet**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeerecordget) | **Get** /non-employee-records/{id} | Get a Non-Employee Record
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeRecordList**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeerecordlist) | **Get** /non-employee-records | List Non-Employee Records
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeRecordPatch**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeerecordpatch) | **Patch** /non-employee-records/{id} | Patch Non-Employee Record
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeRecordUpdate**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeerecordupdate) | **Put** /non-employee-records/{id} | Update Non-Employee Record
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeRecordsBulkUpload**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeerecordsbulkupload) | **Post** /non-employee-sources/{id}/non-employee-bulk-upload | Imports, or Updates, Non-Employee Records
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeRecordsExport**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeerecordsexport) | **Get** /non-employee-sources/{id}/non-employees/download | Exports Non-Employee Records to CSV
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeRejectRequest**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeerejectrequest) | **Post** /non-employee-approvals/{id}/reject | Reject a Non-Employee Request
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeRequestCreation**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeerequestcreation) | **Post** /non-employee-requests | Create Non-Employee Request
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeRequestDeletion**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeerequestdeletion) | **Delete** /non-employee-requests/{id} | Delete Non-Employee Request
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeRequestGet**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeerequestget) | **Get** /non-employee-requests/{id} | Get a Non-Employee Request
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeRequestList**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeerequestlist) | **Get** /non-employee-requests | List Non-Employee Requests
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeRequestSummaryGet**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeerequestsummaryget) | **Get** /non-employee-requests/summary/{requested-for} | Get Summary of Non-Employee Requests
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeSourceDelete**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeesourcedelete) | **Delete** /non-employee-sources/{sourceId} | Delete Non-Employee Source
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeSourceGet**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeesourceget) | **Get** /non-employee-sources/{sourceId} | Get a Non-Employee Source
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeSourcePatch**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeesourcepatch) | **Patch** /non-employee-sources/{sourceId} | Patch a Non-Employee Source
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeSourcesCreation**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeesourcescreation) | **Post** /non-employee-sources | Create Non-Employee Source
-*NonEmployeeLifecycleManagementApi* | [**NonEmployeeSourcesList**](docs/NonEmployeeLifecycleManagementApi.md#nonemployeesourceslist) | **Get** /non-employee-sources | List Non-Employee Sources
-*NonEmployeeLifecycleManagementApi* | [**PatchSchemaAttribute**](docs/NonEmployeeLifecycleManagementApi.md#patchschemaattribute) | **Patch** /non-employee-sources/{sourceId}/schema-attributes/{attributeId} | Patch a Schema Attribute for Non-Employee Source
-*NotificationsApi* | [**BulkDeleteNotificationTemplates**](docs/NotificationsApi.md#bulkdeletenotificationtemplates) | **Post** /notification-templates/bulk-delete | Bulk Delete Notification Templates
+*NonEmployeeLifecycleManagementApi* | [**ApproveNonEmployeeRequest**](docs/NonEmployeeLifecycleManagementApi.md#approvenonemployeerequest) | **Post** /non-employee-approvals/{id}/approve | Approve a Non-Employee Request
+*NonEmployeeLifecycleManagementApi* | [**CreateNonEmployeeRecord**](docs/NonEmployeeLifecycleManagementApi.md#createnonemployeerecord) | **Post** /non-employee-records | Create Non-Employee Record
+*NonEmployeeLifecycleManagementApi* | [**CreateNonEmployeeRequest**](docs/NonEmployeeLifecycleManagementApi.md#createnonemployeerequest) | **Post** /non-employee-requests | Create Non-Employee Request
+*NonEmployeeLifecycleManagementApi* | [**CreateNonEmployeeSource**](docs/NonEmployeeLifecycleManagementApi.md#createnonemployeesource) | **Post** /non-employee-sources | Create Non-Employee Source
+*NonEmployeeLifecycleManagementApi* | [**CreateNonEmployeeSourceSchemaAttributes**](docs/NonEmployeeLifecycleManagementApi.md#createnonemployeesourceschemaattributes) | **Post** /non-employee-sources/{sourceId}/schema-attributes | Create a new Schema Attribute for Non-Employee Source
+*NonEmployeeLifecycleManagementApi* | [**DeleteNonEmployeeRecord**](docs/NonEmployeeLifecycleManagementApi.md#deletenonemployeerecord) | **Delete** /non-employee-records/{id} | Delete Non-Employee Record
+*NonEmployeeLifecycleManagementApi* | [**DeleteNonEmployeeRecordInBulk**](docs/NonEmployeeLifecycleManagementApi.md#deletenonemployeerecordinbulk) | **Post** /non-employee-records/bulk-delete | Delete Multiple Non-Employee Records
+*NonEmployeeLifecycleManagementApi* | [**DeleteNonEmployeeRequest**](docs/NonEmployeeLifecycleManagementApi.md#deletenonemployeerequest) | **Delete** /non-employee-requests/{id} | Delete Non-Employee Request
+*NonEmployeeLifecycleManagementApi* | [**DeleteNonEmployeeSchemaAttribute**](docs/NonEmployeeLifecycleManagementApi.md#deletenonemployeeschemaattribute) | **Delete** /non-employee-sources/{sourceId}/schema-attributes/{attributeId} | Delete a Schema Attribute for Non-Employee Source
+*NonEmployeeLifecycleManagementApi* | [**DeleteNonEmployeeSource**](docs/NonEmployeeLifecycleManagementApi.md#deletenonemployeesource) | **Delete** /non-employee-sources/{sourceId} | Delete Non-Employee Source
+*NonEmployeeLifecycleManagementApi* | [**DeleteNonEmployeeSourceSchemaAttributes**](docs/NonEmployeeLifecycleManagementApi.md#deletenonemployeesourceschemaattributes) | **Delete** /non-employee-sources/{sourceId}/schema-attributes | Delete all custom schema attributes for Non-Employee Source
+*NonEmployeeLifecycleManagementApi* | [**ExportNonEmployeeRecords**](docs/NonEmployeeLifecycleManagementApi.md#exportnonemployeerecords) | **Get** /non-employee-sources/{id}/non-employees/download | Exports Non-Employee Records to CSV
+*NonEmployeeLifecycleManagementApi* | [**ExportNonEmployeeSourceSchemaTemplate**](docs/NonEmployeeLifecycleManagementApi.md#exportnonemployeesourceschematemplate) | **Get** /non-employee-sources/{id}/schema-attributes-template/download | Exports Source Schema Template
+*NonEmployeeLifecycleManagementApi* | [**GetNonEmployeeApproval**](docs/NonEmployeeLifecycleManagementApi.md#getnonemployeeapproval) | **Get** /non-employee-approvals/{id} | Get a non-employee approval item detail
+*NonEmployeeLifecycleManagementApi* | [**GetNonEmployeeApprovalSummary**](docs/NonEmployeeLifecycleManagementApi.md#getnonemployeeapprovalsummary) | **Get** /non-employee-approvals/summary/{requested-for} | Get Summary of Non-Employee Approval Requests
+*NonEmployeeLifecycleManagementApi* | [**GetNonEmployeeBulkUploadStatus**](docs/NonEmployeeLifecycleManagementApi.md#getnonemployeebulkuploadstatus) | **Get** /non-employee-sources/{id}/non-employee-bulk-upload/status | Obtain the status of bulk upload on the source
+*NonEmployeeLifecycleManagementApi* | [**GetNonEmployeeRecord**](docs/NonEmployeeLifecycleManagementApi.md#getnonemployeerecord) | **Get** /non-employee-records/{id} | Get a Non-Employee Record
+*NonEmployeeLifecycleManagementApi* | [**GetNonEmployeeRequest**](docs/NonEmployeeLifecycleManagementApi.md#getnonemployeerequest) | **Get** /non-employee-requests/{id} | Get a Non-Employee Request
+*NonEmployeeLifecycleManagementApi* | [**GetNonEmployeeRequestSummary**](docs/NonEmployeeLifecycleManagementApi.md#getnonemployeerequestsummary) | **Get** /non-employee-requests/summary/{requested-for} | Get Summary of Non-Employee Requests
+*NonEmployeeLifecycleManagementApi* | [**GetNonEmployeeSchemaAttribute**](docs/NonEmployeeLifecycleManagementApi.md#getnonemployeeschemaattribute) | **Get** /non-employee-sources/{sourceId}/schema-attributes/{attributeId} | Get Schema Attribute Non-Employee Source
+*NonEmployeeLifecycleManagementApi* | [**GetNonEmployeeSource**](docs/NonEmployeeLifecycleManagementApi.md#getnonemployeesource) | **Get** /non-employee-sources/{sourceId} | Get a Non-Employee Source
+*NonEmployeeLifecycleManagementApi* | [**GetNonEmployeeSourceSchemaAttributes**](docs/NonEmployeeLifecycleManagementApi.md#getnonemployeesourceschemaattributes) | **Get** /non-employee-sources/{sourceId}/schema-attributes | List Schema Attributes Non-Employee Source
+*NonEmployeeLifecycleManagementApi* | [**ListNonEmployeeApproval**](docs/NonEmployeeLifecycleManagementApi.md#listnonemployeeapproval) | **Get** /non-employee-approvals | Get List of Non-Employee Approval Requests
+*NonEmployeeLifecycleManagementApi* | [**ListNonEmployeeRecords**](docs/NonEmployeeLifecycleManagementApi.md#listnonemployeerecords) | **Get** /non-employee-records | List Non-Employee Records
+*NonEmployeeLifecycleManagementApi* | [**ListNonEmployeeRequests**](docs/NonEmployeeLifecycleManagementApi.md#listnonemployeerequests) | **Get** /non-employee-requests | List Non-Employee Requests
+*NonEmployeeLifecycleManagementApi* | [**ListNonEmployeeSources**](docs/NonEmployeeLifecycleManagementApi.md#listnonemployeesources) | **Get** /non-employee-sources | List Non-Employee Sources
+*NonEmployeeLifecycleManagementApi* | [**PatchNonEmployeeRecord**](docs/NonEmployeeLifecycleManagementApi.md#patchnonemployeerecord) | **Patch** /non-employee-records/{id} | Patch Non-Employee Record
+*NonEmployeeLifecycleManagementApi* | [**PatchNonEmployeeSchemaAttribute**](docs/NonEmployeeLifecycleManagementApi.md#patchnonemployeeschemaattribute) | **Patch** /non-employee-sources/{sourceId}/schema-attributes/{attributeId} | Patch a Schema Attribute for Non-Employee Source
+*NonEmployeeLifecycleManagementApi* | [**PatchNonEmployeeSource**](docs/NonEmployeeLifecycleManagementApi.md#patchnonemployeesource) | **Patch** /non-employee-sources/{sourceId} | Patch a Non-Employee Source
+*NonEmployeeLifecycleManagementApi* | [**RejectNonEmployeeRequest**](docs/NonEmployeeLifecycleManagementApi.md#rejectnonemployeerequest) | **Post** /non-employee-approvals/{id}/reject | Reject a Non-Employee Request
+*NonEmployeeLifecycleManagementApi* | [**UpdateNonEmployeeRecord**](docs/NonEmployeeLifecycleManagementApi.md#updatenonemployeerecord) | **Put** /non-employee-records/{id} | Update Non-Employee Record
+*NonEmployeeLifecycleManagementApi* | [**UploadNonEmployeeRecordsInBulk**](docs/NonEmployeeLifecycleManagementApi.md#uploadnonemployeerecordsinbulk) | **Post** /non-employee-sources/{id}/non-employee-bulk-upload | Imports, or Updates, Non-Employee Records
 *NotificationsApi* | [**CreateNotificationTemplate**](docs/NotificationsApi.md#createnotificationtemplate) | **Post** /notification-templates | Create Notification Template
 *NotificationsApi* | [**CreateVerifiedFromAddress**](docs/NotificationsApi.md#createverifiedfromaddress) | **Post** /verified-from-addresses | Create Verified From Address
+*NotificationsApi* | [**DeleteNotificationTemplatesInBulk**](docs/NotificationsApi.md#deletenotificationtemplatesinbulk) | **Post** /notification-templates/bulk-delete | Bulk Delete Notification Templates
 *NotificationsApi* | [**DeleteVerifiedFromAddress**](docs/NotificationsApi.md#deleteverifiedfromaddress) | **Delete** /verified-from-addresses/{id} | Delete Verified From Address
 *NotificationsApi* | [**GetDkimAttributes**](docs/NotificationsApi.md#getdkimattributes) | **Get** /dkim-attributes/{identities} | Get DKIM Attributes
 *NotificationsApi* | [**GetNotificationPreference**](docs/NotificationsApi.md#getnotificationpreference) | **Get** /notification-preferences/{key} | Get Notification Preferences for tenant.
@@ -292,9 +297,9 @@ Class | Method | HTTP request | Description
 *PasswordDictionaryApi* | [**GetPasswordDictionaryFileStatus**](docs/PasswordDictionaryApi.md#getpassworddictionaryfilestatus) | **Head** /password-dictionary | Get Password Dictionary Status
 *PasswordDictionaryApi* | [**UpdatePasswordDictionary**](docs/PasswordDictionaryApi.md#updatepassworddictionary) | **Put** /password-dictionary | Update Password Dictionary
 *PasswordManagementApi* | [**GenerateDigitToken**](docs/PasswordManagementApi.md#generatedigittoken) | **Post** /generate-password-reset-token/digit | Generate a digit token
-*PasswordManagementApi* | [**GetPasswordChangeStatus**](docs/PasswordManagementApi.md#getpasswordchangestatus) | **Get** /password-change-status/{id} | Get Password Change Request Status
+*PasswordManagementApi* | [**GetIdentityPasswordChangeStatus**](docs/PasswordManagementApi.md#getidentitypasswordchangestatus) | **Get** /password-change-status/{id} | Get Password Change Request Status
 *PasswordManagementApi* | [**QueryPasswordInfo**](docs/PasswordManagementApi.md#querypasswordinfo) | **Post** /query-password-info | Query Password Info
-*PasswordManagementApi* | [**SetPassword**](docs/PasswordManagementApi.md#setpassword) | **Post** /set-password | Set Identity&#39;s Password
+*PasswordManagementApi* | [**SetIdentityPassword**](docs/PasswordManagementApi.md#setidentitypassword) | **Post** /set-password | Set Identity&#39;s Password
 *PasswordSyncGroupsApi* | [**CreatePasswordSyncGroup**](docs/PasswordSyncGroupsApi.md#createpasswordsyncgroup) | **Post** /password-sync-groups | Create Password Sync Group
 *PasswordSyncGroupsApi* | [**DeletePasswordSyncGroup**](docs/PasswordSyncGroupsApi.md#deletepasswordsyncgroup) | **Delete** /password-sync-groups/{id} | Delete Password Sync Group by ID
 *PasswordSyncGroupsApi* | [**GetPasswordSyncGroup**](docs/PasswordSyncGroupsApi.md#getpasswordsyncgroup) | **Get** /password-sync-groups/{id} | Get Password Sync Group by ID
@@ -307,6 +312,7 @@ Class | Method | HTTP request | Description
 *PublicIdentitiesConfigApi* | [**GetPublicIdentityConfig**](docs/PublicIdentitiesConfigApi.md#getpublicidentityconfig) | **Get** /public-identities-config | Get Public Identity Config
 *PublicIdentitiesConfigApi* | [**UpdatePublicIdentityConfig**](docs/PublicIdentitiesConfigApi.md#updatepublicidentityconfig) | **Put** /public-identities-config | Update Public Identity Config
 *RequestableObjectsApi* | [**ListRequestableObjects**](docs/RequestableObjectsApi.md#listrequestableobjects) | **Get** /requestable-objects | Requestable Objects List
+*RoleInsightsApi* | [**CreateRoleInsightRequests**](docs/RoleInsightsApi.md#createroleinsightrequests) | **Post** /role-insights/requests | A request to generate insights for roles
 *RoleInsightsApi* | [**DownloadRoleInsightsEntitlementsChanges**](docs/RoleInsightsApi.md#downloadroleinsightsentitlementschanges) | **Get** /role-insights/{insightId}/entitlement-changes/download | Download entitlement insights for a role
 *RoleInsightsApi* | [**GetEntitlementChangesIdentities**](docs/RoleInsightsApi.md#getentitlementchangesidentities) | **Get** /role-insights/{insightId}/entitlement-changes/{entitlementId}/identities | Get identities for a suggested entitlement (for a role)
 *RoleInsightsApi* | [**GetRoleInsight**](docs/RoleInsightsApi.md#getroleinsight) | **Get** /role-insights/{insightId} | Get a single role insight
@@ -315,7 +321,6 @@ Class | Method | HTTP request | Description
 *RoleInsightsApi* | [**GetRoleInsightsEntitlementsChanges**](docs/RoleInsightsApi.md#getroleinsightsentitlementschanges) | **Get** /role-insights/{insightId}/entitlement-changes | Get entitlement insights for a role
 *RoleInsightsApi* | [**GetRoleInsightsRequests**](docs/RoleInsightsApi.md#getroleinsightsrequests) | **Get** /role-insights/requests/{id} | Returns the metadata for a request in order to generate insights for roles.
 *RoleInsightsApi* | [**GetRoleInsightsSummary**](docs/RoleInsightsApi.md#getroleinsightssummary) | **Get** /role-insights/summary | Get role insights summary information
-*RoleInsightsApi* | [**RoleInsightsRequests**](docs/RoleInsightsApi.md#roleinsightsrequests) | **Post** /role-insights/requests | A request to generate insights for roles
 *RolesApi* | [**CreateRole**](docs/RolesApi.md#createrole) | **Post** /roles | Create a Role
 *RolesApi* | [**DeleteRole**](docs/RolesApi.md#deleterole) | **Delete** /roles/{id} | Delete a Role
 *RolesApi* | [**GetRole**](docs/RolesApi.md#getrole) | **Get** /roles/{id} | Get a Role
@@ -323,37 +328,37 @@ Class | Method | HTTP request | Description
 *RolesApi* | [**ListRoles**](docs/RolesApi.md#listroles) | **Get** /roles | List Roles
 *RolesApi* | [**PatchRole**](docs/RolesApi.md#patchrole) | **Patch** /roles/{id} | Patch a specified Role
 *SODPolicyApi* | [**CreateSodPolicy**](docs/SODPolicyApi.md#createsodpolicy) | **Post** /sod-policies | Create SOD Policy
-*SODPolicyApi* | [**DeleteSodPolicyById**](docs/SODPolicyApi.md#deletesodpolicybyid) | **Delete** /sod-policies/{id} | Delete SOD Policy by ID
-*SODPolicyApi* | [**DeleteSodPolicyScheduleById**](docs/SODPolicyApi.md#deletesodpolicyschedulebyid) | **Delete** /sod-policies/{id}/schedule | Delete SOD Policy Schedule
+*SODPolicyApi* | [**DeleteSodPolicy**](docs/SODPolicyApi.md#deletesodpolicy) | **Delete** /sod-policies/{id} | Delete SOD Policy by ID
+*SODPolicyApi* | [**DeleteSodPolicySchedule**](docs/SODPolicyApi.md#deletesodpolicyschedule) | **Delete** /sod-policies/{id}/schedule | Delete SOD Policy Schedule
 *SODPolicyApi* | [**DownloadCustomViolationReport**](docs/SODPolicyApi.md#downloadcustomviolationreport) | **Get** /sod-violation-report/{reportResultId}/download/{fileName} | Download custom violation report
 *SODPolicyApi* | [**DownloadDefaultViolationReport**](docs/SODPolicyApi.md#downloaddefaultviolationreport) | **Get** /sod-violation-report/{reportResultId}/download | Download violation report
 *SODPolicyApi* | [**GetSodAllReportRunStatus**](docs/SODPolicyApi.md#getsodallreportrunstatus) | **Get** /sod-violation-report | Get multi-report run task status
-*SODPolicyApi* | [**GetSodPolicyById**](docs/SODPolicyApi.md#getsodpolicybyid) | **Get** /sod-policies/{id} | Get SOD Policy By ID
-*SODPolicyApi* | [**GetSodPolicyScheduleById**](docs/SODPolicyApi.md#getsodpolicyschedulebyid) | **Get** /sod-policies/{id}/schedule | Get SOD Policy Schedule
+*SODPolicyApi* | [**GetSodPolicy**](docs/SODPolicyApi.md#getsodpolicy) | **Get** /sod-policies/{id} | Get SOD Policy By ID
+*SODPolicyApi* | [**GetSodPolicySchedule**](docs/SODPolicyApi.md#getsodpolicyschedule) | **Get** /sod-policies/{id}/schedule | Get SOD Policy Schedule
 *SODPolicyApi* | [**GetSodViolationReportRunStatus**](docs/SODPolicyApi.md#getsodviolationreportrunstatus) | **Get** /sod-violation-report-status/{reportResultId} | Get violation report run status
 *SODPolicyApi* | [**GetSodViolationReportStatus**](docs/SODPolicyApi.md#getsodviolationreportstatus) | **Get** /sod-policies/{id}/violation-report | Get SOD violation report status
 *SODPolicyApi* | [**ListSodPolicies**](docs/SODPolicyApi.md#listsodpolicies) | **Get** /sod-policies | List SOD Policies
 *SODPolicyApi* | [**PatchSodPolicy**](docs/SODPolicyApi.md#patchsodpolicy) | **Patch** /sod-policies/{id} | Update a SOD Policy
-*SODPolicyApi* | [**RunAllPoliciesForOrg**](docs/SODPolicyApi.md#runallpoliciesfororg) | **Post** /sod-violation-report/run | Runs all policies for Org.
+*SODPolicyApi* | [**RunSodAllPoliciesForOrg**](docs/SODPolicyApi.md#runsodallpoliciesfororg) | **Post** /sod-violation-report/run | Runs all policies for Org.
 *SODPolicyApi* | [**RunSodPolicy**](docs/SODPolicyApi.md#runsodpolicy) | **Post** /sod-policies/{id}/violation-report/run | Runs SOD Policy Violation Report
-*SODPolicyApi* | [**UpdatePolicyById**](docs/SODPolicyApi.md#updatepolicybyid) | **Put** /sod-policies/{id} | Update SOD Policy By ID
-*SODPolicyApi* | [**UpdatePolicyScheduleById**](docs/SODPolicyApi.md#updatepolicyschedulebyid) | **Put** /sod-policies/{id}/schedule | Update SOD Policy schedule
-*SODViolationsApi* | [**PredictViolations**](docs/SODViolationsApi.md#predictviolations) | **Post** /sod-violations/predict | Predict SOD violations for the given identity if they were granted the given access.
-*SPConfigApi* | [**SpConfigExport**](docs/SPConfigApi.md#spconfigexport) | **Post** /sp-config/export | Initiates Configuration Objects Export Job.
-*SPConfigApi* | [**SpConfigExportDownload**](docs/SPConfigApi.md#spconfigexportdownload) | **Get** /sp-config/export/{id}/download | Download Result of Export Job
-*SPConfigApi* | [**SpConfigExportJobStatus**](docs/SPConfigApi.md#spconfigexportjobstatus) | **Get** /sp-config/export/{id} | Get Status of Export Job
-*SPConfigApi* | [**SpConfigImport**](docs/SPConfigApi.md#spconfigimport) | **Post** /sp-config/import | Initiates Configuration Objects Import Job.
-*SPConfigApi* | [**SpConfigImportDownload**](docs/SPConfigApi.md#spconfigimportdownload) | **Get** /sp-config/import/{id}/download | Download Result of Import Job
-*SPConfigApi* | [**SpConfigImportJobStatus**](docs/SPConfigApi.md#spconfigimportjobstatus) | **Get** /sp-config/import/{id} | Get Status of Import Job
-*SPConfigApi* | [**SpConfigObjects**](docs/SPConfigApi.md#spconfigobjects) | **Get** /sp-config/config-objects | Get Config Object details
+*SODPolicyApi* | [**UpdatePolicySchedule**](docs/SODPolicyApi.md#updatepolicyschedule) | **Put** /sod-policies/{id}/schedule | Update SOD Policy schedule
+*SODPolicyApi* | [**UpdateSodPolicy**](docs/SODPolicyApi.md#updatesodpolicy) | **Put** /sod-policies/{id} | Update SOD Policy By ID
+*SODViolationsApi* | [**PredictSodViolations**](docs/SODViolationsApi.md#predictsodviolations) | **Post** /sod-violations/predict | Predict SOD violations for the given identity if they were granted the given access.
+*SPConfigApi* | [**ExportSpConfig**](docs/SPConfigApi.md#exportspconfig) | **Post** /sp-config/export | Initiates Configuration Objects Export Job.
+*SPConfigApi* | [**ExportSpConfigDownload**](docs/SPConfigApi.md#exportspconfigdownload) | **Get** /sp-config/export/{id}/download | Download Result of Export Job
+*SPConfigApi* | [**ExportSpConfigJobStatus**](docs/SPConfigApi.md#exportspconfigjobstatus) | **Get** /sp-config/export/{id} | Get Status of Export Job
+*SPConfigApi* | [**ImportSpConfig**](docs/SPConfigApi.md#importspconfig) | **Post** /sp-config/import | Initiates Configuration Objects Import Job.
+*SPConfigApi* | [**ImportSpConfigDownload**](docs/SPConfigApi.md#importspconfigdownload) | **Get** /sp-config/import/{id}/download | Download Result of Import Job
+*SPConfigApi* | [**ImportSpConfigJobStatus**](docs/SPConfigApi.md#importspconfigjobstatus) | **Get** /sp-config/import/{id} | Get Status of Import Job
+*SPConfigApi* | [**ListSpConfigObjects**](docs/SPConfigApi.md#listspconfigobjects) | **Get** /sp-config/config-objects | Get Config Object details
 *SearchAttributeConfigurationApi* | [**CreateSearchAttributeConfig**](docs/SearchAttributeConfigurationApi.md#createsearchattributeconfig) | **Post** /accounts/search-attribute-config | Configure/create extended search attributes in IdentityNow.
 *SearchAttributeConfigurationApi* | [**DeleteSearchAttributeConfig**](docs/SearchAttributeConfigurationApi.md#deletesearchattributeconfig) | **Delete** /accounts/search-attribute-config/{name} | Delete an extended search attribute in IdentityNow.
 *SearchAttributeConfigurationApi* | [**GetSearchAttributeConfig**](docs/SearchAttributeConfigurationApi.md#getsearchattributeconfig) | **Get** /accounts/search-attribute-config | Retrieve a list of extended search attributes in IdentityNow.
 *SearchAttributeConfigurationApi* | [**GetSingleSearchAttributeConfig**](docs/SearchAttributeConfigurationApi.md#getsinglesearchattributeconfig) | **Get** /accounts/search-attribute-config/{name} | Get the details of a specific extended search attribute in IdentityNow.
 *SearchAttributeConfigurationApi* | [**PatchSearchAttributeConfig**](docs/SearchAttributeConfigurationApi.md#patchsearchattributeconfig) | **Patch** /accounts/search-attribute-config/{name} | Update the details of a specific extended search attribute in IdentityNow.
 *SegmentsApi* | [**CreateSegment**](docs/SegmentsApi.md#createsegment) | **Post** /segments | Create Segment
-*SegmentsApi* | [**DeleteSegmentById**](docs/SegmentsApi.md#deletesegmentbyid) | **Delete** /segments/{id} | Delete Segment by ID
-*SegmentsApi* | [**GetSegmentById**](docs/SegmentsApi.md#getsegmentbyid) | **Get** /segments/{id} | Get a Segment by its ID
+*SegmentsApi* | [**DeleteSegment**](docs/SegmentsApi.md#deletesegment) | **Delete** /segments/{id} | Delete Segment by ID
+*SegmentsApi* | [**GetSegment**](docs/SegmentsApi.md#getsegment) | **Get** /segments/{id} | Get a Segment by its ID
 *SegmentsApi* | [**ListSegments**](docs/SegmentsApi.md#listsegments) | **Get** /segments | List Segments
 *SegmentsApi* | [**PatchSegment**](docs/SegmentsApi.md#patchsegment) | **Patch** /segments/{id} | Update a Segment
 *ServiceDeskIntegrationApi* | [**CreateServiceDeskIntegration**](docs/ServiceDeskIntegrationApi.md#createservicedeskintegration) | **Post** /service-desk-integrations | Create a new Service Desk integration
@@ -364,75 +369,75 @@ Class | Method | HTTP request | Description
 *ServiceDeskIntegrationApi* | [**GetServiceDeskIntegrationTypes**](docs/ServiceDeskIntegrationApi.md#getservicedeskintegrationtypes) | **Get** /service-desk-integrations/types | Service Desk Integration Types List.
 *ServiceDeskIntegrationApi* | [**GetStatusCheckDetails**](docs/ServiceDeskIntegrationApi.md#getstatuscheckdetails) | **Get** /service-desk-integrations/status-check-configuration | Get the time check configuration of queued SDIM tickets
 *ServiceDeskIntegrationApi* | [**PatchServiceDeskIntegration**](docs/ServiceDeskIntegrationApi.md#patchservicedeskintegration) | **Patch** /service-desk-integrations/{id} | Service Desk Integration Update - PATCH
+*ServiceDeskIntegrationApi* | [**UpdateManagedClientStatusCheckDetails**](docs/ServiceDeskIntegrationApi.md#updatemanagedclientstatuscheckdetails) | **Put** /service-desk-integrations/status-check-configuration | Update the time check configuration of queued SDIM tickets
 *ServiceDeskIntegrationApi* | [**UpdateServiceDeskIntegration**](docs/ServiceDeskIntegrationApi.md#updateservicedeskintegration) | **Put** /service-desk-integrations/{id} | Update a Service Desk integration by ID
-*ServiceDeskIntegrationApi* | [**UpdateStatusCheckDetails**](docs/ServiceDeskIntegrationApi.md#updatestatuscheckdetails) | **Put** /service-desk-integrations/status-check-configuration | Update the time check configuration of queued SDIM tickets
-*SourcesApi* | [**BulkUpdateProvisioningPolicies**](docs/SourcesApi.md#bulkupdateprovisioningpolicies) | **Post** /sources/{sourceId}/provisioning-policies/bulk-update | Bulk Update Provisioning Policies
-*SourcesApi* | [**CheckConnection**](docs/SourcesApi.md#checkconnection) | **Post** /sources/{sourceId}/connector/check-connection | Check connection for the source connector.
 *SourcesApi* | [**CreateProvisioningPolicy**](docs/SourcesApi.md#createprovisioningpolicy) | **Post** /sources/{sourceId}/provisioning-policies | Create Provisioning Policy
-*SourcesApi* | [**CreateSchema**](docs/SourcesApi.md#createschema) | **Post** /sources/{sourceId}/schemas | Creates a new Schema on the specified Source in IdentityNow.
 *SourcesApi* | [**CreateSource**](docs/SourcesApi.md#createsource) | **Post** /sources | Creates a source in IdentityNow.
+*SourcesApi* | [**CreateSourceSchema**](docs/SourcesApi.md#createsourceschema) | **Post** /sources/{sourceId}/schemas | Creates a new Schema on the specified Source in IdentityNow.
 *SourcesApi* | [**DeleteProvisioningPolicy**](docs/SourcesApi.md#deleteprovisioningpolicy) | **Delete** /sources/{sourceId}/provisioning-policies/{usageType} | Delete Provisioning Policy by UsageType
-*SourcesApi* | [**DeleteSchema**](docs/SourcesApi.md#deleteschema) | **Delete** /sources/{sourceId}/schemas/{schemaId} | Delete Source Schema by ID
 *SourcesApi* | [**DeleteSource**](docs/SourcesApi.md#deletesource) | **Delete** /sources/{id} | Delete Source by ID
+*SourcesApi* | [**DeleteSourceSchema**](docs/SourcesApi.md#deletesourceschema) | **Delete** /sources/{sourceId}/schemas/{schemaId} | Delete Source Schema by ID
 *SourcesApi* | [**DownloadSourceAccountsSchema**](docs/SourcesApi.md#downloadsourceaccountsschema) | **Get** /sources/{id}/schemas/accounts | Downloads source accounts schema template
 *SourcesApi* | [**DownloadSourceEntitlementsSchema**](docs/SourcesApi.md#downloadsourceentitlementsschema) | **Get** /sources/{id}/schemas/entitlements | Downloads source entitlements schema template
 *SourcesApi* | [**GetProvisioningPolicy**](docs/SourcesApi.md#getprovisioningpolicy) | **Get** /sources/{sourceId}/provisioning-policies/{usageType} | Get Provisioning Policy by UsageType
-*SourcesApi* | [**GetSchema**](docs/SourcesApi.md#getschema) | **Get** /sources/{sourceId}/schemas/{schemaId} | Get Source Schema by ID
 *SourcesApi* | [**GetSource**](docs/SourcesApi.md#getsource) | **Get** /sources/{id} | Get Source by ID
 *SourcesApi* | [**GetSourceAttrSyncConfig**](docs/SourcesApi.md#getsourceattrsyncconfig) | **Get** /sources/{id}/attribute-sync-config | Attribute Sync Config
 *SourcesApi* | [**GetSourceConfig**](docs/SourcesApi.md#getsourceconfig) | **Get** /sources/{id}/connectors/source-config | Gets source config with language translations
+*SourcesApi* | [**GetSourceSchema**](docs/SourcesApi.md#getsourceschema) | **Get** /sources/{sourceId}/schemas/{schemaId} | Get Source Schema by ID
 *SourcesApi* | [**ListProvisioningPolicies**](docs/SourcesApi.md#listprovisioningpolicies) | **Get** /sources/{sourceId}/provisioning-policies | Lists ProvisioningPolicies
-*SourcesApi* | [**ListSchemas**](docs/SourcesApi.md#listschemas) | **Get** /sources/{sourceId}/schemas | Lists the Schemas that exist on the specified Source in IdentityNow.
+*SourcesApi* | [**ListSourceSchemas**](docs/SourcesApi.md#listsourceschemas) | **Get** /sources/{sourceId}/schemas | Lists the Schemas that exist on the specified Source in IdentityNow.
 *SourcesApi* | [**ListSources**](docs/SourcesApi.md#listsources) | **Get** /sources | Lists all sources in IdentityNow.
 *SourcesApi* | [**PeekResourceObjects**](docs/SourcesApi.md#peekresourceobjects) | **Post** /sources/{sourceId}/connector/peek-resource-objects | Peek resource objects from the source connector
 *SourcesApi* | [**PingCluster**](docs/SourcesApi.md#pingcluster) | **Post** /sources/{sourceId}/connector/ping-cluster | Ping cluster for the source connector
+*SourcesApi* | [**PutProvisioningPolicy**](docs/SourcesApi.md#putprovisioningpolicy) | **Put** /sources/{sourceId}/provisioning-policies/{usageType} | Update Provisioning Policy by UsageType
+*SourcesApi* | [**PutSource**](docs/SourcesApi.md#putsource) | **Put** /sources/{id} | Update Source (Full)
 *SourcesApi* | [**PutSourceAttrSyncConfig**](docs/SourcesApi.md#putsourceattrsyncconfig) | **Put** /sources/{id}/attribute-sync-config | Update Attribute Sync Config
-*SourcesApi* | [**ReplaceProvisioningPolicy**](docs/SourcesApi.md#replaceprovisioningpolicy) | **Put** /sources/{sourceId}/provisioning-policies/{usageType} | Update Provisioning Policy by UsageType
-*SourcesApi* | [**ReplaceSchema**](docs/SourcesApi.md#replaceschema) | **Put** /sources/{sourceId}/schemas/{schemaId} | Update Source Schema (Full)
-*SourcesApi* | [**ReplaceSource**](docs/SourcesApi.md#replacesource) | **Put** /sources/{id} | Update Source (Full)
-*SourcesApi* | [**SynchronizeAttributesForSource**](docs/SourcesApi.md#synchronizeattributesforsource) | **Post** /sources/{id}/synchronize-attributes | Synchronize single source attributes.
-*SourcesApi* | [**TestConfiguration**](docs/SourcesApi.md#testconfiguration) | **Post** /sources/{sourceId}/connector/test-configuration | Test configuration for the source connector
+*SourcesApi* | [**PutSourceSchema**](docs/SourcesApi.md#putsourceschema) | **Put** /sources/{sourceId}/schemas/{schemaId} | Update Source Schema (Full)
+*SourcesApi* | [**SyncAttributesForSource**](docs/SourcesApi.md#syncattributesforsource) | **Post** /sources/{id}/synchronize-attributes | Synchronize single source attributes.
+*SourcesApi* | [**TestSourceConfiguration**](docs/SourcesApi.md#testsourceconfiguration) | **Post** /sources/{sourceId}/connector/test-configuration | Test configuration for the source connector
+*SourcesApi* | [**TestSourceConnection**](docs/SourcesApi.md#testsourceconnection) | **Post** /sources/{sourceId}/connector/check-connection | Check connection for the source connector.
+*SourcesApi* | [**UpdateProvisioningPoliciesInBulk**](docs/SourcesApi.md#updateprovisioningpoliciesinbulk) | **Post** /sources/{sourceId}/provisioning-policies/bulk-update | Bulk Update Provisioning Policies
 *SourcesApi* | [**UpdateProvisioningPolicy**](docs/SourcesApi.md#updateprovisioningpolicy) | **Patch** /sources/{sourceId}/provisioning-policies/{usageType} | Partial update of Provisioning Policy
-*SourcesApi* | [**UpdateSchema**](docs/SourcesApi.md#updateschema) | **Patch** /sources/{sourceId}/schemas/{schemaId} | Update Source Schema (Partial)
 *SourcesApi* | [**UpdateSource**](docs/SourcesApi.md#updatesource) | **Patch** /sources/{id} | Update Source (Partial)
-*SourcesApi* | [**UploadConnectorFile**](docs/SourcesApi.md#uploadconnectorfile) | **Post** /sources/{sourceId}/upload-connector-file | Upload connector file to source
+*SourcesApi* | [**UpdateSourceSchema**](docs/SourcesApi.md#updatesourceschema) | **Patch** /sources/{sourceId}/schemas/{schemaId} | Update Source Schema (Partial)
 *SourcesApi* | [**UploadSourceAccountsSchema**](docs/SourcesApi.md#uploadsourceaccountsschema) | **Post** /sources/{id}/schemas/accounts | Uploads source accounts schema template
+*SourcesApi* | [**UploadSourceConnectorFile**](docs/SourcesApi.md#uploadsourceconnectorfile) | **Post** /sources/{sourceId}/upload-connector-file | Upload connector file to source
 *SourcesApi* | [**UploadSourceEntitlementsSchema**](docs/SourcesApi.md#uploadsourceentitlementsschema) | **Post** /sources/{id}/schemas/entitlements | Uploads source entitlements schema template
 *TaggedObjectsApi* | [**AddTagToObject**](docs/TaggedObjectsApi.md#addtagtoobject) | **Post** /tagged-objects | Add Tag to Object
 *TaggedObjectsApi* | [**AddTagsToManyObjects**](docs/TaggedObjectsApi.md#addtagstomanyobjects) | **Post** /tagged-objects/bulk-add | Tag Multiple Objects
-*TaggedObjectsApi* | [**DeleteTaggedObjectByTypeAndId**](docs/TaggedObjectsApi.md#deletetaggedobjectbytypeandid) | **Delete** /tagged-objects/{type}/{id} | Delete Tagged Object
-*TaggedObjectsApi* | [**GetTaggedObjectByTypeAndId**](docs/TaggedObjectsApi.md#gettaggedobjectbytypeandid) | **Get** /tagged-objects/{type}/{id} | Get Tagged Object
+*TaggedObjectsApi* | [**DeleteTaggedObject**](docs/TaggedObjectsApi.md#deletetaggedobject) | **Delete** /tagged-objects/{type}/{id} | Delete Tagged Object
+*TaggedObjectsApi* | [**GetTaggedObject**](docs/TaggedObjectsApi.md#gettaggedobject) | **Get** /tagged-objects/{type}/{id} | Get Tagged Object
 *TaggedObjectsApi* | [**ListTaggedObjects**](docs/TaggedObjectsApi.md#listtaggedobjects) | **Get** /tagged-objects | List Tagged Objects
 *TaggedObjectsApi* | [**ListTaggedObjectsByType**](docs/TaggedObjectsApi.md#listtaggedobjectsbytype) | **Get** /tagged-objects/{type} | List Tagged Objects
 *TaggedObjectsApi* | [**RemoveTagsToManyObject**](docs/TaggedObjectsApi.md#removetagstomanyobject) | **Post** /tagged-objects/bulk-remove | Remove Tags from Multiple Objects
-*TaggedObjectsApi* | [**UpdateTaggedObjectByTypeAndId**](docs/TaggedObjectsApi.md#updatetaggedobjectbytypeandid) | **Put** /tagged-objects/{type}/{id} | Update Tagged Object
+*TaggedObjectsApi* | [**UpdateTaggedObject**](docs/TaggedObjectsApi.md#updatetaggedobject) | **Put** /tagged-objects/{type}/{id} | Update Tagged Object
 *TransformsApi* | [**CreateTransform**](docs/TransformsApi.md#createtransform) | **Post** /transforms | Create transform
 *TransformsApi* | [**DeleteTransform**](docs/TransformsApi.md#deletetransform) | **Delete** /transforms/{id} | Delete a transform
 *TransformsApi* | [**GetTransform**](docs/TransformsApi.md#gettransform) | **Get** /transforms/{id} | Transform by ID
-*TransformsApi* | [**GetTransformsList**](docs/TransformsApi.md#gettransformslist) | **Get** /transforms | List transforms
+*TransformsApi* | [**ListTransforms**](docs/TransformsApi.md#listtransforms) | **Get** /transforms | List transforms
 *TransformsApi* | [**UpdateTransform**](docs/TransformsApi.md#updatetransform) | **Put** /transforms/{id} | Update a transform
-*TriggersApi* | [**CompleteInvocation**](docs/TriggersApi.md#completeinvocation) | **Post** /trigger-invocations/{id}/complete | Complete Trigger Invocation
+*TriggersApi* | [**CompleteTriggerInvocation**](docs/TriggersApi.md#completetriggerinvocation) | **Post** /trigger-invocations/{id}/complete | Complete Trigger Invocation
 *TriggersApi* | [**CreateSubscription**](docs/TriggersApi.md#createsubscription) | **Post** /trigger-subscriptions | Create a Subscription
 *TriggersApi* | [**DeleteSubscription**](docs/TriggersApi.md#deletesubscription) | **Delete** /trigger-subscriptions/{id} | Delete a Subscription
-*TriggersApi* | [**ListInvocationStatus**](docs/TriggersApi.md#listinvocationstatus) | **Get** /trigger-invocations/status | List Latest Invocation Statuses
 *TriggersApi* | [**ListSubscriptions**](docs/TriggersApi.md#listsubscriptions) | **Get** /trigger-subscriptions | List Subscriptions
+*TriggersApi* | [**ListTriggerInvocationStatus**](docs/TriggersApi.md#listtriggerinvocationstatus) | **Get** /trigger-invocations/status | List Latest Invocation Statuses
 *TriggersApi* | [**ListTriggers**](docs/TriggersApi.md#listtriggers) | **Get** /triggers | List Triggers
 *TriggersApi* | [**PatchSubscription**](docs/TriggersApi.md#patchsubscription) | **Patch** /trigger-subscriptions/{id} | Patch a Subscription
-*TriggersApi* | [**StartTestInvocation**](docs/TriggersApi.md#starttestinvocation) | **Post** /trigger-invocations/test | Start a Test Invocation
+*TriggersApi* | [**StartTestTriggerInvocation**](docs/TriggersApi.md#starttesttriggerinvocation) | **Post** /trigger-invocations/test | Start a Test Invocation
 *TriggersApi* | [**UpdateSubscription**](docs/TriggersApi.md#updatesubscription) | **Put** /trigger-subscriptions/{id} | Update a Subscription
-*TriggersApi* | [**ValidateFilter**](docs/TriggersApi.md#validatefilter) | **Post** /trigger-subscriptions/validate-filter | Validate a Subscription Filter
+*TriggersApi* | [**ValidateSubscriptionFilter**](docs/TriggersApi.md#validatesubscriptionfilter) | **Post** /trigger-subscriptions/validate-filter | Validate a Subscription Filter
 *WorkItemsApi* | [**ApproveApprovalItem**](docs/WorkItemsApi.md#approveapprovalitem) | **Post** /work-items/{id}/approve/{approvalItemId} | Approve an Approval Item
-*WorkItemsApi* | [**BulkApproveApprovalItem**](docs/WorkItemsApi.md#bulkapproveapprovalitem) | **Post** /work-items/bulk-approve/{id} | Bulk approve Approval Items
-*WorkItemsApi* | [**BulkRejectApprovalItem**](docs/WorkItemsApi.md#bulkrejectapprovalitem) | **Post** /work-items/bulk-reject/{id} | Bulk reject Approval Items
+*WorkItemsApi* | [**ApproveApprovalItemsInBulk**](docs/WorkItemsApi.md#approveapprovalitemsinbulk) | **Post** /work-items/bulk-approve/{id} | Bulk approve Approval Items
 *WorkItemsApi* | [**CompleteWorkItem**](docs/WorkItemsApi.md#completeworkitem) | **Post** /work-items/{id} | Complete a Work Item
-*WorkItemsApi* | [**CompletedWorkItems**](docs/WorkItemsApi.md#completedworkitems) | **Get** /work-items/completed | Completed Work Items
-*WorkItemsApi* | [**CountCompletedWorkItems**](docs/WorkItemsApi.md#countcompletedworkitems) | **Get** /work-items/count/completed | Count Completed Work Items
-*WorkItemsApi* | [**CountWorkItems**](docs/WorkItemsApi.md#countworkitems) | **Get** /work-items/count | Count Work Items
-*WorkItemsApi* | [**GetWorkItems**](docs/WorkItemsApi.md#getworkitems) | **Get** /work-items/{id} | Get a Work Item
+*WorkItemsApi* | [**GetCompletedWorkItems**](docs/WorkItemsApi.md#getcompletedworkitems) | **Get** /work-items/completed | Completed Work Items
+*WorkItemsApi* | [**GetCountCompletedWorkItems**](docs/WorkItemsApi.md#getcountcompletedworkitems) | **Get** /work-items/count/completed | Count Completed Work Items
+*WorkItemsApi* | [**GetCountWorkItems**](docs/WorkItemsApi.md#getcountworkitems) | **Get** /work-items/count | Count Work Items
+*WorkItemsApi* | [**GetWorkItem**](docs/WorkItemsApi.md#getworkitem) | **Get** /work-items/{id} | Get a Work Item
+*WorkItemsApi* | [**GetWorkItemsSummary**](docs/WorkItemsApi.md#getworkitemssummary) | **Get** /work-items/summary | Work Items Summary
 *WorkItemsApi* | [**ListWorkItems**](docs/WorkItemsApi.md#listworkitems) | **Get** /work-items | List Work Items
 *WorkItemsApi* | [**RejectApprovalItem**](docs/WorkItemsApi.md#rejectapprovalitem) | **Post** /work-items/{id}/reject/{approvalItemId} | Reject an Approval Item
+*WorkItemsApi* | [**RejectApprovalItemsInBulk**](docs/WorkItemsApi.md#rejectapprovalitemsinbulk) | **Post** /work-items/bulk-reject/{id} | Bulk reject Approval Items
 *WorkItemsApi* | [**SubmitAccountSelection**](docs/WorkItemsApi.md#submitaccountselection) | **Post** /work-items/{id}/submit-account-selection | Submit Account Selections
-*WorkItemsApi* | [**SummaryWorkItems**](docs/WorkItemsApi.md#summaryworkitems) | **Get** /work-items/summary | Work Items Summary
 *WorkflowsApi* | [**CancelWorkflowExecution**](docs/WorkflowsApi.md#cancelworkflowexecution) | **Post** /workflow-executions/{id}/cancel | Cancel Workflow Execution by ID
 *WorkflowsApi* | [**CreateWorkflow**](docs/WorkflowsApi.md#createworkflow) | **Post** /workflows | Create Workflow
 *WorkflowsApi* | [**DeleteWorkflow**](docs/WorkflowsApi.md#deleteworkflow) | **Delete** /workflows/{id} | Delete Workflow By Id
@@ -469,6 +474,7 @@ Class | Method | HTTP request | Description
  - [AccessItemRemoved](docs/AccessItemRemoved.md)
  - [AccessItemRoleResponse](docs/AccessItemRoleResponse.md)
  - [AccessProfile](docs/AccessProfile.md)
+ - [AccessProfileApprovalScheme](docs/AccessProfileApprovalScheme.md)
  - [AccessProfileBulkDeleteRequest](docs/AccessProfileBulkDeleteRequest.md)
  - [AccessProfileBulkDeleteResponse](docs/AccessProfileBulkDeleteResponse.md)
  - [AccessProfileRef](docs/AccessProfileRef.md)
@@ -524,7 +530,6 @@ Class | Method | HTTP request | Description
  - [ApprovalItems](docs/ApprovalItems.md)
  - [ApprovalReminderAndEscalationConfig](docs/ApprovalReminderAndEscalationConfig.md)
  - [ApprovalScheme](docs/ApprovalScheme.md)
- - [ApprovalScheme1](docs/ApprovalScheme1.md)
  - [ApprovalSchemeForRole](docs/ApprovalSchemeForRole.md)
  - [ApprovalStatus](docs/ApprovalStatus.md)
  - [ApprovalStatusDto](docs/ApprovalStatusDto.md)
@@ -543,6 +548,7 @@ Class | Method | HTTP request | Description
  - [BaseReferenceDto1](docs/BaseReferenceDto1.md)
  - [BasicAuthConfig](docs/BasicAuthConfig.md)
  - [BearerTokenAuthConfig](docs/BearerTokenAuthConfig.md)
+ - [BulkIdentitiesAccountsResponse](docs/BulkIdentitiesAccountsResponse.md)
  - [BulkTaggedObject](docs/BulkTaggedObject.md)
  - [Campaign](docs/Campaign.md)
  - [CampaignActivated](docs/CampaignActivated.md)
@@ -604,6 +610,7 @@ Class | Method | HTTP request | Description
  - [CreateWorkflowRequest](docs/CreateWorkflowRequest.md)
  - [CustomPasswordInstruction](docs/CustomPasswordInstruction.md)
  - [DeleteCampaignsRequest](docs/DeleteCampaignsRequest.md)
+ - [DeleteNonEmployeeRecordInBulkRequest](docs/DeleteNonEmployeeRecordInBulkRequest.md)
  - [DeleteSource202Response](docs/DeleteSource202Response.md)
  - [DkimAttributesDto](docs/DkimAttributesDto.md)
  - [DomainAddressDto](docs/DomainAddressDto.md)
@@ -649,13 +656,14 @@ Class | Method | HTTP request | Description
  - [FullcampaignAllOfSourceOwnerCampaignInfo](docs/FullcampaignAllOfSourceOwnerCampaignInfo.md)
  - [FullcampaignAllOfSourcesWithOrphanEntitlements](docs/FullcampaignAllOfSourcesWithOrphanEntitlements.md)
  - [GetActiveCampaigns200ResponseInner](docs/GetActiveCampaigns200ResponseInner.md)
- - [GetEvents200ResponseInner](docs/GetEvents200ResponseInner.md)
+ - [GetHistoricalIdentityEvents200ResponseInner](docs/GetHistoricalIdentityEvents200ResponseInner.md)
  - [GetOAuthClientResponse](docs/GetOAuthClientResponse.md)
  - [GetPersonalAccessTokenResponse](docs/GetPersonalAccessTokenResponse.md)
  - [GrantType](docs/GrantType.md)
  - [HttpAuthenticationType](docs/HttpAuthenticationType.md)
  - [HttpConfig](docs/HttpConfig.md)
  - [HttpDispatchMode](docs/HttpDispatchMode.md)
+ - [IdentitiesAccountsBulkRequest](docs/IdentitiesAccountsBulkRequest.md)
  - [IdentityAttributeConfig](docs/IdentityAttributeConfig.md)
  - [IdentityAttributeConfig1](docs/IdentityAttributeConfig1.md)
  - [IdentityAttributePreview](docs/IdentityAttributePreview.md)
@@ -691,6 +699,7 @@ Class | Method | HTTP request | Description
  - [IdentityWithNewAccess](docs/IdentityWithNewAccess.md)
  - [IdentityWithNewAccessAccessRefsInner](docs/IdentityWithNewAccessAccessRefsInner.md)
  - [ImportOptions](docs/ImportOptions.md)
+ - [ImportSpConfigRequest](docs/ImportSpConfigRequest.md)
  - [Invocation](docs/Invocation.md)
  - [InvocationStatus](docs/InvocationStatus.md)
  - [InvocationStatusType](docs/InvocationStatusType.md)
@@ -738,8 +747,6 @@ Class | Method | HTTP request | Description
  - [NonEmployeeBulkUploadStatus](docs/NonEmployeeBulkUploadStatus.md)
  - [NonEmployeeIdnUserRequest](docs/NonEmployeeIdnUserRequest.md)
  - [NonEmployeeRecord](docs/NonEmployeeRecord.md)
- - [NonEmployeeRecordBulkDeleteRequest](docs/NonEmployeeRecordBulkDeleteRequest.md)
- - [NonEmployeeRecordsBulkUploadRequest](docs/NonEmployeeRecordsBulkUploadRequest.md)
  - [NonEmployeeRejectApprovalDecision](docs/NonEmployeeRejectApprovalDecision.md)
  - [NonEmployeeRequest](docs/NonEmployeeRequest.md)
  - [NonEmployeeRequestAllOf](docs/NonEmployeeRequestAllOf.md)
@@ -781,6 +788,7 @@ Class | Method | HTTP request | Description
  - [PasswordOrgConfig](docs/PasswordOrgConfig.md)
  - [PasswordStatus](docs/PasswordStatus.md)
  - [PasswordSyncGroup](docs/PasswordSyncGroup.md)
+ - [PatchPotentialRoleRequestInner](docs/PatchPotentialRoleRequestInner.md)
  - [PeerGroupMember](docs/PeerGroupMember.md)
  - [PendingApproval](docs/PendingApproval.md)
  - [PendingApprovalAction](docs/PendingApprovalAction.md)
@@ -869,9 +877,9 @@ Class | Method | HTTP request | Description
  - [RoleMiningPotentialRoleProvisionState](docs/RoleMiningPotentialRoleProvisionState.md)
  - [RoleMiningPotentialRoleRef](docs/RoleMiningPotentialRoleRef.md)
  - [RoleMiningPotentialRoleSummary](docs/RoleMiningPotentialRoleSummary.md)
- - [RoleMiningPotentialRoleSummaryDistribution](docs/RoleMiningPotentialRoleSummaryDistribution.md)
  - [RoleMiningRoleType](docs/RoleMiningRoleType.md)
  - [RoleMiningSessionDto](docs/RoleMiningSessionDto.md)
+ - [RoleMiningSessionParametersDto](docs/RoleMiningSessionParametersDto.md)
  - [RoleMiningSessionResponse](docs/RoleMiningSessionResponse.md)
  - [RoleMiningSessionScope](docs/RoleMiningSessionScope.md)
  - [RoleMiningSessionStatus](docs/RoleMiningSessionStatus.md)
@@ -938,7 +946,6 @@ Class | Method | HTTP request | Description
  - [SourceSyncPayload](docs/SourceSyncPayload.md)
  - [SourceUpdated](docs/SourceUpdated.md)
  - [SpConfigExportResults](docs/SpConfigExportResults.md)
- - [SpConfigImportRequest](docs/SpConfigImportRequest.md)
  - [SpConfigImportResults](docs/SpConfigImportResults.md)
  - [SpConfigJob](docs/SpConfigJob.md)
  - [SpConfigMessage](docs/SpConfigMessage.md)
@@ -1050,6 +1057,7 @@ Class | Method | HTTP request | Description
  - [TriggerOutputAccessRequestPreApproval](docs/TriggerOutputAccessRequestPreApproval.md)
  - [TriggerType](docs/TriggerType.md)
  - [UpdatePasswordDictionaryRequest](docs/UpdatePasswordDictionaryRequest.md)
+ - [UploadNonEmployeeRecordsInBulkRequest](docs/UploadNonEmployeeRecordsInBulkRequest.md)
  - [UsageType](docs/UsageType.md)
  - [V3ConnectorDto](docs/V3ConnectorDto.md)
  - [VAClusterStatusChangeEvent](docs/VAClusterStatusChangeEvent.md)

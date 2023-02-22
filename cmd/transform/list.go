@@ -2,6 +2,7 @@
 package transform
 
 import (
+	"github.com/sailpoint-oss/sailpoint-cli/internal/transform"
 	"github.com/spf13/cobra"
 )
 
@@ -15,7 +16,7 @@ func newListCmd() *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			err := ListTransforms()
+			err := transform.ListTransforms()
 			if err != nil {
 				return err
 			}

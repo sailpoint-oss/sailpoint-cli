@@ -27,7 +27,7 @@ func newImportCommand() *cobra.Command {
 
 			payload = sailpointbetasdk.NewImportOptions()
 
-			job, _, err := apiClient.Beta.SPConfigApi.SpConfigImport(ctx).Data(args[0]).Options(*payload).Execute()
+			job, _, err := apiClient.Beta.SPConfigApi.ImportSpConfig(ctx).Data(args[0]).Options(*payload).Execute()
 			if err != nil {
 				return err
 			}

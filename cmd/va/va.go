@@ -19,7 +19,7 @@ func NewVACmd() *cobra.Command {
 
 	cmd.AddCommand(
 		newCollectCmd(),
-		newTroubleshootCmd(),
+		// newTroubleshootCmd(),
 		newUpdateCmd(),
 		newParseCmd(),
 	)

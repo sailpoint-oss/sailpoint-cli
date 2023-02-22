@@ -27,10 +27,6 @@ func newQueryCmd() *cobra.Command {
 
 			apiClient := config.InitAPIClient()
 
-			if folderPath == "" {
-				folderPath = "search_results"
-			}
-
 			searchQuery = args[0]
 			fmt.Println(searchQuery)
 
@@ -58,7 +54,7 @@ func newQueryCmd() *cobra.Command {
 	cmd.Flags().StringArrayVarP(&indicies, "indicies", "i", []string{}, "indicies to perform the search query on")
 	cmd.Flags().StringArrayVarP(&sort, "sort", "s", []string{}, "the sort value for the api call (examples)")
 	cmd.Flags().StringArrayVarP(&outputTypes, "output types", "o", []string{"json"}, "the sort value for the api call (examples)")
-	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "", "folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
+	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "search_results", "folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
 
 	cmd.MarkFlagRequired("indicies")
 

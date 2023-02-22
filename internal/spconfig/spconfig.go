@@ -19,7 +19,7 @@ func DownloadExport(jobId string, fileName string, folderPath string) error {
 	apiClient := config.InitAPIClient()
 
 	for {
-		response, _, err := apiClient.Beta.SPConfigApi.SpConfigExportJobStatus(context.TODO(), jobId).Execute()
+		response, _, err := apiClient.Beta.SPConfigApi.ExportSpConfigJobStatus(context.TODO(), jobId).Execute()
 		if err != nil {
 			return err
 		}
@@ -30,7 +30,7 @@ func DownloadExport(jobId string, fileName string, folderPath string) error {
 			switch response.Status {
 			case "COMPLETE":
 				color.Green("Downloading Export Data")
-				export, _, err := apiClient.Beta.SPConfigApi.SpConfigExportDownload(context.TODO(), jobId).Execute()
+				export, _, err := apiClient.Beta.SPConfigApi.ExportSpConfigDownload(context.TODO(), jobId).Execute()
 				if err != nil {
 					return err
 				}

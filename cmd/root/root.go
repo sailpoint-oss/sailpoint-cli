@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var version = "0.4.2"
+var version = "0.5.0"
 
 func NewRootCmd() *cobra.Command {
 	root := &cobra.Command{
@@ -31,9 +31,10 @@ func NewRootCmd() *cobra.Command {
 			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
 		},
 	}
+
 	root.AddCommand(
 		newDebugCommand(),
-		newAuthCommand(),
+		// NewAuthCommand(),
 		environment.NewEnvironmentCommand(),
 		configure.NewConfigureCmd(),
 		connector.NewConnCmd(),

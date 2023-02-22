@@ -28,5 +28,20 @@
       "sort": [],
       "searchAfter": []
     }
+  },
+  {
+    "name": "all-provisioning-events-90-days",
+    "description": "All provisioning events in the tenant for a given time range",
+    "variables": [],
+    "searchQuery": {
+      "indices": ["events"],
+      "queryType": null,
+      "queryVersion": null,
+      "query": {
+        "query": "(type:provisioning AND created:[now-90d TO now])"
+      },
+      "sort": [],
+      "searchAfter": []
+    }
   }
 ]

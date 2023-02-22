@@ -41,9 +41,9 @@ var (
 )
 
 const (
-	ClientID     = "idn-support-portal-dev"
+	ClientID     = "sailpoint-cli"
 	RedirectPort = "3000"
-	RedirectPath = "/callback/css-255"
+	RedirectPath = "/callback"
 	RedirectURL  = "http://localhost:" + RedirectPort + RedirectPath
 )
 
@@ -78,9 +78,7 @@ func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	SetOAuthTokenExpiry(tok.Expiry)
 
 	// show succes page
-	msg := "<p><strong>SailPoint CLI, OAuth Login Success!</strong></p>"
-	msg = msg + "<p>You are authenticated and can now return to the CLI.</p>"
-	fmt.Fprint(w, msg)
+	fmt.Fprint(w, OAuthSuccessPage)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
 	defer cancel()

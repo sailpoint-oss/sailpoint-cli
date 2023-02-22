@@ -10,8 +10,6 @@ import (
 
 	"github.com/fatih/color"
 	sailpoint "github.com/sailpoint-oss/golang-sdk/sdk-output"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
-	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
@@ -35,12 +33,21 @@ type Environment struct {
 }
 
 type CLIConfig struct {
-	CustomExportTemplatesPath string `mapstructure:"customexporttemplatespath"`
-	CustomSearchTemplatesPath string `mapstructure:"customsearchtemplatespath"`
-	Debug                     bool   `mapstructure:"debug"`
-	AuthType                  string `mapstructure:"authtype"`
-	ActiveEnvironment         string `mapstructure:"activeenvironment"`
-	Environments              map[string]Environment
+
+	//Standard Variables
+	CustomExportTemplatesPath string                 `mapstructure:"customexporttemplatespath"`
+	CustomSearchTemplatesPath string                 `mapstructure:"customsearchtemplatespath"`
+	Debug                     bool                   `mapstructure:"debug"`
+	AuthType                  string                 `mapstructure:"authtype"`
+	ActiveEnvironment         string                 `mapstructure:"activeenvironment"`
+	Environments              map[string]Environment `mapstructure:"environments"`
+
+	//Pipline Variables
+	ClientID     string    `mapstructure:"clientid, omitempty"`
+	ClientSecret string    `mapstructure:"clientsecret, omitempty"`
+	BaseURL      string    `mapstructure:"base_url, omitempty"`
+	AccessToken  string    `mapstructure:"accesstoken"`
+	Expiry       time.Time `mapstructure:"expiry"`
 }
 
 func GetCustomSearchTemplatePath() string {
@@ -87,9 +94,11 @@ func SetActiveEnvironment(activeEnv string) {
 	viper.Set("activeenvironment", strings.ToLower(activeEnv))
 }
 
-func InitConfig() {
+func InitConfig() error {
 	home, err := os.UserHomeDir()
-	cobra.CheckErr(err)
+	if err != nil {
+		return err
+	}
 
 	viper.AddConfigPath(filepath.Join(home, ".sailpoint"))
 	viper.SetConfigName("config")
@@ -110,13 +119,13 @@ func InitConfig() {
 			// IGNORE they may be using env vars
 		} else {
 			// Config file was found but another error was produced
-			cobra.CheckErr(err)
+			return err
 		}
 	}
+	return nil
 }
 
 func InitAPIClient() *sailpoint.APIClient {
-	var DevNull types.DevNull
 	token, err := GetAuthToken()
 	if err != nil && GetDebug() {
 		color.Yellow("unable to retrieve accesstoken: %s ", err)
@@ -124,8 +133,9 @@ func InitAPIClient() *sailpoint.APIClient {
 
 	configuration := sailpoint.NewConfiguration(sailpoint.ClientConfiguration{Token: token, BaseURL: GetBaseUrl()})
 	apiClient := sailpoint.NewAPIClient(configuration)
-	apiClient.V3.GetConfig().HTTPClient.Logger = DevNull
-	apiClient.Beta.GetConfig().HTTPClient.Logger = DevNull
+	// var DevNull types.DevNull
+	// apiClient.V3.GetConfig().HTTPClient.Logger = DevNull
+	// apiClient.Beta.GetConfig().HTTPClient.Logger = DevNull
 
 	return apiClient
 }
@@ -149,15 +159,27 @@ func GetAuthToken() (string, error) {
 			return GetPatToken(), nil
 		}
 	case "oauth":
-		if GetOAuthTokenExpiry().After(time.Now()) {
-			return GetOAuthToken(), nil
+		return "", fmt.Errorf("oauth is not currently supported")
+		// if GetOAuthTokenExpiry().After(time.Now()) {
+		// 	return GetOAuthToken(), nil
+		// } else {
+		// 	err = OAuthLogin()
+		// 	if err != nil {
+		// 		return "", err
+		// 	}
+
+		// 	return GetOAuthToken(), nil
+		// }
+	case "pipeline":
+		if GetPipelineTokenExpiry().After(time.Now()) {
+			return GetPipelineToken(), nil
 		} else {
-			err = OAuthLogin()
+			err = PipelineLogin()
 			if err != nil {
 				return "", err
 			}
 
-			return GetOAuthToken(), nil
+			return GetPipelineToken(), nil
 		}
 	default:
 		return "", fmt.Errorf("invalid authtype configured")
@@ -230,29 +252,50 @@ func Validate() error {
 		return err
 	}
 
-	if config.Environments[config.ActiveEnvironment].BaseURL == "" {
-		return fmt.Errorf("environment is missing BaseURL")
-	}
-
-	if config.Environments[config.ActiveEnvironment].TenantURL == "" {
-		return fmt.Errorf("environment is missing TenantURL")
-	}
-
 	switch GetAuthType() {
 
 	case "pat":
 
+		if config.Environments[config.ActiveEnvironment].BaseURL == "" {
+			return fmt.Errorf("configured environment is missing BaseURL")
+		}
+
 		if config.Environments[config.ActiveEnvironment].Pat.ClientID == "" {
-			return fmt.Errorf("environment is missing PAT ClientID")
+			return fmt.Errorf("configured environment is missing PAT ClientID")
 		}
 
 		if config.Environments[config.ActiveEnvironment].Pat.ClientSecret == "" {
-			return fmt.Errorf("environment is missing PAT ClientSecret")
+			return fmt.Errorf("configured environment is missing PAT ClientSecret")
 		}
 
 		return nil
 
 	case "oauth":
+		return fmt.Errorf("oauth is not currently supported")
+
+		// if config.Environments[config.ActiveEnvironment].BaseURL == "" {
+		// 	return fmt.Errorf("configured environment is missing BaseURL")
+		// }
+
+		// if config.Environments[config.ActiveEnvironment].TenantURL == "" {
+		// 	return fmt.Errorf("configured environment is missing TenantURL")
+		// }
+
+		// return nil
+
+	case "pipeline":
+
+		if config.BaseURL == "" {
+			return fmt.Errorf("pipeline environment is missing SAIL_BASE_URL")
+		}
+
+		if config.ClientID == "" {
+			return fmt.Errorf("pipeline environment is missing SAIL_CLIENTID")
+		}
+
+		if config.ClientSecret == "" {
+			return fmt.Errorf("pipeline environment is missing SAIL_CLIENTSECRET")
+		}
 
 		return nil
 

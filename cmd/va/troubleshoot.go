@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newTroubleshootCmd() *cobra.Command {
+func NewTroubleshootCmd() *cobra.Command {
 	var output string
 	cmd := &cobra.Command{
 		Use:     "troubleshoot",

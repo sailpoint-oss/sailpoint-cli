@@ -17,10 +17,10 @@ type Variable struct {
 }
 
 type SearchTemplate struct {
-	Name        string               `json:"name"`
-	Description string               `json:"description"`
-	Variables   []Variable           `json:"variables"`
-	SearchQuery sailpointsdk.Search1 `json:"searchQuery"`
+	Name        string              `json:"name"`
+	Description string              `json:"description"`
+	Variables   []Variable          `json:"variables"`
+	SearchQuery sailpointsdk.Search `json:"searchQuery"`
 	Raw         []byte
 }
 

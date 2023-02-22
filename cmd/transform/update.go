@@ -9,6 +9,7 @@ import (
 
 	sailpointsdk "github.com/sailpoint-oss/golang-sdk/sdk-output/v3"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/spf13/cobra"
 )
 
@@ -52,9 +53,9 @@ func newUpdateCmd() *cobra.Command {
 			transform := sailpointsdk.NewTransform(data["name"].(string), data["type"].(string), data["attributes"].(map[string]interface{}))
 
 			apiClient := config.InitAPIClient()
-			_, _, err := apiClient.V3.TransformsApi.UpdateTransform(context.TODO(), id).Transform(*transform).Execute()
+			_, resp, err := apiClient.V3.TransformsApi.UpdateTransform(context.TODO(), id).Transform(*transform).Execute()
 			if err != nil {
-				return err
+				return sdk.HandleSDKError(resp, err)
 			}
 
 			return nil

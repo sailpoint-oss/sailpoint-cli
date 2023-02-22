@@ -24,7 +24,7 @@ func PromptAuth() (string, error) {
 	return strings.ToLower(choice.Title), nil
 }
 
-func newAuthCommand() *cobra.Command {
+func NewAuthCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "auth",
 		Short:   "change currently active authentication mode",

@@ -141,20 +141,12 @@ github.com/rogpeppe/go-internal/fmtsort
 # github.com/sahilm/fuzzy v0.1.0
 ## explicit
 github.com/sahilm/fuzzy
-# github.com/sailpoint-oss/golang-sdk/sdk-output v0.0.0-20230120204531-6c873078c994
+# github.com/sailpoint-oss/golang-sdk/sdk-output v0.0.0-20230222184213-c79ce7b7dd1d
 ## explicit; go 1.19
 github.com/sailpoint-oss/golang-sdk/sdk-output
-# github.com/sailpoint-oss/golang-sdk/sdk-output/beta v0.0.0-20230120204531-6c873078c994
-## explicit; go 1.13
 github.com/sailpoint-oss/golang-sdk/sdk-output/beta
-# github.com/sailpoint-oss/golang-sdk/sdk-output/cc v0.0.0-20230120204531-6c873078c994
-## explicit; go 1.13
 github.com/sailpoint-oss/golang-sdk/sdk-output/cc
-# github.com/sailpoint-oss/golang-sdk/sdk-output/v2 v2.0.0-20230120204531-6c873078c994
-## explicit; go 1.13
 github.com/sailpoint-oss/golang-sdk/sdk-output/v2
-# github.com/sailpoint-oss/golang-sdk/sdk-output/v3 v3.0.0-20230120204531-6c873078c994
-## explicit; go 1.13
 github.com/sailpoint-oss/golang-sdk/sdk-output/v3
 # github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 ## explicit
@@ -210,25 +202,24 @@ golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 # golang.org/x/exp v0.0.0-20230206171751-46f607a40771
 ## explicit; go 1.18
 golang.org/x/exp/maps
-# golang.org/x/net v0.5.0
+# golang.org/x/net v0.7.0
 ## explicit; go 1.17
 golang.org/x/net/context
-golang.org/x/net/context/ctxhttp
-# golang.org/x/oauth2 v0.4.0
+# golang.org/x/oauth2 v0.5.0
 ## explicit; go 1.17
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
-# golang.org/x/sys v0.4.0
+# golang.org/x/sys v0.5.0
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/term v0.4.0
+# golang.org/x/term v0.5.0
 ## explicit; go 1.17
 golang.org/x/term
-# golang.org/x/text v0.6.0
+# golang.org/x/text v0.7.0
 ## explicit; go 1.17
 golang.org/x/text/runes
 golang.org/x/text/transform

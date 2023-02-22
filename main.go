@@ -12,7 +12,7 @@ import (
 var rootCmd *cobra.Command
 
 func init() {
-	config.InitConfig()
+	cobra.CheckErr(config.InitConfig())
 	rootCmd = root.NewRootCmd()
 }
 

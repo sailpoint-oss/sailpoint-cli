@@ -1,8 +1,13 @@
 package sailpoint
 
 import (
+	"context"
+	"errors"
 	"net/http"
 	"reflect"
+	"strings"
+
+	v3 "github.com/sailpoint-oss/golang-sdk/sdk-output/v3"
 )
 
 func PaginateWithDefaults[T any](f interface{}) ([]T, *http.Response, error) {
@@ -28,8 +33,41 @@ func Paginate[T any](f interface{}, initialOffset int32, increment int32, limit 
 			return returnObject, latestResponse, err.(error)
 		}
 
+		// append the results to the main return object
+		returnObject = append(returnObject, actualValue...)
+
 		// check if this is the last set in the response. This could be enhanced by inspecting the header for the max results
-		if (len(actualValue)) == 0 {
+		if int32(len(actualValue)) < increment {
+			break
+		}
+
+		offset += increment
+	}
+	return returnObject, latestResponse, nil
+}
+
+func PaginateSearchApi(ctx context.Context, apiClient *APIClient, search v3.Search, initialOffset int32, increment int32, limit int32) ([]map[string]interface{}, *http.Response, error) {
+	var offset int32 = initialOffset
+	var returnObject []map[string]interface{}
+	var latestResponse *http.Response
+
+	if len(search.Sort) != 1 {
+		return nil, nil, errors.New("search must include exactly one sort parameter to paginate properly")
+	}
+
+	for offset < limit {
+		if len(returnObject) > 0 {
+			search.SearchAfter = []string{returnObject[len(returnObject)-1][strings.Trim(search.Sort[0], "-")].(string)}
+		}
+		// convert the expected return values to their respective types
+		actualValue, latestResponse, err := apiClient.V3.SearchApi.SearchPost(ctx).Limit(increment).Search(search).Execute()
+
+		if err != nil {
+			return returnObject, latestResponse, err.(error)
+		}
+
+		// check if this is the last set in the response. This could be enhanced by inspecting the header for the max results
+		if int32(len(actualValue)) < increment {
 			break
 		}
 

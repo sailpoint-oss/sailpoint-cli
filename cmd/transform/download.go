@@ -8,10 +8,12 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/transform"
 	"github.com/spf13/cobra"
 )
 
 func newDownloadCmd() *cobra.Command {
+	var destination string
 	cmd := &cobra.Command{
 		Use:     "download",
 		Short:   "download transforms",
@@ -21,14 +23,12 @@ func newDownloadCmd() *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			transforms, err := GetTransforms()
+			transforms, err := transform.GetTransforms()
 			if err != nil {
 				return err
 			}
 
-			destination := cmd.Flags().Lookup("destination").Value.String()
-
-			err = ListTransforms()
+			err = transform.ListTransforms()
 			if err != nil {
 				return err
 			}
@@ -38,9 +38,6 @@ func newDownloadCmd() *cobra.Command {
 				content, _ := json.MarshalIndent(v, "", "    ")
 
 				var err error
-				if destination == "" {
-					destination = "transform_files"
-				}
 
 				// Make sure the output dir exists first
 				err = os.MkdirAll(destination, os.ModePerm)
@@ -69,7 +66,7 @@ func newDownloadCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("destination", "d", "", "The path to the directory to save the files in (default current working directory).  If the directory doesn't exist, then it will be automatically created.")
+	cmd.Flags().StringVarP(&destination, "destination", "d", "transform_files", "The path to the directory to save the files in (default current working directory).  If the directory doesn't exist, then it will be automatically created.")
 
 	return cmd
 }

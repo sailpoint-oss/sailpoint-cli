@@ -11,6 +11,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/transform"
 	tuitable "github.com/sailpoint-oss/sailpoint-cli/internal/tui/table"
 	"github.com/spf13/cobra"
 )
@@ -31,7 +32,7 @@ func newDeleteCmd() *cobra.Command {
 				id = args[0]
 			} else {
 
-				transforms, err := GetTransforms()
+				transforms, err := transform.GetTransforms()
 				if err != nil {
 					return err
 				}
@@ -90,7 +91,7 @@ func newDeleteCmd() *cobra.Command {
 				return err
 			}
 
-			err = ListTransforms()
+			err = transform.ListTransforms()
 			if err != nil {
 				return err
 			}

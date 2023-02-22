@@ -25,9 +25,8 @@ func newExportStatusCmd() *cobra.Command {
 
 			for i := 0; i < len(exportJobs); i++ {
 				job := exportJobs[i]
-				ctx := context.TODO()
 
-				status, _, err := apiClient.Beta.SPConfigApi.SpConfigExportJobStatus(ctx, job).Execute()
+				status, _, err := apiClient.Beta.SPConfigApi.ExportSpConfigJobStatus(context.TODO(), job).Execute() //SPConfigApi.SpConfigExportJobStatus(ctx, job).Execute()
 				if err != nil {
 					return err
 				}
@@ -36,9 +35,8 @@ func newExportStatusCmd() *cobra.Command {
 
 			for i := 0; i < len(importJobs); i++ {
 				job := importJobs[i]
-				ctx := context.TODO()
 
-				status, _, err := apiClient.Beta.SPConfigApi.SpConfigImportJobStatus(ctx, job).Execute()
+				status, _, err := apiClient.Beta.SPConfigApi.ImportSpConfigJobStatus(context.TODO(), job).Execute()
 				if err != nil {
 					return err
 				}

@@ -10,6 +10,7 @@ import (
 	"github.com/fatih/color"
 	sailpointsdk "github.com/sailpoint-oss/golang-sdk/sdk-output/v3"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/spf13/cobra"
 )
 
@@ -47,20 +48,21 @@ func newCreateCmd() *cobra.Command {
 				return fmt.Errorf("the transform must have a name")
 			}
 
+			if data["id"] != nil {
+				return fmt.Errorf("the transform cannot have an ID")
+			}
+
 			transform := sailpointsdk.NewTransform(data["name"].(string), data["type"].(string), data["attributes"].(map[string]interface{}))
 
 			apiClient := config.InitAPIClient()
-			_, _, err := apiClient.V3.TransformsApi.CreateTransform(context.TODO()).Transform(*transform).Execute()
+			transformObj, resp, err := apiClient.V3.TransformsApi.CreateTransform(context.TODO()).Transform(*transform).Execute()
 			if err != nil {
-				return err
-			}
-
-			err = ListTransforms()
-			if err != nil {
-				return err
+				return sdk.HandleSDKError(resp, err)
 			}
 
 			color.Green("Transform created successfully")
+
+			cmd.Print(*transformObj.Id)
 
 			return nil
 		},

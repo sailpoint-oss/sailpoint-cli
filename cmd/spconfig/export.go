@@ -36,7 +36,7 @@ func newExportCmd() *cobra.Command {
 			payload.IncludeTypes = includeTypes
 			payload.ExcludeTypes = excludeTypes
 
-			job, _, err := apiClient.Beta.SPConfigApi.SpConfigExport(ctx).ExportPayload(*payload).Execute()
+			job, _, err := apiClient.Beta.SPConfigApi.ExportSpConfig(ctx).ExportPayload(*payload).Execute()
 			if err != nil {
 				return err
 			}

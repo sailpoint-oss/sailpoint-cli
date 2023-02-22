@@ -31,9 +31,9 @@ func ParseIndicie(indicie string) (sailpointsdk.Index, error) {
 	return "*", fmt.Errorf("indicie provided is invalid")
 }
 
-func BuildSearch(searchQuery string, sort []string, indicies []string) (sailpointsdk.Search1, error) {
+func BuildSearch(searchQuery string, sort []string, indicies []string) (sailpointsdk.Search, error) {
 
-	search := sailpointsdk.NewSearch1()
+	search := sailpointsdk.NewSearch()
 	search.Query = sailpointsdk.NewQuery()
 	search.Query.Query = &searchQuery
 	search.Sort = sort
@@ -52,11 +52,11 @@ func BuildSearch(searchQuery string, sort []string, indicies []string) (sailpoin
 	return *search, nil
 }
 
-func PerformSearch(apiClient sailpoint.APIClient, search sailpointsdk.Search1) (SearchResults, error) {
+func PerformSearch(apiClient sailpoint.APIClient, search sailpointsdk.Search) (SearchResults, error) {
 	var SearchResults SearchResults
 
 	ctx := context.TODO()
-	resp, r, err := sailpoint.PaginateWithDefaults[map[string]interface{}](apiClient.V3.SearchApi.SearchPost(ctx).Search1(search))
+	resp, r, err := sailpoint.PaginateWithDefaults[map[string]interface{}](apiClient.V3.SearchApi.SearchPost(ctx).Search(search))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
