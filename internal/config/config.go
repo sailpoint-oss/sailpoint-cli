@@ -127,6 +127,13 @@ func InitConfig() error {
 			return err
 		}
 	}
+
+	config, err := GetConfig()
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%+v", config)
+
 	return nil
 }
 
