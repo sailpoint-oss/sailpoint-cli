@@ -72,7 +72,7 @@ func GetEnvironments() map[string]interface{} {
 
 func GetAuthType() string {
 	configAuthType := strings.ToLower(viper.GetString("authtype"))
-	envAuthType := strings.ToLower(os.Getenv("SAIL_AUTHTYPE"))
+	envAuthType := strings.ToLower(os.Getenv("SAIL_AUTH_TYPE"))
 	if envAuthType != "" {
 		return envAuthType
 	} else {
