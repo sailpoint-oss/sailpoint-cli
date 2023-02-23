@@ -46,7 +46,7 @@ func NewTroubleshootCmd() *cobra.Command {
 
 				password := credentials[host]
 
-				orgErr := va.RunVACmdLive(endpoint, password, "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/luke-hagar-sp/VA-Scripts/main/stunt.sh)\"")
+				orgErr := va.RunVACmdLive(endpoint, password, TroubleshootingScript)
 				if orgErr != nil {
 					return orgErr
 				}

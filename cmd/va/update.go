@@ -26,13 +26,13 @@ func newUpdateCmd() *cobra.Command {
 				endpoint := args[i]
 				fmt.Printf("Starting update for %v\n", endpoint)
 				password := credentials[i]
-				_, updateErr := va.RunVACmd(endpoint, password, "sudo update_engine_client -check_for_update")
+				_, updateErr := va.RunVACmd(endpoint, password, UpdateCommand)
 				if updateErr != nil {
 					return updateErr
 				} else {
 					color.Green("Initiating update check and install (%v)", endpoint)
 				}
-				reboot, rebootErr := va.RunVACmd(endpoint, password, "sudo reboot")
+				reboot, rebootErr := va.RunVACmd(endpoint, password, RebootCommand)
 				if rebootErr != nil {
 					color.Green("Rebooting Virtual Appliance (%v)", endpoint)
 				} else {
