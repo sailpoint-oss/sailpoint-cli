@@ -183,30 +183,20 @@ New-Item -ItemType File -Path 'C:\Users\<username>\.sailpoint\config.yaml'
 The `config.yaml` file should contain the following information.
 
 ```yaml
-authtype: pat # Can be either pat or oauth, both methods can be configured, with only one being active at a time.
-debug: false # Setting debug to true, will result in more verbose output
-oauth: # All OAuth specific configuration information
-  authurl: https://example.identitynow.com/oauth/authorize
-  baseurl: https://example.api.identitynow.com
-  clientid: example-client-id
-  clientsecret: ""
-  redirect:
-    path: /callback
-    port: 3000
-  tenant: example
-  token:
-    accesstoken: example-access-token
-    expiry: example-token-expiry-date
-  tokenurl: https://example.api.identitynow.com/oauth/token
-pat: # All Personal Access Token specific configuration information
-  tenant: example
-  baseurl: https://example.api.identitynow.com
-  tokenurl: https://example.api.identitynow.com/oauth/token
-  clientsecret: example-client-secret
-  clientid: example-client-id
-  token:
-    accesstoken: example-access-token
-    expiry: example-token-expiry-date
+activeenvironment: example # the key that identifies the currently active environment
+authtype: pat # currently only pat and pipeline are supported if the ENV VAR SAIL_AUTH_TYPE is configured to "pipeline" it will override this value
+customexporttemplatespath: "" # the path to
+customsearchtemplatespath: ""
+debug: false
+environments:
+  example:
+    baseurl: https://example.api.identitynow.com
+    pat:
+      accesstoken: example-access-token
+      clientid: example-client-id
+      clientsecret: example-client-secret
+      expiry: example-access-token-expiry
+    tenanturl: https://example.identitynow.com
 ```
 
 ### Environment variable configuration
@@ -220,11 +210,10 @@ defined in a config file.
 On **Linux/Mac**, export the following environment variables:
 
 ```shell
-export SAIL_BASEURL=https://{org}.api.identitynow.com
-export SAIL_TOKENURL=https://{org}.api.identitynow.com/oauth/token
+export SAIL_AUTH_TYPE=pipeline
+export SAIL_BASE_URL=https://{org}.api.identitynow.com
 export SAIL_CLIENTID={clientID}
 export SAIL_CLIENTSECRET={clientSecret}
-export SAIL_DEBUG=false
 ```
 
 If you want your environment variables to persist across terminal sessions, you
@@ -233,11 +222,10 @@ will need to add these exports to your shell profile, like `~/.bash_profile`.
 On **Windows PowerShell** run:
 
 ```powershell
-$env:SAIL_BASEURL = 'https://{org}.api.identitynow.com'
-$env:SAIL_TOKENURL = 'https://{org}.api.identitynow.com/oauth/token'
-$env:SAIL_CLIENTID = '{clientID}'
-$env:SAIL_CLIENTSECRET = '{clientSecret}'
-$env:SAIL_DEBUG = 'false'
+$env:SAIL_AUTH_TYPE=pipeline
+$env:SAIL_BASE_URL=https://{org}.api.identitynow.com
+$env:SAIL_CLIENTID={clientID}
+$env:SAIL_CLIENTSECRET={clientSecret}
 ```
 
 If you want your environment variables to persist across PowerShell sessions,

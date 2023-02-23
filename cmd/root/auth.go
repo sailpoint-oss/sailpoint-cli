@@ -28,8 +28,8 @@ func NewAuthCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "auth",
 		Short:   "change currently active authentication mode",
-		Long:    "Change Auth Mode Configured (pat, oauth).",
-		Example: "sail auth pat | oauth",
+		Long:    "Change Auth Mode Configured (pat, pipeline).",
+		Example: "sail auth pat | sail auth pat | sail auth pipeline",
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -52,9 +52,15 @@ func NewAuthCommand() *cobra.Command {
 					color.Blue("authentication method set to pat")
 				}
 			case "oauth":
-				if config.GetAuthType() != "oauth" {
-					config.SetAuthType("oauth")
-					color.Blue("authentication method set to oauth")
+				return fmt.Errorf("oauth not currently supported")
+				// if config.GetAuthType() != "oauth" {
+				// 	config.SetAuthType("oauth")
+				// 	color.Blue("authentication method set to oauth")
+				// }
+			case "pipeline":
+				if config.GetAuthType() != "pipeline" {
+					config.SetAuthType("pipeline")
+					color.Blue("authentication method set to pipeline")
 				}
 			default:
 				return fmt.Errorf("invalid selection")

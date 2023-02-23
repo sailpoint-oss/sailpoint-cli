@@ -23,15 +23,11 @@ func newDeleteCmd() *cobra.Command {
 		Long:    "Delete a transform",
 		Example: "sail transform d 03d5187b-ab96-402c-b5a1-40b74285d77a",
 		Aliases: []string{"d"},
-		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			var id string
+			var id []string
 
-			if len(args) > 0 {
-				id = args[0]
-			} else {
-
+			if len(args) < 1 {
 				transforms, err := transform.GetTransforms()
 				if err != nil {
 					return err
@@ -78,25 +74,31 @@ func newDeleteCmd() *cobra.Command {
 				tempRow := m.Retrieve()
 
 				if len(tempRow) > 0 {
-					id = m.Retrieve()[1]
+					id = append(id, m.Retrieve()[1])
 				} else {
 					return fmt.Errorf("no transform selected")
 				}
-
+			} else {
+				id = args
 			}
 
-			apiClient := config.InitAPIClient()
-			_, err := apiClient.V3.TransformsApi.DeleteTransform(context.TODO(), id).Execute()
-			if err != nil {
-				return err
-			}
+			for i := 0; i < len(id); i++ {
 
-			err = transform.ListTransforms()
-			if err != nil {
-				return err
-			}
+				transformID := id[i]
 
-			color.Green("Transform successfully deleted")
+				apiClient := config.InitAPIClient()
+				_, err := apiClient.V3.TransformsApi.DeleteTransform(context.TODO(), transformID).Execute()
+				if err != nil {
+					return err
+				}
+
+				err = transform.ListTransforms()
+				if err != nil {
+					return err
+				}
+
+				color.Green("%v successfully deleted", transformID)
+			}
 
 			return nil
 		},

@@ -34,7 +34,7 @@ func NewRootCmd() *cobra.Command {
 
 	root.AddCommand(
 		newDebugCommand(),
-		// NewAuthCommand(),
+		NewAuthCommand(),
 		environment.NewEnvironmentCommand(),
 		configure.NewConfigureCmd(),
 		connector.NewConnCmd(),

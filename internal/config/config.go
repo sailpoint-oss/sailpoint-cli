@@ -10,6 +10,7 @@ import (
 
 	"github.com/fatih/color"
 	sailpoint "github.com/sailpoint-oss/golang-sdk/sdk-output"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/spf13/viper"
 )
 
@@ -73,7 +74,7 @@ func GetEnvironments() map[string]interface{} {
 func GetAuthType() string {
 	configAuthType := strings.ToLower(viper.GetString("authtype"))
 	envAuthType := strings.ToLower(os.Getenv("SAIL_AUTH_TYPE"))
-	if envAuthType != "" {
+	if envAuthType == "pipeline" {
 		return envAuthType
 	} else {
 		return configAuthType
@@ -101,10 +102,6 @@ func SetActiveEnvironment(activeEnv string) {
 }
 
 func InitConfig() error {
-	err := Validate()
-	if err != nil {
-		return err
-	}
 
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -112,7 +109,6 @@ func InitConfig() error {
 	}
 
 	viper.AddConfigPath(filepath.Join(home, ".sailpoint"))
-	viper.AddConfigPath(".")
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.SetEnvPrefix("sail")
@@ -129,6 +125,11 @@ func InitConfig() error {
 		}
 	}
 
+	err = Validate()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -140,9 +141,11 @@ func InitAPIClient() *sailpoint.APIClient {
 
 	configuration := sailpoint.NewConfiguration(sailpoint.ClientConfiguration{Token: token, BaseURL: GetBaseUrl()})
 	apiClient := sailpoint.NewAPIClient(configuration)
-	// var DevNull types.DevNull
-	// apiClient.V3.GetConfig().HTTPClient.Logger = DevNull
-	// apiClient.Beta.GetConfig().HTTPClient.Logger = DevNull
+	if !GetDebug() {
+		var DevNull types.DevNull
+		apiClient.V3.GetConfig().HTTPClient.Logger = DevNull
+		apiClient.Beta.GetConfig().HTTPClient.Logger = DevNull
+	}
 
 	return apiClient
 }
