@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -30,26 +31,14 @@ func SetPipelineTokenExpiry(expiry time.Time) {
 }
 
 func GetPipelineClientID() string {
-	return viper.GetString("clientid")
+	return os.Getenv("clientid")
 }
 
 func GetPipelineClientSecret() string {
-	return viper.GetString("clientsecret")
-}
-
-func SetPipelineClientID(ClientID string) {
-	viper.Set("clientid", ClientID)
-}
-
-func SetPipelineClientSecret(ClientSecret string) {
-	viper.Set("clientsecret", ClientSecret)
+	return os.Getenv("clientsecret")
 }
 
 func PipelineLogin() error {
-	config, err := GetConfig()
-	if err != nil {
-		return err
-	}
 	uri, err := url.Parse(GetTokenUrl())
 	if err != nil {
 		return err
@@ -60,8 +49,8 @@ func PipelineLogin() error {
 	uri.RawQuery = query.Encode()
 
 	data := &url.Values{}
-	data.Add("client_id", config.ClientID)
-	data.Add("client_secret", config.ClientSecret)
+	data.Add("client_id", GetPipelineClientID())
+	data.Add("client_secret", GetPipelineClientSecret())
 
 	ctx := context.TODO()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, uri.String(), strings.NewReader(data.Encode()))

@@ -71,7 +71,13 @@ func GetEnvironments() map[string]interface{} {
 }
 
 func GetAuthType() string {
-	return strings.ToLower(viper.GetString("authtype"))
+	configAuthType := strings.ToLower(viper.GetString("authtype"))
+	envAuthType := strings.ToLower(os.Getenv("SAIL_AUTHTYPE"))
+	if envAuthType != "" {
+		return envAuthType
+	} else {
+		return configAuthType
+	}
 }
 
 func SetAuthType(AuthType string) {
@@ -127,12 +133,6 @@ func InitConfig() error {
 			return err
 		}
 	}
-
-	config, err := GetConfig()
-	if err != nil {
-		return err
-	}
-	fmt.Printf("%+v", config)
 
 	return nil
 }
@@ -199,7 +199,13 @@ func GetAuthToken() (string, error) {
 }
 
 func GetBaseUrl() string {
-	return viper.GetString(fmt.Sprintf("environments.%s.baseurl", GetActiveEnvironment()))
+	configBaseUrl := viper.GetString(fmt.Sprintf("environments.%s.baseurl", GetActiveEnvironment()))
+	envBaseUrl := os.Getenv("SAIL_BASE_URL")
+	if envBaseUrl != "" {
+		return envBaseUrl
+	} else {
+		return configBaseUrl
+	}
 }
 
 func GetTenantUrl() string {
@@ -297,16 +303,16 @@ func Validate() error {
 
 	case "pipeline":
 
-		if config.BaseURL == "" {
+		if os.Getenv("SAIL_BASE_URL") == "" {
 			return fmt.Errorf("pipeline environment is missing SAIL_BASE_URL")
 		}
 
-		if config.ClientID == "" {
-			return fmt.Errorf("pipeline environment is missing SAIL_CLIENTID")
+		if os.Getenv("SAIL_CLIENT_ID") == "" {
+			return fmt.Errorf("pipeline environment is missing SAIL_CLIENT_ID")
 		}
 
-		if config.ClientSecret == "" {
-			return fmt.Errorf("pipeline environment is missing SAIL_CLIENTSECRET")
+		if os.Getenv("SAIL_CLIENT_SECRET") == "" {
+			return fmt.Errorf("pipeline environment is missing SAIL_CLIENT_SECRET")
 		}
 
 		return nil
