@@ -100,11 +100,10 @@ func OAuthLogin() error {
 		RedirectURL: RedirectURL,
 	}
 
-	// add transport for self-signed certificate to context
-	tr := &http.Transport{
+	selfSignedCertificateTransport := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	sslClient := &http.Client{Transport: tr}
+	sslClient := &http.Client{Transport: selfSignedCertificateTransport}
 	ctx = context.WithValue(ctx, oauth2.HTTPClient, sslClient)
 
 	// Redirect user to login page
