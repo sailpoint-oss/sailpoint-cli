@@ -13,7 +13,7 @@ import (
 func PromptAuth() (string, error) {
 	items := []tui.Choice{
 		{Title: "PAT", Description: "Person Access Token - Single User"},
-		{Title: "OAuth", Description: "OAuth2.0 Authentication - Sign in via the Web Portal"},
+		// {Title: "OAuth", Description: "OAuth2.0 Authentication - Sign in via the Web Portal"},
 	}
 
 	choice, err := tui.PromptList(items, "Choose an authentication method to configure")

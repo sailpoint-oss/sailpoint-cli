@@ -23,15 +23,7 @@ sail transform list
 
 This will produce a table of the available transforms.
 
-```shell
-+--------------------------------------+--------------------------+
-|                  ID                  |           NAME           |
-+--------------------------------------+--------------------------+
-| 03d5187b-ab96-402c-b5a1-40b74285d77a | WIFI Group               |
-| 06d589cf-4d7d-4b40-8617-c221092ceb2c | Remove Diacritical Marks |
-| 1f3a97cf-e58b-4fad-b2f2-0dcc19fb1627 | NETID                    |
-+--------------------------------------+--------------------------+
-```
+<img src="./../../assets/img/vhs/transform/transform-list.gif" alt="transform list">
 
 ## Download transforms
 
@@ -40,6 +32,8 @@ Run the following command to download all of the transforms in your tenant and s
 ```shell
 sail transform download -d transform_files
 ```
+
+<img src="./../../assets/img/vhs/transform/transform-download.gif" alt="transform download">
 
 This command will overwrite any existing files with the same name, so take care when running this in a directory that has modified transforms that have not yet been saved.
 
