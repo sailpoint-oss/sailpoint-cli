@@ -14,14 +14,27 @@ Hide Sleep 2s Show
 Sleep 300ms
 
 # Type a command in the terminal.
-Type "sail configure pat"
+Type "sail environment example"
 
 Enter 
 
-Sleep 500ms
+Sleep 300ms
+
+Type "https://example.identitynow.com"
+
+Enter 
+
+Sleep 300ms
+
+Type "https://example.api.identitynow.com"
+
+# Pause for dramatic effect...
+Sleep 300ms
 
 # Type a command in the terminal.
-Type "example-tenant.identitynow.com"
+Type "sail configure"
+
+Enter 
 
 # Pause for dramatic effect...
 Sleep 1s

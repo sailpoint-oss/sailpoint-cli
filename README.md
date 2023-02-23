@@ -212,8 +212,8 @@ On **Linux/Mac**, export the following environment variables:
 ```shell
 export SAIL_AUTH_TYPE=pipeline
 export SAIL_BASE_URL=https://{org}.api.identitynow.com
-export SAIL_CLIENTID={clientID}
-export SAIL_CLIENTSECRET={clientSecret}
+export SAIL_CLIENT_ID={clientID}
+export SAIL_CLIENT_SECRET={clientSecret}
 ```
 
 If you want your environment variables to persist across terminal sessions, you
@@ -224,15 +224,18 @@ On **Windows PowerShell** run:
 ```powershell
 $env:SAIL_AUTH_TYPE=pipeline
 $env:SAIL_BASE_URL=https://{org}.api.identitynow.com
-$env:SAIL_CLIENTID={clientID}
-$env:SAIL_CLIENTSECRET={clientSecret}
+$env:SAIL_CLIENT_ID={clientID}
+$env:SAIL_CLIENT_SECRET={clientSecret}
 ```
 
 If you want your environment variables to persist across PowerShell sessions,
 then use the following command instead:
 
 ```powershell
-[System.Environment]::SetEnvironmentVariable('SAIL_BASEURL','https://{org}.api.identitynow.com')
+[System.Environment]::SetEnvironmentVariable('SAIL_AUTH_TYPE','https://{org}.api.identitynow.com')
+[System.Environment]::SetEnvironmentVariable('SAIL_BASE_URL','https://{org}.api.identitynow.com')
+[System.Environment]::SetEnvironmentVariable('SAIL_CLIENT_ID','https://{org}.api.identitynow.com')
+[System.Environment]::SetEnvironmentVariable('SAIL_CLIENT_SECRET','https://{org}.api.identitynow.com')
 ```
 
 ## Usage
