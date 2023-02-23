@@ -57,7 +57,6 @@ contribution guidelines below, first!
   - [Configuration](#configuration)
     - [Assisted configuration](#assisted-configuration)
       - [Personal Access Token](#personal-access-token)
-      - [OAuth](#oauth)
     - [Manual configuration](#manual-configuration)
     - [Environment variable configuration](#environment-variable-configuration)
   - [Usage](#usage)
@@ -134,7 +133,7 @@ Before you begin, you will need to gather the following information.
 - [Find your org/tenant name](https://developer.sailpoint.com/idn/api/getting-started#find-your-tenant-name).
 - Pick an Authentication method:
   - PAT: Create a [Personal Access Token](https://developer.sailpoint.com/idn/api/authentication#personal-access-tokens)
-  - OAuth: Create an [OAuth Client](https://developer.sailpoint.com/idn/api/authentication/#authentication-details)
+  <!-- - OAuth: Create an [OAuth Client](https://developer.sailpoint.com/idn/api/authentication/#authentication-details) -->
 
 Whichever authentication method you choose will be used to authenticate the SailPoint CLI to your IdentityNow tenant.
 Take note of the **Client ID** and the **Client Secret**. If configuring OAuth additionally note the **Redirect Port** and **Redirect Path**
@@ -152,13 +151,13 @@ sail configure pat
 
 <img src="./assets/img/vhs/configure/configure-pat.gif" alt="configure PAT">
 
-#### OAuth
+<!-- #### OAuth
 
 ```shell
 sail configure oauth
 ```
 
-<img src="./assets/img/vhs/configure/configure-oauth.gif" alt="configure OAuth">
+<img src="./assets/img/vhs/configure/configure-oauth.gif" alt="configure OAuth"> -->
 
 ### Manual configuration
 
