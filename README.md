@@ -148,7 +148,11 @@ This command will create a configuration file in your home directory to store yo
 #### Personal Access Token
 
 ```shell
-sail configure pat
+
+sail environment example
+
+sail configure
+
 ```
 
 <img src="./assets/img/vhs/configure/configure-pat.gif" alt="configure PAT">
