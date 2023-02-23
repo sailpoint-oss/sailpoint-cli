@@ -136,7 +136,9 @@ Before you begin, you will need to gather the following information.
   <!-- - OAuth: Create an [OAuth Client](https://developer.sailpoint.com/idn/api/authentication/#authentication-details) -->
 
 Whichever authentication method you choose will be used to authenticate the SailPoint CLI to your IdentityNow tenant.
-Take note of the **Client ID** and the **Client Secret**. If configuring OAuth additionally note the **Redirect Port** and **Redirect Path**
+Take note of the **Client ID** and the **Client Secret**.
+
+<!-- If configuring OAuth additionally note the **Redirect Port** and **Redirect Path** -->
 
 ### Assisted configuration
 
