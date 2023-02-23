@@ -31,11 +31,11 @@ func SetPipelineTokenExpiry(expiry time.Time) {
 }
 
 func GetPipelineClientID() string {
-	return os.Getenv("clientid")
+	return os.Getenv("SAIL_CLIENT_ID")
 }
 
 func GetPipelineClientSecret() string {
-	return os.Getenv("clientsecret")
+	return os.Getenv("SAIL_CLIENT_SECRET")
 }
 
 func PipelineLogin() error {
