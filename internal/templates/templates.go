@@ -14,6 +14,7 @@ import (
 
 func GetSearchTemplates() ([]SearchTemplate, error) {
 	var searchTemplates []SearchTemplate
+	var templates []SearchTemplate
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -27,7 +28,6 @@ func GetSearchTemplates() ([]SearchTemplate, error) {
 	}
 
 	for i := 0; i < len(templateFiles); i++ {
-		var templates []SearchTemplate
 		templateFile := templateFiles[i]
 
 		file, err := os.OpenFile(templateFile, os.O_RDWR, 0777)
@@ -52,6 +52,14 @@ func GetSearchTemplates() ([]SearchTemplate, error) {
 		}
 	}
 
+	err = json.Unmarshal([]byte(builtInSearchTempaltes), &templates)
+	if err != nil {
+		color.Red("an error occured while parsing the built in templates")
+		return nil, err
+	}
+
+	searchTemplates = append(searchTemplates, templates...)
+
 	for i := 0; i < len(searchTemplates); i++ {
 		entry := &searchTemplates[i]
 		if len(entry.Variables) > 0 {
@@ -66,6 +74,7 @@ func GetSearchTemplates() ([]SearchTemplate, error) {
 
 func GetExportTemplates() ([]ExportTemplate, error) {
 	var exportTemplates []ExportTemplate
+	var templates []ExportTemplate
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -80,7 +89,6 @@ func GetExportTemplates() ([]ExportTemplate, error) {
 
 	if len(templateFiles) > 0 {
 		for i := 0; i < len(templateFiles); i++ {
-			var templates []ExportTemplate
 			templateFile := templateFiles[i]
 
 			file, err := os.OpenFile(templateFile, os.O_RDWR, 0777)
@@ -104,6 +112,15 @@ func GetExportTemplates() ([]ExportTemplate, error) {
 				exportTemplates = append(exportTemplates, templates...)
 			}
 		}
+
+		err = json.Unmarshal([]byte(builtInExportTempaltes), &templates)
+		if err != nil {
+			color.Red("an error occured while parsing the built in templates")
+			return nil, err
+		}
+
+		exportTemplates = append(exportTemplates, templates...)
+
 		if len(exportTemplates) > 0 {
 			for i := 0; i < len(exportTemplates); i++ {
 				entry := &exportTemplates[i]

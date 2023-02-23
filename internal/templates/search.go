@@ -1,4 +1,6 @@
-[
+package templates
+
+const builtInSearchTempaltes = `[
   {
     "name": "all-account-unlocks",
     "description": "All account unlocks in the tenant for a given time range",
@@ -44,4 +46,4 @@
       "searchAfter": []
     }
   }
-]
+]`

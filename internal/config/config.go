@@ -112,15 +112,10 @@ func InitConfig() error {
 	}
 
 	viper.AddConfigPath(filepath.Join(home, ".sailpoint"))
+	viper.AddConfigPath(".")
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.SetEnvPrefix("sail")
-
-	viper.SetDefault("activeenvironment", "")
-	viper.SetDefault("customexporttemplatespath", "")
-	viper.SetDefault("customsearchtemplatespath", "")
-	viper.SetDefault("debug", false)
-	viper.SetDefault("authtype", "oauth")
 
 	viper.AutomaticEnv()
 

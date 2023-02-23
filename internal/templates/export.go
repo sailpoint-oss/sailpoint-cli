@@ -1,4 +1,6 @@
-[
+package templates
+
+const builtInExportTempaltes = `[
   {
     "name": "all-objects",
     "description": "Export all available objects",
@@ -17,3 +19,4 @@
     }
   }
 ]
+`
