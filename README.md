@@ -131,7 +131,7 @@ sail
 Before you begin, you will need to gather the following information.
 
 - [Find your org/tenant name](https://developer.sailpoint.com/idn/api/getting-started#find-your-tenant-name).
-- Pick an Authentication method:
+<!-- - Pick an Authentication method: -->
 - Create a [Personal Access Token](https://developer.sailpoint.com/idn/api/authentication#personal-access-tokens)
   <!-- - OAuth: Create an [OAuth Client](https://developer.sailpoint.com/idn/api/authentication/#authentication-details) -->
 
