@@ -269,8 +269,9 @@ func Validate() error {
 	if err != nil {
 		return err
 	}
+	authType := GetAuthType()
 
-	switch GetAuthType() {
+	switch authType {
 
 	case "pat":
 
@@ -319,7 +320,7 @@ func Validate() error {
 
 	default:
 
-		return fmt.Errorf("invalid authtype '%s' configured", config.AuthType)
+		return fmt.Errorf("invalid authtype '%s' configured", authType)
 
 	}
 }
