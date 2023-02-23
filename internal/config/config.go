@@ -274,20 +274,21 @@ func Validate() error {
 	case "pat":
 
 		if config.Environments[config.ActiveEnvironment].BaseURL == "" {
-			color.Yellow("configured environment is missing BaseURL")
+			return fmt.Errorf("configured environment is missing BaseURL")
 		}
 
 		if config.Environments[config.ActiveEnvironment].Pat.ClientID == "" {
-			color.Yellow("configured environment is missing PAT ClientID")
+			return fmt.Errorf("configured environment is missing PAT ClientID")
 		}
 
 		if config.Environments[config.ActiveEnvironment].Pat.ClientSecret == "" {
-			color.Yellow("configured environment is missing PAT ClientSecret")
+			return fmt.Errorf("configured environment is missing PAT ClientSecret")
 		}
+
 		return nil
 
 	case "oauth":
-		color.Yellow("oauth is not currently supported")
+		return fmt.Errorf("oauth is not currently supported")
 
 		// if config.Environments[config.ActiveEnvironment].BaseURL == "" {
 		// 	return fmt.Errorf("configured environment is missing BaseURL")
@@ -297,28 +298,27 @@ func Validate() error {
 		// 	return fmt.Errorf("configured environment is missing TenantURL")
 		// }
 
-		return nil
+		// return nil
 
 	case "pipeline":
 
 		if os.Getenv("SAIL_BASE_URL") == "" {
-			color.Yellow("pipeline environment is missing SAIL_BASE_URL")
+			return fmt.Errorf("pipeline environment is missing SAIL_BASE_URL")
 		}
 
 		if os.Getenv("SAIL_CLIENT_ID") == "" {
-			color.Yellow("pipeline environment is missing SAIL_CLIENT_ID")
+			return fmt.Errorf("pipeline environment is missing SAIL_CLIENT_ID")
 		}
 
 		if os.Getenv("SAIL_CLIENT_SECRET") == "" {
-			color.Yellow("pipeline environment is missing SAIL_CLIENT_SECRET")
+			return fmt.Errorf("pipeline environment is missing SAIL_CLIENT_SECRET")
 		}
 
 		return nil
 
 	default:
 
-		color.Yellow("invalid authtype '%s' configured", authType)
-		return nil
+		return fmt.Errorf("invalid authtype '%s' configured", authType)
 
 	}
 }
