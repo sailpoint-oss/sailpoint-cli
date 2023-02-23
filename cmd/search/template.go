@@ -28,6 +28,11 @@ func newTemplateCmd() *cobra.Command {
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
+			err := config.InitConfig()
+			if err != nil {
+				return err
+			}
+
 			apiClient := config.InitAPIClient()
 
 			var selectedTemplate templates.SearchTemplate

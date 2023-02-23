@@ -32,6 +32,11 @@ func newPreviewCmd() *cobra.Command {
 			idProfile := cmd.Flags().Lookup("identity-profile").Value.String()
 			attribute := cmd.Flags().Lookup("attribute").Value.String()
 
+			err := config.InitConfig()
+			if err != nil {
+				return err
+			}
+
 			Config, err := config.GetConfig()
 			if err != nil {
 				cobra.CheckErr(err)

@@ -24,8 +24,12 @@ func newDeleteCmd() *cobra.Command {
 		Example: "sail transform d 03d5187b-ab96-402c-b5a1-40b74285d77a",
 		Aliases: []string{"d"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-
 			var id []string
+
+			err := config.InitConfig()
+			if err != nil {
+				return err
+			}
 
 			if len(args) < 1 {
 				transforms, err := transform.GetTransforms()

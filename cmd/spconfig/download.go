@@ -3,6 +3,7 @@ package spconfig
 
 import (
 	"github.com/fatih/color"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/spconfig"
 	"github.com/spf13/cobra"
 )
@@ -17,6 +18,11 @@ func newDownloadCmd() *cobra.Command {
 		Aliases: []string{"que"},
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+
+			err := config.InitConfig()
+			if err != nil {
+				return err
+			}
 
 			for i := 0; i < len(args); i++ {
 				jobId := args[i]

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/transform"
 	"github.com/spf13/cobra"
 )
@@ -22,6 +23,11 @@ func newDownloadCmd() *cobra.Command {
 		Aliases: []string{"dl"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
+
+			err := config.InitConfig()
+			if err != nil {
+				return err
+			}
 
 			transforms, err := transform.GetTransforms()
 			if err != nil {

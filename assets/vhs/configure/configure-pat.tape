@@ -18,18 +18,20 @@ Type "sail environment example"
 
 Enter 
 
-Sleep 300ms
+Sleep 1500ms
 
 Type "https://example.identitynow.com"
 
 Enter 
 
-Sleep 300ms
+Sleep 1s
 
 Type "https://example.api.identitynow.com"
 
+Enter 
+
 # Pause for dramatic effect...
-Sleep 300ms
+Sleep 1s
 
 # Type a command in the terminal.
 Type "sail configure"
@@ -38,9 +40,6 @@ Enter
 
 # Pause for dramatic effect...
 Sleep 1s
-
-# Run the command by pressing enter.
-Enter 
 
 # Type a command in the terminal.
 Type "example-client-id"
@@ -53,6 +52,9 @@ Enter
 
 # Type a command in the terminal.
 Type "example-client-secret"
+
+# Run the command by pressing enter.
+Enter 
 
 # Admire the output for a bit.
 Sleep 5s

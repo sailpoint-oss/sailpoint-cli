@@ -21,6 +21,11 @@ func newExportStatusCmd() *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
+			err := config.InitConfig()
+			if err != nil {
+				return err
+			}
+
 			apiClient := config.InitAPIClient()
 
 			for i := 0; i < len(exportJobs); i++ {

@@ -25,6 +25,11 @@ func newCreateCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var data map[string]interface{}
 
+			err := config.InitConfig()
+			if err != nil {
+				return err
+			}
+
 			filepath := cmd.Flags().Lookup("file").Value.String()
 			if filepath != "" {
 				file, err := os.Open(filepath)
@@ -55,6 +60,7 @@ func newCreateCmd() *cobra.Command {
 			transform := sailpointsdk.NewTransform(data["name"].(string), data["type"].(string), data["attributes"].(map[string]interface{}))
 
 			apiClient := config.InitAPIClient()
+
 			transformObj, resp, err := apiClient.V3.TransformsApi.CreateTransform(context.TODO()).Transform(*transform).Execute()
 			if err != nil {
 				return sdk.HandleSDKError(resp, err)

@@ -27,6 +27,11 @@ func newExportCmd() *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
+			err := config.InitConfig()
+			if err != nil {
+				return err
+			}
+
 			apiClient := config.InitAPIClient()
 
 			ctx := context.TODO()
