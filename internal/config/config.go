@@ -235,7 +235,13 @@ func GetAuthorizeUrl() string {
 
 func GetConfig() (CLIConfig, error) {
 	var Config CLIConfig
-	err := viper.Unmarshal(&Config)
+
+	err := InitConfig()
+	if err != nil {
+		return Config, err
+	}
+
+	err = viper.Unmarshal(&Config)
 	if err != nil {
 		return Config, err
 	}
