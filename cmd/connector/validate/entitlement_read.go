@@ -32,7 +32,7 @@ var entitlementReadChecks = []Check{
 			"std:entitlement:list",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
-			entitlements, _, err := cc.EntitlementList(ctx, "group")
+			entitlements, _, _, err := cc.EntitlementList(ctx, "group")
 			if err != nil {
 				res.err(err)
 				return
@@ -77,7 +77,7 @@ var entitlementReadChecks = []Check{
 				attrsByName[value.Name] = value
 			}
 
-			entitlements, _, err := cc.EntitlementList(ctx, "group")
+			entitlements, _, _, err := cc.EntitlementList(ctx, "group")
 			if err != nil {
 				res.err(err)
 				return

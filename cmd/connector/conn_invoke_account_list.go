@@ -19,12 +19,18 @@ func newConnInvokeAccountListCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			_, rawResponse, err := cc.AccountList(ctx)
+			_, state, printable, err := cc.AccountList(ctx)
 			if err != nil {
 				return err
 			}
 
-			_, _ = fmt.Fprintln(cmd.OutOrStdout(), string(rawResponse))
+			_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Accounts:")
+			_, _ = fmt.Fprintln(cmd.OutOrStdout(), string(printable))
+
+			if state != nil {
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "\nState:\n")
+				_, _ = fmt.Fprintln(cmd.OutOrStdout(), string(state))
+			}
 			return nil
 		},
 	}
