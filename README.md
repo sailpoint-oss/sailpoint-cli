@@ -189,10 +189,10 @@ The `config.yaml` file should contain the following information.
 ```yaml
 activeenvironment: example # the key that identifies the currently active environment
 authtype: pat # currently only pat and pipeline are supported if the ENV VAR SAIL_AUTH_TYPE is configured to "pipeline" it will override this value
-customexporttemplatespath: "" # the path to
-customsearchtemplatespath: ""
-debug: false
-environments:
+customexporttemplatespath: "" # the path to the users custom export templates file if one is provided
+customsearchtemplatespath: "" # the path to the users custom search templates file if one is provided
+debug: false # the debug setting for the cli
+environments: # the configured environments for the cli
   example:
     baseurl: https://example.api.identitynow.com
     pat:
