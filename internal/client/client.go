@@ -3,15 +3,12 @@ package client
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httputil"
-	"time"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
-	"github.com/spf13/viper"
 )
 
 type Client interface {
@@ -167,42 +164,12 @@ func (c *SpClient) Put(ctx context.Context, url string, contentType string, body
 }
 
 func (c *SpClient) ensureAccessToken(ctx context.Context) error {
-	err := config.Validate()
+	token, err := config.GetAuthToken()
 	if err != nil {
 		return err
 	}
 
-	if c.accessToken != "" {
-		return nil
-	}
-
-	var cachedTokenExpiry time.Time
-	switch config.GetAuthType() {
-	case "pat":
-		cachedTokenExpiry = viper.GetTime("pat.token.expiry")
-		if cachedTokenExpiry.After(time.Now()) {
-			c.accessToken = viper.GetString("pat.token.accesstoken")
-		} else {
-			err := config.PATLogin()
-			if err != nil {
-				return err
-			}
-		}
-	case "oauth":
-		cachedTokenExpiry = viper.GetTime("oauth.token.expiry")
-		if cachedTokenExpiry.After(time.Now()) {
-			c.accessToken = viper.GetString("oauth.token.accesstoken")
-		} else {
-			err := config.OAuthLogin()
-			if err != nil {
-				return err
-			}
-		}
-	default:
-		return errors.New("invalid authtype configured")
-
-	}
+	c.accessToken = token
 
 	return nil
-
 }
