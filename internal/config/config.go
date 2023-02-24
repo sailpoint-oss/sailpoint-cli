@@ -104,7 +104,7 @@ func InitConfig() error {
 
 	viper.AddConfigPath(filepath.Join(home, ".sailpoint"))
 	viper.SetConfigName("config")
-	viper.SetConfigType("json")
+	viper.SetConfigType("yaml")
 	viper.SetEnvPrefix("sail")
 
 	viper.SetDefault("authtype", "pat")
