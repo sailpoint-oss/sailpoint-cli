@@ -112,6 +112,7 @@ func InitConfig() error {
 	viper.SetDefault("customsearchtemplatespath", "")
 	viper.SetDefault("debug", false)
 	viper.SetDefault("activeenvironment", "default")
+	viper.SetDefault("environments", map[string]Environment{"default": {}})
 
 	viper.AutomaticEnv()
 
