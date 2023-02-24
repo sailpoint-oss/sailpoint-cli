@@ -3,6 +3,7 @@ package set
 import (
 	"strings"
 
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -15,6 +16,11 @@ func newDebugCommand() *cobra.Command {
 		Example: "sail debug enable | disable",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+
+			err := config.InitConfig()
+			if err != nil {
+				return err
+			}
 
 			switch strings.ToLower(args[0]) {
 			case "enable":

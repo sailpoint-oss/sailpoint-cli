@@ -13,7 +13,13 @@ import (
 )
 
 func GetTransforms() ([]sailpointsdk.Transform, error) {
-	apiClient := config.InitAPIClient()
+	var transforms []sailpointsdk.Transform
+
+	apiClient, err := config.InitAPIClient()
+	if err != nil {
+		return transforms, err
+	}
+
 	transforms, resp, err := sailpoint.PaginateWithDefaults[sailpointsdk.Transform](apiClient.V3.TransformsApi.ListTransforms(context.TODO()))
 	if err != nil {
 		return transforms, sdk.HandleSDKError(resp, err)

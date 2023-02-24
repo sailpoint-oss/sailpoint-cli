@@ -32,7 +32,10 @@ func newExportCmd() *cobra.Command {
 				return err
 			}
 
-			apiClient := config.InitAPIClient()
+			apiClient, err := config.InitAPIClient()
+			if err != nil {
+				return err
+			}
 
 			ctx := context.TODO()
 

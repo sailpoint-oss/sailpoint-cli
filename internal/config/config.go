@@ -113,6 +113,11 @@ func InitConfig() error {
 	viper.SetConfigType("yaml")
 	viper.SetEnvPrefix("sail")
 
+	viper.SetDefault("authtype", "pat")
+	viper.SetDefault("customexporttemplatespath", "")
+	viper.SetDefault("customsearchtemplatespath", "")
+	viper.SetDefault("debug", false)
+
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
@@ -125,29 +130,31 @@ func InitConfig() error {
 		}
 	}
 
-	err = Validate()
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
-func InitAPIClient() *sailpoint.APIClient {
+func InitAPIClient() (*sailpoint.APIClient, error) {
+	var apiClient *sailpoint.APIClient
+
+	err := Validate()
+	if err != nil {
+		return apiClient, err
+	}
+
 	token, err := GetAuthToken()
 	if err != nil && GetDebug() {
 		color.Yellow("unable to retrieve accesstoken: %s ", err)
 	}
 
 	configuration := sailpoint.NewConfiguration(sailpoint.ClientConfiguration{Token: token, BaseURL: GetBaseUrl()})
-	apiClient := sailpoint.NewAPIClient(configuration)
+	apiClient = sailpoint.NewAPIClient(configuration)
 	if !GetDebug() {
 		var DevNull types.DevNull
 		apiClient.V3.GetConfig().HTTPClient.Logger = DevNull
 		apiClient.Beta.GetConfig().HTTPClient.Logger = DevNull
 	}
 
-	return apiClient
+	return apiClient, nil
 }
 
 func GetAuthToken() (string, error) {

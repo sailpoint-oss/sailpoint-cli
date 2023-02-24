@@ -35,7 +35,10 @@ func newTemplateCmd() *cobra.Command {
 				return err
 			}
 
-			apiClient := config.InitAPIClient()
+			apiClient, err := config.InitAPIClient()
+			if err != nil {
+				return err
+			}
 
 			if folderPath == "" {
 				folderPath = "search_results"

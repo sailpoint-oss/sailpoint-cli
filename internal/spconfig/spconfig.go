@@ -16,7 +16,11 @@ func PrintJob(job sailpointbetasdk.SpConfigJob) {
 }
 
 func DownloadExport(jobId string, fileName string, folderPath string) error {
-	apiClient := config.InitAPIClient()
+
+	apiClient, err := config.InitAPIClient()
+	if err != nil {
+		return err
+	}
 
 	for {
 		response, _, err := apiClient.Beta.SPConfigApi.ExportSpConfigJobStatus(context.TODO(), jobId).Execute()

@@ -32,9 +32,13 @@ func newAuthCommand() *cobra.Command {
 		Example: "sail auth pat | sail auth pat | sail auth pipeline",
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-
 			var selection string
 			var err error
+
+			err = config.InitConfig()
+			if err != nil {
+				return err
+			}
 
 			if len(args) > 0 {
 				selection = args[0]

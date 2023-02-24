@@ -59,7 +59,10 @@ func newCreateCmd() *cobra.Command {
 
 			transform := sailpointsdk.NewTransform(data["name"].(string), data["type"].(string), data["attributes"].(map[string]interface{}))
 
-			apiClient := config.InitAPIClient()
+			apiClient, err := config.InitAPIClient()
+			if err != nil {
+				return err
+			}
 
 			transformObj, resp, err := apiClient.V3.TransformsApi.CreateTransform(context.TODO()).Transform(*transform).Execute()
 			if err != nil {

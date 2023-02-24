@@ -33,7 +33,10 @@ func newTemplateCmd() *cobra.Command {
 				return err
 			}
 
-			apiClient := config.InitAPIClient()
+			apiClient, err := config.InitAPIClient()
+			if err != nil {
+				return err
+			}
 
 			var selectedTemplate templates.SearchTemplate
 			searchTemplates, err := templates.GetSearchTemplates()

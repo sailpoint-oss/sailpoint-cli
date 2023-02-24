@@ -90,8 +90,12 @@ func newDeleteCmd() *cobra.Command {
 
 				transformID := id[i]
 
-				apiClient := config.InitAPIClient()
-				_, err := apiClient.V3.TransformsApi.DeleteTransform(context.TODO(), transformID).Execute()
+				apiClient, err := config.InitAPIClient()
+				if err != nil {
+					return err
+				}
+
+				_, err = apiClient.V3.TransformsApi.DeleteTransform(context.TODO(), transformID).Execute()
 				if err != nil {
 					return err
 				}

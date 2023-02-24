@@ -30,7 +30,10 @@ func newQueryCmd() *cobra.Command {
 				return err
 			}
 
-			apiClient := config.InitAPIClient()
+			apiClient, err := config.InitAPIClient()
+			if err != nil {
+				return err
+			}
 
 			searchQuery = args[0]
 			fmt.Println(searchQuery)

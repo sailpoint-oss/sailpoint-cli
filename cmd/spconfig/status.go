@@ -26,7 +26,10 @@ func newExportStatusCmd() *cobra.Command {
 				return err
 			}
 
-			apiClient := config.InitAPIClient()
+			apiClient, err := config.InitAPIClient()
+			if err != nil {
+				return err
+			}
 
 			for i := 0; i < len(exportJobs); i++ {
 				job := exportJobs[i]
