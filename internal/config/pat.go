@@ -69,10 +69,7 @@ func SetPatClientSecret(ClientSecret string) {
 }
 
 func PATLogin() error {
-	config, err := GetConfig()
-	if err != nil {
-		return err
-	}
+
 	uri, err := url.Parse(GetTokenUrl())
 	if err != nil {
 		return err
@@ -83,8 +80,8 @@ func PATLogin() error {
 	uri.RawQuery = query.Encode()
 
 	data := &url.Values{}
-	data.Add("client_id", config.Environments[config.ActiveEnvironment].Pat.ClientID)
-	data.Add("client_secret", config.Environments[config.ActiveEnvironment].Pat.ClientSecret)
+	data.Add("client_id", GetPatClientID())
+	data.Add("client_secret", GetPatClientSecret())
 
 	ctx := context.TODO()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, uri.String(), strings.NewReader(data.Encode()))

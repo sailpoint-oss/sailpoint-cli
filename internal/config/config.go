@@ -154,7 +154,13 @@ func InitAPIClient() (*sailpoint.APIClient, error) {
 }
 
 func GetAuthToken() (string, error) {
-	err := Validate()
+
+	err := InitConfig()
+	if err != nil {
+		return "", err
+	}
+
+	err = Validate()
 	if err != nil {
 		return "", err
 	}
