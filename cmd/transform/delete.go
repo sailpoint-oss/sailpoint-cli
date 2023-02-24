@@ -96,12 +96,12 @@ func newDeleteCmd() *cobra.Command {
 					return err
 				}
 
-				err = transform.ListTransforms()
-				if err != nil {
-					return err
-				}
-
 				color.Green("%v successfully deleted", transformID)
+			}
+
+			err = transform.ListTransforms()
+			if err != nil {
+				return err
 			}
 
 			return nil
