@@ -1,4 +1,4 @@
-package root
+package set
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ func PromptAuth() (string, error) {
 	return strings.ToLower(choice.Title), nil
 }
 
-func NewAuthCommand() *cobra.Command {
+func newAuthCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "auth",
 		Short:   "change currently active authentication mode",

@@ -12,7 +12,7 @@ import (
 
 // Expected number of subcommands to `sp` root command
 const (
-	numRootSubcommands = 9
+	numRootSubcommands = 8
 )
 
 func TestNewRootCmd_noArgs(t *testing.T) {

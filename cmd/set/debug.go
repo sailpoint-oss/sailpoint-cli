@@ -1,4 +1,4 @@
-package root
+package set
 
 import (
 	"strings"
