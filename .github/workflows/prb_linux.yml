@@ -1,6 +1,5 @@
 name: PRB
 env:
-  SAIL_AUTH_TYPE: pipeline
   SAIL_CLIENT_ID: ${{secrets.CLI_TEST_TENANT_CLIENT_ID}}
   SAIL_CLIENT_SECRET: ${{secrets.CLI_TEST_TENANT_CLIENT_SECRET}}
   SAIL_BASE_URL: https://css-255.api.identitynow.com

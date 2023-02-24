@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -42,11 +43,21 @@ func SetPatTokenExpiry(expiry time.Time) {
 }
 
 func GetPatClientID() string {
-	return viper.GetString(fmt.Sprintf("environments.%s.pat.clientid", GetActiveEnvironment()))
+	envSecret := os.Getenv("SAIL_CLIENT_ID")
+	if envSecret != "" {
+		return envSecret
+	} else {
+		return viper.GetString(fmt.Sprintf("environments.%s.pat.clientid", GetActiveEnvironment()))
+	}
 }
 
 func GetPatClientSecret() string {
-	return viper.GetString(fmt.Sprintf("environments.%s.pat.clientsecret", GetActiveEnvironment()))
+	envSecret := os.Getenv("SAIL_CLIENT_SECRET")
+	if envSecret != "" {
+		return envSecret
+	} else {
+		return viper.GetString(fmt.Sprintf("environments.%s.pat.clientsecret", GetActiveEnvironment()))
+	}
 }
 
 func SetPatClientID(ClientID string) {

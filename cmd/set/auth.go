@@ -61,11 +61,6 @@ func newAuthCommand() *cobra.Command {
 				// 	config.SetAuthType("oauth")
 				// 	color.Blue("authentication method set to oauth")
 				// }
-			case "pipeline":
-				if config.GetAuthType() != "pipeline" {
-					config.SetAuthType("pipeline")
-					color.Blue("authentication method set to pipeline")
-				}
 			default:
 				return fmt.Errorf("invalid selection")
 			}

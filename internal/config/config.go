@@ -72,13 +72,7 @@ func GetEnvironments() map[string]interface{} {
 }
 
 func GetAuthType() string {
-	configAuthType := strings.ToLower(viper.GetString("authtype"))
-	envAuthType := strings.ToLower(os.Getenv("SAIL_AUTH_TYPE"))
-	if envAuthType == "pipeline" {
-		return envAuthType
-	} else {
-		return configAuthType
-	}
+	return strings.ToLower(viper.GetString("authtype"))
 }
 
 func SetAuthType(AuthType string) {
@@ -117,6 +111,7 @@ func InitConfig() error {
 	viper.SetDefault("customexporttemplatespath", "")
 	viper.SetDefault("customsearchtemplatespath", "")
 	viper.SetDefault("debug", false)
+	viper.SetDefault("activeenvironment", "default")
 
 	viper.AutomaticEnv()
 
@@ -187,29 +182,17 @@ func GetAuthToken() (string, error) {
 
 		// 	return GetOAuthToken(), nil
 		// }
-	case "pipeline":
-		if GetPipelineTokenExpiry().After(time.Now()) {
-			return GetPipelineToken(), nil
-		} else {
-			err = PipelineLogin()
-			if err != nil {
-				return "", err
-			}
-
-			return GetPipelineToken(), nil
-		}
 	default:
 		return "", fmt.Errorf("invalid authtype configured")
 	}
 }
 
 func GetBaseUrl() string {
-	configBaseUrl := viper.GetString(fmt.Sprintf("environments.%s.baseurl", GetActiveEnvironment()))
 	envBaseUrl := os.Getenv("SAIL_BASE_URL")
 	if envBaseUrl != "" {
 		return envBaseUrl
 	} else {
-		return configBaseUrl
+		return viper.GetString(fmt.Sprintf("environments.%s.baseurl", GetActiveEnvironment()))
 	}
 }
 
@@ -276,25 +259,21 @@ func SaveConfig() error {
 }
 
 func Validate() error {
-	config, err := GetConfig()
-	if err != nil {
-		return err
-	}
 	authType := GetAuthType()
 
 	switch authType {
 
 	case "pat":
 
-		if config.Environments[config.ActiveEnvironment].BaseURL == "" {
+		if GetBaseUrl() == "" {
 			return fmt.Errorf("configured environment is missing BaseURL")
 		}
 
-		if config.Environments[config.ActiveEnvironment].Pat.ClientID == "" {
+		if GetPatClientID() == "" {
 			return fmt.Errorf("configured environment is missing PAT ClientID")
 		}
 
-		if config.Environments[config.ActiveEnvironment].Pat.ClientSecret == "" {
+		if GetPatClientSecret() == "" {
 			return fmt.Errorf("configured environment is missing PAT ClientSecret")
 		}
 
@@ -312,22 +291,6 @@ func Validate() error {
 		// }
 
 		// return nil
-
-	case "pipeline":
-
-		if os.Getenv("SAIL_BASE_URL") == "" {
-			return fmt.Errorf("pipeline environment is missing SAIL_BASE_URL")
-		}
-
-		if os.Getenv("SAIL_CLIENT_ID") == "" {
-			return fmt.Errorf("pipeline environment is missing SAIL_CLIENT_ID")
-		}
-
-		if os.Getenv("SAIL_CLIENT_SECRET") == "" {
-			return fmt.Errorf("pipeline environment is missing SAIL_CLIENT_SECRET")
-		}
-
-		return nil
 
 	default:
 
