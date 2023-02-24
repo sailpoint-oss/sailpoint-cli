@@ -65,6 +65,11 @@ func newAuthCommand() *cobra.Command {
 				return fmt.Errorf("invalid selection")
 			}
 
+			err = config.SaveConfig()
+			if err != nil {
+				return err
+			}
+
 			return nil
 		},
 	}

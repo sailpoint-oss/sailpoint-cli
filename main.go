@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/root"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +20,6 @@ func init() {
 // goes wrong. This will exit the cli container during pipeline build and fail that stage.
 func main() {
 	err := rootCmd.Execute()
-	config.SaveConfig()
 	if err != nil {
 		os.Exit(1)
 	}

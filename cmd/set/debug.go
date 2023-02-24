@@ -29,6 +29,11 @@ func newDebugCommand() *cobra.Command {
 				viper.Set("debug", false)
 			}
 
+			err = config.SaveConfig()
+			if err != nil {
+				return err
+			}
+
 			return nil
 		},
 	}

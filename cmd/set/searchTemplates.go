@@ -22,6 +22,11 @@ func newSearchTemplateCommand() *cobra.Command {
 
 			config.SetCustomSearchTemplatePath(args[0])
 
+			err = config.SaveConfig()
+			if err != nil {
+				return err
+			}
+
 			return nil
 		},
 	}

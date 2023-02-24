@@ -22,6 +22,11 @@ func newExportTemplateCommand() *cobra.Command {
 
 			config.SetCustomExportTemplatePath(args[0])
 
+			err = config.SaveConfig()
+			if err != nil {
+				return err
+			}
+
 			return nil
 		},
 	}

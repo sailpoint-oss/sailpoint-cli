@@ -60,6 +60,11 @@ func NewEnvironmentCommand() *cobra.Command {
 				fmt.Printf("no environment provided")
 			}
 
+			err = config.SaveConfig()
+			if err != nil {
+				return err
+			}
+
 			return nil
 		},
 	}
