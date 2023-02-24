@@ -3,6 +3,8 @@ package spconfig
 
 import (
 	"context"
+	"encoding/json"
+	"os"
 
 	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/sdk-output/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
@@ -11,6 +13,7 @@ import (
 )
 
 func newImportCommand() *cobra.Command {
+	var filepath string
 	var payload *sailpointbetasdk.ImportOptions
 	cmd := &cobra.Command{
 		Use:     "import",
@@ -31,6 +34,17 @@ func newImportCommand() *cobra.Command {
 				return err
 			}
 
+			file, err := os.Open(filepath)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			err = json.NewDecoder(file).Decode(&payload)
+			if err != nil {
+				return err
+			}
+
 			ctx := context.TODO()
 
 			payload = sailpointbetasdk.NewImportOptions()
@@ -45,6 +59,9 @@ func newImportCommand() *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.Flags().StringVarP(&filepath, "filePath", "f", "", "the path to the file containing the import payload")
+	cmd.MarkFlagRequired("filepath")
 
 	return cmd
 }
