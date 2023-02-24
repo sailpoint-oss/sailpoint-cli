@@ -51,8 +51,8 @@ func NewEnvironmentCommand() *cobra.Command {
 				if _, exists := environments[env]; exists && !overwrite && config.GetTenantUrl() != "" && config.GetBaseUrl() != "" {
 					color.Blue("environment set to %s", env)
 				} else {
-					tenantUrl := terminal.InputPrompt("Tenant URL (ex. tenant.identitynow.com):")
-					baseUrl := terminal.InputPrompt("API Base URL (ex. tenant.api.identitynow.com):")
+					tenantUrl := terminal.InputPrompt("Tenant URL (ex. https://tenant.identitynow.com):")
+					baseUrl := terminal.InputPrompt("API Base URL (ex. https://tenant.api.identitynow.com):")
 					config.SetTenantUrl(tenantUrl)
 					config.SetBaseUrl(baseUrl)
 				}

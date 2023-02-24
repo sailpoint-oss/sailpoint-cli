@@ -17,6 +17,12 @@ func NewConfigureCmd() *cobra.Command {
 		Aliases: []string{"conf"},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+
+			err := config.InitConfig()
+			if err != nil {
+				return err
+			}
+
 			viper.Set("debug", debug)
 
 			ClientID := terminal.InputPrompt("Personal Access Token Client ID:")
