@@ -31,6 +31,11 @@ func NewConfigureCmd() *cobra.Command {
 			config.SetPatClientID(ClientID)
 			config.SetPatClientSecret(ClientSecret)
 
+			err = config.SaveConfig()
+			if err != nil {
+				return err
+			}
+
 			return nil
 		},
 	}

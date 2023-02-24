@@ -27,19 +27,19 @@ type PatConfig struct {
 }
 
 func GetPatToken() string {
-	return viper.GetString(fmt.Sprintf("environments.%s.pat.accesstoken", GetActiveEnvironment()))
+	return viper.GetString("environments." + GetActiveEnvironment() + ".pat.accesstoken")
 }
 
 func SetPatToken(token string) {
-	viper.Set(fmt.Sprintf("environments.%s.pat.accesstoken", GetActiveEnvironment()), token)
+	viper.Set("environments."+GetActiveEnvironment()+".pat.accesstoken", token)
 }
 
 func GetPatTokenExpiry() time.Time {
-	return viper.GetTime(fmt.Sprintf("environments.%s.pat.expiry", GetActiveEnvironment()))
+	return viper.GetTime("environments." + GetActiveEnvironment() + ".pat.expiry")
 }
 
 func SetPatTokenExpiry(expiry time.Time) {
-	viper.Set(fmt.Sprintf("environments.%s.pat.expiry", GetActiveEnvironment()), expiry)
+	viper.Set("environments."+GetActiveEnvironment()+".pat.expiry", expiry)
 }
 
 func GetPatClientID() string {
@@ -47,7 +47,7 @@ func GetPatClientID() string {
 	if envSecret != "" {
 		return envSecret
 	} else {
-		return viper.GetString(fmt.Sprintf("environments.%s.pat.clientid", GetActiveEnvironment()))
+		return viper.GetString("environments." + GetActiveEnvironment() + ".pat.clientid")
 	}
 }
 
@@ -56,16 +56,16 @@ func GetPatClientSecret() string {
 	if envSecret != "" {
 		return envSecret
 	} else {
-		return viper.GetString(fmt.Sprintf("environments.%s.pat.clientsecret", GetActiveEnvironment()))
+		return viper.GetString("environments." + GetActiveEnvironment() + ".pat.clientsecret")
 	}
 }
 
 func SetPatClientID(ClientID string) {
-	viper.Set(fmt.Sprintf("environments.%s.pat.clientid", GetActiveEnvironment()), ClientID)
+	viper.Set("environments."+GetActiveEnvironment()+".pat.clientid", ClientID)
 }
 
 func SetPatClientSecret(ClientSecret string) {
-	viper.Set(fmt.Sprintf("environments.%s.pat.clientsecret", GetActiveEnvironment()), ClientSecret)
+	viper.Set("environments."+GetActiveEnvironment()+".pat.clientsecret", ClientSecret)
 }
 
 func PATLogin() error {

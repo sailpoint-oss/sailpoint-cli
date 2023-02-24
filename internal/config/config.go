@@ -104,7 +104,7 @@ func InitConfig() error {
 
 	viper.AddConfigPath(filepath.Join(home, ".sailpoint"))
 	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
+	viper.SetConfigType("json")
 	viper.SetEnvPrefix("sail")
 
 	viper.SetDefault("authtype", "pat")
@@ -112,7 +112,6 @@ func InitConfig() error {
 	viper.SetDefault("customsearchtemplatespath", "")
 	viper.SetDefault("debug", false)
 	viper.SetDefault("activeenvironment", "default")
-	viper.SetDefault("environments", map[string]Environment{"default": {}})
 
 	viper.AutomaticEnv()
 
@@ -199,20 +198,20 @@ func GetBaseUrl() string {
 	if envBaseUrl != "" {
 		return envBaseUrl
 	} else {
-		return viper.GetString(fmt.Sprintf("environments.%s.baseurl", GetActiveEnvironment()))
+		return viper.GetString("environments." + GetActiveEnvironment() + ".baseurl")
 	}
 }
 
 func GetTenantUrl() string {
-	return viper.GetString(fmt.Sprintf("environments.%s.tenanturl", GetActiveEnvironment()))
+	return viper.GetString("environments." + GetActiveEnvironment() + ".tenanturl")
 }
 
 func SetBaseUrl(baseUrl string) {
-	viper.Set(fmt.Sprintf("environments.%s.baseurl", GetActiveEnvironment()), baseUrl)
+	viper.Set("environments."+GetActiveEnvironment()+".baseurl", baseUrl)
 }
 
 func SetTenantUrl(tenantUrl string) {
-	viper.Set(fmt.Sprintf("environments.%s.tenanturl", GetActiveEnvironment()), tenantUrl)
+	viper.Set("environments."+GetActiveEnvironment()+".tenanturl", tenantUrl)
 }
 
 func GetTokenUrl() string {
@@ -226,12 +225,7 @@ func GetAuthorizeUrl() string {
 func GetConfig() (CLIConfig, error) {
 	var Config CLIConfig
 
-	err := InitConfig()
-	if err != nil {
-		return Config, err
-	}
-
-	err = viper.Unmarshal(&Config)
+	err := viper.Unmarshal(&Config)
 	if err != nil {
 		return Config, err
 	}

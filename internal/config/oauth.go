@@ -18,19 +18,19 @@ import (
 )
 
 func GetOAuthToken() string {
-	return viper.GetString(fmt.Sprintf("environments.%s.oauth.accesstoken", GetActiveEnvironment()))
+	return viper.GetString("environments." + GetActiveEnvironment() + ".oauth.accesstoken")
 }
 
 func SetOAuthToken(token string) {
-	viper.Set(fmt.Sprintf("environments.%s.oauth.accesstoken", GetActiveEnvironment()), token)
+	viper.Set("environments."+GetActiveEnvironment()+".oauth.accesstoken", token)
 }
 
 func GetOAuthTokenExpiry() time.Time {
-	return viper.GetTime(fmt.Sprintf("environments.%s.oauth.expiry", GetActiveEnvironment()))
+	return viper.GetTime("environments." + GetActiveEnvironment() + ".oauth.expiry")
 }
 
 func SetOAuthTokenExpiry(expiry time.Time) {
-	viper.Set(fmt.Sprintf("environments.%s.oauth.expiry", GetActiveEnvironment()), expiry)
+	viper.Set("environments."+GetActiveEnvironment()+".oauth.expiry", expiry)
 }
 
 var (
