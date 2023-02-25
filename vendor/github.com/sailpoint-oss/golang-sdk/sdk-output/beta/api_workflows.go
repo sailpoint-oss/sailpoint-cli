@@ -1160,6 +1160,34 @@ type ApiListWorkflowExecutionsRequest struct {
 	ctx context.Context
 	ApiService *WorkflowsApiService
 	id string
+	limit *int32
+	offset *int32
+	count *bool
+	filters *string
+}
+
+// Max number of results to return. See [V3 API Standard Collection Parameters](https://developer.sailpoint.com/idn/api/standard-collection-parameters) for more information.
+func (r ApiListWorkflowExecutionsRequest) Limit(limit int32) ApiListWorkflowExecutionsRequest {
+	r.limit = &limit
+	return r
+}
+
+// Offset into the full result set. Usually specified with *limit* to paginate through the results. See [V3 API Standard Collection Parameters](https://developer.sailpoint.com/idn/api/standard-collection-parameters) for more information.
+func (r ApiListWorkflowExecutionsRequest) Offset(offset int32) ApiListWorkflowExecutionsRequest {
+	r.offset = &offset
+	return r
+}
+
+// If *true* it will populate the *X-Total-Count* response header with the number of results that would be returned if *limit* and *offset* were ignored.  Since requesting a total count can have a performance impact, it is recommended not to send **count&#x3D;true** if that value will not be used.  See [V3 API Standard Collection Parameters](https://developer.sailpoint.com/idn/api/standard-collection-parameters) for more information.
+func (r ApiListWorkflowExecutionsRequest) Count(count bool) ApiListWorkflowExecutionsRequest {
+	r.count = &count
+	return r
+}
+
+// Filter results using the standard syntax described in [V3 API Standard Collection Parameters](https://developer.sailpoint.com/idn/api/standard-collection-parameters#filtering-results)  Filtering is supported for the following fields and operators:  **start_time**: *eq, lt, lte, gt, gte*  **status**: *eq*
+func (r ApiListWorkflowExecutionsRequest) Filters(filters string) ApiListWorkflowExecutionsRequest {
+	r.filters = &filters
+	return r
 }
 
 func (r ApiListWorkflowExecutionsRequest) Execute() ([]WorkflowExecution, *http.Response, error) {
@@ -1169,7 +1197,17 @@ func (r ApiListWorkflowExecutionsRequest) Execute() ([]WorkflowExecution, *http.
 /*
 ListWorkflowExecutions List Workflow Executions
 
-This lists the executions for a given workflow. Workflow executions are available for up to 90 days before being archived.
+This lists the executions for a given workflow. Workflow executions are available for up to 90 days before being archived. By default, you can get a maximum of 250 executions.  To get executions past the first 250 records, you can do the following: 
+1. Use the [Get Workflows](https://developer.sailpoint.com/idn/api/beta/list-workflows) endpoint to get your workflows. 
+2. Get your workflow ID from the response. 
+3. You can then do either of the following: 
+
+  - Filter to find relevant workflow executions.
+  For example, you can filter for failed workflow executions: `GET /workflows/:workflowID/executions?filters=status eq "Failed"`
+
+  - You can paginate through results with the `offset` parameter. 
+  For example, you can page through 50 executions per page and use that as a way to get to the records past the first 250. 
+  Refer to [Paginating Results](https://developer.sailpoint.com/idn/api/standard-collection-parameters#paginating-results) for more information about the query parameters you can use to achieve pagination. 
 
  @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  @param id Id of the workflow
@@ -1205,6 +1243,18 @@ func (a *WorkflowsApiService) ListWorkflowExecutionsExecute(r ApiListWorkflowExe
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
+	if r.limit != nil {
+		localVarQueryParams.Add("limit", parameterToString(*r.limit, ""))
+	}
+	if r.offset != nil {
+		localVarQueryParams.Add("offset", parameterToString(*r.offset, ""))
+	}
+	if r.count != nil {
+		localVarQueryParams.Add("count", parameterToString(*r.count, ""))
+	}
+	if r.filters != nil {
+		localVarQueryParams.Add("filters", parameterToString(*r.filters, ""))
+	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
 
@@ -1267,6 +1317,17 @@ func (a *WorkflowsApiService) ListWorkflowExecutionsExecute(r ApiListWorkflowExe
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
+			var v ErrorResponseDto
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+            		newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+            		newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
 			var v ErrorResponseDto
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {

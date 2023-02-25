@@ -24,7 +24,7 @@ github.com/charmbracelet/bubbles/spinner
 github.com/charmbracelet/bubbles/table
 github.com/charmbracelet/bubbles/textinput
 github.com/charmbracelet/bubbles/viewport
-# github.com/charmbracelet/bubbletea v0.23.1
+# github.com/charmbracelet/bubbletea v0.23.2
 ## explicit; go 1.16
 github.com/charmbracelet/bubbletea
 # github.com/charmbracelet/lipgloss v0.6.0
@@ -36,8 +36,8 @@ github.com/charmbracelet/log
 # github.com/containerd/console v1.0.3
 ## explicit; go 1.13
 github.com/containerd/console
-# github.com/fatih/color v1.13.0
-## explicit; go 1.13
+# github.com/fatih/color v1.14.1
+## explicit; go 1.17
 github.com/fatih/color
 # github.com/fsnotify/fsnotify v1.6.0
 ## explicit; go 1.16
@@ -45,7 +45,7 @@ github.com/fsnotify/fsnotify
 # github.com/go-logfmt/logfmt v0.6.0
 ## explicit; go 1.17
 github.com/go-logfmt/logfmt
-# github.com/gocarina/gocsv v0.0.0-20230123225133-763e25b40669
+# github.com/gocarina/gocsv v0.0.0-20230223115542-dc4ee9de5fe2
 ## explicit; go 1.13
 github.com/gocarina/gocsv
 # github.com/golang/mock v1.6.0
@@ -121,7 +121,7 @@ github.com/muesli/reflow/ansi
 github.com/muesli/reflow/truncate
 github.com/muesli/reflow/wordwrap
 github.com/muesli/reflow/wrap
-# github.com/muesli/termenv v0.13.0
+# github.com/muesli/termenv v0.14.0
 ## explicit; go 1.13
 github.com/muesli/termenv
 # github.com/olekukonko/tablewriter v0.0.5
@@ -138,7 +138,7 @@ github.com/pelletier/go-toml/v2/unstable
 ## explicit; go 1.15
 github.com/pkg/sftp
 github.com/pkg/sftp/internal/encoding/ssh/filexfer
-# github.com/rivo/uniseg v0.4.3
+# github.com/rivo/uniseg v0.4.4
 ## explicit; go 1.18
 github.com/rivo/uniseg
 # github.com/rogpeppe/go-internal v1.9.0
@@ -147,7 +147,7 @@ github.com/rogpeppe/go-internal/fmtsort
 # github.com/sahilm/fuzzy v0.1.0
 ## explicit
 github.com/sahilm/fuzzy
-# github.com/sailpoint-oss/golang-sdk/sdk-output v0.0.0-20230222184213-c79ce7b7dd1d
+# github.com/sailpoint-oss/golang-sdk/sdk-output v0.0.0-20230224194642-0d426c36b905
 ## explicit; go 1.19
 github.com/sailpoint-oss/golang-sdk/sdk-output
 github.com/sailpoint-oss/golang-sdk/sdk-output/beta
@@ -157,7 +157,7 @@ github.com/sailpoint-oss/golang-sdk/sdk-output/v3
 # github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 ## explicit
 github.com/skratchdot/open-golang/open
-# github.com/spf13/afero v1.9.3
+# github.com/spf13/afero v1.9.4
 ## explicit; go 1.16
 github.com/spf13/afero
 github.com/spf13/afero/internal/common
@@ -188,13 +188,13 @@ github.com/spf13/viper/internal/encoding/yaml
 # github.com/subosito/gotenv v1.4.2
 ## explicit; go 1.18
 github.com/subosito/gotenv
-# github.com/vbauerster/mpb/v8 v8.1.4
+# github.com/vbauerster/mpb/v8 v8.2.0
 ## explicit; go 1.17
 github.com/vbauerster/mpb/v8
 github.com/vbauerster/mpb/v8/cwriter
 github.com/vbauerster/mpb/v8/decor
 github.com/vbauerster/mpb/v8/internal
-# golang.org/x/crypto v0.5.0
+# golang.org/x/crypto v0.6.0
 ## explicit; go 1.17
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/chacha20
@@ -205,7 +205,7 @@ golang.org/x/crypto/internal/alias
 golang.org/x/crypto/internal/poly1305
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/exp v0.0.0-20230206171751-46f607a40771
+# golang.org/x/exp v0.0.0-20230224173230-c95f2b4c22f2
 ## explicit; go 1.18
 golang.org/x/exp/maps
 # golang.org/x/net v0.7.0
@@ -215,6 +215,9 @@ golang.org/x/net/context
 ## explicit; go 1.17
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
+# golang.org/x/sync v0.1.0
+## explicit
+golang.org/x/sync/errgroup
 # golang.org/x/sys v0.5.0
 ## explicit; go 1.17
 golang.org/x/sys/cpu
