@@ -1,4 +1,4 @@
-name: PRB
+name: PRB_Windows
 env:
   SAIL_CLIENT_ID: ${{secrets.CLI_TEST_TENANT_CLIENT_ID}}
   SAIL_CLIENT_SECRET: ${{secrets.CLI_TEST_TENANT_CLIENT_SECRET}}
@@ -11,7 +11,7 @@ on:
     branches: [main]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: windows-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
