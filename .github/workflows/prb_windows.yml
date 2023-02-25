@@ -27,7 +27,7 @@ jobs:
           node-version: 18
 
       - name: Vendor
-        run: make vendor
+        run: go mod vendor
 
       - name: Test
         run: go test -v -count=1 ./...
