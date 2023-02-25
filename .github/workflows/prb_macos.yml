@@ -26,9 +26,6 @@ jobs:
         with:
           node-version: 18
 
-      - name: Vendor
-        run: go mod vendor
-
       - name: Test
         run: go test -v -count=1 ./...
 

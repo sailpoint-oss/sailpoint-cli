@@ -62,7 +62,7 @@ func NewEnvironmentCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVarP(&overwrite, "overwrite", "o", false, "use to overwrite an environments configuration")
+	cmd.Flags().BoolVarP(&overwrite, "overwrite", "o", false, "use to overwrite an existing environments configuration")
 
 	return cmd
 
