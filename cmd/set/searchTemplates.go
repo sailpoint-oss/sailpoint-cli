@@ -2,6 +2,7 @@ package set
 
 import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/spf13/cobra"
 )
 
@@ -15,17 +16,12 @@ func newSearchTemplateCommand() *cobra.Command {
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			err := config.InitConfig()
-			if err != nil {
-				return err
+			filePath := args[0]
+			if filePath == "" {
+				log.Log.Error("File Path Cannot Be Blank")
 			}
 
-			config.SetCustomSearchTemplatePath(args[0])
-
-			err = config.SaveConfig()
-			if err != nil {
-				return err
-			}
+			config.SetCustomSearchTemplatePath(filePath)
 
 			return nil
 		},

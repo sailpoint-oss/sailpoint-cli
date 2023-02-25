@@ -4,8 +4,8 @@ package search
 import (
 	"fmt"
 
-	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/search"
 	"github.com/spf13/cobra"
 )
@@ -43,7 +43,7 @@ func newQueryCmd() *cobra.Command {
 				return err
 			}
 
-			color.Blue("\nPerforming Search\nQuery: \"%s\"\nIndicie: %s\n", searchQuery, indicies)
+			log.Log.Info("Performing Search", "Query", searchQuery, "Indicies", indicies)
 
 			formattedResponse, err := search.PerformSearch(*apiClient, searchObj)
 			if err != nil {

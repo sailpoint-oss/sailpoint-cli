@@ -1,11 +1,10 @@
 package set
 
 import (
-	"fmt"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/spf13/cobra"
 )
@@ -35,11 +34,6 @@ func newAuthCommand() *cobra.Command {
 			var selection string
 			var err error
 
-			err = config.InitConfig()
-			if err != nil {
-				return err
-			}
-
 			if len(args) > 0 {
 				selection = args[0]
 			} else {
@@ -51,23 +45,18 @@ func newAuthCommand() *cobra.Command {
 
 			switch strings.ToLower(selection) {
 			case "pat":
-				if config.GetAuthType() != "pat" {
-					config.SetAuthType("pat")
-					color.Blue("authentication method set to pat")
-				}
-			case "oauth":
-				return fmt.Errorf("oauth not currently supported")
-				// if config.GetAuthType() != "oauth" {
-				// 	config.SetAuthType("oauth")
-				// 	color.Blue("authentication method set to oauth")
-				// }
-			default:
-				return fmt.Errorf("invalid selection")
-			}
 
-			err = config.SaveConfig()
-			if err != nil {
-				return err
+				config.SetAuthType("pat")
+				log.Log.Info("Authentication method set to PAT")
+
+			case "oauth":
+				log.Log.Error("OAuth is not currently supported")
+
+				// 	config.SetAuthType("oauth")
+				// 	log.Log.Info("Authentication method set to OAuth")
+
+			default:
+				log.Log.Error("Invalid Selection")
 			}
 
 			return nil

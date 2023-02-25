@@ -30,6 +30,9 @@ github.com/charmbracelet/bubbletea
 # github.com/charmbracelet/lipgloss v0.6.0
 ## explicit; go 1.15
 github.com/charmbracelet/lipgloss
+# github.com/charmbracelet/log v0.1.1
+## explicit; go 1.15
+github.com/charmbracelet/log
 # github.com/containerd/console v1.0.3
 ## explicit; go 1.13
 github.com/containerd/console
@@ -39,6 +42,9 @@ github.com/fatih/color
 # github.com/fsnotify/fsnotify v1.6.0
 ## explicit; go 1.16
 github.com/fsnotify/fsnotify
+# github.com/go-logfmt/logfmt v0.6.0
+## explicit; go 1.17
+github.com/go-logfmt/logfmt
 # github.com/gocarina/gocsv v0.0.0-20230123225133-763e25b40669
 ## explicit; go 1.13
 github.com/gocarina/gocsv

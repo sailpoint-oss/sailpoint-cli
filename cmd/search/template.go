@@ -8,6 +8,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/search"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/templates"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
@@ -78,7 +79,7 @@ func newTemplateCmd() *cobra.Command {
 				}
 			}
 
-			color.Blue("\nPerforming Search\nQuery: \"%s\"\nIndicie: %s\n\n", selectedTemplate.SearchQuery.Query.GetQuery(), selectedTemplate.SearchQuery.Indices)
+			log.Log.Info("Performing Search", "Query", selectedTemplate.SearchQuery.Query.GetQuery(), "Indicies", selectedTemplate.SearchQuery.Indices)
 
 			formattedResponse, err := search.PerformSearch(*apiClient, selectedTemplate.SearchQuery)
 			if err != nil {

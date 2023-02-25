@@ -24,11 +24,6 @@ func newImportCommand() *cobra.Command {
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			err := config.InitConfig()
-			if err != nil {
-				return err
-			}
-
 			apiClient, err := config.InitAPIClient()
 			if err != nil {
 				return err

@@ -24,11 +24,6 @@ func newUpdateCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var data map[string]interface{}
 
-			err := config.InitConfig()
-			if err != nil {
-				return err
-			}
-
 			filepath := cmd.Flags().Lookup("file").Value.String()
 			if filepath != "" {
 				file, err := os.Open(filepath)

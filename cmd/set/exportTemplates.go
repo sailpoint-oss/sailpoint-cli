@@ -2,6 +2,7 @@ package set
 
 import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/spf13/cobra"
 )
 
@@ -10,22 +11,17 @@ func newExportTemplateCommand() *cobra.Command {
 		Use:     "exportTemplates",
 		Short:   "configure the custom export template file path",
 		Long:    "configure the custom export template file path",
-		Example: "sail set export /path/to/export/templates",
+		Example: "sail set export full/path/to/export/templates",
 		Aliases: []string{"export"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			err := config.InitConfig()
-			if err != nil {
-				return err
+			filePath := args[0]
+			if filePath == "" {
+				log.Log.Error("File Path Cannot Be Blank")
 			}
 
-			config.SetCustomExportTemplatePath(args[0])
-
-			err = config.SaveConfig()
-			if err != nil {
-				return err
-			}
+			config.SetCustomExportTemplatePath(filePath)
 
 			return nil
 		},

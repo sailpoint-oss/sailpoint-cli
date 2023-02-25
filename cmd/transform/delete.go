@@ -9,8 +9,8 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/transform"
 	tuitable "github.com/sailpoint-oss/sailpoint-cli/internal/tui/table"
 	"github.com/spf13/cobra"
@@ -25,11 +25,6 @@ func newDeleteCmd() *cobra.Command {
 		Aliases: []string{"d"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var id []string
-
-			err := config.InitConfig()
-			if err != nil {
-				return err
-			}
 
 			if len(args) < 1 {
 				transforms, err := transform.GetTransforms()
@@ -100,10 +95,10 @@ func newDeleteCmd() *cobra.Command {
 					return err
 				}
 
-				color.Green("%v successfully deleted", transformID)
+				log.Log.Info("Transform successfully deleted", "TransformID", transformID)
 			}
 
-			err = transform.ListTransforms()
+			err := transform.ListTransforms()
 			if err != nil {
 				return err
 			}

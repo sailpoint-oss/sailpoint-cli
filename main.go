@@ -4,14 +4,19 @@ package main
 import (
 	"os"
 
+	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/root"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/spf13/cobra"
 )
 
 var rootCmd *cobra.Command
 
 func init() {
+
+	cobra.CheckErr(config.InitConfig())
 	rootCmd = root.NewRootCmd()
+
 }
 
 // main the entry point for commands. Note that we do not need to do cobra.CheckErr(err)
@@ -19,7 +24,14 @@ func init() {
 // cause error messages to be logged twice. We do need to exit with error code if something
 // goes wrong. This will exit the cli container during pipeline build and fail that stage.
 func main() {
+
 	err := rootCmd.Execute()
+	saveErr := config.SaveConfig()
+
+	if saveErr != nil {
+		color.Yellow("error saving config file", saveErr)
+	}
+
 	if err != nil {
 		os.Exit(1)
 	}

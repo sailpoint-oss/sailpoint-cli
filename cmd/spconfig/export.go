@@ -3,10 +3,10 @@ package spconfig
 
 import (
 	"context"
-	"fmt"
 
 	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/sdk-output/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/spconfig"
 	"github.com/spf13/cobra"
 )
@@ -26,11 +26,6 @@ func newExportCmd() *cobra.Command {
 		Aliases: []string{"que"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-
-			err := config.InitConfig()
-			if err != nil {
-				return err
-			}
 
 			apiClient, err := config.InitAPIClient()
 			if err != nil {
@@ -52,7 +47,7 @@ func newExportCmd() *cobra.Command {
 			spconfig.PrintJob(*job)
 
 			if wait {
-				fmt.Println("waiting for export task to complete")
+				log.Log.Warn("Waiting for export task to complete")
 				spconfig.DownloadExport(job.JobId, "spconfig-export-"+job.JobId+".json", folderPath)
 			}
 

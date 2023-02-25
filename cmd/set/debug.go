@@ -3,7 +3,7 @@ package set
 import (
 	"strings"
 
-	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -11,27 +11,21 @@ import (
 func newDebugCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "debug",
-		Short:   "enable or disable debug mode",
-		Long:    "Enable/Disable debug mode.",
+		Short:   "Enable/Disable debug mode.",
+		Long:    "Enable or Disable debug mode for the CLI.",
 		Example: "sail debug enable | disable",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			err := config.InitConfig()
-			if err != nil {
-				return err
-			}
-
 			switch strings.ToLower(args[0]) {
 			case "enable":
 				viper.Set("debug", true)
+				log.Log.Info("Debug Enabled")
 			case "disable":
 				viper.Set("debug", false)
-			}
-
-			err = config.SaveConfig()
-			if err != nil {
-				return err
+				log.Log.Info("Debug Disabled")
+			default:
+				log.Log.Error("Invalid Selection")
 			}
 
 			return nil

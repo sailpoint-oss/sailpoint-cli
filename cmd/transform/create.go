@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fatih/color"
 	sailpointsdk "github.com/sailpoint-oss/golang-sdk/sdk-output/v3"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/spf13/cobra"
 )
@@ -24,11 +24,6 @@ func newCreateCmd() *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var data map[string]interface{}
-
-			err := config.InitConfig()
-			if err != nil {
-				return err
-			}
 
 			filepath := cmd.Flags().Lookup("file").Value.String()
 			if filepath != "" {
@@ -69,7 +64,7 @@ func newCreateCmd() *cobra.Command {
 				return sdk.HandleSDKError(resp, err)
 			}
 
-			color.Green("Transform created successfully")
+			log.Log.Info("Transform created successfully")
 
 			cmd.Print(*transformObj.Id)
 
