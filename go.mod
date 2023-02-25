@@ -1,6 +1,6 @@
 module github.com/sailpoint-oss/sailpoint-cli
 
-go 1.18
+go 1.19
 
 require (
 	github.com/charmbracelet/bubbles v0.15.0
