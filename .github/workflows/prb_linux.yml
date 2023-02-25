@@ -29,6 +29,9 @@ jobs:
       - name: Check env
         run: env
 
+      - name: Vendor
+        run: make vendor
+
       - name: Test
         run: go test -v -count=1 ./...
 

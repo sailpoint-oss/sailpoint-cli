@@ -8,6 +8,9 @@ mocks:
 test:
 	go test -v -count=1 ./...
 
+vendor:
+	go mod vendor
+
 install:
 	go build -o /usr/local/bin/sail -buildvcs=false
 
