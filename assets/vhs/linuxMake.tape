@@ -21,13 +21,13 @@ Sleep 300ms
 Type "make install"
 
 # Pause for dramatic effect...
-Sleep 800ms
+Sleep 500ms
 
 # Run the command by pressing enter.
 Enter 
 
 # Pause for dramatic effect...
-Sleep 500ms
+Sleep 800ms
 
 # Type a command in the terminal.
 Type "sail"

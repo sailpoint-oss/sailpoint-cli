@@ -22,6 +22,12 @@ Enter
 
 Sleep 20s
 
+Type "brew untap sailpoint-oss/tap"
+
+Enter
+
+Sleep 20s
+
 Type "clear"
 
 Enter
@@ -36,7 +42,7 @@ Show
 Sleep 300ms
 
 # Type a command in the terminal.
-Type "brew install sailpoint-oss/homebrew-sailpoint-oss/sailpoint-cli"
+Type "brew tap sailpoint-oss/tap && brew install sailpoint-cli"
 
 # Pause for dramatic effect...
 Sleep 500ms

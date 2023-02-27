@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v2"
@@ -17,33 +18,40 @@ const (
 	connectorsEndpoint = "/beta/platform-connectors"
 )
 
-func NewConnCmd(client client.Client) *cobra.Command {
+func NewConnCmd() *cobra.Command {
 	conn := &cobra.Command{
 		Use:     "connectors",
-		Short:   "Manage connectors",
+		Short:   "manage connectors",
 		Aliases: []string{"conn"},
 		Run: func(command *cobra.Command, args []string) {
 			_, _ = fmt.Fprintf(command.OutOrStdout(), command.UsageString())
 		},
 	}
 
+	Config, err := config.GetConfig()
+	if err != nil {
+		cobra.CheckErr(err)
+	}
+
+	Client := client.NewSpClient(Config)
+
 	conn.PersistentFlags().StringP("conn-endpoint", "e", connectorsEndpoint, "Override connectors endpoint")
 
 	conn.AddCommand(
 		newConnInitCmd(),
-		newConnListCmd(client),
-		newConnGetCmd(client),
-		newConnUpdateCmd(client),
-		newConnCreateCmd(client),
-		newConnCreateVersionCmd(client),
-		newConnVersionsCmd(client),
-		newConnInvokeCmd(client),
-		newConnValidateCmd(client),
-		newConnTagCmd(client),
-		newConnValidateSourcesCmd(client),
-		newConnLogsCmd(client),
-		newConnStatsCmd(client),
-		newConnDeleteCmd(client),
+		newConnListCmd(Client),
+		newConnGetCmd(Client),
+		newConnUpdateCmd(Client),
+		newConnCreateCmd(Client),
+		newConnCreateVersionCmd(Client),
+		newConnVersionsCmd(Client),
+		newConnInvokeCmd(Client),
+		newConnValidateCmd(Client),
+		newConnTagCmd(Client),
+		newConnValidateSourcesCmd(Client),
+		newConnLogsCmd(Client),
+		newConnStatsCmd(Client),
+		newConnDeleteCmd(Client),
 	)
 
 	return conn

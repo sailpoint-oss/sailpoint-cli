@@ -1,10 +1,18 @@
-name: PRB
+name: PRB_Linux
+env:
+  SAIL_CLIENT_ID: ${{secrets.CLI_TEST_TENANT_CLIENT_ID}}
+  SAIL_CLIENT_SECRET: ${{secrets.CLI_TEST_TENANT_CLIENT_SECRET}}
+  SAIL_BASE_URL: https://css-255.api.identitynow.com
 
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+
+concurrency:
+  group: linux-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   sailpoint-cli-linux:
@@ -15,12 +23,15 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.18
+          go-version: 1.19
 
       - name: Set up node
         uses: actions/setup-node@v3
         with:
           node-version: 18
+
+      - name: Check env
+        run: env
 
       - name: Test
         run: go test -v -count=1 ./...

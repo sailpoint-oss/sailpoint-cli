@@ -4,9 +4,7 @@ package transform
 import (
 	"fmt"
 
-	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 const (
@@ -16,25 +14,25 @@ const (
 	userEndpoint            = "/cc/api/identity/list"
 )
 
-func NewTransformCmd(client client.Client) *cobra.Command {
+func NewTransformCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "transform",
-		Short:   "Manage transforms",
+		Short:   "manage transforms",
 		Aliases: []string{"tran"},
 		Run: func(cmd *cobra.Command, args []string) {
 			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
 		},
 	}
 
-	cmd.PersistentFlags().StringP("transforms-endpoint", "e", viper.GetString("baseurl")+transformsEndpoint, "Override transforms endpoint")
+	cmd.PersistentFlags().StringP("transforms-endpoint", "e", transformsEndpoint, "Override transforms endpoint")
 
 	cmd.AddCommand(
-		newListCmd(client),
-		newDownloadCmd(client),
-		newCreateCmd(client),
-		newUpdateCmd(client),
-		newDeleteCmd(client),
-		newPreviewCmd(client),
+		newListCmd(),
+		newDownloadCmd(),
+		newCreateCmd(),
+		newUpdateCmd(),
+		newDeleteCmd(),
+		newPreviewCmd(),
 	)
 
 	return cmd

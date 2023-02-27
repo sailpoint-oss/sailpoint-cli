@@ -9,40 +9,57 @@ github.com/acarl005/stripansi
 # github.com/atotto/clipboard v0.1.4
 ## explicit
 github.com/atotto/clipboard
-# github.com/aymanbagabas/go-osc52 v1.0.3
+# github.com/aymanbagabas/go-osc52 v1.2.1
 ## explicit; go 1.16
 github.com/aymanbagabas/go-osc52
-# github.com/charmbracelet/bubbles v0.14.0
+# github.com/charmbracelet/bubbles v0.15.0
 ## explicit; go 1.13
+github.com/charmbracelet/bubbles/cursor
 github.com/charmbracelet/bubbles/help
 github.com/charmbracelet/bubbles/key
 github.com/charmbracelet/bubbles/list
 github.com/charmbracelet/bubbles/paginator
+github.com/charmbracelet/bubbles/runeutil
 github.com/charmbracelet/bubbles/spinner
 github.com/charmbracelet/bubbles/table
 github.com/charmbracelet/bubbles/textinput
 github.com/charmbracelet/bubbles/viewport
-# github.com/charmbracelet/bubbletea v0.23.1
+# github.com/charmbracelet/bubbletea v0.23.2
 ## explicit; go 1.16
 github.com/charmbracelet/bubbletea
 # github.com/charmbracelet/lipgloss v0.6.0
 ## explicit; go 1.15
 github.com/charmbracelet/lipgloss
+# github.com/charmbracelet/log v0.1.1
+## explicit; go 1.15
+github.com/charmbracelet/log
 # github.com/containerd/console v1.0.3
 ## explicit; go 1.13
 github.com/containerd/console
-# github.com/fatih/color v1.13.0
-## explicit; go 1.13
+# github.com/fatih/color v1.14.1
+## explicit; go 1.17
 github.com/fatih/color
 # github.com/fsnotify/fsnotify v1.6.0
 ## explicit; go 1.16
 github.com/fsnotify/fsnotify
+# github.com/go-logfmt/logfmt v0.6.0
+## explicit; go 1.17
+github.com/go-logfmt/logfmt
+# github.com/gocarina/gocsv v0.0.0-20230223115542-dc4ee9de5fe2
+## explicit; go 1.13
+github.com/gocarina/gocsv
 # github.com/golang/mock v1.6.0
 ## explicit; go 1.11
 github.com/golang/mock/gomock
 # github.com/golang/protobuf v1.5.2
 ## explicit; go 1.9
 github.com/golang/protobuf/proto
+# github.com/hashicorp/go-cleanhttp v0.5.2
+## explicit; go 1.13
+github.com/hashicorp/go-cleanhttp
+# github.com/hashicorp/go-retryablehttp v0.7.2
+## explicit; go 1.13
+github.com/hashicorp/go-retryablehttp
 # github.com/hashicorp/hcl v1.0.0
 ## explicit
 github.com/hashicorp/hcl
@@ -79,7 +96,7 @@ github.com/magiconair/properties
 # github.com/mattn/go-colorable v0.1.13
 ## explicit; go 1.15
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.16
+# github.com/mattn/go-isatty v0.0.17
 ## explicit; go 1.15
 github.com/mattn/go-isatty
 # github.com/mattn/go-localereader v0.0.1
@@ -91,7 +108,7 @@ github.com/mattn/go-runewidth
 # github.com/mitchellh/mapstructure v1.5.0
 ## explicit; go 1.14
 github.com/mitchellh/mapstructure
-# github.com/muesli/ansi v0.0.0-20211031195517-c9f0611b6c70
+# github.com/muesli/ansi v0.0.0-20221106050444-61f0cd9a192a
 ## explicit; go 1.17
 github.com/muesli/ansi
 github.com/muesli/ansi/compressor
@@ -104,15 +121,12 @@ github.com/muesli/reflow/ansi
 github.com/muesli/reflow/truncate
 github.com/muesli/reflow/wordwrap
 github.com/muesli/reflow/wrap
-# github.com/muesli/termenv v0.13.0
+# github.com/muesli/termenv v0.14.0
 ## explicit; go 1.13
 github.com/muesli/termenv
 # github.com/olekukonko/tablewriter v0.0.5
 ## explicit; go 1.12
 github.com/olekukonko/tablewriter
-# github.com/pelletier/go-toml v1.9.5
-## explicit; go 1.12
-github.com/pelletier/go-toml
 # github.com/pelletier/go-toml/v2 v2.0.6
 ## explicit; go 1.16
 github.com/pelletier/go-toml/v2
@@ -124,7 +138,7 @@ github.com/pelletier/go-toml/v2/unstable
 ## explicit; go 1.15
 github.com/pkg/sftp
 github.com/pkg/sftp/internal/encoding/ssh/filexfer
-# github.com/rivo/uniseg v0.4.3
+# github.com/rivo/uniseg v0.4.4
 ## explicit; go 1.18
 github.com/rivo/uniseg
 # github.com/rogpeppe/go-internal v1.9.0
@@ -133,10 +147,17 @@ github.com/rogpeppe/go-internal/fmtsort
 # github.com/sahilm/fuzzy v0.1.0
 ## explicit
 github.com/sahilm/fuzzy
+# github.com/sailpoint-oss/golang-sdk/sdk-output v0.0.0-20230224194642-0d426c36b905
+## explicit; go 1.19
+github.com/sailpoint-oss/golang-sdk/sdk-output
+github.com/sailpoint-oss/golang-sdk/sdk-output/beta
+github.com/sailpoint-oss/golang-sdk/sdk-output/cc
+github.com/sailpoint-oss/golang-sdk/sdk-output/v2
+github.com/sailpoint-oss/golang-sdk/sdk-output/v3
 # github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 ## explicit
 github.com/skratchdot/open-golang/open
-# github.com/spf13/afero v1.9.3
+# github.com/spf13/afero v1.9.4
 ## explicit; go 1.16
 github.com/spf13/afero
 github.com/spf13/afero/internal/common
@@ -153,7 +174,7 @@ github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
 ## explicit; go 1.12
 github.com/spf13/pflag
-# github.com/spf13/viper v1.14.0
+# github.com/spf13/viper v1.15.0
 ## explicit; go 1.17
 github.com/spf13/viper
 github.com/spf13/viper/internal/encoding
@@ -164,16 +185,16 @@ github.com/spf13/viper/internal/encoding/javaproperties
 github.com/spf13/viper/internal/encoding/json
 github.com/spf13/viper/internal/encoding/toml
 github.com/spf13/viper/internal/encoding/yaml
-# github.com/subosito/gotenv v1.4.1
+# github.com/subosito/gotenv v1.4.2
 ## explicit; go 1.18
 github.com/subosito/gotenv
-# github.com/vbauerster/mpb/v8 v8.1.4
+# github.com/vbauerster/mpb/v8 v8.2.0
 ## explicit; go 1.17
 github.com/vbauerster/mpb/v8
 github.com/vbauerster/mpb/v8/cwriter
 github.com/vbauerster/mpb/v8/decor
 github.com/vbauerster/mpb/v8/internal
-# golang.org/x/crypto v0.4.0
+# golang.org/x/crypto v0.6.0
 ## explicit; go 1.17
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/chacha20
@@ -184,25 +205,30 @@ golang.org/x/crypto/internal/alias
 golang.org/x/crypto/internal/poly1305
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/net v0.4.0
+# golang.org/x/exp v0.0.0-20230224173230-c95f2b4c22f2
+## explicit; go 1.18
+golang.org/x/exp/maps
+# golang.org/x/net v0.7.0
 ## explicit; go 1.17
 golang.org/x/net/context
-golang.org/x/net/context/ctxhttp
-# golang.org/x/oauth2 v0.3.0
+# golang.org/x/oauth2 v0.5.0
 ## explicit; go 1.17
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
-# golang.org/x/sys v0.3.0
+# golang.org/x/sync v0.1.0
+## explicit
+golang.org/x/sync/errgroup
+# golang.org/x/sys v0.5.0
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/term v0.3.0
+# golang.org/x/term v0.5.0
 ## explicit; go 1.17
 golang.org/x/term
-# golang.org/x/text v0.5.0
+# golang.org/x/text v0.7.0
 ## explicit; go 1.17
 golang.org/x/text/runes
 golang.org/x/text/transform

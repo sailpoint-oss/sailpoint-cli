@@ -284,7 +284,7 @@ func newParseCmd() *cobra.Command {
 	var everything bool
 	cmd := &cobra.Command{
 		Use:     "parse",
-		Short:   "parse log files from a va",
+		Short:   "parse log files from a vritual appliance",
 		Long:    "Parse log files from a Virtual Appliance.",
 		Example: "sail va parse ./path/to/ccg.log ./path/to/ccg.log ./path/to/canal.log ./path/to/canal.log",
 		Args:    cobra.MinimumNArgs(1),

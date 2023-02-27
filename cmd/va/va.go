@@ -10,7 +10,7 @@ import (
 func NewVACmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "va",
-		Short:   "Virtual Appliance commands",
+		Short:   "collection of commands to interact with sailpoint virtual appliance",
 		Aliases: []string{"va"},
 		Run: func(cmd *cobra.Command, args []string) {
 			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
@@ -19,7 +19,7 @@ func NewVACmd() *cobra.Command {
 
 	cmd.AddCommand(
 		newCollectCmd(),
-		newTroubleshootCmd(),
+		// newTroubleshootCmd(),
 		newUpdateCmd(),
 		newParseCmd(),
 	)

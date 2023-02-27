@@ -8,17 +8,18 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/mocks"
 )
 
 // Expected number of subcommands to `sp` root command
-const numRootSubcommands = 6
+const (
+	numRootSubcommands = 8
+)
 
 func TestNewRootCmd_noArgs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cmd := NewRootCmd(mocks.NewMockClient(ctrl))
+	cmd := NewRootCmd()
 	if len(cmd.Commands()) != numRootSubcommands {
 		t.Fatalf("expected: %d, actual: %d", len(cmd.Commands()), numRootSubcommands)
 	}
@@ -46,7 +47,7 @@ func TestNewRootCmd_completionDisabled(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cmd := NewRootCmd(mocks.NewMockClient(ctrl))
+	cmd := NewRootCmd()
 
 	b := new(bytes.Buffer)
 	cmd.SetOut(b)
