@@ -20,7 +20,7 @@ func newImportCommand() *cobra.Command {
 		Short:   "begin an import job in identitynow",
 		Long:    "initiate an import job in identitynow",
 		Example: "sail spconfig import",
-		Aliases: []string{"que"},
+		Aliases: []string{"imp"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 

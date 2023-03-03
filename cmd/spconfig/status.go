@@ -17,7 +17,7 @@ func newExportStatusCmd() *cobra.Command {
 		Short:   "begin an export job in identitynow",
 		Long:    "initiate an export job in identitynow",
 		Example: "sail spconfig export",
-		Aliases: []string{"que"},
+		Aliases: []string{"stat"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 

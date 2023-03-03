@@ -8,29 +8,50 @@ import (
 )
 
 func newDownloadCmd() *cobra.Command {
+	var importIDs []string
+	var exportIDs []string
 	var folderPath string
 	cmd := &cobra.Command{
 		Use:     "download",
-		Short:   "download results of an export job from identitynow",
-		Long:    "download results of an export job from identitynow",
-		Example: "sail spconfig download 37a64554-bf83-4d6a-8303-e6492251806b",
-		Aliases: []string{"que"},
-		Args:    cobra.MinimumNArgs(1),
+		Short:   "download results of import or export jobs from identitynow",
+		Long:    "download results of import or export jobs from identitynow",
+		Example: "sail spconfig download -export <export job id> -import <import job id>",
+		Aliases: []string{"down"},
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			for i := 0; i < len(args); i++ {
-				jobId := args[i]
-				log.Log.Info("Checking Export Job", "JobID", jobId)
-				err := spconfig.DownloadExport(jobId, "spconfig-export-"+jobId+".json", folderPath)
-				if err != nil {
-					return err
+			if len(importIDs) > 0 {
+				for i := 0; i < len(importIDs); i++ {
+					jobId := importIDs[i]
+					log.Log.Info("Checking Import Job", "JobID", jobId)
+					err := spconfig.DownloadImport(jobId, "spconfig-import-"+jobId+".json", folderPath)
+					if err != nil {
+						return err
+					}
 				}
+			} else {
+				log.Log.Info("No Import Job IDs provided")
+			}
+
+			if len(exportIDs) > 0 {
+				for i := 0; i < len(exportIDs); i++ {
+					jobId := exportIDs[i]
+					log.Log.Info("Checking Export Job", "JobID", jobId)
+					err := spconfig.DownloadExport(jobId, "spconfig-export-"+jobId+".json", folderPath)
+					if err != nil {
+						return err
+					}
+				}
+			} else {
+				log.Log.Info("No Export Job IDs provided")
 			}
 
 			return nil
 		},
 	}
 
+	cmd.Flags().StringArrayVarP(&importIDs, "import", "i", []string{}, "specify the IDs of the import jobs to download results for")
+	cmd.Flags().StringArrayVarP(&exportIDs, "export", "e", []string{}, "specify the IDs of the export jobs to download results for")
 	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "spconfig-exports", "folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
 
 	return cmd

@@ -52,7 +52,7 @@ func GetSearchTemplates() ([]SearchTemplate, error) {
 		}
 	}
 
-	err = json.Unmarshal([]byte(builtInSearchTempaltes), &templates)
+	err = json.Unmarshal([]byte(builtInSearchTemplates), &templates)
 	if err != nil {
 		color.Red("an error occured while parsing the built in templates")
 		return nil, err
@@ -113,7 +113,7 @@ func GetExportTemplates() ([]ExportTemplate, error) {
 			}
 		}
 
-		err = json.Unmarshal([]byte(builtInExportTempaltes), &templates)
+		err = json.Unmarshal([]byte(builtInExportTemplates), &templates)
 		if err != nil {
 			color.Red("an error occured while parsing the built in templates")
 			return nil, err

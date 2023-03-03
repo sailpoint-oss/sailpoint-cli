@@ -34,11 +34,11 @@ func DownloadExport(jobId string, fileName string, folderPath string) error {
 			switch response.Status {
 			case "COMPLETE":
 				color.Green("Downloading Export Data")
-				export, _, err := apiClient.Beta.SPConfigApi.ExportSpConfigDownload(context.TODO(), jobId).Execute()
+				exportData, _, err := apiClient.Beta.SPConfigApi.ExportSpConfigDownload(context.TODO(), jobId).Execute()
 				if err != nil {
 					return err
 				}
-				err = output.SaveJSONFile(export, fileName, folderPath)
+				err = output.SaveJSONFile(exportData, fileName, folderPath)
 				if err != nil {
 					return err
 				}
@@ -46,6 +46,45 @@ func DownloadExport(jobId string, fileName string, folderPath string) error {
 				return fmt.Errorf("export task cancelled")
 			case "FAILED":
 				return fmt.Errorf("export task failed")
+			}
+			break
+		}
+	}
+
+	return nil
+}
+
+func DownloadImport(jobId string, fileName string, folderPath string) error {
+
+	apiClient, err := config.InitAPIClient()
+	if err != nil {
+		return err
+	}
+
+	for {
+		response, _, err := apiClient.Beta.SPConfigApi.ImportSpConfigJobStatus(context.TODO(), jobId).Execute()
+		if err != nil {
+			return err
+		}
+		if response.Status == "NOT_STARTED" || response.Status == "IN_PROGRESS" {
+			color.Yellow("Status: %s. checking again in 5 seconds", response.Status)
+			time.Sleep(5 * time.Second)
+		} else {
+			switch response.Status {
+			case "COMPLETE":
+				color.Green("Downloading Import Data")
+				importData, _, err := apiClient.Beta.SPConfigApi.ImportSpConfigDownload(context.TODO(), jobId).Execute()
+				if err != nil {
+					return err
+				}
+				err = output.SaveJSONFile(importData, fileName, folderPath)
+				if err != nil {
+					return err
+				}
+			case "CANCELLED":
+				return fmt.Errorf("import task cancelled")
+			case "FAILED":
+				return fmt.Errorf("import task failed")
 			}
 			break
 		}
