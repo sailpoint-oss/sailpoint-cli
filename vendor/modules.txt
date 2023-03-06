@@ -147,13 +147,13 @@ github.com/rogpeppe/go-internal/fmtsort
 # github.com/sahilm/fuzzy v0.1.0
 ## explicit
 github.com/sahilm/fuzzy
-# github.com/sailpoint-oss/golang-sdk/sdk-output v0.0.0-20230224194642-0d426c36b905
+# github.com/sailpoint-oss/golang-sdk v1.0.1
 ## explicit; go 1.19
-github.com/sailpoint-oss/golang-sdk/sdk-output
-github.com/sailpoint-oss/golang-sdk/sdk-output/beta
-github.com/sailpoint-oss/golang-sdk/sdk-output/cc
-github.com/sailpoint-oss/golang-sdk/sdk-output/v2
-github.com/sailpoint-oss/golang-sdk/sdk-output/v3
+github.com/sailpoint-oss/golang-sdk
+github.com/sailpoint-oss/golang-sdk/beta
+github.com/sailpoint-oss/golang-sdk/cc
+github.com/sailpoint-oss/golang-sdk/v2
+github.com/sailpoint-oss/golang-sdk/v3
 # github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 ## explicit
 github.com/skratchdot/open-golang/open

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	sailpointsdk "github.com/sailpoint-oss/golang-sdk/sdk-output/v3"
+	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v3"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"

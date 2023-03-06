@@ -4,7 +4,7 @@ package spconfig
 import (
 	"context"
 
-	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/sdk-output/beta"
+	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/spconfig"

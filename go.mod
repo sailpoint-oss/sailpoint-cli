@@ -15,7 +15,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pkg/sftp v1.13.5
-	github.com/sailpoint-oss/golang-sdk/sdk-output v0.0.0-20230224194642-0d426c36b905
+	github.com/sailpoint-oss/golang-sdk v1.0.1
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5

@@ -27,6 +27,11 @@ func GetSearchTemplates() ([]SearchTemplate, error) {
 		templateFiles = append(templateFiles, customTemplates)
 	}
 
+	envSearchTemplates := os.Getenv("SAIL_SEARCH_TEMPLATES_PATH")
+	if envSearchTemplates != "" {
+		templateFiles = append(templateFiles, envSearchTemplates)
+	}
+
 	for i := 0; i < len(templateFiles); i++ {
 		templateFile := templateFiles[i]
 
@@ -85,6 +90,11 @@ func GetExportTemplates() ([]ExportTemplate, error) {
 	customTemplates := config.GetCustomExportTemplatePath()
 	if customTemplates != "" {
 		templateFiles = append(templateFiles, customTemplates)
+	}
+
+	envExportTemplates := os.Getenv("SAIL_EXPORT_TEMPLATES_PATH")
+	if envExportTemplates != "" {
+		templateFiles = append(templateFiles, envExportTemplates)
 	}
 
 	if len(templateFiles) > 0 {

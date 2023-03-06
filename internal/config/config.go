@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	sailpoint "github.com/sailpoint-oss/golang-sdk/sdk-output"
+	sailpoint "github.com/sailpoint-oss/golang-sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/spf13/viper"
@@ -36,12 +36,12 @@ type Environment struct {
 type CLIConfig struct {
 
 	//Standard Variables
-	CustomExportTemplatesPath string                 `mapstructure:"customexporttemplatespath"`
-	CustomSearchTemplatesPath string                 `mapstructure:"customsearchtemplatespath"`
-	Debug                     bool                   `mapstructure:"debug"`
-	AuthType                  string                 `mapstructure:"authtype"`
-	ActiveEnvironment         string                 `mapstructure:"activeenvironment"`
-	Environments              map[string]Environment `mapstructure:"environments"`
+	ExportTemplatesPath string                 `mapstructure:"exporttemplatespath"`
+	SearchTemplatesPath string                 `mapstructure:"searchtemplatespath"`
+	Debug               bool                   `mapstructure:"debug"`
+	AuthType            string                 `mapstructure:"authtype"`
+	ActiveEnvironment   string                 `mapstructure:"activeenvironment"`
+	Environments        map[string]Environment `mapstructure:"environments"`
 
 	//Pipline Variables
 	ClientID     string    `mapstructure:"clientid, omitempty"`
@@ -52,19 +52,19 @@ type CLIConfig struct {
 }
 
 func GetCustomSearchTemplatePath() string {
-	return viper.GetString("customsearchtemplatespath")
+	return viper.GetString("searchtemplatespath")
 }
 
 func GetCustomExportTemplatePath() string {
-	return viper.GetString("customexporttemplatespath")
+	return viper.GetString("exporttemplatespath")
 }
 
 func SetCustomSearchTemplatePath(customsearchtemplatespath string) {
-	viper.Set("customsearchtemplatespath", customsearchtemplatespath)
+	viper.Set("searchtemplatespath", customsearchtemplatespath)
 }
 
 func SetCustomExportTemplatePath(customsearchtemplatespath string) {
-	viper.Set("customexporttemplatespath", customsearchtemplatespath)
+	viper.Set("exporttemplatespath", customsearchtemplatespath)
 }
 
 func GetEnvironments() map[string]interface{} {
@@ -108,8 +108,8 @@ func InitConfig() error {
 	viper.SetEnvPrefix("sail")
 
 	viper.SetDefault("authtype", "pat")
-	viper.SetDefault("customexporttemplatespath", "")
-	viper.SetDefault("customsearchtemplatespath", "")
+	viper.SetDefault("exporttemplatespath", "")
+	viper.SetDefault("searchtemplatespath", "")
 	viper.SetDefault("debug", false)
 	viper.SetDefault("activeenvironment", "default")
 

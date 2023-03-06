@@ -41,8 +41,8 @@ func NewConfigureCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&ClientID, "ClientID", "id", "", "The client id to use for PAT authentication")
-	cmd.Flags().StringVarP(&ClientSecret, "ClientSecret", "secret", "", "The client secret to use for PAT authentication")
+	cmd.Flags().StringVarP(&ClientID, "ClientID", "i", "", "The client id to use for PAT authentication")
+	cmd.Flags().StringVarP(&ClientSecret, "ClientSecret", "s", "", "The client secret to use for PAT authentication")
 
 	return cmd
 }
