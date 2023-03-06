@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/gocarina/gocsv"
 )
@@ -40,7 +41,7 @@ func SaveJSONFile[T any](formattedResponse T, fileName string, folderPath string
 }
 
 func SaveCSVFile[T any](formattedResponse T, fileName string, folderPath string) error {
-	savePath := path.Join(folderPath, fileName)
+	savePath := filepath.Join(folderPath, fileName)
 
 	// Make sure the output dir exists first
 	err := os.MkdirAll(folderPath, os.ModePerm)

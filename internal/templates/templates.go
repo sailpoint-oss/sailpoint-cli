@@ -2,13 +2,13 @@ package templates
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 )
 
@@ -33,7 +33,7 @@ func GetSearchTemplates() ([]SearchTemplate, error) {
 		file, err := os.OpenFile(templateFile, os.O_RDWR, 0777)
 		if err != nil {
 			if config.GetDebug() {
-				color.Yellow("error opening file %s", templateFile)
+				log.Log.Error("error opening file %s", templateFile)
 			}
 		} else {
 
@@ -44,7 +44,7 @@ func GetSearchTemplates() ([]SearchTemplate, error) {
 
 			err = json.Unmarshal(raw, &templates)
 			if err != nil {
-				color.Red("an error occured while parsing the file: %s", templateFile)
+				log.Log.Error("an error occured while parsing the file: %s", templateFile)
 				return nil, err
 			}
 
@@ -94,7 +94,7 @@ func GetExportTemplates() ([]ExportTemplate, error) {
 			file, err := os.OpenFile(templateFile, os.O_RDWR, 0777)
 			if err != nil {
 				if config.GetDebug() {
-					color.Yellow("error opening file %s", templateFile)
+					log.Log.Error("error opening file %s", templateFile)
 				}
 			} else {
 
@@ -105,7 +105,7 @@ func GetExportTemplates() ([]ExportTemplate, error) {
 
 				err = json.Unmarshal(raw, &templates)
 				if err != nil {
-					color.Red("an error occured while parsing the file: %s", templateFile)
+					log.Log.Error("an error occured while parsing the file: %s", templateFile)
 					return nil, err
 				}
 
@@ -115,7 +115,7 @@ func GetExportTemplates() ([]ExportTemplate, error) {
 
 		err = json.Unmarshal([]byte(builtInExportTemplates), &templates)
 		if err != nil {
-			color.Red("an error occured while parsing the built in templates")
+			log.Log.Error("an error occured while parsing the built in templates")
 			return nil, err
 		}
 
@@ -145,7 +145,7 @@ func SelectTemplate[T Template](templates []T) (string, error) {
 
 		var description string
 		if temp.GetVariableCount() > 0 {
-			description = fmt.Sprintf("%s - Accepts Input", temp.GetDescription())
+			description = temp.GetDescription() + " - Accepts Input"
 		} else {
 			description = temp.GetDescription()
 		}

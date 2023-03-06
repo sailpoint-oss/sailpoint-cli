@@ -50,8 +50,8 @@ func newExportStatusCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringArrayVarP(&importJobs, "import jobs", "i", []string{}, "a list of import job ids to check the status of")
-	cmd.Flags().StringArrayVarP(&exportJobs, "export jobs", "e", []string{}, "a list of export job ids to check the status of")
+	cmd.Flags().StringArrayVarP(&importJobs, "import", "i", []string{}, "a list of import job ids to check the status of")
+	cmd.Flags().StringArrayVarP(&exportJobs, "export", "e", []string{}, "a list of export job ids to check the status of")
 
 	return cmd
 }

@@ -33,8 +33,8 @@ func newDeleteCmd() *cobra.Command {
 				}
 
 				columns := []table.Column{
-					{Title: "Name", Width: 25},
 					{Title: "ID", Width: 40},
+					{Title: "Name", Width: 25},
 					{Title: "Type", Width: 25},
 				}
 
@@ -42,7 +42,7 @@ func newDeleteCmd() *cobra.Command {
 
 				for i := 0; i < len(transforms); i++ {
 					transform := transforms[i]
-					rows = append(rows, []string{*transform.Id, transform.Name})
+					rows = append(rows, []string{*transform.Id, transform.Name, transform.Type})
 				}
 
 				t := table.New(
@@ -73,7 +73,7 @@ func newDeleteCmd() *cobra.Command {
 				tempRow := m.Retrieve()
 
 				if len(tempRow) > 0 {
-					id = append(id, m.Retrieve()[1])
+					id = append(id, m.Retrieve()[0])
 				} else {
 					return fmt.Errorf("no transform selected")
 				}
@@ -96,11 +96,6 @@ func newDeleteCmd() *cobra.Command {
 				}
 
 				log.Log.Info("Transform successfully deleted", "TransformID", transformID)
-			}
-
-			err := transform.ListTransforms()
-			if err != nil {
-				return err
 			}
 
 			return nil

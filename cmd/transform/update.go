@@ -9,6 +9,7 @@ import (
 
 	sailpointsdk "github.com/sailpoint-oss/golang-sdk/sdk-output/v3"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/spf13/cobra"
 )
@@ -49,6 +50,8 @@ func newUpdateCmd() *cobra.Command {
 
 			id := data["id"].(string)
 			delete(data, "id") // ID can't be present in the update payload
+
+			log.Log.Info("Updating Transaform", "transformID", id)
 
 			transform := sailpointsdk.NewTransform(data["name"].(string), data["type"].(string), data["attributes"].(map[string]interface{}))
 

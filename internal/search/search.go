@@ -6,10 +6,10 @@ import (
 	"os"
 	"path"
 
-	"github.com/fatih/color"
 	"github.com/mitchellh/mapstructure"
 	sailpoint "github.com/sailpoint-oss/golang-sdk/sdk-output"
 	sailpointsdk "github.com/sailpoint-oss/golang-sdk/sdk-output/v3"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 )
 
@@ -62,7 +62,7 @@ func PerformSearch(apiClient sailpoint.APIClient, search sailpointsdk.Search) (S
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
 
-	color.Green("Search complete, saving results")
+	log.Log.Info("Search complete")
 
 	for i := 0; i < len(resp); i++ {
 		entry := resp[i]
@@ -123,42 +123,42 @@ func PerformSearch(apiClient sailpoint.APIClient, search sailpointsdk.Search) (S
 func IterateIndicies(SearchResults SearchResults, searchQuery string, folderPath string, outputTypes []string) error {
 	var err error
 	if len(SearchResults.AccountActivities) > 0 {
-		fileName := fmt.Sprintf("query=%s&indicie=%s", searchQuery, "AccountActivities")
+		fileName := "query=" + searchQuery + "&indicie=AccountActivities"
 		err = SaveResults(SearchResults.AccountActivities, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
 		}
 	}
 	if len(SearchResults.AccessProfiles) > 0 {
-		fileName := fmt.Sprintf("query=%s&indicie=%s", searchQuery, "AccessProfiles")
+		fileName := "query=" + searchQuery + "&indicie=AccessProfiles"
 		err = SaveResults(SearchResults.AccessProfiles, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
 		}
 	}
 	if len(SearchResults.Entitlements) > 0 {
-		fileName := fmt.Sprintf("query=%s&indicie=%s", searchQuery, "Entitlements")
+		fileName := "query=" + searchQuery + "&indicie=Entitlements"
 		err = SaveResults(SearchResults.Entitlements, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
 		}
 	}
 	if len(SearchResults.Events) > 0 {
-		fileName := fmt.Sprintf("query=%s&indicie=%s", searchQuery, "Events")
+		fileName := "query=" + searchQuery + "&indicie=Events"
 		err = SaveResults(SearchResults.Events, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
 		}
 	}
 	if len(SearchResults.Identities) > 0 {
-		fileName := fmt.Sprintf("query=%s&indicie=%s", searchQuery, "Identities")
+		fileName := "query=" + searchQuery + "&indicie=Identities"
 		err = SaveResults(SearchResults.Identities, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
 		}
 	}
 	if len(SearchResults.Roles) > 0 {
-		fileName := fmt.Sprintf("query=%s&indicie=%s", searchQuery, "Roles")
+		fileName := "query=" + searchQuery + "&indicie=Roles"
 		err = SaveResults(SearchResults.Roles, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
@@ -174,19 +174,19 @@ func SaveResults[T any](formattedResponse []T, fileName string, filePath string,
 		case "json":
 			fileName = fileName + ".json"
 			savePath := path.Join(filePath, fileName)
+			log.Log.Info("Saving Results", "file", savePath)
 			err := output.SaveJSONFile(formattedResponse, fileName, filePath)
 			if err != nil {
 				return err
 			}
-			color.Green("Saving file: %s", savePath)
 		case "csv":
 			fileName = fileName + ".csv"
 			savePath := path.Join(filePath, fileName)
+			log.Log.Info("Saving Results", "file", savePath)
 			err := output.SaveCSVFile(formattedResponse, fileName, filePath)
 			if err != nil {
 				return err
 			}
-			color.Green("Saving file: %s", savePath)
 		default:
 			return fmt.Errorf("invalid output type provided %s", outputType)
 		}

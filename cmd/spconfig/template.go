@@ -84,14 +84,14 @@ func newTemplateCmd() *cobra.Command {
 
 			if wait {
 				log.Log.Info("Checking Export Job", "JobID", job.JobId)
-				spconfig.DownloadExport(job.JobId, "spconfig-export-"+template+job.JobId+".json", folderPath)
+				spconfig.DownloadExport(job.JobId, "spconfig-export-"+template+"-"+job.JobId+".json", folderPath)
 			}
 
 			return nil
 		},
 	}
 
-	cmd.Flags().StringArrayVarP(&outputTypes, "output types", "o", []string{"json"}, "the sort value for the api call (examples)")
+	cmd.Flags().StringArrayVarP(&outputTypes, "outputTypes", "o", []string{"json"}, "the sort value for the api call (examples)")
 	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "spconfig-exports", "folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
 	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "wait for the export job to finish, and download the results")
 

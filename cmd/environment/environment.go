@@ -5,13 +5,17 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"golang.org/x/exp/maps"
 )
 
 func NewEnvironmentCommand() *cobra.Command {
 	var env string
 	var overwrite bool
+	var erase bool
+	var show bool
 	cmd := &cobra.Command{
 		Use:     "environment",
 		Short:   "change currently active environment",
@@ -41,9 +45,16 @@ func NewEnvironmentCommand() *cobra.Command {
 			if env != "" {
 				config.SetActiveEnvironment(env)
 
-				if _, exists := environments[env]; exists && !overwrite && config.GetTenantUrl() != "" && config.GetBaseUrl() != "" {
-
-					log.Log.Info("Environment changed", "env", env)
+				if foundEnv, exists := environments[env]; exists && !overwrite && config.GetTenantUrl() != "" && config.GetBaseUrl() != "" {
+					if show {
+						log.Log.Warn("printing env", "env", env)
+						util.PrettyPrint(foundEnv)
+					} else if erase {
+						log.Log.Warn("erasing env", "env", env)
+						viper.Set("environments."+config.GetActiveEnvironment(), config.Environment{})
+					} else {
+						log.Log.Info("Environment changed", "env", env)
+					}
 
 				} else {
 
@@ -63,6 +74,9 @@ func NewEnvironmentCommand() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&overwrite, "overwrite", "o", false, "use to overwrite an existing environments configuration")
+	cmd.Flags().BoolVarP(&erase, "erase", "e", false, "use to erase an existing environments configuration")
+	cmd.Flags().BoolVarP(&show, "show", "s", false, "use to show an existing environments configuration")
+	cmd.MarkFlagsMutuallyExclusive("overwrite", "erase", "show")
 
 	return cmd
 

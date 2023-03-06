@@ -55,8 +55,8 @@ func newExportCmd() *cobra.Command {
 
 	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "spconfig-exports", "folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
 	cmd.Flags().StringVarP(&description, "description", "d", "", "optional description for the export job")
-	cmd.Flags().StringArrayVarP(&includeTypes, "includTypes", "i", []string{}, "types to include in export job")
-	cmd.Flags().StringArrayVarP(&excludeTypes, "excludeTypes", "e", []string{}, "types to exclude in export job")
+	cmd.Flags().StringArrayVarP(&includeTypes, "include", "i", []string{}, "types to include in export job")
+	cmd.Flags().StringArrayVarP(&excludeTypes, "exclude", "e", []string{}, "types to exclude in export job")
 	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "wait for the export job to finish, and download the results")
 
 	return cmd

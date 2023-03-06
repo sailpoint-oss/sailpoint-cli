@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/fatih/color"
 	sailpoint "github.com/sailpoint-oss/golang-sdk/sdk-output"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/spf13/viper"
 )
@@ -241,7 +241,7 @@ func SaveConfig() error {
 	if _, err := os.Stat(filepath.Join(home, configFolder)); os.IsNotExist(err) {
 		err = os.Mkdir(filepath.Join(home, configFolder), 0777)
 		if err != nil {
-			log.Printf("failed to create %s folder for config. %v", configFolder, err)
+			log.Log.Warn("failed to create %s folder for config. %v", configFolder, err)
 		}
 	}
 
@@ -260,6 +260,7 @@ func SaveConfig() error {
 }
 
 func Validate() error {
+	var errors int
 	authType := GetAuthType()
 
 	switch authType {
@@ -267,21 +268,24 @@ func Validate() error {
 	case "pat":
 
 		if GetBaseUrl() == "" {
-			return fmt.Errorf("configured environment is missing BaseURL")
+			log.Log.Error("configured environment is missing BaseURL")
+			errors++
 		}
 
 		if GetPatClientID() == "" {
-			return fmt.Errorf("configured environment is missing PAT ClientID")
+			log.Log.Error("configured environment is missing PAT ClientID")
+			errors++
 		}
 
 		if GetPatClientSecret() == "" {
-			return fmt.Errorf("configured environment is missing PAT ClientSecret")
+			log.Log.Error("configured environment is missing PAT ClientSecret")
+			errors++
 		}
 
-		return nil
-
 	case "oauth":
-		return fmt.Errorf("oauth is not currently supported")
+
+		log.Log.Error("oauth is not currently supported")
+		errors++
 
 		// if config.Environments[config.ActiveEnvironment].BaseURL == "" {
 		// 	return fmt.Errorf("configured environment is missing BaseURL")
@@ -291,11 +295,16 @@ func Validate() error {
 		// 	return fmt.Errorf("configured environment is missing TenantURL")
 		// }
 
-		// return nil
-
 	default:
 
-		return fmt.Errorf("invalid authtype '%s' configured", authType)
+		log.Log.Error("invalid authtype '%s' configured", authType)
+		errors++
 
 	}
+
+	if errors > 0 {
+		return fmt.Errorf("configuration invalid, errors: %v", errors)
+	}
+
+	return nil
 }

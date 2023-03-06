@@ -3,11 +3,13 @@ package spconfig
 import (
 	"context"
 	"fmt"
+	"path"
 	"time"
 
 	"github.com/fatih/color"
 	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/sdk-output/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 )
 
@@ -33,11 +35,12 @@ func DownloadExport(jobId string, fileName string, folderPath string) error {
 		} else {
 			switch response.Status {
 			case "COMPLETE":
-				color.Green("Downloading Export Data")
+				log.Log.Info("Job Complete")
 				exportData, _, err := apiClient.Beta.SPConfigApi.ExportSpConfigDownload(context.TODO(), jobId).Execute()
 				if err != nil {
 					return err
 				}
+				log.Log.Info("Saving export data", "filePath", path.Join(folderPath, fileName))
 				err = output.SaveJSONFile(exportData, fileName, folderPath)
 				if err != nil {
 					return err
