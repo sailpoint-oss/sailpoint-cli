@@ -1,6 +1,6 @@
 package templates
 
-const builtInSearchTempaltes = `[
+const builtInSearchTemplates = `[
   {
     "name": "all-account-unlocks",
     "description": "All account unlocks in the tenant for a given time range",

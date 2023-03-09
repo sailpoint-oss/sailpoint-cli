@@ -1,8 +1,8 @@
 package templates
 
 import (
-	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/sdk-output/beta"
-	sailpointsdk "github.com/sailpoint-oss/golang-sdk/sdk-output/v3"
+	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/beta"
+	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v3"
 )
 
 type Template interface {

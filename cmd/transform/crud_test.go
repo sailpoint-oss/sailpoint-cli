@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	sailpointsdk "github.com/sailpoint-oss/golang-sdk/sdk-output/v3"
+	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v3"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 )
 

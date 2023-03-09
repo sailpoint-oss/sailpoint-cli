@@ -15,7 +15,6 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var implicitInput bool
@@ -209,9 +208,9 @@ func newPreviewCmd() *cobra.Command {
 	cmd.Flags().StringP("attribute", "a", "", "Attribute name (required)")
 	cmd.Flags().StringP("name", "n", "", "Transform name.  Only needed if using implicit input.  The transform must be uploaded to IDN first.")
 	cmd.Flags().BoolVar(&implicitInput, "implicit", false, "Use implicit input.  Default is explicit input defined by the transform.")
-	cmd.Flags().String("preview-endpoint", viper.GetString("baseurl")+previewEndpoint, "Override preview endpoint")
-	cmd.Flags().String("identity-profile-endpoint", viper.GetString("baseurl")+identityProfileEndpoint, "Override identity profile endpoint")
-	cmd.Flags().String("user-endpoint", viper.GetString("baseurl")+userEndpoint, "Override user endpoint")
+	cmd.Flags().String("preview-endpoint", previewEndpoint, "Override preview endpoint")
+	cmd.Flags().String("identity-profile-endpoint", identityProfileEndpoint, "Override identity profile endpoint")
+	cmd.Flags().String("user-endpoint", userEndpoint, "Override user endpoint")
 	cmd.Flags().StringP("file", "f", "", "The path to the transform file.  Only needed if using explicit input.")
 
 	cmd.MarkFlagRequired("identity-profile")

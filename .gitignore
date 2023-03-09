@@ -12,3 +12,8 @@ sailpoint-cli
 
 data
 .DS_Store
+assets/demo_create.json
+assets/demo_update.json
+cmd/transform/test_data/test_create.json
+cmd/transform/test_data/test_update.json
+example_transforms

@@ -60,7 +60,7 @@ func newDownloadCmd() *cobra.Command {
 				}
 			}
 
-			log.Log.Info("Transforms downloaded successfully", "Path", destination)
+			log.Log.Info("Transforms downloaded successfully", "path", destination)
 
 			return nil
 		},
