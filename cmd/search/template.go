@@ -85,7 +85,7 @@ func newTemplateCmd() *cobra.Command {
 				return err
 			}
 
-			err = search.IterateIndicies(formattedResponse, selectedTemplate.SearchQuery.Query.GetQuery(), folderPath, outputTypes)
+			err = search.IterateIndices(formattedResponse, selectedTemplate.SearchQuery.Query.GetQuery(), folderPath, outputTypes)
 			if err != nil {
 				return err
 			}

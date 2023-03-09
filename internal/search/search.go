@@ -13,8 +13,8 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 )
 
-func ParseIndicie(indicie string) (sailpointsdk.Index, error) {
-	switch indicie {
+func ParseIndices(indices string) (sailpointsdk.Index, error) {
+	switch indices {
 	case "accessprofiles":
 		return sailpointsdk.INDEX_ACCESSPROFILES, nil
 	case "accountactivities":
@@ -28,10 +28,10 @@ func ParseIndicie(indicie string) (sailpointsdk.Index, error) {
 	case "roles":
 		return sailpointsdk.INDEX_ROLES, nil
 	}
-	return "*", fmt.Errorf("indicie provided is invalid")
+	return "*", fmt.Errorf("index provided is invalid")
 }
 
-func BuildSearch(searchQuery string, sort []string, indicies []string) (sailpointsdk.Search, error) {
+func BuildSearch(searchQuery string, sort []string, indices []string) (sailpointsdk.Search, error) {
 
 	search := sailpointsdk.NewSearch()
 	search.Query = sailpointsdk.NewQuery()
@@ -39,14 +39,14 @@ func BuildSearch(searchQuery string, sort []string, indicies []string) (sailpoin
 	search.Sort = sort
 	search.Indices = []sailpointsdk.Index{}
 
-	for i := 0; i < len(indicies); i++ {
-		tempIndicie, err := ParseIndicie(indicies[i])
+	for i := 0; i < len(indices); i++ {
+		tempIndices, err := ParseIndices(indices[i])
 
 		if err != nil {
 			return *search, err
 		}
 
-		search.Indices = append(search.Indices, tempIndicie)
+		search.Indices = append(search.Indices, tempIndices)
 	}
 
 	return *search, nil
@@ -120,45 +120,45 @@ func PerformSearch(apiClient sailpoint.APIClient, search sailpointsdk.Search) (S
 	return SearchResults, nil
 }
 
-func IterateIndicies(SearchResults SearchResults, searchQuery string, folderPath string, outputTypes []string) error {
+func IterateIndices(SearchResults SearchResults, searchQuery string, folderPath string, outputTypes []string) error {
 	var err error
 	if len(SearchResults.AccountActivities) > 0 {
-		fileName := "query=" + searchQuery + "&indicie=AccountActivities"
+		fileName := "query=" + searchQuery + "&indices=AccountActivities"
 		err = SaveResults(SearchResults.AccountActivities, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
 		}
 	}
 	if len(SearchResults.AccessProfiles) > 0 {
-		fileName := "query=" + searchQuery + "&indicie=AccessProfiles"
+		fileName := "query=" + searchQuery + "&indices=AccessProfiles"
 		err = SaveResults(SearchResults.AccessProfiles, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
 		}
 	}
 	if len(SearchResults.Entitlements) > 0 {
-		fileName := "query=" + searchQuery + "&indicie=Entitlements"
+		fileName := "query=" + searchQuery + "&indices=Entitlements"
 		err = SaveResults(SearchResults.Entitlements, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
 		}
 	}
 	if len(SearchResults.Events) > 0 {
-		fileName := "query=" + searchQuery + "&indicie=Events"
+		fileName := "query=" + searchQuery + "&indices=Events"
 		err = SaveResults(SearchResults.Events, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
 		}
 	}
 	if len(SearchResults.Identities) > 0 {
-		fileName := "query=" + searchQuery + "&indicie=Identities"
+		fileName := "query=" + searchQuery + "&indices=Identities"
 		err = SaveResults(SearchResults.Identities, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
 		}
 	}
 	if len(SearchResults.Roles) > 0 {
-		fileName := "query=" + searchQuery + "&indicie=Roles"
+		fileName := "query=" + searchQuery + "&indices=Roles"
 		err = SaveResults(SearchResults.Roles, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err

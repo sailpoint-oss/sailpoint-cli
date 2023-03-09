@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/square/go-jose.v2/jwt"
+
 	"github.com/fatih/color"
 	sailpoint "github.com/sailpoint-oss/golang-sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
@@ -152,7 +154,30 @@ func InitAPIClient() (*sailpoint.APIClient, error) {
 	return apiClient, nil
 }
 
+func CheckToken(tokenString string) error {
+	var claims map[string]interface{}
+
+	token, err := jwt.ParseSigned(tokenString)
+	if err != nil {
+		return err
+	}
+
+	token.UnsafeClaimsWithoutVerification(&claims)
+
+	if claims["user_name"] == nil {
+		log.Log.Warn("It looks like the token you are using is missing a user context, this will cause many of the CLI commands to fail.")
+	}
+
+	if GetDebug() {
+		log.Log.Info("Token Debug Info", "user_name", claims["user_name"], "org", claims["org"], "pod", claims["pod"])
+	}
+
+	return nil
+}
+
 func GetAuthToken() (string, error) {
+
+	var token string
 
 	err := InitConfig()
 	if err != nil {
@@ -167,14 +192,17 @@ func GetAuthToken() (string, error) {
 	switch GetAuthType() {
 	case "pat":
 		if GetPatTokenExpiry().After(time.Now()) {
-			return GetPatToken(), nil
+
+			token = GetPatToken()
+
 		} else {
+
 			err = PATLogin()
 			if err != nil {
 				return "", err
 			}
 
-			return GetPatToken(), nil
+			token = GetPatToken()
 		}
 	case "oauth":
 		return "", fmt.Errorf("oauth is not currently supported")
@@ -191,6 +219,13 @@ func GetAuthToken() (string, error) {
 	default:
 		return "", fmt.Errorf("invalid authtype configured")
 	}
+
+	err = CheckToken(token)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }
 
 func GetBaseUrl() string {

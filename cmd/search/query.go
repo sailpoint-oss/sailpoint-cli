@@ -12,7 +12,7 @@ import (
 
 func newQueryCmd() *cobra.Command {
 	var folderPath string
-	var indicies []string
+	var indices []string
 	var outputTypes []string
 	var sort []string
 	var searchQuery string
@@ -38,19 +38,19 @@ func newQueryCmd() *cobra.Command {
 			searchQuery = args[0]
 			fmt.Println(searchQuery)
 
-			searchObj, err := search.BuildSearch(searchQuery, sort, indicies)
+			searchObj, err := search.BuildSearch(searchQuery, sort, indices)
 			if err != nil {
 				return err
 			}
 
-			log.Log.Info("Performing Search", "Query", searchQuery, "Indicies", indicies)
+			log.Log.Info("Performing Search", "Query", searchQuery, "Indices", indices)
 
 			formattedResponse, err := search.PerformSearch(*apiClient, searchObj)
 			if err != nil {
 				return err
 			}
 
-			err = search.IterateIndicies(formattedResponse, searchQuery, folderPath, outputTypes)
+			err = search.IterateIndices(formattedResponse, searchQuery, folderPath, outputTypes)
 			if err != nil {
 				return err
 			}
@@ -59,12 +59,12 @@ func newQueryCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringArrayVarP(&indicies, "indicies", "i", []string{}, "indicies to perform the search query on (accessprofiles, accountactivities, entitlements, events, identities, roles)")
+	cmd.Flags().StringArrayVarP(&indices, "indices", "i", []string{}, "indices to perform the search query on (accessprofiles, accountactivities, entitlements, events, identities, roles)")
 	cmd.Flags().StringArrayVarP(&sort, "sort", "s", []string{}, "the sort value for the api call (displayName, +id...)")
 	cmd.Flags().StringArrayVarP(&outputTypes, "outputTypes", "o", []string{"json"}, "the output types for the results (csv, json)")
 	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "search_results", "folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
 
-	cmd.MarkFlagRequired("indicies")
+	cmd.MarkFlagRequired("indices")
 
 	return cmd
 }
