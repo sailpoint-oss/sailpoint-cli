@@ -28,6 +28,7 @@
 </div>
 
 Documentation
+
 The SailPoint CLI is a terminal-based tool you can use to to interact with your IdentityNow (IDN) tenant. The CLI provides a text-based environment you can use to run operations known as "commands" to interact with your tenant however you want.
 
 For documentation, please see https://developer.sailpoint.com/idn/tools/cli
