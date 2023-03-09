@@ -8,6 +8,9 @@ import (
 )
 
 func NewConfigureCmd() *cobra.Command {
+	var ClientID string
+	var ClientSecret string
+	var err error
 	cmd := &cobra.Command{
 		Use:     "configure",
 		Short:   "Configure PAT Authentication for the currently active environment",
@@ -16,15 +19,30 @@ func NewConfigureCmd() *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			ClientID := terminal.InputPrompt("Personal Access Token Client ID:")
+			if ClientID == "" {
+				ClientID, err = terminal.PromptPassword("Personal Access Token Client ID:")
+				if err != nil {
+					return err
+				}
+			}
+
 			config.SetPatClientID(ClientID)
 
-			ClientSecret := terminal.InputPrompt("Personal Access Token Client Secret:")
+			if ClientSecret == "" {
+				ClientSecret, err = terminal.PromptPassword("Personal Access Token Client Secret:")
+				if err != nil {
+					return err
+				}
+			}
+
 			config.SetPatClientSecret(ClientSecret)
 
 			return nil
 		},
 	}
+
+	cmd.Flags().StringVarP(&ClientID, "ClientID", "i", "", "The client id to use for PAT authentication")
+	cmd.Flags().StringVarP(&ClientSecret, "ClientSecret", "s", "", "The client secret to use for PAT authentication")
 
 	return cmd
 }

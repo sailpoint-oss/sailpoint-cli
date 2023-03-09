@@ -1,6 +1,6 @@
 package templates
 
-const builtInExportTempaltes = `[
+const builtInExportTemplates = `[
   {
     "name": "all-objects",
     "description": "Export all available objects",

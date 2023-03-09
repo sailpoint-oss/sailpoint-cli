@@ -10,7 +10,7 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-// Expected number of subcommands to `sp` root command
+// Expected number of subcommands to `sail` root command
 const (
 	numRootSubcommands = 8
 )

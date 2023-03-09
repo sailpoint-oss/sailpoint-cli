@@ -2,14 +2,16 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"gopkg.in/square/go-jose.v2/jwt"
+
 	"github.com/fatih/color"
-	sailpoint "github.com/sailpoint-oss/golang-sdk/sdk-output"
+	sailpoint "github.com/sailpoint-oss/golang-sdk"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/spf13/viper"
 )
@@ -36,12 +38,12 @@ type Environment struct {
 type CLIConfig struct {
 
 	//Standard Variables
-	CustomExportTemplatesPath string                 `mapstructure:"customexporttemplatespath"`
-	CustomSearchTemplatesPath string                 `mapstructure:"customsearchtemplatespath"`
-	Debug                     bool                   `mapstructure:"debug"`
-	AuthType                  string                 `mapstructure:"authtype"`
-	ActiveEnvironment         string                 `mapstructure:"activeenvironment"`
-	Environments              map[string]Environment `mapstructure:"environments"`
+	ExportTemplatesPath string                 `mapstructure:"exporttemplatespath"`
+	SearchTemplatesPath string                 `mapstructure:"searchtemplatespath"`
+	Debug               bool                   `mapstructure:"debug"`
+	AuthType            string                 `mapstructure:"authtype"`
+	ActiveEnvironment   string                 `mapstructure:"activeenvironment"`
+	Environments        map[string]Environment `mapstructure:"environments"`
 
 	//Pipline Variables
 	ClientID     string    `mapstructure:"clientid, omitempty"`
@@ -52,19 +54,19 @@ type CLIConfig struct {
 }
 
 func GetCustomSearchTemplatePath() string {
-	return viper.GetString("customsearchtemplatespath")
+	return viper.GetString("searchtemplatespath")
 }
 
 func GetCustomExportTemplatePath() string {
-	return viper.GetString("customexporttemplatespath")
+	return viper.GetString("exporttemplatespath")
 }
 
 func SetCustomSearchTemplatePath(customsearchtemplatespath string) {
-	viper.Set("customsearchtemplatespath", customsearchtemplatespath)
+	viper.Set("searchtemplatespath", customsearchtemplatespath)
 }
 
 func SetCustomExportTemplatePath(customsearchtemplatespath string) {
-	viper.Set("customexporttemplatespath", customsearchtemplatespath)
+	viper.Set("exporttemplatespath", customsearchtemplatespath)
 }
 
 func GetEnvironments() map[string]interface{} {
@@ -108,8 +110,8 @@ func InitConfig() error {
 	viper.SetEnvPrefix("sail")
 
 	viper.SetDefault("authtype", "pat")
-	viper.SetDefault("customexporttemplatespath", "")
-	viper.SetDefault("customsearchtemplatespath", "")
+	viper.SetDefault("exporttemplatespath", "")
+	viper.SetDefault("searchtemplatespath", "")
 	viper.SetDefault("debug", false)
 	viper.SetDefault("activeenvironment", "default")
 
@@ -152,7 +154,30 @@ func InitAPIClient() (*sailpoint.APIClient, error) {
 	return apiClient, nil
 }
 
+func CheckToken(tokenString string) error {
+	var claims map[string]interface{}
+
+	token, err := jwt.ParseSigned(tokenString)
+	if err != nil {
+		return err
+	}
+
+	token.UnsafeClaimsWithoutVerification(&claims)
+
+	if claims["user_name"] == nil {
+		log.Log.Warn("It looks like the token you are using is missing a user context, this will cause many of the CLI commands to fail.")
+	}
+
+	if GetDebug() {
+		log.Log.Info("Token Debug Info", "user_name", claims["user_name"], "org", claims["org"], "pod", claims["pod"])
+	}
+
+	return nil
+}
+
 func GetAuthToken() (string, error) {
+
+	var token string
 
 	err := InitConfig()
 	if err != nil {
@@ -167,14 +192,17 @@ func GetAuthToken() (string, error) {
 	switch GetAuthType() {
 	case "pat":
 		if GetPatTokenExpiry().After(time.Now()) {
-			return GetPatToken(), nil
+
+			token = GetPatToken()
+
 		} else {
+
 			err = PATLogin()
 			if err != nil {
 				return "", err
 			}
 
-			return GetPatToken(), nil
+			token = GetPatToken()
 		}
 	case "oauth":
 		return "", fmt.Errorf("oauth is not currently supported")
@@ -191,6 +219,13 @@ func GetAuthToken() (string, error) {
 	default:
 		return "", fmt.Errorf("invalid authtype configured")
 	}
+
+	err = CheckToken(token)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }
 
 func GetBaseUrl() string {
@@ -241,7 +276,7 @@ func SaveConfig() error {
 	if _, err := os.Stat(filepath.Join(home, configFolder)); os.IsNotExist(err) {
 		err = os.Mkdir(filepath.Join(home, configFolder), 0777)
 		if err != nil {
-			log.Printf("failed to create %s folder for config. %v", configFolder, err)
+			log.Log.Warn("failed to create %s folder for config. %v", configFolder, err)
 		}
 	}
 
@@ -260,6 +295,7 @@ func SaveConfig() error {
 }
 
 func Validate() error {
+	var errors int
 	authType := GetAuthType()
 
 	switch authType {
@@ -267,21 +303,24 @@ func Validate() error {
 	case "pat":
 
 		if GetBaseUrl() == "" {
-			return fmt.Errorf("configured environment is missing BaseURL")
+			log.Log.Error("configured environment is missing BaseURL")
+			errors++
 		}
 
 		if GetPatClientID() == "" {
-			return fmt.Errorf("configured environment is missing PAT ClientID")
+			log.Log.Error("configured environment is missing PAT ClientID")
+			errors++
 		}
 
 		if GetPatClientSecret() == "" {
-			return fmt.Errorf("configured environment is missing PAT ClientSecret")
+			log.Log.Error("configured environment is missing PAT ClientSecret")
+			errors++
 		}
 
-		return nil
-
 	case "oauth":
-		return fmt.Errorf("oauth is not currently supported")
+
+		log.Log.Error("oauth is not currently supported")
+		errors++
 
 		// if config.Environments[config.ActiveEnvironment].BaseURL == "" {
 		// 	return fmt.Errorf("configured environment is missing BaseURL")
@@ -291,11 +330,16 @@ func Validate() error {
 		// 	return fmt.Errorf("configured environment is missing TenantURL")
 		// }
 
-		// return nil
-
 	default:
 
-		return fmt.Errorf("invalid authtype '%s' configured", authType)
+		log.Log.Error("invalid authtype '%s' configured", authType)
+		errors++
 
 	}
+
+	if errors > 0 {
+		return fmt.Errorf("configuration invalid, errors: %v", errors)
+	}
+
+	return nil
 }

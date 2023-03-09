@@ -4,7 +4,7 @@ package spconfig
 import (
 	"context"
 
-	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/sdk-output/beta"
+	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/spconfig"
@@ -23,7 +23,7 @@ func newExportCmd() *cobra.Command {
 		Short:   "begin an export job in identitynow",
 		Long:    "initiate an export job in identitynow",
 		Example: "sail spconfig export",
-		Aliases: []string{"que"},
+		Aliases: []string{"exp"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -32,14 +32,12 @@ func newExportCmd() *cobra.Command {
 				return err
 			}
 
-			ctx := context.TODO()
-
 			payload = sailpointbetasdk.NewExportPayload()
 			payload.Description = &description
 			payload.IncludeTypes = includeTypes
 			payload.ExcludeTypes = excludeTypes
 
-			job, _, err := apiClient.Beta.SPConfigApi.ExportSpConfig(ctx).ExportPayload(*payload).Execute()
+			job, _, err := apiClient.Beta.SPConfigApi.ExportSpConfig(context.TODO()).ExportPayload(*payload).Execute()
 			if err != nil {
 				return err
 			}
@@ -57,8 +55,8 @@ func newExportCmd() *cobra.Command {
 
 	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "spconfig-exports", "folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
 	cmd.Flags().StringVarP(&description, "description", "d", "", "optional description for the export job")
-	cmd.Flags().StringArrayVarP(&includeTypes, "include types", "i", []string{}, "types to include in export job")
-	cmd.Flags().StringArrayVarP(&excludeTypes, "exclude types", "e", []string{}, "types to exclude in export job")
+	cmd.Flags().StringArrayVarP(&includeTypes, "include", "i", []string{}, "types to include in export job")
+	cmd.Flags().StringArrayVarP(&excludeTypes, "exclude", "e", []string{}, "types to exclude in export job")
 	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "wait for the export job to finish, and download the results")
 
 	return cmd

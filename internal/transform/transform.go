@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/olekukonko/tablewriter"
-	sailpoint "github.com/sailpoint-oss/golang-sdk/sdk-output"
-	sailpointsdk "github.com/sailpoint-oss/golang-sdk/sdk-output/v3"
+	sailpoint "github.com/sailpoint-oss/golang-sdk"
+	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v3"
 	transmodel "github.com/sailpoint-oss/sailpoint-cli/cmd/transform/model"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"

@@ -247,7 +247,13 @@ available for each command. You can find more information about each command
 below.
 
 - [connectors](./cmd/connector/README.md)
+- [configure](./cmd/configure/README.md)
+- [environment](./cmd/environment/README.md)
 - [transforms](./cmd/transform/README.md)
+- [search](./cmd/search/README.md)
+- [set](./cmd/set/README.md)
+- [spconfig](./cmd/spconfig/README.md)
+- [va](./cmd/va/README.md)
 
 ## Discuss
 
