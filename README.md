@@ -11,10 +11,6 @@
 [contributor-shield]: https://img.shields.io/github/contributors/sailpoint-oss/sailpoint-cli?label=Contributors
 [license-shield]: https://img.shields.io/badge/MIT-License-green
 
-> **CAUTION:** The SailPoint CLI is currently in pre-production and undergoing
-> heavy development. Until the CLI reaches version 1.0.0, breaking changes may
-> be introduced at any time while we work on refining the CLI.
-
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
