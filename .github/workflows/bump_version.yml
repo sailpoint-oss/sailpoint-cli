@@ -1,0 +1,50 @@
+name: "Update CLI Version"
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The version to bump to
+
+jobs:
+  update_cli_version:
+    name: Update CLI Version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+      
+      # Check input version is greater than the current tag
+      - name: Check valid version
+        run: |
+          function ver { printf "%03d%03d%03d%03d" $(echo "$1" | tr '.' ' '); }
+
+          LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo $LATEST_TAG
+          if [ $(ver $LATEST_TAG) -lt $(ver ${{ github.event.inputs.version}}) ]
+          then
+            echo "Input version ${{ github.event.inputs.version }} valid"
+          else
+            echo "Current tagged version $LATEST_TAG is greater than input version ${{ github.event.inputs.version }}"
+            exit 1
+          fi
+
+      ## Update root.go file with new version
+      - name: Update root.go version
+        id: updateRootVersion
+        run: |
+          LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+          cd cmd/root
+          sed -e "s/version = \"$LATEST_TAG\"/version = \"${{ github.event.inputs.version }}\"/g" root.go > root.go.tmp && mv root.go.tmp root.go
+
+      - name: Commit changes and create new version tag
+        if: steps.updateRootVersion.outcome == 'success'
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Bump version to ${{ github.event.inputs.version }}
+          tagging_message: ${{ github.event.inputs.version }}
