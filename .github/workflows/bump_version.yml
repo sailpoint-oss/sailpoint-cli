@@ -40,7 +40,7 @@ jobs:
         run: |
           LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
           cd cmd/root
-          sed -e 's/version = "1.0.0"/version = "1.0.2"/g' root.go > root.go.tmp && mv root.go.tmp root.go
+          sed -e "s/version = \"$LATEST_TAG\"/version = \"${{ github.event.inputs.version }}\"/g" root.go > root.go.tmp && mv root.go.tmp root.go
 
       - name: Commit changes and create new version tag
         if: steps.updateRootVersion.outcome == 'success'
