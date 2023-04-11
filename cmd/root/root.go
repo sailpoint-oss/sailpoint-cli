@@ -7,6 +7,7 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/configure"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/connector"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/environment"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/report"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/search"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/set"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/spconfig"
@@ -42,6 +43,7 @@ func NewRootCmd() *cobra.Command {
 		va.NewVACmd(),
 		search.NewSearchCmd(),
 		spconfig.NewSPConfigCmd(),
+		report.NewReportCommand(),
 	)
 	return root
 }
