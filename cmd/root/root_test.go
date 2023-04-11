@@ -12,7 +12,7 @@ import (
 
 // Expected number of subcommands to `sail` root command
 const (
-	numRootSubcommands = 8
+	numRootSubcommands = 9
 )
 
 func TestNewRootCmd_noArgs(t *testing.T) {

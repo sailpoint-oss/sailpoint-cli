@@ -38,14 +38,15 @@ type Environment struct {
 type CLIConfig struct {
 
 	//Standard Variables
-	ExportTemplatesPath string                 `mapstructure:"exporttemplatespath"`
-	SearchTemplatesPath string                 `mapstructure:"searchtemplatespath"`
-	ReportTemplatesPath string                 `mapstructure:"reporttemplatespath"`
-	TemplatesPath       string                 `mapstructure:"templatespath"`
-	Debug               bool                   `mapstructure:"debug"`
-	AuthType            string                 `mapstructure:"authtype"`
-	ActiveEnvironment   string                 `mapstructure:"activeenvironment"`
-	Environments        map[string]Environment `mapstructure:"environments"`
+	ExportTemplatesPath string `mapstructure:"exporttemplatespath"`
+	SearchTemplatesPath string `mapstructure:"searchtemplatespath"`
+	ReportTemplatesPath string `mapstructure:"reporttemplatespath"`
+	// TemplatesPath       string                 `mapstructure:"templatespath"`
+
+	Debug             bool                   `mapstructure:"debug"`
+	AuthType          string                 `mapstructure:"authtype"`
+	ActiveEnvironment string                 `mapstructure:"activeenvironment"`
+	Environments      map[string]Environment `mapstructure:"environments"`
 
 	//Pipline Variables
 	ClientID     string    `mapstructure:"clientid, omitempty"`
@@ -122,6 +123,7 @@ func InitConfig() error {
 	viper.SetDefault("authtype", "pat")
 	viper.SetDefault("exporttemplatespath", "")
 	viper.SetDefault("searchtemplatespath", "")
+	viper.SetDefault("reporttemplatespath", "")
 	viper.SetDefault("debug", false)
 	viper.SetDefault("activeenvironment", "default")
 
