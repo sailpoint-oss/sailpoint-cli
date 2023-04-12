@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -16,6 +17,23 @@ import (
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 )
+
+type RefreshResponse struct {
+	AccessToken         string `json:"access_token"`
+	TokenType           string `json:"token_type"`
+	RefreshToken        string `json:"refresh_token"`
+	ExpiresIn           int    `json:"expires_in"`
+	Scope               string `json:"scope"`
+	TenantID            string `json:"tenant_id"`
+	Internal            bool   `json:"internal"`
+	Pod                 string `json:"pod"`
+	StrongAuthSupported bool   `json:"strong_auth_supported"`
+	Org                 string `json:"org"`
+	ClaimsSupported     bool   `json:"claims_supported"`
+	IdentityID          string `json:"identity_id"`
+	StrongAuth          bool   `json:"strong_auth"`
+	Jti                 string `json:"jti"`
+}
 
 func GetOAuthToken() string {
 	return viper.GetString("environments." + GetActiveEnvironment() + ".oauth.accesstoken")
@@ -31,6 +49,22 @@ func GetOAuthTokenExpiry() time.Time {
 
 func SetOAuthTokenExpiry(expiry time.Time) {
 	viper.Set("environments."+GetActiveEnvironment()+".oauth.expiry", expiry)
+}
+
+func GetRefreshToken() string {
+	return viper.GetString("environments." + GetActiveEnvironment() + ".oauth.refreshtoken")
+}
+
+func SetRefreshToken(token string) {
+	viper.Set("environments."+GetActiveEnvironment()+".oauth.refreshtoken", token)
+}
+
+func GetOAuthRefreshExpiry() time.Time {
+	return viper.GetTime("environments." + GetActiveEnvironment() + ".oauth.refreshexpiry")
+}
+
+func SetOAuthRefreshExpiry(expiry time.Time) {
+	viper.Set("environments."+GetActiveEnvironment()+".oauth.refreshexpiry", expiry)
 }
 
 var (
@@ -59,8 +93,11 @@ func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
+	clientTok := tok
+	clientTok.RefreshToken = ""
+
 	// The HTTP Client returned by conf.Client will refresh the token as necessary.
-	client := conf.Client(ctx, tok)
+	client := conf.Client(ctx, clientTok)
 
 	baseUrl := GetBaseUrl()
 
@@ -76,6 +113,8 @@ func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	SetOAuthToken(tok.AccessToken)
 	SetOAuthTokenExpiry(tok.Expiry)
+	SetRefreshToken(tok.Extra("refresh_token").(string))
+	SetOAuthRefreshExpiry(time.Now().Add(time.Hour * 720))
 
 	// show succes page
 	fmt.Fprint(w, OAuthSuccessPage)
@@ -125,6 +164,32 @@ func OAuthLogin() error {
 	if callbackErr != nil {
 		return callbackErr
 	}
+
+	return nil
+}
+
+func RefreshOAuth() error {
+	var response RefreshResponse
+
+	resp, err := http.Post(GetTokenUrl()+"?grant_type=refresh_token&client_id="+ClientID+"&refresh_token="+GetRefreshToken(), "application/json", nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	//We Read the response body on the line below.
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return err
+	}
+
+	SetOAuthToken(response.AccessToken)
+	SetOAuthTokenExpiry(time.Now().Add(time.Second * time.Duration(response.ExpiresIn)))
+	SetRefreshToken(response.RefreshToken)
+	SetOAuthRefreshExpiry(time.Now().Add(time.Hour * 720))
 
 	return nil
 }

@@ -50,10 +50,9 @@ func newAuthCommand() *cobra.Command {
 				log.Log.Info("Authentication method set to PAT")
 
 			case "oauth":
-				log.Log.Error("OAuth is not currently supported")
 
-				// 	config.SetAuthType("oauth")
-				// 	log.Log.Info("Authentication method set to OAuth")
+				config.SetAuthType("oauth")
+				log.Log.Info("Authentication method set to OAuth")
 
 			default:
 				log.Log.Error("Invalid Selection")

@@ -26,6 +26,9 @@ const (
 type Token struct {
 	AccessToken string    `mapstructure:"accesstoken"`
 	Expiry      time.Time `mapstructure:"expiry"`
+
+	RefreshToken  string    `mapstructure:"refreshtoken"`
+	RefreshExpiry time.Time `mapstructure:"refreshexpiry"`
 }
 
 type Environment struct {
@@ -205,17 +208,21 @@ func GetAuthToken() (string, error) {
 			token = GetPatToken()
 		}
 	case "oauth":
-		return "", fmt.Errorf("oauth is not currently supported")
-		// if GetOAuthTokenExpiry().After(time.Now()) {
-		// 	return GetOAuthToken(), nil
-		// } else {
-		// 	err = OAuthLogin()
-		// 	if err != nil {
-		// 		return "", err
-		// 	}
 
-		// 	return GetOAuthToken(), nil
-		// }
+		if GetOAuthTokenExpiry().After(time.Now()) {
+			return GetOAuthToken(), nil
+		} else if GetOAuthRefreshExpiry().After(time.Now()) {
+			RefreshOAuth()
+			return GetOAuthToken(), nil
+		} else {
+			err = OAuthLogin()
+			if err != nil {
+				return "", err
+			}
+
+			return GetOAuthToken(), nil
+		}
+
 	default:
 		return "", fmt.Errorf("invalid authtype configured")
 	}
@@ -319,16 +326,15 @@ func Validate() error {
 
 	case "oauth":
 
-		log.Log.Error("oauth is not currently supported")
-		errors++
+		if GetBaseUrl() == "" {
+			log.Log.Error("configured environment is missing BaseURL")
+			errors++
+		}
 
-		// if config.Environments[config.ActiveEnvironment].BaseURL == "" {
-		// 	return fmt.Errorf("configured environment is missing BaseURL")
-		// }
-
-		// if config.Environments[config.ActiveEnvironment].TenantURL == "" {
-		// 	return fmt.Errorf("configured environment is missing TenantURL")
-		// }
+		if GetTenantUrl() == "" {
+			log.Log.Error("configured environment is missing TenantURL")
+			errors++
+		}
 
 	default:
 
