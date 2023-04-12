@@ -38,12 +38,15 @@ type Environment struct {
 type CLIConfig struct {
 
 	//Standard Variables
-	ExportTemplatesPath string                 `mapstructure:"exporttemplatespath"`
-	SearchTemplatesPath string                 `mapstructure:"searchtemplatespath"`
-	Debug               bool                   `mapstructure:"debug"`
-	AuthType            string                 `mapstructure:"authtype"`
-	ActiveEnvironment   string                 `mapstructure:"activeenvironment"`
-	Environments        map[string]Environment `mapstructure:"environments"`
+	ExportTemplatesPath string `mapstructure:"exporttemplatespath"`
+	SearchTemplatesPath string `mapstructure:"searchtemplatespath"`
+	ReportTemplatesPath string `mapstructure:"reporttemplatespath"`
+	// TemplatesPath       string                 `mapstructure:"templatespath"`
+
+	Debug             bool                   `mapstructure:"debug"`
+	AuthType          string                 `mapstructure:"authtype"`
+	ActiveEnvironment string                 `mapstructure:"activeenvironment"`
+	Environments      map[string]Environment `mapstructure:"environments"`
 
 	//Pipline Variables
 	ClientID     string    `mapstructure:"clientid, omitempty"`
@@ -61,12 +64,20 @@ func GetCustomExportTemplatePath() string {
 	return viper.GetString("exporttemplatespath")
 }
 
+func GetCustomReportTemplatePath() string {
+	return viper.GetString("reporttemplatespath")
+}
+
 func SetCustomSearchTemplatePath(customsearchtemplatespath string) {
 	viper.Set("searchtemplatespath", customsearchtemplatespath)
 }
 
 func SetCustomExportTemplatePath(customsearchtemplatespath string) {
 	viper.Set("exporttemplatespath", customsearchtemplatespath)
+}
+
+func SetCustomReportTemplatePath(customreporttemplatespath string) {
+	viper.Set("reporttemplatespath", customreporttemplatespath)
 }
 
 func GetEnvironments() map[string]interface{} {
@@ -112,6 +123,7 @@ func InitConfig() error {
 	viper.SetDefault("authtype", "pat")
 	viper.SetDefault("exporttemplatespath", "")
 	viper.SetDefault("searchtemplatespath", "")
+	viper.SetDefault("reporttemplatespath", "")
 	viper.SetDefault("debug", false)
 	viper.SetDefault("activeenvironment", "default")
 
@@ -322,12 +334,14 @@ func Validate() error {
 		log.Log.Error("oauth is not currently supported")
 		errors++
 
-		// if config.Environments[config.ActiveEnvironment].BaseURL == "" {
-		// 	return fmt.Errorf("configured environment is missing BaseURL")
+		// if GetBaseUrl() == "" {
+		// 	log.Log.Error("configured environment is missing BaseURL")
+		// 	errors++
 		// }
 
-		// if config.Environments[config.ActiveEnvironment].TenantURL == "" {
-		// 	return fmt.Errorf("configured environment is missing TenantURL")
+		// if GetTenantUrl() == "" {
+		// 	log.Log.Error("configured environment is missing TenantURL")
+		// 	errors++
 		// }
 
 	default:
