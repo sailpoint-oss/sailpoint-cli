@@ -28,10 +28,10 @@ builds:
     id: windows
     goos: [windows]
     goarch: [386, amd64, arm64]
-    # hooks:
-    #   post:
-    #     - cmd: ./script/sign-windows-executable.sh '{{ .Path }}'
-    #       output: false
+    hooks:
+      post:
+        - cmd: ./assets/sign-windows-executable.sh '{{ .Path }}'
+          output: false
 
 archives:
   - id: nix
