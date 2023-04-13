@@ -33,7 +33,7 @@ func (template SearchTemplate) GetDescription() string {
 }
 
 func (template SearchTemplate) GetVariableCount() int {
-	return len(template.Description)
+	return len(template.Variables)
 }
 
 type ExportTemplate struct {
@@ -53,7 +53,33 @@ func (template ExportTemplate) GetDescription() string {
 }
 
 func (template ExportTemplate) GetVariableCount() int {
-	return len(template.Description)
+	return len(template.Variables)
+}
+
+type ReportQuery struct {
+	QueryString string `json:"queryString"`
+	QueryTitle  string `json:"queryTitle"`
+	ResultCount string
+}
+
+type ReportTemplate struct {
+	Name        string        `json:"name"`
+	Description string        `json:"description"`
+	Variables   []Variable    `json:"variables"`
+	Queries     []ReportQuery `json:"queries"`
+	Raw         []byte
+}
+
+func (template ReportTemplate) GetName() string {
+	return template.Name
+}
+
+func (template ReportTemplate) GetDescription() string {
+	return template.Description
+}
+
+func (template ReportTemplate) GetVariableCount() int {
+	return len(template.Variables)
 }
 
 type Templates struct {

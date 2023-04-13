@@ -148,6 +148,71 @@ func GetExportTemplates() ([]ExportTemplate, error) {
 
 }
 
+func GetReportTemplates() ([]ReportTemplate, error) {
+	var reportTemplates []ReportTemplate
+	var templates []ReportTemplate
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
+
+	templateFiles := []string{filepath.Join(home, ".sailpoint", "report-templates.json")}
+
+	customTemplates := config.GetCustomReportTemplatePath()
+	if customTemplates != "" {
+		templateFiles = append(templateFiles, customTemplates)
+	}
+
+	envSearchTemplates := os.Getenv("SAIL_REPORT_TEMPLATES_PATH")
+	if envSearchTemplates != "" {
+		templateFiles = append(templateFiles, envSearchTemplates)
+	}
+
+	for i := 0; i < len(templateFiles); i++ {
+		templateFile := templateFiles[i]
+
+		file, err := os.OpenFile(templateFile, os.O_RDWR, 0777)
+		if err != nil {
+			if config.GetDebug() {
+				log.Log.Error("error opening file %s", templateFile)
+			}
+		} else {
+
+			raw, err := io.ReadAll(file)
+			if err != nil {
+				return nil, err
+			}
+
+			err = json.Unmarshal(raw, &templates)
+			if err != nil {
+				log.Log.Error("an error occured while parsing the file: %s", templateFile)
+				return nil, err
+			}
+
+			reportTemplates = append(reportTemplates, templates...)
+		}
+	}
+
+	err = json.Unmarshal([]byte(builtInReportTemplates), &templates)
+	if err != nil {
+		color.Red("an error occured while parsing the built in templates")
+		return nil, err
+	}
+
+	reportTemplates = append(reportTemplates, templates...)
+
+	for i := 0; i < len(reportTemplates); i++ {
+		entry := &reportTemplates[i]
+		if len(entry.Variables) > 0 {
+			entry.Raw, err = json.Marshal(entry.Queries)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return reportTemplates, nil
+}
+
 func SelectTemplate[T Template](templates []T) (string, error) {
 	var prompts []tui.Choice
 	for i := 0; i < len(templates); i++ {
