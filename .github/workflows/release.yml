@@ -9,7 +9,7 @@ env:
   REF: ${{ github.event.inputs.tag || github.ref }}
 
 jobs:
-  release:
+  goreleaser:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
