@@ -6,7 +6,6 @@ import (
 
 	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/spconfig"
 	"github.com/spf13/cobra"
 )
@@ -20,8 +19,8 @@ func newExportCmd() *cobra.Command {
 	var payload *sailpointbetasdk.ExportPayload
 	cmd := &cobra.Command{
 		Use:     "export",
-		Short:   "begin an export job in identitynow",
-		Long:    "initiate an export job in identitynow",
+		Short:   "Start an Export job in IdentityNow",
+		Long:    "\nStart an Export job in IdentityNow\n\n",
 		Example: "sail spconfig export",
 		Aliases: []string{"exp"},
 		Args:    cobra.NoArgs,
@@ -45,7 +44,7 @@ func newExportCmd() *cobra.Command {
 			spconfig.PrintJob(*job)
 
 			if wait {
-				log.Log.Warn("Waiting for export task to complete")
+				config.Log.Warn("Waiting for export task to complete")
 				spconfig.DownloadExport(job.JobId, "spconfig-export-"+job.JobId+".json", folderPath)
 			}
 

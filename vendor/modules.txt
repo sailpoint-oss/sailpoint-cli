@@ -48,10 +48,6 @@ github.com/go-logfmt/logfmt
 # github.com/gocarina/gocsv v0.0.0-20230223115542-dc4ee9de5fe2
 ## explicit; go 1.13
 github.com/gocarina/gocsv
-# github.com/golang-jwt/jwt/v4 v4.5.0
-## explicit; go 1.16
-# github.com/golang-jwt/jwt/v5 v5.0.0-rc.1
-## explicit; go 1.18
 # github.com/golang/mock v1.6.0
 ## explicit; go 1.11
 github.com/golang/mock/gomock

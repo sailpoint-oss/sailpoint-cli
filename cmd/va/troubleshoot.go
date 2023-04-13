@@ -17,8 +17,8 @@ func NewTroubleshootCmd() *cobra.Command {
 	var output string
 	cmd := &cobra.Command{
 		Use:     "troubleshoot",
-		Short:   "perform troubleshooting operations on a virtual appliance",
-		Long:    "Troubleshoot a Virtual Appliance.",
+		Short:   "Perform Troubleshooting Operations against a Virtual Appliance",
+		Long:    "\nPerform Troubleshooting Operations against a Virtual Appliance\n\n",
 		Example: "sail va troubleshoot 10.10.10.10",
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

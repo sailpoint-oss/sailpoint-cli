@@ -14,7 +14,7 @@ func NewConfigureCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "configure",
 		Short:   "Configure PAT Authentication for the currently active environment",
-		Long:    "\nConfigure PAT Authentication for the CLI\n\nPrerequisites:\n\nCreate a Client ID\nCreate a Client Secret\n",
+		Long:    "\nConfigure PAT Authentication for the CLI\n\nPrerequisites:\n\nCreate a Client ID and Client Secret\nhttps://developer.sailpoint.com/idn/api/authentication#personal-access-tokens",
 		Aliases: []string{"conf"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

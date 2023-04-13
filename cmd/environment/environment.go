@@ -2,7 +2,6 @@ package environment
 
 import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
@@ -18,8 +17,8 @@ func NewEnvironmentCommand() *cobra.Command {
 	var show bool
 	cmd := &cobra.Command{
 		Use:     "environment",
-		Short:   "change currently active environment",
-		Long:    "Change Configured Environment that is selected.",
+		Short:   "Manage Environments for the CLI",
+		Long:    "\nManage Environments for the CLI\n\n",
 		Example: "sail env dev",
 		Aliases: []string{"env"},
 		Args:    cobra.MaximumNArgs(1),
@@ -47,13 +46,20 @@ func NewEnvironmentCommand() *cobra.Command {
 
 				if foundEnv, exists := environments[env]; exists && !overwrite && config.GetTenantUrl() != "" && config.GetBaseUrl() != "" {
 					if show {
-						log.Log.Warn("printing env", "env", env)
-						util.PrettyPrint(foundEnv)
+						config.Log.Warn("You are about to Print out the Environment", "env", env)
+						res := terminal.InputPrompt("Press Enter to continue")
+						if res == "" {
+							util.PrettyPrint(foundEnv)
+						}
 					} else if erase {
-						log.Log.Warn("erasing env", "env", env)
-						viper.Set("environments."+config.GetActiveEnvironment(), config.Environment{})
+						config.Log.Warn("You are about to Erase the Environment", "env", env)
+						res := terminal.InputPrompt("Press Enter to continue")
+						if res == "" {
+							viper.Set("environments."+config.GetActiveEnvironment(), config.Environment{})
+						}
+
 					} else {
-						log.Log.Info("Environment changed", "env", env)
+						config.Log.Info("Environment changed", "env", env)
 					}
 
 				} else {
@@ -66,7 +72,7 @@ func NewEnvironmentCommand() *cobra.Command {
 
 				}
 			} else {
-				log.Log.Warn("No Environment Provided")
+				config.Log.Warn("No Environment Provided")
 			}
 
 			return nil

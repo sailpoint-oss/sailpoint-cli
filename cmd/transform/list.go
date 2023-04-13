@@ -9,9 +9,9 @@ import (
 func newListCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:     "list",
-		Short:   "list transforms",
-		Long:    "List transforms for tenant",
-		Example: "sail transform ls",
+		Short:   "List all Transforms in IdentityNow",
+		Long:    "\nList all Transforms in IdentityNow\n\n",
+		Example: "sail transform list | sail transform ls",
 		Aliases: []string{"ls"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

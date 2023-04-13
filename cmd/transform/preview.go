@@ -22,9 +22,9 @@ var implicitInput bool
 func newPreviewCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "preview",
-		Short:   "preview transform",
-		Long:    "Preview the final output of a transform.",
-		Example: "sail transform p -i 12a199b967b64ffe992ef4ecfd076728 -a lastname -f /path/to/transform.json\nsail transform p -i 12a199b967b64ffe992ef4ecfd076728 -a lastname -n ToLower --implicit",
+		Short:   "Preview the effects of an IdentityNow Transform",
+		Long:    "\nPreview the effects of an IdentityNow Transform\n\n",
+		Example: "sail transform preview -i 020523e172fb4448b0814643ae52ff32 -a lastname -n ToLower --implicit\nsail transform preview -i 020523e172fb4448b0814643ae52ff32 -a lastname -n ToUpper --implicit\nsail transform p -i 12a199b967b64ffe992ef4ecfd076728 -a lastname -f /path/to/transform.json\nsail transform p -i 12a199b967b64ffe992ef4ecfd076728 -a lastname -n ToLower --implicit",
 		Aliases: []string{"p"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

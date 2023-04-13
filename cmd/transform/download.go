@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/transform"
 	"github.com/spf13/cobra"
 )
@@ -16,9 +16,9 @@ func newDownloadCmd() *cobra.Command {
 	var destination string
 	cmd := &cobra.Command{
 		Use:     "download",
-		Short:   "download transforms",
-		Long:    "Download transforms to local storage",
-		Example: "sail transform dl -d transform_files|\nsail transform dl",
+		Short:   "Download all Transforms from IdentityNow",
+		Long:    "\nDownload all Transforms from IdentityNow\n\n",
+		Example: "sail transform downlooad -d transform_files | sail transform dl",
 		Aliases: []string{"dl"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -60,7 +60,7 @@ func newDownloadCmd() *cobra.Command {
 				}
 			}
 
-			log.Log.Info("Transforms downloaded successfully", "path", destination)
+			config.Log.Info("Transforms downloaded successfully", "path", destination)
 
 			return nil
 		},

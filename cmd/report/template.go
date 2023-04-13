@@ -10,7 +10,6 @@ import (
 
 	v3 "github.com/sailpoint-oss/golang-sdk/v3"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/templates"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
@@ -58,13 +57,13 @@ func newTemplateCmd() *cobra.Command {
 				return fmt.Errorf("no template specified")
 			}
 
-			log.Log.Info("Selected Template", "template", template)
+			config.Log.Info("Selected Template", "template", template)
 
 			matches := types.Filter(reportTemplates, func(st templates.ReportTemplate) bool { return st.Name == template })
 			if len(matches) < 1 {
 				return fmt.Errorf("no template matches for %s", template)
 			} else if len(matches) > 1 {
-				log.Log.Warn("multiple template matches, the first match will be used", "template", template)
+				config.Log.Warn("multiple template matches, the first match will be used", "template", template)
 			}
 			selectedTemplate = matches[0]
 			varCount := len(selectedTemplate.Variables)

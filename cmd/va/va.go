@@ -10,7 +10,8 @@ import (
 func NewVACmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "va",
-		Short:   "collection of commands to interact with sailpoint virtual appliance",
+		Short:   "Interact with SailPoint Virtual Appliances",
+		Long:    "\nInteract with SailPoint Virtual Appliances\n\n",
 		Aliases: []string{"va"},
 		Run: func(cmd *cobra.Command, args []string) {
 			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())

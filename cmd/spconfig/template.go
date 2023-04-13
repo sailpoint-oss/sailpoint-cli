@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/spconfig"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/templates"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
@@ -23,9 +22,9 @@ func newTemplateCmd() *cobra.Command {
 	var wait bool
 	cmd := &cobra.Command{
 		Use:     "template",
-		Short:   "begin an export task using a template",
-		Long:    "begin an export task in IdentityNow using a template",
-		Example: "sail spconfig template",
+		Short:   "Begin an SPConfig Export task in IdentityNow using a template",
+		Long:    "\nBegin an SPConfig Export task in IdentityNow using a template\n\n",
+		Example: "sail spconfig template --wait",
 		Aliases: []string{"temp"},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -53,13 +52,13 @@ func newTemplateCmd() *cobra.Command {
 				return fmt.Errorf("no template specified")
 			}
 
-			log.Log.Info("Template Selected", "Template", template)
+			config.Log.Info("Template Selected", "Template", template)
 
 			matches := types.Filter(exportTemplates, func(st templates.ExportTemplate) bool { return st.Name == template })
 			if len(matches) < 1 {
 				return fmt.Errorf("no template matches for %s", template)
 			} else if len(matches) > 1 {
-				log.Log.Warn("Multiple template matches", "Template", template)
+				config.Log.Warn("Multiple template matches", "Template", template)
 			}
 			selectedTemplate = matches[0]
 			varCount := len(selectedTemplate.Variables)
@@ -83,7 +82,7 @@ func newTemplateCmd() *cobra.Command {
 			spconfig.PrintJob(*job)
 
 			if wait {
-				log.Log.Info("Checking Export Job", "JobID", job.JobId)
+				config.Log.Info("Checking Export Job", "JobID", job.JobId)
 				spconfig.DownloadExport(job.JobId, "spconfig-export-"+template+"-"+job.JobId+".json", folderPath)
 			}
 

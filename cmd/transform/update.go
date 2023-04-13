@@ -9,7 +9,6 @@ import (
 
 	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v3"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/spf13/cobra"
 )
@@ -17,9 +16,9 @@ import (
 func newUpdateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "update",
-		Short:   "update transform",
-		Long:    "Update a transform from a file [-f] or standard input (if no file is specified).",
-		Example: "sail transform u -f /path/to/transform.json\nsail transform u < /path/to/transform.json\necho /path/to/transform.json | sail transform u",
+		Short:   "Update a Transform in IdentityNow from a File",
+		Long:    "\nUpdate a Transform in IdentityNow from a File\n\n",
+		Example: "sail transform update --file ./assets/demo_update.json\nsail transform u -f /path/to/transform.json\nsail transform u < /path/to/transform.json\necho /path/to/transform.json | sail transform u",
 		Aliases: []string{"u"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -51,7 +50,7 @@ func newUpdateCmd() *cobra.Command {
 			id := data["id"].(string)
 			delete(data, "id") // ID can't be present in the update payload
 
-			log.Log.Info("Updating Transaform", "transformID", id)
+			config.Log.Info("Updating Transaform", "transformID", id)
 
 			transform := sailpointsdk.NewTransform(data["name"].(string), data["type"].(string), data["attributes"].(map[string]interface{}))
 

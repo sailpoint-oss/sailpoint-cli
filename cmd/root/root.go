@@ -21,7 +21,7 @@ var version = "1.0.0"
 func NewRootCmd() *cobra.Command {
 	root := &cobra.Command{
 		Use:          "sail",
-		Short:        "The SailPoint CLI allows you to administer your IdentityNow tenant from the command line.\n\nNavigate to developer.sailpoint.com to learn more.",
+		Short:        "The SailPoint CLI allows you to administer your IdentityNow tenant from the command line.\nNavigate to https://developer.sailpoint.com/idn/tools/cli to learn more.",
 		Version:      version,
 		SilenceUsage: true,
 		CompletionOptions: cobra.CompletionOptions{
