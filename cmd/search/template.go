@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/search"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/templates"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
@@ -21,8 +20,8 @@ func newTemplateCmd() *cobra.Command {
 	var template string
 	cmd := &cobra.Command{
 		Use:     "template",
-		Short:   "run a search using a template",
-		Long:    "run a search in IdentityNow using a search template",
+		Short:   "Perform Search operations in IdentityNow using a predefined search template",
+		Long:    "\nPerform Search operations in IdentityNow using a predefined search template\n\n",
 		Example: "sail search template",
 		Aliases: []string{"temp"},
 		Args:    cobra.MaximumNArgs(1),
@@ -56,13 +55,13 @@ func newTemplateCmd() *cobra.Command {
 				return fmt.Errorf("no template specified")
 			}
 
-			log.Log.Info("Selected Template", "template", template)
+			config.Log.Info("Selected Template", "template", template)
 
 			matches := types.Filter(searchTemplates, func(st templates.SearchTemplate) bool { return st.Name == template })
 			if len(matches) < 1 {
 				return fmt.Errorf("no template matches for %s", template)
 			} else if len(matches) > 1 {
-				log.Log.Warn("multiple template matches, the first match will be used", "template", template)
+				config.Log.Warn("multiple template matches, the first match will be used", "template", template)
 			}
 			selectedTemplate = matches[0]
 			varCount := len(selectedTemplate.Variables)
@@ -78,7 +77,7 @@ func newTemplateCmd() *cobra.Command {
 				}
 			}
 
-			log.Log.Info("Performing Search", "Query", selectedTemplate.SearchQuery.Query.GetQuery(), "Indicies", selectedTemplate.SearchQuery.Indices)
+			config.Log.Info("Performing Search", "Query", selectedTemplate.SearchQuery.Query.GetQuery(), "Indicies", selectedTemplate.SearchQuery.Indices)
 
 			formattedResponse, err := search.PerformSearch(*apiClient, selectedTemplate.SearchQuery)
 			if err != nil {

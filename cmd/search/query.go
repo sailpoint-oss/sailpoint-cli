@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/search"
 	"github.com/spf13/cobra"
 )
@@ -18,9 +17,9 @@ func newQueryCmd() *cobra.Command {
 	var searchQuery string
 	cmd := &cobra.Command{
 		Use:     "query",
-		Short:   "search using a query",
-		Long:    "Run a search query in identitynow using a query",
-		Example: "sail search query \"attributes.location:london\"",
+		Short:   "Manually Search using a specific Query and Indicies",
+		Long:    "\nRun a search query in IdentityNow using a specific Query and Indicies\n\n",
+		Example: "sail search query \"(type:provisioning AND created:[now-90d TO now])\" --indicies events",
 		Aliases: []string{"que"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -43,7 +42,7 @@ func newQueryCmd() *cobra.Command {
 				return err
 			}
 
-			log.Log.Info("Performing Search", "Query", searchQuery, "Indices", indices)
+			config.Log.Info("Performing Search", "Query", searchQuery, "Indices", indices)
 
 			formattedResponse, err := search.PerformSearch(*apiClient, searchObj)
 			if err != nil {

@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/fatih/color"
+	conf "github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/va"
 	"github.com/spf13/cobra"
@@ -17,8 +17,8 @@ func newCollectCmd() *cobra.Command {
 	var config bool
 	cmd := &cobra.Command{
 		Use:     "collect",
-		Short:   "collect files from a virtual appliance",
-		Long:    "Collect files from a Virtual Appliance.",
+		Short:   "Collect Configuration or Log Files from a SailPoint Virtual Appliance",
+		Long:    "\nCollect Configuration or Log Files from a SailPoint Virtual Appliance\n\n",
 		Example: "sail va collect 10.10.10.10, 10.10.10.11 (-l only collect log files) (-c only collect config files) (-o /path/to/save/files)\n\nLog Files:\n/home/sailpoint/log/ccg.log\n/home/sailpoint/log/charon.log\n/home/sailpoint/stuntlog.txt\n\nConfig Files:\n/home/sailpoint/proxy.yaml\n/etc/systemd/network/static.network\n/etc/resolv.conf\n",
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -52,7 +52,7 @@ func newCollectCmd() *cobra.Command {
 				}
 
 			}
-			color.Green("All Operations Complete")
+			conf.Log.Info("All Operations Complete")
 
 			return nil
 		},

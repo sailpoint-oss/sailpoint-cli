@@ -10,9 +10,9 @@ import (
 func NewSearchCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "search",
-		Short:   "perform search in identitynow with a search string",
-		Long:    "Search IdentityNow with a provided search string",
-		Example: "sail search \"\"",
+		Short:   "Perform Search operations in IdentityNow with a specific query or a template",
+		Long:    "\nPerform Search operations in IdentityNow with a specific query or a template\n\n",
+		Example: "sail search -h",
 		Aliases: []string{"se"},
 		Args:    cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {

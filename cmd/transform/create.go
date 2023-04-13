@@ -9,7 +9,6 @@ import (
 
 	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v3"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/spf13/cobra"
 )
@@ -17,8 +16,8 @@ import (
 func newCreateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "create",
-		Short:   "create transform",
-		Long:    "Create a transform from a file [-f] or standard input (if no file is specified).",
+		Short:   "Create an IdentityNow Transform from a file",
+		Long:    "\nCreate an IdentityNow Transform from a file\n\n",
 		Example: "sail transform c -f /path/to/transform.json\nsail transform c < /path/to/transform.json\necho /path/to/transform.json | sail transform c",
 		Aliases: []string{"c"},
 		Args:    cobra.NoArgs,
@@ -64,7 +63,7 @@ func newCreateCmd() *cobra.Command {
 				return sdk.HandleSDKError(resp, err)
 			}
 
-			log.Log.Info("Transform created successfully")
+			config.Log.Info("Transform created successfully")
 
 			cmd.Print(*transformObj.Id)
 

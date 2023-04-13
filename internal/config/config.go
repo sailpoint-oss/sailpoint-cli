@@ -7,14 +7,21 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/square/go-jose.v2/jwt"
-
-	"github.com/fatih/color"
+	"github.com/charmbracelet/log"
 	sailpoint "github.com/sailpoint-oss/golang-sdk"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/spf13/viper"
+	"gopkg.in/square/go-jose.v2/jwt"
 )
+
+var Log log.Logger
+
+func init() {
+	Log = log.New()
+	if GetDebug() {
+		Log.SetLevel(log.DebugLevel)
+	}
+}
 
 var ErrAccessTokenExpired = fmt.Errorf("accesstoken is expired")
 
@@ -154,8 +161,8 @@ func InitAPIClient() (*sailpoint.APIClient, error) {
 	}
 
 	token, err := GetAuthToken()
-	if err != nil && GetDebug() {
-		color.Yellow("unable to retrieve accesstoken: %s ", err)
+	if err != nil {
+		Log.Debug("unable to retrieve accesstoken: %s ", err)
 	}
 
 	configuration := sailpoint.NewConfiguration(sailpoint.ClientConfiguration{Token: token, BaseURL: GetBaseUrl()})
@@ -180,12 +187,10 @@ func CheckToken(tokenString string) error {
 	token.UnsafeClaimsWithoutVerification(&claims)
 
 	if claims["user_name"] == nil {
-		log.Log.Warn("It looks like the token you are using is missing a user context, this will cause many of the CLI commands to fail.")
+		Log.Warn("It looks like the token you are using is missing a user context, this will cause many of the CLI commands to fail.")
 	}
 
-	if GetDebug() {
-		log.Log.Info("Token Debug Info", "user_name", claims["user_name"], "org", claims["org"], "pod", claims["pod"])
-	}
+	Log.Debug("Token Debug Info", "user_name", claims["user_name"], "org", claims["org"], "pod", claims["pod"])
 
 	return nil
 }
@@ -295,7 +300,7 @@ func SaveConfig() error {
 	if _, err := os.Stat(filepath.Join(home, configFolder)); os.IsNotExist(err) {
 		err = os.Mkdir(filepath.Join(home, configFolder), 0777)
 		if err != nil {
-			log.Log.Warn("failed to create %s folder for config. %v", configFolder, err)
+			Log.Warn("failed to create %s folder for config. %v", configFolder, err)
 		}
 	}
 
@@ -322,35 +327,35 @@ func Validate() error {
 	case "pat":
 
 		if GetBaseUrl() == "" {
-			log.Log.Error("configured environment is missing BaseURL")
+			Log.Error("configured environment is missing BaseURL")
 			errors++
 		}
 
 		if GetPatClientID() == "" {
-			log.Log.Error("configured environment is missing PAT ClientID")
+			Log.Error("configured environment is missing PAT ClientID")
 			errors++
 		}
 
 		if GetPatClientSecret() == "" {
-			log.Log.Error("configured environment is missing PAT ClientSecret")
+			Log.Error("configured environment is missing PAT ClientSecret")
 			errors++
 		}
 
 	case "oauth":
 
 		if GetBaseUrl() == "" {
-			log.Log.Error("configured environment is missing BaseURL")
+			Log.Error("configured environment is missing BaseURL")
 			errors++
 		}
 
 		if GetTenantUrl() == "" {
-			log.Log.Error("configured environment is missing TenantURL")
+			Log.Error("configured environment is missing TenantURL")
 			errors++
 		}
 
 	default:
 
-		log.Log.Error("invalid authtype '%s' configured", authType)
+		Log.Error("invalid authtype '%s' configured", authType)
 		errors++
 
 	}

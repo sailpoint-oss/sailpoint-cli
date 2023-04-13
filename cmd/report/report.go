@@ -10,8 +10,8 @@ import (
 func NewReportCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "report",
-		Short:   "generate a report from identitynow search queries",
-		Long:    "Generate a Report from IdentityNow search queries",
+		Short:   "Generate a report from a template using IdentityNow search queries",
+		Long:    "Generate a report from a template using IdentityNow search queries",
 		Example: "sail report \"\"",
 		Aliases: []string{"rep"},
 		Args:    cobra.MaximumNArgs(1),

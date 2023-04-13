@@ -2,7 +2,7 @@
 package spconfig
 
 import (
-	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/spconfig"
 	"github.com/spf13/cobra"
 )
@@ -13,8 +13,8 @@ func newDownloadCmd() *cobra.Command {
 	var folderPath string
 	cmd := &cobra.Command{
 		Use:     "download",
-		Short:   "download results of import or export jobs from identitynow",
-		Long:    "download results of import or export jobs from identitynow",
+		Short:   "Download the results of import or export job from IdentityNow",
+		Long:    "\nDownload the results of import or export job from IdentityNow\n\n",
 		Example: "sail spconfig download -export <export job id> -import <import job id>",
 		Aliases: []string{"down"},
 		Args:    cobra.NoArgs,
@@ -23,27 +23,27 @@ func newDownloadCmd() *cobra.Command {
 			if len(importIDs) > 0 {
 				for i := 0; i < len(importIDs); i++ {
 					jobId := importIDs[i]
-					log.Log.Info("Checking Import Job", "JobID", jobId)
+					config.Log.Info("Checking Import Job", "JobID", jobId)
 					err := spconfig.DownloadImport(jobId, "spconfig-import-"+jobId+".json", folderPath)
 					if err != nil {
 						return err
 					}
 				}
 			} else {
-				log.Log.Info("No Import Job IDs provided")
+				config.Log.Info("No Import Job IDs provided")
 			}
 
 			if len(exportIDs) > 0 {
 				for i := 0; i < len(exportIDs); i++ {
 					jobId := exportIDs[i]
-					log.Log.Info("Checking Export Job", "JobID", jobId)
+					config.Log.Info("Checking Export Job", "JobID", jobId)
 					err := spconfig.DownloadExport(jobId, "spconfig-export-"+jobId+".json", folderPath)
 					if err != nil {
 						return err
 					}
 				}
 			} else {
-				log.Log.Info("No Export Job IDs provided")
+				config.Log.Info("No Export Job IDs provided")
 			}
 
 			return nil

@@ -10,10 +10,10 @@ import (
 func NewSPConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "spconfig",
-		Short:   "perform spconfig operations in identitynow",
-		Long:    "import and export items in identitynow",
+		Short:   "Perform SPConfig operations in IdentityNow",
+		Long:    "\nPerform SPConfig operations in IdentityNow\n\n",
 		Example: "sail spconfig",
-		Aliases: []string{"spconf"},
+		Aliases: []string{"spcon"},
 		Args:    cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
@@ -22,7 +22,7 @@ func NewSPConfigCmd() *cobra.Command {
 
 	cmd.AddCommand(
 		newExportCmd(),
-		newExportStatusCmd(),
+		newStatusCmd(),
 		newTemplateCmd(),
 		newDownloadCmd(),
 		newImportCommand(),

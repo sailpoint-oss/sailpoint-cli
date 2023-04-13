@@ -12,8 +12,8 @@ import (
 func newUpdateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "update",
-		Short:   "update a va",
-		Long:    "update a Virtual Appliance.",
+		Short:   "Perform Update Operations on a SailPoint Virtual Appliance",
+		Long:    "\nPerform Update Operations on a SailPoint Virtual Appliance\n\n",
 		Example: "sail va update 10.10.10.10 10.10.10.11",
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

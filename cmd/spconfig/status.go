@@ -9,14 +9,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newExportStatusCmd() *cobra.Command {
+func newStatusCmd() *cobra.Command {
 	var exportJobs []string
 	var importJobs []string
 	cmd := &cobra.Command{
 		Use:     "status",
-		Short:   "begin an export job in identitynow",
-		Long:    "initiate an export job in identitynow",
-		Example: "sail spconfig export",
+		Short:   "Get the Status of SPConfig jobs in IdentityNow",
+		Long:    "\nGet the Status of SPConfig jobs in IdentityNow\n\n",
+		Example: "sail spconfig status --export 2b3b68f4-cfe7-43a6-8fb0-a518c6218111",
 		Aliases: []string{"stat"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -50,8 +50,8 @@ func newExportStatusCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringArrayVarP(&importJobs, "import", "i", []string{}, "a list of import job ids to check the status of")
-	cmd.Flags().StringArrayVarP(&exportJobs, "export", "e", []string{}, "a list of export job ids to check the status of")
+	cmd.Flags().StringArrayVarP(&importJobs, "import", "i", []string{}, "a list of import job ids to return the status of")
+	cmd.Flags().StringArrayVarP(&exportJobs, "export", "e", []string{}, "a list of export job ids to return the status of")
 
 	return cmd
 }

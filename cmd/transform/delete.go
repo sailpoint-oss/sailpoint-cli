@@ -10,7 +10,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/transform"
 	tuitable "github.com/sailpoint-oss/sailpoint-cli/internal/tui/table"
 	"github.com/spf13/cobra"
@@ -18,10 +17,10 @@ import (
 
 func newDeleteCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "delete [TRANSFORM-ID]",
-		Short:   "delete transform",
-		Long:    "Delete a transform",
-		Example: "sail transform d 03d5187b-ab96-402c-b5a1-40b74285d77a",
+		Use:     "delete",
+		Short:   "Delete an IdentityNow Transform",
+		Long:    "\nDelete an IdentityNow Transform\n\n",
+		Example: "sail transform delete 03d5187b-ab96-402c-b5a1-40b74285d77a | sail transform delete",
 		Aliases: []string{"d"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var id []string
@@ -95,7 +94,7 @@ func newDeleteCmd() *cobra.Command {
 					return err
 				}
 
-				log.Log.Info("Transform successfully deleted", "TransformID", transformID)
+				config.Log.Info("Transform successfully deleted", "TransformID", transformID)
 			}
 
 			return nil

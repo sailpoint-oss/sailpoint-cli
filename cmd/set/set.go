@@ -10,10 +10,9 @@ import (
 func NewSetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "set",
-		Short:   "configure settings for the sailpoint cli",
-		Long:    "configure settings for the sailpoint cli",
+		Short:   "Configure settings for the SailPoint CLI",
+		Long:    "\nConfigure settings for the SailPoint CLI\n\n",
 		Example: "sail set",
-		Aliases: []string{"set"},
 		Args:    cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
