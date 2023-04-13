@@ -16,6 +16,7 @@ import (
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
+	"gopkg.in/square/go-jose.v2/jwt"
 )
 
 type RefreshResponse struct {
@@ -111,10 +112,25 @@ func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 		}(resp.Body)
 	}
 
+	var accessToken map[string]interface{}
+	accToken, err := jwt.ParseSigned(tok.AccessToken)
+	if err != nil {
+		callbackErr = err
+	}
+	accToken.UnsafeClaimsWithoutVerification(&accessToken)
+
+	var refreshToken map[string]interface{}
+	refToken, err := jwt.ParseSigned(tok.Extra("refresh_token").(string))
+	if err != nil {
+		callbackErr = err
+	}
+	refToken.UnsafeClaimsWithoutVerification(&refreshToken)
+
 	SetOAuthToken(tok.AccessToken)
-	SetOAuthTokenExpiry(tok.Expiry)
+	SetOAuthTokenExpiry(time.Unix(int64(accessToken["exp"].(float64)), 0))
+
 	SetRefreshToken(tok.Extra("refresh_token").(string))
-	SetOAuthRefreshExpiry(time.Now().Add(time.Hour * 720))
+	SetOAuthRefreshExpiry(time.Unix(int64(refreshToken["exp"].(float64)), 0))
 
 	// show succes page
 	fmt.Fprint(w, OAuthSuccessPage)
@@ -186,10 +202,25 @@ func RefreshOAuth() error {
 		return err
 	}
 
+	var accessToken map[string]interface{}
+	accToken, err := jwt.ParseSigned(response.AccessToken)
+	if err != nil {
+		return err
+	}
+	accToken.UnsafeClaimsWithoutVerification(&accessToken)
+
+	var refreshToken map[string]interface{}
+	refToken, err := jwt.ParseSigned(response.RefreshToken)
+	if err != nil {
+		return err
+	}
+	refToken.UnsafeClaimsWithoutVerification(&refreshToken)
+
 	SetOAuthToken(response.AccessToken)
-	SetOAuthTokenExpiry(time.Now().Add(time.Second * time.Duration(response.ExpiresIn)))
+	SetOAuthTokenExpiry(time.Unix(int64(accessToken["exp"].(float64)), 0))
+
 	SetRefreshToken(response.RefreshToken)
-	SetOAuthRefreshExpiry(time.Now().Add(time.Hour * 720))
+	SetOAuthRefreshExpiry(time.Unix(int64(refreshToken["exp"].(float64)), 0))
 
 	return nil
 }
