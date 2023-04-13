@@ -18,6 +18,7 @@ jobs:
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
+          token: ${{ secrets.DEVREL_SERVICE_TOKEN }}
       
       # Check input version is greater than the current tag
       - name: Check valid version
@@ -48,3 +49,5 @@ jobs:
         with:
           commit_message: Bump version to ${{ github.event.inputs.version }}
           tagging_message: ${{ github.event.inputs.version }}
+          commit_user_name: developer-relations-sp
+          commit_user_email: devrel-service@sailpoint.com
