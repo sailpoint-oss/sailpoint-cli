@@ -28,10 +28,93 @@ jobs:
         with:
           go-version: 1.19
 
+      - name: Generate changelog
+        id: changelog
+        run: |
+          echo "tag-name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          gh api repos/$GITHUB_REPOSITORY/releases/generate-notes \
+            -f tag_name="${GITHUB_REF#refs/tags/}" \
+            -f target_commitish=trunk \
+            -q .body > CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Install osslsigncode
+        run: sudo apt-get install -y osslsigncode
+
+      - name: Obtain signing cert
+        run: |
+          cert="$(mktemp -t cert.XXX)"
+          base64 -d <<<"$CERT_CONTENTS" > "$cert"
+          echo "CERT_FILE=$cert" >> $GITHUB_ENV
+        env:
+          CERT_CONTENTS: ${{ secrets.OSS_SIGNING_CERT }}
+
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4
         with:
-          version: latest
-          args: release --clean
+          version: ${{ env.RELEASE_VERSION }}
+          args: release --release-notes=CHANGELOG.md
         env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISHER_TOKEN }}
+          GITHUB_TOKEN: ${{secrets.PUBLISHER_TOKEN}}
+          GORELEASER_CURRENT_TAG: ${{steps.changelog.outputs.tag-name}}
+
+  msi:
+    needs: goreleaser
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Download sail.exe
+        id: download_exe
+        shell: bash
+        run: |
+          hub release download "${GITHUB_REF#refs/tags/}" -i '*windows_amd64*.zip'
+          printf "zip=%s\n" *.zip >> $GITHUB_OUTPUT
+          unzip -o *.zip && rm -v *.zip
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Prepare PATH
+        id: setupmsbuild
+        uses: microsoft/setup-msbuild@v1.3.1
+      - name: Build MSI
+        id: buildmsi
+        shell: bash
+        env:
+          ZIP_FILE: ${{ steps.download_exe.outputs.zip }}
+          MSBUILD_PATH: ${{ steps.setupmsbuild.outputs.msbuildPath }}
+        run: |
+          name="$(basename "$ZIP_FILE" ".zip")"
+          version="$(echo -e ${GITHUB_REF#refs/tags/v} | sed s/-.*$//)"
+          "${MSBUILD_PATH}\MSBuild.exe" ./build/windows/sail.wixproj -p:SourceDir="$PWD" -p:OutputPath="$PWD" -p:OutputName="$name" -p:ProductVersion="$version"
+      - name: Obtain signing cert
+        id: obtain_cert
+        shell: bash
+        run: |
+          base64 -d <<<"$CERT_CONTENTS" > ./cert.pfx
+          printf "cert-file=%s\n" ".\\cert.pfx" >> $GITHUB_OUTPUT
+        env:
+          CERT_CONTENTS: ${{ secrets.OSS_SIGNING_CERT }}
+      - name: Sign MSI
+        env:
+          CERT_FILE: ${{ steps.obtain_cert.outputs.cert-file }}
+          EXE_FILE: ${{ steps.buildmsi.outputs.msi }}
+        run: .\assets\signtool sign /d "SailPoint CLI" /f $env:CERT_FILE /fd sha256 /tr http://timestamp.digicert.com /v $env:EXE_FILE
+      - name: Upload MSI
+        shell: bash
+        run: |
+          tag_name="${GITHUB_REF#refs/tags/}"
+          hub release edit "$tag_name" -m "" -a "$MSI_FILE"
+          release_url="$(gh api repos/:owner/:repo/releases -q ".[]|select(.tag_name==\"${tag_name}\")|.url")"
+          publish_args=( -F draft=false )
+          if [[ $GITHUB_REF != *-* ]]; then
+            publish_args+=( -f discussion_category_name="$DISCUSSION_CATEGORY" )
+          fi
+          gh api -X PATCH "$release_url" "${publish_args[@]}"
+        env:
+          MSI_FILE: ${{ steps.buildmsi.outputs.msi }}
+          DISCUSSION_CATEGORY: General
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
