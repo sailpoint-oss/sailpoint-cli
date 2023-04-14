@@ -1,3 +1,4 @@
+
 #!/bin/bash
 set -e
 
@@ -13,8 +14,13 @@ if [ ! -f "$CERT_FILE" ]; then
   exit 1
 fi
 
+if [ -z "$CERT_PASSWORD" ]; then
+  echo "error Windows code-signing; no value for CERT_PASSWORD" >&2
+  exit 1
+fi
+
 osslsigncode sign -n "SailPoint CLI" -t http://timestamp.digicert.com \
-  -pkcs12 "$CERT_FILE" -h sha256 \
+  -pkcs12 "$CERT_FILE" -readpass <(printf "%s" "$CERT_PASSWORD") -h sha256 \
   -in "$EXE" -out "$EXE"~
 
 mv "$EXE"~ "$EXE"

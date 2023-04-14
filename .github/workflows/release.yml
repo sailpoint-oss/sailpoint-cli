@@ -45,10 +45,10 @@ jobs:
       - name: Obtain signing cert
         run: |
           cert="$(mktemp -t cert.XXX)"
-          echo $CERT_CONTENTS | base64 --decode > "$cert"
+          base64 -d <<<"$CERT_CONTENTS" > "$cert"
           echo "CERT_FILE=$cert" >> $GITHUB_ENV
         env:
-          CERT_CONTENTS: ${{ secrets.OSS_SIGNING_CERT }}
+          CERT_CONTENTS: ${{ secrets.WINDOWS_CERT_PFX }}
 
       - name: Set env
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
@@ -97,11 +97,12 @@ jobs:
           base64 -d <<<"$CERT_CONTENTS" > ./cert.pfx
           printf "cert-file=%s\n" ".\\cert.pfx" >> $GITHUB_OUTPUT
         env:
-          CERT_CONTENTS: ${{ secrets.OSS_SIGNING_CERT }}
+          CERT_CONTENTS: ${{ secrets.WINDOWS_CERT_PFX }}
       - name: Sign MSI
         env:
           CERT_FILE: ${{ steps.obtain_cert.outputs.cert-file }}
           EXE_FILE: ${{ steps.buildmsi.outputs.msi }}
+          CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
         run: .\assets\signtool sign /d "SailPoint CLI" /f $env:CERT_FILE /fd sha256 /tr http://timestamp.digicert.com /v $env:EXE_FILE
       - name: Upload MSI
         shell: bash
