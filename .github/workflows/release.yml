@@ -51,6 +51,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v4
         with:
           version: "~1.13.1"
+          args: release
         env:
           GITHUB_TOKEN: ${{secrets.PUBLISHER_TOKEN}}
           GORELEASER_CURRENT_TAG: ${{steps.tagName.outputs.tag-name}}
