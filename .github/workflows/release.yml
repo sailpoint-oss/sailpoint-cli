@@ -28,16 +28,10 @@ jobs:
         with:
           go-version: 1.19
 
-      - name: Generate changelog
-        id: changelog
+      - name: Set Tag Name
+        id: tagName
         run: |
           echo "tag-name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          gh api repos/$GITHUB_REPOSITORY/releases/generate-notes \
-            -f tag_name="${GITHUB_REF#refs/tags/}" \
-            -f target_commitish=main \
-            -q .body > CHANGELOG.md
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: Install osslsigncode
         run: sudo apt-get install -y osslsigncode
@@ -57,10 +51,9 @@ jobs:
         uses: goreleaser/goreleaser-action@v4
         with:
           version: "~1.13.1"
-          args: release --release-notes=CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{secrets.PUBLISHER_TOKEN}}
-          GORELEASER_CURRENT_TAG: ${{steps.changelog.outputs.tag-name}}
+          GORELEASER_CURRENT_TAG: ${{steps.tagName.outputs.tag-name}}
 
   msi:
     needs: goreleaser
