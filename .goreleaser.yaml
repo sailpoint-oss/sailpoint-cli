@@ -31,7 +31,7 @@ builds:
     hooks:
       post:
         - cmd: ./assets/sign-windows-executable.sh '{{ .Path }}'
-          output: false
+          output: true
 
 archives:
   - id: nix
