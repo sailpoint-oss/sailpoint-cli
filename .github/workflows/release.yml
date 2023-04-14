@@ -39,10 +39,18 @@ jobs:
       - name: Obtain signing cert
         run: |
           cert="$(mktemp -t cert.XXX)"
-          base64 -d <<<"$CERT_CONTENTS" > "$cert"
+          echo $CERT_CONTENTS | base64 --decode > "$cert"
           echo "CERT_FILE=$cert" >> $GITHUB_ENV
         env:
-          CERT_CONTENTS: ${{ secrets.WINDOWS_CERT_PFX }}
+          CERT_CONTENTS: ${{ secrets.SPOSS_SIGNING_CERTS }}
+
+      - name: Obtain signing key
+        run: |
+          key="$(mktemp -t cert.XXX)"
+          echo $KEY_CONTENTS | base64 --decode > "$key"
+          echo "KEY_FILE=$key" >> $GITHUB_ENV
+        env:
+          KEY_CONTENTS: ${{ secrets.SPOSS_SIGNING_KEY }}
 
       - name: Set env
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
@@ -85,20 +93,22 @@ jobs:
           name="$(basename "$ZIP_FILE" ".zip")"
           version="$(echo -e ${GITHUB_REF#refs/tags/v} | sed s/-.*$//)"
           "${MSBUILD_PATH}\MSBuild.exe" ./build/windows/sail.wixproj -p:SourceDir="$PWD" -p:OutputPath="$PWD" -p:OutputName="$name" -p:ProductVersion="$version"
+
       - name: Obtain signing cert
         id: obtain_cert
         shell: bash
         run: |
-          base64 -d <<<"$CERT_CONTENTS" > ./cert.pfx
+          echo $CERT_CONTENTS | base64 --decode > ./cert.pfx
           printf "cert-file=%s\n" ".\\cert.pfx" >> $GITHUB_OUTPUT
         env:
-          CERT_CONTENTS: ${{ secrets.WINDOWS_CERT_PFX }}
+          CERT_CONTENTS: ${{ secrets.SPOSS_SIGNING_PFX }}
+
       - name: Sign MSI
         env:
           CERT_FILE: ${{ steps.obtain_cert.outputs.cert-file }}
           EXE_FILE: ${{ steps.buildmsi.outputs.msi }}
-          CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
-        run: .\assets\signtool sign /d "SailPoint CLI" /f $env:CERT_FILE /fd sha256 /tr http://timestamp.digicert.com /v $env:EXE_FILE
+          CERT_PASSWORD: ${{ secrets.SPOSS_SIGNING_PASS }}
+        run: .\assets\signtool sign /d "SailPoint CLI" /f $env:CERT_FILE /p $env:CERT_PASSWORD /fd sha256 /tr http://timestamp.digicert.com /v $env:EXE_FILE
       - name: Upload MSI
         shell: bash
         run: |
