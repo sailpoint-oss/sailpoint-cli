@@ -11,7 +11,7 @@ before:
 
 builds:
   - <<: &build_defaults
-      binary: bin/gh
+      binary: bin/sail
       main: ./
     id: macos
     goos: [darwin]
