@@ -116,9 +116,6 @@ jobs:
           hub release edit "$tag_name" -m "" -a "$MSI_FILE"
           release_url="$(gh api repos/:owner/:repo/releases -q ".[]|select(.tag_name==\"${tag_name}\")|.url")"
           publish_args=( -F draft=false )
-          if [[ $GITHUB_REF != *-* ]]; then
-            publish_args+=( -f discussion_category_name="$DISCUSSION_CATEGORY" )
-          fi
           gh api -X PATCH "$release_url" "${publish_args[@]}"
         env:
           MSI_FILE: ${{ steps.buildmsi.outputs.msi }}
