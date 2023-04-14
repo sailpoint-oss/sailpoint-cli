@@ -56,7 +56,7 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4
         with:
-          version: ${{ env.RELEASE_VERSION }}
+          version: "~1.13.1"
           args: release --release-notes=CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{secrets.PUBLISHER_TOKEN}}
