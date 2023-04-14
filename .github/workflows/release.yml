@@ -91,7 +91,7 @@ jobs:
           MSBUILD_PATH: ${{ steps.setupmsbuild.outputs.msbuildPath }}
         run: |
           name="$(basename "$ZIP_FILE" ".zip")"
-          version="$(echo -e ${GITHUB_REF#refs/tags/v} | sed s/-.*$//)"
+          version="$(echo -e ${GITHUB_REF#refs/tags/} | sed s/-.*$//)"
           "${MSBUILD_PATH}\MSBuild.exe" ./build/windows/sail.wixproj -p:SourceDir="$PWD" -p:OutputPath="$PWD" -p:OutputName="$name" -p:ProductVersion="$version"
 
       - name: Obtain signing cert
