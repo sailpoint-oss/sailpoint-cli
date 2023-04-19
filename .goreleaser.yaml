@@ -67,8 +67,8 @@ brews:
       owner: sailpoint-oss
       name: homebrew-tap
     commit_author:
-      name: colin-mckibben-sp
-      email: colin.mckibben@sailpoint.com
+      name: developer-relations-sp
+      email: devrel-service@sailpoint.com
 
 nfpms:
   - license: MIT
