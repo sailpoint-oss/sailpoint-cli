@@ -60,7 +60,10 @@ func newConnInvokeCmd(client client.Client) *cobra.Command {
 }
 
 func invokeConfig(cmd *cobra.Command) (json.RawMessage, error) {
-	if cmd.Flags().Lookup("config-path").Value.String() == "" && cmd.Flags().Lookup("config-json").Value.String() == "" {
+	configPathFlag := cmd.Flags().Lookup("config-path")
+	configJSONFlag := cmd.Flags().Lookup("config-json")
+
+	if (configPathFlag == nil || configPathFlag.Value.String() == "") && (configJSONFlag == nil || configJSONFlag.Value.String() == "") {
 		return nil, fmt.Errorf("Either config-path or config-json must be set")
 	}
 
