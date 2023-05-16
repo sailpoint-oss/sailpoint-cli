@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/spconfig"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/templates"
@@ -52,13 +53,13 @@ func newTemplateCmd() *cobra.Command {
 				return fmt.Errorf("no template specified")
 			}
 
-			config.Log.Info("Template Selected", "Template", template)
+			log.Info("Template Selected", "Template", template)
 
 			matches := types.Filter(exportTemplates, func(st templates.ExportTemplate) bool { return st.Name == template })
 			if len(matches) < 1 {
 				return fmt.Errorf("no template matches for %s", template)
 			} else if len(matches) > 1 {
-				config.Log.Warn("Multiple template matches", "Template", template)
+				log.Warn("Multiple template matches", "Template", template)
 			}
 			selectedTemplate = matches[0]
 			varCount := len(selectedTemplate.Variables)
@@ -82,8 +83,8 @@ func newTemplateCmd() *cobra.Command {
 			spconfig.PrintJob(*job)
 
 			if wait {
-				config.Log.Info("Checking Export Job", "JobID", job.JobId)
-				spconfig.DownloadExport(job.JobId, "spconfig-export-"+template+"-"+job.JobId+".json", folderPath)
+				log.Info("Checking Export Job", "JobID", job.JobId)
+				spconfig.DownloadExport(*apiClient, job.JobId, "spconfig-export-"+template+"-"+job.JobId+".json", folderPath)
 			}
 
 			return nil

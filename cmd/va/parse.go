@@ -6,14 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/fatih/color"
+	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/vbauerster/mpb/v8"
 	"github.com/vbauerster/mpb/v8/decor"
@@ -61,6 +60,11 @@ type CCG struct {
 	SCIMCommon                string    `json:"SCIM Common"`
 }
 
+var cache = make(map[string]*os.File)
+var cacheLock sync.Mutex
+
+const numWorkers = 8
+
 func saveCanalLine(bytes []byte, dir string) {
 	line := CANAL{}
 
@@ -72,36 +76,50 @@ func saveCanalLine(bytes []byte, dir string) {
 		line.Time = lineArray[2]
 		line.HostName = lineArray[3]
 		line.Service = strings.ReplaceAll(lineArray[4], ":", "")
-		line.Message = strings.ReplaceAll(strings.Join(lineArray[5:], ""), "\n", "")
+		line.Message = strings.ReplaceAll(strings.Join(lineArray[5:], " "), "\n", "")
 
-		if line.Month != "" && line.Day != "" && line.Time != "" && line.HostName != "" && line.Service != "" && line.Message != "" && line.HostName != "at" {
-			folder := "/Standard/"
+		if line.HostName != "at" && line.Month != "" && line.Day != "" && line.Time != "" && line.HostName != "" && line.Service != "" && line.Message != "" {
+			folder := "Standard"
 			if strings.Contains(line.Message, "Error") || strings.Contains(line.Message, "WARNING") {
-				folder = "/Errors/"
+				folder = "Errors"
 			}
-			filename := dir + line.HostName + "/" + line.Month + "-" + line.Day + folder + "/Canal.log"
+			filename := path.Join(dir, line.HostName, line.Month+"-"+line.Day, folder, "Canal.log")
 			tempdir, _ := path.Split(filename)
-			if _, err := os.Stat(tempdir); errors.Is(err, os.ErrNotExist) {
-				err := os.MkdirAll(tempdir, 0700)
-				if err != nil {
-					log.Println(err)
+
+			cacheLock.Lock()
+			defer cacheLock.Unlock()
+
+			f, exists := cache[filename]
+			if !exists {
+				if _, err := os.Stat(tempdir); errors.Is(err, os.ErrNotExist) {
+					err := os.MkdirAll(tempdir, 0700)
+					if err != nil {
+						log.Error(err)
+					}
 				}
+				f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+				if err != nil {
+					panic(err)
+				}
+				cache[filename] = f
 			}
-			f, openErr := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-			if openErr != nil {
-				panic(openErr)
-			}
+
 			fileWriter := bufio.NewWriter(f)
 			_, writeErr := fileWriter.WriteString(string(bytes))
 			if writeErr != nil {
 				panic(writeErr)
 			}
 			fileWriter.Flush()
-			f.Close()
 		}
-
 	}
+}
 
+func closeFiles() {
+	cacheLock.Lock()
+	defer cacheLock.Unlock()
+	for _, f := range cache {
+		f.Close()
+	}
 }
 
 func saveCCGLine(line CCG, dir string, isErr bool) error {
@@ -111,18 +129,30 @@ func saveCCGLine(line CCG, dir string, isErr bool) error {
 	}
 	filename := path.Join(dir, line.Org, folder, line.Timestamp.Format("2006-01-02"), strings.ReplaceAll(line.Logger_name, ".", "-"), "log.json")
 	jsonBytes, _ := json.MarshalIndent(line, "", " ")
-	err := CreateFolder(filename)
-	if err != nil {
-		return err
+
+	cacheLock.Lock()
+	defer cacheLock.Unlock()
+
+	f, exists := cache[filename]
+	if !exists {
+		tempdir, _ := path.Split(filename)
+		if _, err := os.Stat(tempdir); errors.Is(err, os.ErrNotExist) {
+			err := os.MkdirAll(tempdir, 0700)
+			if err != nil {
+				log.Error(err)
+			}
+		}
+		f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return err
+		}
+		cache[filename] = f
 	}
-	f, openErr := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if openErr != nil {
-		return openErr
-	}
+
 	if _, writeErr := f.Write(jsonBytes); writeErr != nil {
 		return writeErr
 	}
-	f.Close()
+
 	return nil
 }
 
@@ -153,9 +183,6 @@ func ErrorCheck(token []byte) bool {
 }
 
 func ParseCCGFile(p *mpb.Progress, filepath string, everything bool) error {
-	var lineCount int
-	var processCount int
-
 	file, err := os.Open(filepath)
 	if err != nil {
 		return err
@@ -187,10 +214,26 @@ func ParseCCGFile(p *mpb.Progress, filepath string, everything bool) error {
 
 	bufReader := bufio.NewReader(proxyReader)
 
+	type task struct {
+		line  CCG
+		token []byte
+		dir   string
+	}
+
+	taskChan := make(chan task)
 	var wg sync.WaitGroup
+	wg.Add(numWorkers)
+
+	for i := 0; i < numWorkers; i++ {
+		go func() {
+			defer wg.Done()
+			for t := range taskChan {
+				saveCCGLine(t.line, t.dir, ErrorCheck(t.token))
+			}
+		}()
+	}
 
 	for {
-		lineCount++
 		token, err := bufReader.ReadBytes('\n')
 		if err != nil {
 			break
@@ -198,33 +241,24 @@ func ParseCCGFile(p *mpb.Progress, filepath string, everything bool) error {
 			if ErrorCheck(token) || everything {
 				var line CCG
 				unErr := json.Unmarshal(token, &line)
-				if unErr == nil {
-					if line.Org != "" {
-						processCount++
-						wg.Add(1)
-						go func() {
-							defer wg.Done()
-							if ErrorCheck(token) {
-								saveCCGLine(line, dir, true)
-							} else {
-								saveCCGLine(line, dir, false)
-							}
-						}()
+				if unErr == nil && line.Org != "" {
+					taskChan <- task{
+						line:  line,
+						token: token,
+						dir:   dir,
 					}
 				}
 			}
 		}
 	}
+	close(taskChan)
 	wg.Wait()
 	bar.SetTotal(-1, true)
 
 	return nil
-
 }
 
 func ParseCanalFile(p *mpb.Progress, filepath string, everything bool) error {
-	var lineCount int
-
 	file, err := os.Open(filepath)
 	if err != nil {
 		return err
@@ -256,22 +290,36 @@ func ParseCanalFile(p *mpb.Progress, filepath string, everything bool) error {
 
 	bufReader := bufio.NewReader(proxyReader)
 
+	type task struct {
+		token []byte
+		dir   string
+	}
+
+	taskChan := make(chan task)
 	var wg sync.WaitGroup
+	wg.Add(numWorkers)
+
+	for i := 0; i < numWorkers; i++ {
+		go func() {
+			defer wg.Done()
+			for t := range taskChan {
+				saveCanalLine(t.token, t.dir)
+			}
+		}()
+	}
 
 	for {
-		lineCount++
 		token, err := bufReader.ReadBytes('\n')
 		if err != nil {
 			break
 		} else {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				saveCanalLine(token, dir)
-			}()
+			taskChan <- task{
+				token: token,
+				dir:   dir,
+			}
 		}
-
 	}
+	close(taskChan)
 	wg.Wait()
 	bar.SetTotal(-1, true)
 
@@ -298,8 +346,9 @@ func newParseCmd() *cobra.Command {
 					mpb.WithRefreshRate(180*time.Millisecond),
 				)
 
+				log.Info("Parsing Log Files", "files", args)
+
 				log.SetOutput(p)
-				color.Blue("Parsing Files %s\n", args)
 				for i := 0; i < len(args); i++ {
 					wg.Add(1)
 
@@ -310,7 +359,7 @@ func newParseCmd() *cobra.Command {
 							defer wg.Done()
 							err := ParseCCGFile(p, filepath, everything)
 							if err != nil {
-								log.Panicf("Issue Parsing log file: %v", filepath)
+								log.Error("Issue Parsing log file", "file", filepath, "error", err)
 							}
 						}()
 					} else if canal {
@@ -318,7 +367,7 @@ func newParseCmd() *cobra.Command {
 							defer wg.Done()
 							err := ParseCanalFile(p, filepath, everything)
 							if err != nil {
-								log.Panicf("Issue Parsing log file: %v", filepath)
+								log.Error("Issue Parsing log file", "file", filepath, "error", err)
 							}
 						}()
 					}

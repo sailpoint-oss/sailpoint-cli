@@ -21,7 +21,7 @@ const (
 func NewConnCmd() *cobra.Command {
 	conn := &cobra.Command{
 		Use:     "connectors",
-		Short:   "manage connectors",
+		Short:   "Manage connectors",
 		Aliases: []string{"conn"},
 		Run: func(command *cobra.Command, args []string) {
 			_, _ = fmt.Fprintf(command.OutOrStdout(), command.UsageString())

@@ -3,6 +3,8 @@ package va
 import (
 	"errors"
 	"fmt"
+	"sync"
+	"time"
 
 	"os"
 	"path"
@@ -11,6 +13,7 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/va"
 	"github.com/spf13/cobra"
+	"github.com/vbauerster/mpb/v8"
 )
 
 func NewTroubleshootCmd() *cobra.Command {
@@ -54,7 +57,13 @@ func NewTroubleshootCmd() *cobra.Command {
 				color.Green("Troubleshooting Complete")
 				color.Blue("Collecting stuntlog")
 
-				err := va.CollectVAFiles(endpoint, password, outputDir, []string{"/home/sailpoint/stuntlog.txt"})
+				var wg sync.WaitGroup
+				p := mpb.New(mpb.WithWidth(60),
+					mpb.PopCompletedMode(),
+					mpb.WithRefreshRate(180*time.Millisecond),
+					mpb.WithWaitGroup(&wg))
+
+				err := va.CollectVAFiles(endpoint, password, outputDir, []string{"/home/sailpoint/stuntlog.txt"}, p)
 				if err != nil {
 					return err
 				}

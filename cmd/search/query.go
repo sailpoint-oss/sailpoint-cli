@@ -4,6 +4,7 @@ package search
 import (
 	"fmt"
 
+	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/search"
 	"github.com/spf13/cobra"
@@ -42,7 +43,7 @@ func newQueryCmd() *cobra.Command {
 				return err
 			}
 
-			config.Log.Info("Performing Search", "Query", searchQuery, "Indices", indices)
+			log.Info("Performing Search", "Query", searchQuery, "Indices", indices)
 
 			formattedResponse, err := search.PerformSearch(*apiClient, searchObj)
 			if err != nil {

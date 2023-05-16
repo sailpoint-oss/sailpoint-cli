@@ -4,6 +4,7 @@ package spconfig
 import (
 	"context"
 
+	"github.com/charmbracelet/log"
 	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/spconfig"
@@ -44,8 +45,8 @@ func newExportCmd() *cobra.Command {
 			spconfig.PrintJob(*job)
 
 			if wait {
-				config.Log.Warn("Waiting for export task to complete")
-				spconfig.DownloadExport(job.JobId, "spconfig-export-"+job.JobId+".json", folderPath)
+				log.Warn("Waiting for export task to complete")
+				spconfig.DownloadExport(*apiClient, job.JobId, "spconfig-export-"+job.JobId+".json", folderPath)
 			}
 
 			return nil

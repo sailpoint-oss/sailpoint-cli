@@ -2,9 +2,7 @@
 package main
 
 import (
-	"os"
-
-	"github.com/fatih/color"
+	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/root"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/spf13/cobra"
@@ -26,13 +24,12 @@ func init() {
 func main() {
 
 	err := rootCmd.Execute()
-	saveErr := config.SaveConfig()
 
-	if saveErr != nil {
-		color.Yellow("error saving config file", saveErr)
+	if saveErr := config.SaveConfig(); saveErr != nil {
+		log.Warn("Issue saving config file", "error", saveErr)
 	}
 
 	if err != nil {
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }

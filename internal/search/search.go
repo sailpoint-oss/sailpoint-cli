@@ -6,10 +6,10 @@ import (
 	"os"
 	"path"
 
+	"github.com/charmbracelet/log"
 	"github.com/mitchellh/mapstructure"
 	sailpoint "github.com/sailpoint-oss/golang-sdk"
 	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v3"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 )
 
@@ -62,7 +62,7 @@ func PerformSearch(apiClient sailpoint.APIClient, search sailpointsdk.Search) (S
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
 
-	config.Log.Info("Search complete")
+	log.Info("Search complete")
 
 	for i := 0; i < len(resp); i++ {
 		entry := resp[i]
@@ -174,7 +174,7 @@ func SaveResults[T any](formattedResponse []T, fileName string, filePath string,
 		case "json":
 			fileName = fileName + ".json"
 			savePath := path.Join(filePath, fileName)
-			config.Log.Info("Saving Results", "file", savePath)
+			log.Info("Saving Results", "file", savePath)
 			err := output.SaveJSONFile(formattedResponse, fileName, filePath)
 			if err != nil {
 				return err
@@ -182,7 +182,7 @@ func SaveResults[T any](formattedResponse []T, fileName string, filePath string,
 		case "csv":
 			fileName = fileName + ".csv"
 			savePath := path.Join(filePath, fileName)
-			config.Log.Info("Saving Results", "file", savePath)
+			log.Info("Saving Results", "file", savePath)
 			err := output.SaveCSVFile(formattedResponse, fileName, filePath)
 			if err != nil {
 				return err

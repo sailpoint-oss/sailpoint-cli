@@ -6,9 +6,10 @@ import (
 	"path"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/fatih/color"
+	sailpoint "github.com/sailpoint-oss/golang-sdk"
 	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/beta"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 )
 
@@ -16,12 +17,7 @@ func PrintJob(job sailpointbetasdk.SpConfigJob) {
 	fmt.Printf("Job Type: %s\nJob ID: %s\nStatus: %s\nExpired: %s\nCreated: %s\nModified: %s\nCompleted: %s\n", job.Type, job.JobId, job.Status, job.GetExpiration(), job.GetCreated(), job.GetModified(), job.GetCompleted())
 }
 
-func DownloadExport(jobId string, fileName string, folderPath string) error {
-
-	apiClient, err := config.InitAPIClient()
-	if err != nil {
-		return err
-	}
+func DownloadExport(apiClient sailpoint.APIClient, jobId string, fileName string, folderPath string) error {
 
 	for {
 		response, _, err := apiClient.Beta.SPConfigApi.ExportSpConfigJobStatus(context.TODO(), jobId).Execute()
@@ -34,12 +30,12 @@ func DownloadExport(jobId string, fileName string, folderPath string) error {
 		} else {
 			switch response.Status {
 			case "COMPLETE":
-				config.Log.Info("Job Complete")
+				log.Info("Job Complete")
 				exportData, _, err := apiClient.Beta.SPConfigApi.ExportSpConfigDownload(context.TODO(), jobId).Execute()
 				if err != nil {
 					return err
 				}
-				config.Log.Info("Saving export data", "filePath", path.Join(folderPath, fileName))
+				log.Info("Saving export data", "filePath", path.Join(folderPath, fileName))
 				err = output.SaveJSONFile(exportData, fileName, folderPath)
 				if err != nil {
 					return err
@@ -56,12 +52,7 @@ func DownloadExport(jobId string, fileName string, folderPath string) error {
 	return nil
 }
 
-func DownloadImport(jobId string, fileName string, folderPath string) error {
-
-	apiClient, err := config.InitAPIClient()
-	if err != nil {
-		return err
-	}
+func DownloadImport(apiClient sailpoint.APIClient, jobId string, fileName string, folderPath string) error {
 
 	for {
 		response, _, err := apiClient.Beta.SPConfigApi.ImportSpConfigJobStatus(context.TODO(), jobId).Execute()

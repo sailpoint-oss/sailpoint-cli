@@ -3,6 +3,7 @@ package set
 import (
 	"strings"
 
+	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/spf13/cobra"
@@ -46,15 +47,15 @@ func newAuthCommand() *cobra.Command {
 			case "pat":
 
 				config.SetAuthType("pat")
-				config.Log.Info("Authentication method set to PAT")
+				log.Info("Authentication method set to PAT")
 
 			case "oauth":
 
 				config.SetAuthType("oauth")
-				config.Log.Info("Authentication method set to OAuth")
+				log.Info("Authentication method set to OAuth")
 
 			default:
-				config.Log.Error("Invalid Selection")
+				log.Error("Invalid Selection")
 			}
 
 			return nil

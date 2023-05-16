@@ -1,6 +1,7 @@
 package environment
 
 import (
+	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
@@ -46,20 +47,20 @@ func NewEnvironmentCommand() *cobra.Command {
 
 				if foundEnv, exists := environments[env]; exists && !overwrite && config.GetTenantUrl() != "" && config.GetBaseUrl() != "" {
 					if show {
-						config.Log.Warn("You are about to Print out the Environment", "env", env)
+						log.Warn("You are about to Print out the Environment", "env", env)
 						res := terminal.InputPrompt("Press Enter to continue")
 						if res == "" {
 							util.PrettyPrint(foundEnv)
 						}
 					} else if erase {
-						config.Log.Warn("You are about to Erase the Environment", "env", env)
+						log.Warn("You are about to Erase the Environment", "env", env)
 						res := terminal.InputPrompt("Press Enter to continue")
 						if res == "" {
 							viper.Set("environments."+config.GetActiveEnvironment(), config.Environment{})
 						}
 
 					} else {
-						config.Log.Info("Environment changed", "env", env)
+						log.Info("Environment changed", "env", env)
 					}
 
 				} else {
@@ -72,7 +73,7 @@ func NewEnvironmentCommand() *cobra.Command {
 
 				}
 			} else {
-				config.Log.Warn("No Environment Provided")
+				log.Warn("No Environment Provided")
 			}
 
 			return nil

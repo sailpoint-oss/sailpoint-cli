@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/transform"
 	"github.com/spf13/cobra"
@@ -23,12 +24,17 @@ func newDownloadCmd() *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			transforms, err := transform.GetTransforms()
+			apiClient, err := config.InitAPIClient()
 			if err != nil {
 				return err
 			}
 
-			err = transform.ListTransforms()
+			transforms, err := transform.GetTransforms(*apiClient)
+			if err != nil {
+				return err
+			}
+
+			err = transform.ListTransforms(transforms)
 			if err != nil {
 				return err
 			}
@@ -60,7 +66,7 @@ func newDownloadCmd() *cobra.Command {
 				}
 			}
 
-			config.Log.Info("Transforms downloaded successfully", "path", destination)
+			log.Info("Transforms downloaded successfully", "path", destination)
 
 			return nil
 		},

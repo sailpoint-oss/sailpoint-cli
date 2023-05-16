@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/charmbracelet/log"
 	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v3"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
@@ -63,7 +64,7 @@ func newCreateCmd() *cobra.Command {
 				return sdk.HandleSDKError(resp, err)
 			}
 
-			config.Log.Info("Transform created successfully")
+			log.Info("Transform created successfully")
 
 			cmd.Print(*transformObj.Id)
 
