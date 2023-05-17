@@ -7,13 +7,12 @@ import (
 	"encoding/json"
 	"math/rand"
 	"os"
-	"path/filepath"
+
 	PATH "path/filepath"
 	"testing"
 	"time"
 
 	"github.com/charmbracelet/log"
-	"github.com/golang/mock/gomock"
 	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v3"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
@@ -47,15 +46,14 @@ func randSeq(n int) string {
 	return string(b)
 }
 
-func SaveTransform(filePath string, transform map[string]interface{}) error {
-	// Make sure to create the files if they dont exist
-	file, err := os.OpenFile((PATH.Join(path, filePath)), os.O_RDWR|os.O_CREATE, 0777)
+func SaveTransform(fileName string, transform map[string]interface{}) error {
+	file, err := os.OpenFile((PATH.Join(path, fileName)), os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	createString, err := json.MarshalIndent(transform, "", " ")
+	createString, err := json.Marshal(transform)
 	if err != nil {
 		return err
 	}
@@ -71,9 +69,9 @@ func SaveTransform(filePath string, transform map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
-
 func TestNewCRUDCmd(t *testing.T) {
 
 	var transform sailpointsdk.Transform
@@ -83,7 +81,7 @@ func TestNewCRUDCmd(t *testing.T) {
 		t.Fatalf("Error unmarshalling template: %v", err)
 	}
 
-	transformName := randSeq(6)
+	transformName := randSeq(16)
 
 	createTransform := make(map[string]interface{})
 	createTransform["name"] = transformName
@@ -103,14 +101,14 @@ func TestNewCRUDCmd(t *testing.T) {
 		t.Fatalf("Unable to save test data: %v", err)
 	}
 
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	// ctrl := gomock.NewController(t)
+	// defer ctrl.Finish()
 
 	createCMD := newCreateCmd()
 
 	createBuffer := new(bytes.Buffer)
 	createCMD.SetOut(createBuffer)
-	createCMD.Flags().Set("file", filepath.Join(path, createFile))
+	createCMD.Flags().Set("file", PATH.Join(path, createFile))
 
 	err = createCMD.Execute()
 	if err != nil {
@@ -120,12 +118,12 @@ func TestNewCRUDCmd(t *testing.T) {
 	transformID := string(createBuffer.String())
 	t.Log(transformID)
 
-	Attributes := make(map[string]interface{})
+	Attributes := make(map[string]string)
 	Attributes["substring"] = randSeq(24)
 
 	updateTransform := make(map[string]interface{})
 	updateTransform["attributes"] = Attributes
-	updateTransform["name"] = transform.Name
+	updateTransform["name"] = transformName
 	updateTransform["type"] = transform.Type
 	updateTransform["id"] = transformID
 
@@ -138,7 +136,7 @@ func TestNewCRUDCmd(t *testing.T) {
 
 	cmd := newUpdateCmd()
 
-	cmd.Flags().Set("file", filepath.Join(path, updateFile))
+	cmd.Flags().Set("file", PATH.Join(path, updateFile))
 
 	err = cmd.Execute()
 	if err != nil {

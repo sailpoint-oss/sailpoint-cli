@@ -254,6 +254,8 @@ github.com/sailpoint-oss/golang-sdk v1.0.3 h1:uJzKJ2+gOdVY7sbpjpvm4O4c3woAjBSx9A
 github.com/sailpoint-oss/golang-sdk v1.0.3/go.mod h1:k8tO4zw0wmivf5NjrPE2tF+ToCr6AJUV9BJnyGW4/rA=
 github.com/sailpoint-oss/golang-sdk v1.0.4 h1:NLdExj3bb7NWKhHnzReP0ZiSUNR+Nlqd58HjHJtue+I=
 github.com/sailpoint-oss/golang-sdk v1.0.4/go.mod h1:k8tO4zw0wmivf5NjrPE2tF+ToCr6AJUV9BJnyGW4/rA=
+github.com/sailpoint-oss/golang-sdk v1.0.5 h1:eu0JGrpfzgWDXrdSXkY2sjs0vZ+2iGRN7zcntEDAE7U=
+github.com/sailpoint-oss/golang-sdk v1.0.5/go.mod h1:k8tO4zw0wmivf5NjrPE2tF+ToCr6AJUV9BJnyGW4/rA=
 github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966 h1:JIAuq3EEf9cgbU6AtGPK4CTG3Zf6CKMNqf0MHTggAUA=
 github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966/go.mod h1:sUM3LWHvSMaG192sy56D9F7CNvL7jUJVXoqM1QKLnog=
 github.com/spf13/afero v1.9.5 h1:stMpOSZFs//0Lv29HduCmli3GUfpFoF3Y1Q/aXj/wVM=
