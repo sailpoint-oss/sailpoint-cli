@@ -125,7 +125,7 @@ var accountCreateChecks = []Check{
 			"std:account:list",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
-			accountsPreCreate, _, _, err := cc.AccountList(ctx)
+			accountsPreCreate, _, _, err := cc.AccountList(ctx, nil, nil, nil)
 			if err != nil {
 				res.err(err)
 				return
@@ -146,7 +146,7 @@ var accountCreateChecks = []Check{
 				return
 			}
 
-			accountsPostCreate, _, _, err := cc.AccountList(ctx)
+			accountsPostCreate, _, _, err := cc.AccountList(ctx, nil, nil, nil)
 			if err != nil {
 				res.err(err)
 				return
@@ -178,7 +178,7 @@ var accountCreateChecks = []Check{
 				res.errf("was able to read deleted account: %q", acct.Identity)
 			}
 
-			accountsPostDelete, _, _, err := cc.AccountList(ctx)
+			accountsPostDelete, _, _, err := cc.AccountList(ctx, nil, nil, nil)
 			if err != nil {
 				res.err(err)
 			}

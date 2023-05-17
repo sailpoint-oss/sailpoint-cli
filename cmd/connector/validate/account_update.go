@@ -18,7 +18,7 @@ var accountUpdateChecks = []Check{
 			"std:account:update",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
-			accounts, _, _, err := cc.AccountList(ctx)
+			accounts, _, _, err := cc.AccountList(ctx, nil, nil, nil)
 			if err != nil {
 				res.err(err)
 			}

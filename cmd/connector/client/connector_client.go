@@ -208,9 +208,24 @@ func (a *Account) UniqueID() string {
 	return ""
 }
 
+type accountListInput struct {
+	Stateful *bool                  `json:"stateful,omitempty"`
+	StateID  *string                `json:"stateId,omitempty"`
+	Schema   map[string]interface{} `json:"schema,omitempty"`
+}
+
 // AccountList lists all accounts
-func (cc *ConnClient) AccountList(ctx context.Context) (accounts []Account, state json.RawMessage, printable []byte, err error) {
-	cmdRaw, err := cc.rawInvoke("std:account:list", []byte("{}"))
+func (cc *ConnClient) AccountList(ctx context.Context, stateful *bool, stateId *string, schema map[string]interface{}) (accounts []Account, state json.RawMessage, printable []byte, err error) {
+	inputRaw, err := json.Marshal(accountListInput{
+		Stateful: stateful,
+		StateID:  stateId,
+		Schema:   schema,
+	})
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	cmdRaw, err := cc.rawInvoke("std:account:list", inputRaw)
 	if err != nil {
 		return nil, nil, nil, err
 	}
