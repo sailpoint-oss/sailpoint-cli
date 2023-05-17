@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/charmbracelet/log"
-	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v3"
+	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/spf13/cobra"
@@ -23,7 +23,7 @@ func newUpdateCmd() *cobra.Command {
 		Aliases: []string{"u"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var data map[string]interface{}
+			var transform sailpointbetasdk.Transform
 
 			filepath := cmd.Flags().Lookup("file").Value.String()
 			if filepath != "" {
@@ -33,34 +33,34 @@ func newUpdateCmd() *cobra.Command {
 				}
 				defer file.Close()
 
-				err = json.NewDecoder(file).Decode(&data)
+				err = json.NewDecoder(file).Decode(&transform)
 				if err != nil {
 					return err
 				}
 			} else {
-				err := json.NewDecoder(os.Stdin).Decode(&data)
+				err := json.NewDecoder(os.Stdin).Decode(&transform)
 				if err != nil {
 					return err
 				}
 			}
 
-			if data["id"] == nil {
+			if transform.Id == nil {
 				return fmt.Errorf("the input must contain an id")
 			}
 
-			id := data["id"].(string)
-			delete(data, "id") // ID can't be present in the update payload
+			id := transform.Id
+			transform.Id = nil // ID can't be present in the update payload
 
-			log.Info("Updating Transaform", "transformID", id)
+			log.Info("Updating Transform", "transformID", id)
 
-			transform := sailpointsdk.NewTransform(data["name"].(string), data["type"].(string), data["attributes"].(map[string]interface{}))
+			updateTransform := sailpointbetasdk.NewTransform(transform.Name, transform.Type, transform.Attributes)
 
 			apiClient, err := config.InitAPIClient()
 			if err != nil {
 				return err
 			}
 
-			_, resp, err := apiClient.V3.TransformsApi.UpdateTransform(context.TODO(), id).Transform(*transform).Execute()
+			_, resp, err := apiClient.Beta.TransformsApi.UpdateTransform(context.TODO(), *id).Transform(*updateTransform).Execute()
 			if err != nil {
 				return sdk.HandleSDKError(resp, err)
 			}

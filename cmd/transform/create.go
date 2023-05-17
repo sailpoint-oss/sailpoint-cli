@@ -8,9 +8,10 @@ import (
 	"os"
 
 	"github.com/charmbracelet/log"
-	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v3"
+	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +24,7 @@ func newCreateCmd() *cobra.Command {
 		Aliases: []string{"c"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var data map[string]interface{}
+			var transform sailpointbetasdk.Transform
 
 			filepath := cmd.Flags().Lookup("file").Value.String()
 			if filepath != "" {
@@ -33,33 +34,35 @@ func newCreateCmd() *cobra.Command {
 				}
 				defer file.Close()
 
-				err = json.NewDecoder(file).Decode(&data)
+				err = json.NewDecoder(file).Decode(&transform)
 				if err != nil {
 					return err
 				}
 			} else {
-				err := json.NewDecoder(os.Stdin).Decode(&data)
+				err := json.NewDecoder(os.Stdin).Decode(&transform)
 				if err != nil {
 					return err
 				}
 			}
 
-			if data["name"] == nil {
+			log.Debug("Transform", "transform", util.PrettyPrint(transform))
+
+			if transform.Name == "" {
 				return fmt.Errorf("the transform must have a name")
 			}
 
-			if data["id"] != nil {
+			if transform.Id != nil {
 				return fmt.Errorf("the transform cannot have an ID")
 			}
 
-			transform := sailpointsdk.NewTransform(data["name"].(string), data["type"].(string), data["attributes"].(map[string]interface{}))
+			createTransform := sailpointbetasdk.NewTransform(transform.Name, transform.Type, transform.Attributes)
 
 			apiClient, err := config.InitAPIClient()
 			if err != nil {
 				return err
 			}
 
-			transformObj, resp, err := apiClient.V3.TransformsApi.CreateTransform(context.TODO()).Transform(*transform).Execute()
+			transformObj, resp, err := apiClient.Beta.TransformsApi.CreateTransform(context.TODO()).Transform(*createTransform).Execute()
 			if err != nil {
 				return sdk.HandleSDKError(resp, err)
 			}

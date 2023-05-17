@@ -5,16 +5,18 @@ package transform
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"math/rand"
 	"os"
 	"path/filepath"
+	PATH "path/filepath"
 	"testing"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/golang/mock/gomock"
 	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v3"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 )
 
 var (
@@ -26,10 +28,9 @@ var (
   "name": "Test Index Of Transform"
 }`)
 
-	path          = "test_data/"
-	createFile    = "test_create.json"
-	updateFile    = "test_update.json"
-	testTransform sailpointsdk.Transform
+	path       = "test_data"
+	createFile = "test_create.json"
+	updateFile = "test_update.json"
 )
 
 func init() {
@@ -46,17 +47,20 @@ func randSeq(n int) string {
 	return string(b)
 }
 
-func SaveTransform(filePath string) error {
+func SaveTransform(filePath string, transform map[string]interface{}) error {
 	// Make sure to create the files if they dont exist
-	file, err := os.OpenFile((filepath.Join(path, filePath)), os.O_RDWR|os.O_CREATE, 0777)
+	file, err := os.OpenFile((PATH.Join(path, filePath)), os.O_RDWR|os.O_CREATE, 0777)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	createString, err := json.MarshalIndent(transform, "", " ")
 	if err != nil {
 		return err
 	}
 
-	createString, err := json.Marshal(testTransform)
-	if err != nil {
-		return err
-	}
+	log.Info("Saving Transform", "Indented", string(createString))
 
 	_, err = file.Write(createString)
 	if err != nil {
@@ -72,20 +76,29 @@ func SaveTransform(filePath string) error {
 
 func TestNewCRUDCmd(t *testing.T) {
 
-	err := json.Unmarshal([]byte(createTemplate), &testTransform)
+	var transform sailpointsdk.Transform
+
+	err := json.Unmarshal([]byte(createTemplate), &transform)
 	if err != nil {
 		t.Fatalf("Error unmarshalling template: %v", err)
 	}
 
-	testTransform.Name = randSeq(6)
+	transformName := randSeq(6)
+
+	createTransform := make(map[string]interface{})
+	createTransform["name"] = transformName
+	createTransform["type"] = transform.Type
+	createTransform["attributes"] = transform.Attributes
+
+	t.Log(util.PrettyPrint(createTransform))
 
 	// Make sure the output dir exists first
 	err = os.MkdirAll(path, os.ModePerm)
 	if err != nil {
-		t.Fatalf("Error unmarshalling template: %v", err)
+		t.Fatalf("Error Creating Folders: %v", err)
 	}
 
-	err = SaveTransform(createFile)
+	err = SaveTransform(createFile, createTransform)
 	if err != nil {
 		t.Fatalf("Unable to save test data: %v", err)
 	}
@@ -104,13 +117,21 @@ func TestNewCRUDCmd(t *testing.T) {
 		t.Fatalf("TestNewCreateCmd: Unable to execute the command successfully: %v", err)
 	}
 
-	transformID := createBuffer.String()
-	fmt.Println(transformID)
+	transformID := string(createBuffer.String())
+	t.Log(transformID)
 
-	testTransform.Attributes["substring"] = randSeq(24)
-	testTransform.Id = &transformID
+	Attributes := make(map[string]interface{})
+	Attributes["substring"] = randSeq(24)
 
-	err = SaveTransform(updateFile)
+	updateTransform := make(map[string]interface{})
+	updateTransform["attributes"] = Attributes
+	updateTransform["name"] = transform.Name
+	updateTransform["type"] = transform.Type
+	updateTransform["id"] = transformID
+
+	t.Log(util.PrettyPrint(updateTransform))
+
+	err = SaveTransform(updateFile, updateTransform)
 	if err != nil {
 		t.Fatalf("Unable to save test data: %v", err)
 	}
