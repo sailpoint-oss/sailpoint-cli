@@ -107,3 +107,23 @@ func connClientWithCustomParams(spClient client.Client, cfg json.RawMessage, con
 
 	return cc, nil
 }
+
+// getSchemaFromCommand returns schema from command if it exists
+func getSchemaFromCommand(cmd *cobra.Command) (map[string]interface{}, error) {
+	var schema map[string]interface{}
+	if sc := cmd.Flags().Lookup("schema"); sc != nil {
+		if scv := sc.Value.String(); scv != "" {
+			fmt.Println(scv)
+			b, err := os.ReadFile(scv)
+			if err != nil {
+				return nil, err
+			}
+
+			err = json.Unmarshal(b, &schema)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return schema, nil
+}

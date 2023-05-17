@@ -2,9 +2,7 @@
 package connector
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/spf13/cobra"
@@ -36,21 +34,9 @@ func newConnInvokeAccountListCmd(client client.Client) *cobra.Command {
 				}
 			}
 
-			var schema map[string]interface{}
-			if sc := cmd.Flags().Lookup("schema"); sc != nil {
-				if scv := sc.Value.String(); scv != "" {
-					fmt.Println(scv)
-					b, err := os.ReadFile(scv)
-					if err != nil {
-						return err
-					}
-
-					//schema, err = make(map[string]string)
-					err = json.Unmarshal(b, &schema)
-					if err != nil {
-						return err
-					}
-				}
+			schema, err := getSchemaFromCommand(cmd)
+			if err != nil {
+				return err
 			}
 
 			_, state, printable, err := cc.AccountList(ctx, stateful, stateId, schema)
