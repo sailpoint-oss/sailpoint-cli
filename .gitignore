@@ -2,6 +2,7 @@
 .vscode
 .DS_Store
 10.10.10.5
+test_data
 transform_files
 search_results
 spconfig-exports
