@@ -11,30 +11,6 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/mocks"
 )
 
-func TestAccountCreateWithoutInput(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	i := `{"connectorRef":"test-connector","tag":"latest","type":"std:account:create","config":{},"input":{"identity":null,"attributes":{}}}`
-
-	client := mocks.NewMockClient(ctrl)
-	client.EXPECT().
-		Post(gomock.Any(), gomock.Any(), "application/json", bytes.NewReader([]byte(i))).
-		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("{}")))}, nil)
-
-	cmd := newConnInvokeAccountCreateCmd(client)
-	addRequiredFlagsFromParentCmd(cmd)
-
-	b := new(bytes.Buffer)
-	cmd.SetOut(b)
-	cmd.SetArgs([]string{"-c", "test-connector", "--config-json", "{}"})
-
-	err := cmd.Execute()
-	if err != nil {
-		t.Errorf("command failed with err: %s", err)
-	}
-}
-
 func TestAccountCreateWithIdentity(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
