@@ -27,7 +27,12 @@ func newConnInvokeAccountDeleteCmd(client client.Client) *cobra.Command {
 				uniqueID = args[1]
 			}
 
-			rawResponse, err := cc.AccountDelete(ctx, args[0], uniqueID)
+			schema, err := getSchemaFromCommand(cmd)
+			if err != nil {
+				return err
+			}
+
+			rawResponse, err := cc.AccountDelete(ctx, args[0], uniqueID, schema)
 			if err != nil {
 				return err
 			}
@@ -36,6 +41,8 @@ func newConnInvokeAccountDeleteCmd(client client.Client) *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.Flags().String("schema", "", "Optional - Custom account schema")
 
 	return cmd
 }

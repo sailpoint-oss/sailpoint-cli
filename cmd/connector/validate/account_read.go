@@ -26,7 +26,7 @@ var accountReadChecks = []Check{
 			}
 
 			for _, account := range accounts {
-				acct, _, err := cc.AccountRead(ctx, account.ID(), account.UniqueID())
+				acct, _, err := cc.AccountRead(ctx, account.ID(), account.UniqueID(), nil)
 				if err != nil {
 					res.err(err)
 					return
@@ -56,7 +56,7 @@ var accountReadChecks = []Check{
 			"std:account:read",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
-			_, _, err := cc.AccountRead(ctx, "__sailpoint__not__found__", "")
+			_, _, err := cc.AccountRead(ctx, "__sailpoint__not__found__", "", nil)
 			if err == nil {
 				res.errf("expected error for non-existant identity")
 			}

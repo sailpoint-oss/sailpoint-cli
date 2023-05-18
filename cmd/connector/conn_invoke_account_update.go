@@ -35,7 +35,12 @@ func newConnInvokeAccountUpdateCmd(spClient client.Client) *cobra.Command {
 				uniqueID = args[1]
 			}
 
-			_, rawResponse, err := cc.AccountUpdate(ctx, args[0], uniqueID, changes)
+			schema, err := getSchemaFromCommand(cmd)
+			if err != nil {
+				return err
+			}
+
+			_, rawResponse, err := cc.AccountUpdate(ctx, args[0], uniqueID, changes, schema)
 			if err != nil {
 				return err
 			}
@@ -47,6 +52,7 @@ func newConnInvokeAccountUpdateCmd(spClient client.Client) *cobra.Command {
 	}
 
 	cmd.Flags().String("changes", "[]", "Attribute Changes")
+	cmd.Flags().String("schema", "", "Optional - Custom account schema")
 
 	return cmd
 }

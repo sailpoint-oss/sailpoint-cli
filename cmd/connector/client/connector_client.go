@@ -274,15 +274,17 @@ func (cc *ConnClient) AccountList(ctx context.Context, stateful *bool, stateId *
 }
 
 type readInput struct {
-	Identity string `json:"identity"`
-	Key      Key    `json:"key"`
-	Type     string `json:"type,omitempty"`
+	Identity string                 `json:"identity"`
+	Key      Key                    `json:"key"`
+	Type     string                 `json:"type,omitempty"`
+	Schema   map[string]interface{} `json:"schema,omitempty"`
 }
 
 // AccountRead reads a specific account
-func (cc *ConnClient) AccountRead(ctx context.Context, id string, uniqueID string) (account *Account, rawResponse []byte, err error) {
+func (cc *ConnClient) AccountRead(ctx context.Context, id string, uniqueID string, schema map[string]interface{}) (account *Account, rawResponse []byte, err error) {
 	input := readInput{
 		Identity: id,
+		Schema:   schema,
 	}
 	if uniqueID == "" {
 		input.Key = NewSimpleKey(id)
@@ -331,11 +333,18 @@ func (cc *ConnClient) AccountRead(ctx context.Context, id string, uniqueID strin
 	return acct, rawResp.Data, nil
 }
 
+type accountCreateInput struct {
+	Identity   *string                `json:"identity"`
+	Attributes map[string]interface{} `json:"attributes"`
+	Schema     map[string]interface{} `json:"schema,omitempty"`
+}
+
 // AccountCreate creats an account
-func (cc *ConnClient) AccountCreate(ctx context.Context, identity *string, attributes map[string]interface{}) (account *Account, raw []byte, err error) {
-	input, err := json.Marshal(map[string]interface{}{
-		"identity":   identity,
-		"attributes": attributes,
+func (cc *ConnClient) AccountCreate(ctx context.Context, identity *string, attributes map[string]interface{}, schema map[string]interface{}) (account *Account, raw []byte, err error) {
+	input, err := json.Marshal(accountCreateInput{
+		Identity:   identity,
+		Attributes: attributes,
+		Schema:     schema,
 	})
 	if err != nil {
 		return nil, nil, err
@@ -378,9 +387,10 @@ func (cc *ConnClient) AccountCreate(ctx context.Context, identity *string, attri
 }
 
 // AccountDelete deletes an account
-func (cc *ConnClient) AccountDelete(ctx context.Context, id string, uniqueID string) (raw []byte, err error) {
+func (cc *ConnClient) AccountDelete(ctx context.Context, id string, uniqueID string, schema map[string]interface{}) (raw []byte, err error) {
 	input := readInput{
 		Identity: id,
+		Schema:   schema,
 	}
 	if uniqueID == "" {
 		input.Key = NewSimpleKey(id)
@@ -421,7 +431,7 @@ type AttributeChange struct {
 }
 
 // AccountUpdate updates an account
-func (cc *ConnClient) AccountUpdate(ctx context.Context, id string, uniqueID string, changes []AttributeChange) (account *Account, rawResponse []byte, err error) {
+func (cc *ConnClient) AccountUpdate(ctx context.Context, id string, uniqueID string, changes []AttributeChange, schema map[string]interface{}) (account *Account, rawResponse []byte, err error) {
 	type accountUpdate struct {
 		readInput
 		Changes []AttributeChange `json:"changes"`
@@ -429,6 +439,7 @@ func (cc *ConnClient) AccountUpdate(ctx context.Context, id string, uniqueID str
 
 	input := readInput{
 		Identity: id,
+		Schema:   schema,
 	}
 	if uniqueID == "" {
 		input.Key = NewSimpleKey(id)
@@ -547,9 +558,26 @@ func (a *Entitlement) UniqueID() string {
 	return ""
 }
 
+type entitlementListInput struct {
+	accountListInput
+	Type string `json:"type"`
+}
+
 // EntitlementList lists all entitlements
-func (cc *ConnClient) EntitlementList(ctx context.Context, t string) (entitlements []Entitlement, state json.RawMessage, printable []byte, err error) {
-	cmdRaw, err := cc.rawInvoke("std:entitlement:list", []byte(fmt.Sprintf(`{"type": %q}`, t)))
+func (cc *ConnClient) EntitlementList(ctx context.Context, t string, stateful *bool, stateId *string, schema map[string]interface{}) (entitlements []Entitlement, state json.RawMessage, printable []byte, err error) {
+	inputRaw, err := json.Marshal(entitlementListInput{
+		Type: t,
+		accountListInput: accountListInput{
+			Stateful: stateful,
+			StateID:  stateId,
+			Schema:   schema,
+		},
+	})
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	cmdRaw, err := cc.rawInvoke("std:entitlement:list", inputRaw) //[]byte(fmt.Sprintf(`{"type": %q}`, t)))
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -598,10 +626,11 @@ func (cc *ConnClient) EntitlementList(ctx context.Context, t string) (entitlemen
 }
 
 // EntitlementRead reads all entitlements
-func (cc *ConnClient) EntitlementRead(ctx context.Context, id string, uniqueID string, t string) (entitlement *Entitlement, rawResponse []byte, err error) {
+func (cc *ConnClient) EntitlementRead(ctx context.Context, id string, uniqueID string, t string, schema map[string]interface{}) (entitlement *Entitlement, rawResponse []byte, err error) {
 	input := readInput{
 		Identity: id,
 		Type:     t,
+		Schema:   schema,
 	}
 
 	if uniqueID == "" {
