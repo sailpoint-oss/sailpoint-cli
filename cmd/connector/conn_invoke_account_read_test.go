@@ -34,7 +34,8 @@ func TestAccountReadWithIdentity(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	i := `{"connectorRef":"test-connector","tag":"latest","type":"std:account:read","config":{},"input":{"identity":"john.doe","key":{"simple":{"id":"john.doe"}}}}`
+	i := `{"connectorRef":"test-connector","tag":"latest","type":"std:account:read","config":{},` +
+		`"input":{"identity":"john.doe","key":{"simple":{"id":"john.doe"}}}}`
 
 	client := mocks.NewMockClient(ctrl)
 	client.EXPECT().

@@ -27,7 +27,7 @@ func TestChangePasswordWithoutInput(t *testing.T) {
 
 	err := cmd.Execute()
 	if err == nil {
-		t.Errorf("failed to detect error: reading account without identity")
+		t.Errorf("failed to detect error: changing password without identity")
 	}
 }
 

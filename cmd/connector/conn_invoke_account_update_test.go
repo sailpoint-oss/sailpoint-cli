@@ -35,7 +35,8 @@ func TestAccountUpdateWithIdentity(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	i := `{"connectorRef":"test-connector","tag":"latest","type":"std:account:update","config":{},"input":{"identity":"john.doe","key":{"simple":{"id":"john.doe"}},"changes":[]}}`
+	i := `{"connectorRef":"test-connector","tag":"latest","type":"std:account:update","config":{},` +
+		`"input":{"identity":"john.doe","key":{"simple":{"id":"john.doe"}},"changes":[]}}`
 
 	client := mocks.NewMockClient(ctrl)
 	client.EXPECT().
@@ -60,7 +61,8 @@ func TestAccountUpdateWithIdentityAndChanges(t *testing.T) {
 	defer ctrl.Finish()
 
 	c := `[{"op":"Add","attribute":"location","value":"austin"}]`
-	i := fmt.Sprintf(`{"connectorRef":"test-connector","tag":"latest","type":"std:account:update","config":{},"input":{"identity":"john.doe","key":{"simple":{"id":"john.doe"}},"changes":%s}}`, c)
+	i := fmt.Sprintf(`{"connectorRef":"test-connector","tag":"latest","type":"std:account:update","config":{},`+
+		`"input":{"identity":"john.doe","key":{"simple":{"id":"john.doe"}},"changes":%s}}`, c)
 
 	client := mocks.NewMockClient(ctrl)
 	client.EXPECT().

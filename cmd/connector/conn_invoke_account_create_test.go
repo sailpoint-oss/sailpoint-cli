@@ -39,7 +39,8 @@ func TestAccountCreateWithIdentity(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	i := `{"connectorRef":"test-connector","tag":"latest","type":"std:account:create","config":{},"input":{"identity":"john.doe","attributes":{}}}`
+	i := `{"connectorRef":"test-connector","tag":"latest","type":"std:account:create","config":{},` +
+		`"input":{"identity":"john.doe","attributes":{}}}`
 
 	client := mocks.NewMockClient(ctrl)
 	client.EXPECT().
@@ -63,7 +64,8 @@ func TestAccountCreateWithIdentityAndAttributes(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	i := `{"connectorRef":"test-connector","tag":"latest","type":"std:account:create","config":{},"input":{"identity":"john.doe","attributes":{"foo":"bar"}}}`
+	i := `{"connectorRef":"test-connector","tag":"latest","type":"std:account:create","config":{},` +
+		`"input":{"identity":"john.doe","attributes":{"foo":"bar"}}}`
 
 	client := mocks.NewMockClient(ctrl)
 	client.EXPECT().

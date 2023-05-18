@@ -11,13 +11,13 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/mocks"
 )
 
-func TestAccountDeleteWithoutInput(t *testing.T) {
+func TestEntitlementReadWithoutInput(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	client := mocks.NewMockClient(ctrl)
 
-	cmd := newConnInvokeAccountDeleteCmd(client)
+	cmd := newConnInvokeEntitlementReadCmd(client)
 	addRequiredFlagsFromParentCmd(cmd)
 
 	b := new(bytes.Buffer)
@@ -26,28 +26,28 @@ func TestAccountDeleteWithoutInput(t *testing.T) {
 
 	err := cmd.Execute()
 	if err == nil {
-		t.Errorf("failed to detect error: deleting account without identity")
+		t.Errorf("failed to detect error: reading entitlement without type")
 	}
 }
 
-func TestAccountDeleteWithIdentity(t *testing.T) {
+func TestEntitlementReadWithType(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	i := `{"connectorRef":"test-connector","tag":"latest","type":"std:account:delete","config":{},` +
-		`"input":{"identity":"john.doe","key":{"simple":{"id":"john.doe"}}}}`
+	i := `{"connectorRef":"test-connector","tag":"latest","type":"std:entitlement:read","config":{},` +
+		`"input":{"identity":"john.doe","key":{"simple":{"id":"john.doe"}},"type":"group"}}`
 
 	client := mocks.NewMockClient(ctrl)
 	client.EXPECT().
 		Post(gomock.Any(), gomock.Any(), "application/json", bytes.NewReader([]byte(i))).
 		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("{}")))}, nil)
 
-	cmd := newConnInvokeAccountDeleteCmd(client)
+	cmd := newConnInvokeEntitlementReadCmd(client)
 	addRequiredFlagsFromParentCmd(cmd)
 
 	b := new(bytes.Buffer)
 	cmd.SetOut(b)
-	cmd.SetArgs([]string{"john.doe", "-c", "test-connector", "--config-json", "{}"})
+	cmd.SetArgs([]string{"john.doe", "-c", "test-connector", "--config-json", "{}", "--type", "group"})
 
 	err := cmd.Execute()
 	if err != nil {
