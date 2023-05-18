@@ -9,6 +9,7 @@ import (
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v2"
@@ -18,7 +19,7 @@ const (
 	connectorsEndpoint = "/beta/platform-connectors"
 )
 
-func NewConnCmd() *cobra.Command {
+func NewConnCmd(term terminal.Terminal) *cobra.Command {
 	conn := &cobra.Command{
 		Use:     "connectors",
 		Short:   "manage connectors",
@@ -45,7 +46,7 @@ func NewConnCmd() *cobra.Command {
 		newConnCreateCmd(Client),
 		newConnCreateVersionCmd(Client),
 		newConnVersionsCmd(Client),
-		newConnInvokeCmd(Client),
+		newConnInvokeCmd(Client, term),
 		newConnValidateCmd(Client),
 		newConnTagCmd(Client),
 		newConnValidateSourcesCmd(Client),
