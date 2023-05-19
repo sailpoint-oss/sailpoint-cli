@@ -577,7 +577,7 @@ func (cc *ConnClient) EntitlementList(ctx context.Context, t string, stateful *b
 		return nil, nil, nil, err
 	}
 
-	cmdRaw, err := cc.rawInvoke("std:entitlement:list", inputRaw) //[]byte(fmt.Sprintf(`{"type": %q}`, t)))
+	cmdRaw, err := cc.rawInvoke("std:entitlement:list", inputRaw)
 	if err != nil {
 		return nil, nil, nil, err
 	}

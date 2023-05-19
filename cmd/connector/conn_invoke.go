@@ -114,7 +114,7 @@ func getSchemaFromCommand(cmd *cobra.Command) (map[string]interface{}, error) {
 	var schema map[string]interface{}
 	if sc := cmd.Flags().Lookup("schema"); sc != nil {
 		if scv := sc.Value.String(); scv != "" {
-			fmt.Println(scv)
+
 			b, err := os.ReadFile(scv)
 			if err != nil {
 				return nil, err
