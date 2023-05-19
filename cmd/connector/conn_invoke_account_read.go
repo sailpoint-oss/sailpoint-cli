@@ -25,7 +25,12 @@ func newConnInvokeAccountReadCmd(client client.Client) *cobra.Command {
 				uniqueID = args[1]
 			}
 
-			_, rawResponse, err := cc.AccountRead(ctx, args[0], uniqueID)
+			schema, err := getSchemaFromCommand(cmd)
+			if err != nil {
+				return err
+			}
+
+			_, rawResponse, err := cc.AccountRead(ctx, args[0], uniqueID, schema)
 			if err != nil {
 				return err
 			}
@@ -34,6 +39,8 @@ func newConnInvokeAccountReadCmd(client client.Client) *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.Flags().String("schema", "", "Optional - Custom account schema")
 
 	return cmd
 }

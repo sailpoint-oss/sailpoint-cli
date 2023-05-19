@@ -5,10 +5,11 @@ import (
 	"fmt"
 
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/va/logConfig"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/spf13/cobra"
 )
 
-func NewVACmd() *cobra.Command {
+func NewVACmd(term terminal.Terminal) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "va",
 		Short:   "Interact with SailPoint Virtual Appliances",
@@ -20,11 +21,11 @@ func NewVACmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newCollectCmd(),
+		newCollectCmd(term),
 		// newTroubleshootCmd(),
 		newListCmd(),
 		newParseCmd(),
-		newUpdateCmd(),
+		newUpdateCmd(term),
 		logConfig.NewLogCmd(),
 	)
 

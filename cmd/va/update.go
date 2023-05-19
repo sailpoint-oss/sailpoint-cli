@@ -28,7 +28,7 @@ func updateAndRebootVA(endpoint, password string) {
 	fmt.Println()
 }
 
-func newUpdateCmd() *cobra.Command {
+func newUpdateCmd(term terminal.Terminal) *cobra.Command {
 	var credentials []string
 	cmd := &cobra.Command{
 		Use:     "update",
@@ -38,10 +38,11 @@ func newUpdateCmd() *cobra.Command {
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			for i, endpoint := range args {
+
 				password := credentials[i]
 
 				if password == "" {
-					password, _ = terminal.PromptPassword("Enter Password for " + endpoint + ":")
+					password, _ = term.PromptPassword("Enter Password for " + endpoint + ":")
 				}
 
 				updateAndRebootVA(endpoint, password)

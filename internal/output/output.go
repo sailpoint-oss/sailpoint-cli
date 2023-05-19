@@ -5,14 +5,13 @@ import (
 	"encoding/json"
 	"os"
 	"path"
-	"path/filepath"
+	"strings"
 
 	"github.com/gocarina/gocsv"
 )
 
 func SaveJSONFile[T any](formattedResponse T, fileName string, folderPath string) error {
-
-	savePath := path.Join(folderPath, fileName)
+	savePath := GetSanitizedPath(folderPath, fileName)
 
 	dataToSave, err := json.MarshalIndent(formattedResponse, "", "  ")
 	if err != nil {
@@ -41,7 +40,7 @@ func SaveJSONFile[T any](formattedResponse T, fileName string, folderPath string
 }
 
 func SaveCSVFile[T any](formattedResponse T, fileName string, folderPath string) error {
-	savePath := filepath.Join(folderPath, fileName)
+	savePath := GetSanitizedPath(folderPath, fileName)
 
 	// Make sure the output dir exists first
 	err := os.MkdirAll(folderPath, os.ModePerm)
@@ -62,4 +61,10 @@ func SaveCSVFile[T any](formattedResponse T, fileName string, folderPath string)
 	}
 
 	return nil
+}
+
+// GetSanitizedPath makes sure the provided path works on all OS
+func GetSanitizedPath(filePath string, fileName string) string {
+	p := path.Join(filePath, fileName)
+	return strings.ReplaceAll(p, ":", " ")
 }

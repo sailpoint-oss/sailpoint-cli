@@ -16,7 +16,7 @@ import (
 	"github.com/vbauerster/mpb/v8"
 )
 
-func NewTroubleshootCmd() *cobra.Command {
+func NewTroubleshootCmd(term terminal.Terminal) *cobra.Command {
 	var output string
 	cmd := &cobra.Command{
 		Use:     "troubleshoot",
@@ -32,7 +32,7 @@ func NewTroubleshootCmd() *cobra.Command {
 
 			var credentials []string
 			for credential := 0; credential < len(args); credential++ {
-				password, _ := terminal.PromptPassword(fmt.Sprintf("Enter Password for %v:", args[credential]))
+				password, _ := term.PromptPassword(fmt.Sprintf("Enter Password for %v:", args[credential]))
 				credentials = append(credentials, password)
 			}
 

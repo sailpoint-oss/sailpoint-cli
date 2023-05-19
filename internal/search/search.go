@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path"
 
 	"github.com/charmbracelet/log"
 	"github.com/mitchellh/mapstructure"
@@ -173,7 +172,7 @@ func SaveResults[T any](formattedResponse []T, fileName string, filePath string,
 		switch outputType {
 		case "json":
 			fileName = fileName + ".json"
-			savePath := path.Join(filePath, fileName)
+			savePath := output.GetSanitizedPath(filePath, fileName)
 			log.Info("Saving Results", "file", savePath)
 			err := output.SaveJSONFile(formattedResponse, fileName, filePath)
 			if err != nil {
@@ -181,7 +180,7 @@ func SaveResults[T any](formattedResponse []T, fileName string, filePath string,
 			}
 		case "csv":
 			fileName = fileName + ".csv"
-			savePath := path.Join(filePath, fileName)
+			savePath := output.GetSanitizedPath(filePath, fileName)
 			log.Info("Saving Results", "file", savePath)
 			err := output.SaveCSVFile(formattedResponse, fileName, filePath)
 			if err != nil {

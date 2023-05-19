@@ -11,8 +11,7 @@ import (
 	"github.com/vbauerster/mpb/v8"
 )
 
-func newCollectCmd() *cobra.Command {
-	var credentials []string
+func newCollectCmd(term terminal.Terminal) *cobra.Command {
 	var output string
 	var logs bool
 	var config bool

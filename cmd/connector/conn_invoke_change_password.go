@@ -10,7 +10,7 @@ import (
 )
 
 // newConnInvokeChangePasswordCmd defines a command to perform change password operation
-func newConnInvokeChangePasswordCmd(spClient client.Client) *cobra.Command {
+func newConnInvokeChangePasswordCmd(spClient client.Client, term terminal.Terminal) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "change-password",
 		Short:   "Invoke a change-password command",
@@ -24,7 +24,7 @@ func newConnInvokeChangePasswordCmd(spClient client.Client) *cobra.Command {
 				return err
 			}
 
-			password, err := terminal.PromptPassword("Enter Password:")
+			password, err := term.PromptPassword("Enter Password:")
 			if err != nil {
 				return err
 			}

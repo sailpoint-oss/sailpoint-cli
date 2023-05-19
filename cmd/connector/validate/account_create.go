@@ -18,7 +18,7 @@ var accountCreateChecks = []Check{
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
 			input := map[string]interface{}{}
-			_, _, err := cc.AccountCreate(ctx, nil, input)
+			_, _, err := cc.AccountCreate(ctx, nil, input, nil)
 			if err == nil {
 				res.errf("expected error for empty account created")
 			}
@@ -43,7 +43,7 @@ var accountCreateChecks = []Check{
 
 			identity := getIdentity(input)
 
-			acct, _, err := cc.AccountCreate(ctx, &identity, input)
+			acct, _, err := cc.AccountCreate(ctx, &identity, input, nil)
 			if err != nil {
 				res.errf("creating account: %s", err)
 				return
@@ -54,7 +54,7 @@ var accountCreateChecks = []Check{
 				res.errf("input vs read mismatch %+v", diff)
 			}
 
-			acctRead, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID())
+			acctRead, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), nil)
 			if err != nil {
 				res.errf("reading account: %s", err)
 				return
@@ -64,7 +64,7 @@ var accountCreateChecks = []Check{
 				res.errf("account diffs %+v", diff)
 			}
 
-			_, err = cc.AccountDelete(ctx, acct.ID(), acct.UniqueID())
+			_, err = cc.AccountDelete(ctx, acct.ID(), acct.UniqueID(), nil)
 			if err != nil {
 				res.errf("deleting account: %s", err)
 			}
@@ -87,7 +87,7 @@ var accountCreateChecks = []Check{
 
 			identity := getIdentity(input)
 
-			acct, _, err := cc.AccountCreate(ctx, &identity, input)
+			acct, _, err := cc.AccountCreate(ctx, &identity, input, nil)
 			if err != nil {
 				res.errf("creating account: %s", err)
 				return
@@ -98,7 +98,7 @@ var accountCreateChecks = []Check{
 				res.errf("account diffs %+v", diff)
 			}
 
-			acctRead, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID())
+			acctRead, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), nil)
 			if err != nil {
 				res.errf("reading account: %s", err)
 				return
@@ -108,7 +108,7 @@ var accountCreateChecks = []Check{
 				res.errf("account diffs %+v", diff)
 			}
 
-			_, err = cc.AccountDelete(ctx, acct.ID(), acct.UniqueID())
+			_, err = cc.AccountDelete(ctx, acct.ID(), acct.UniqueID(), nil)
 			if err != nil {
 				res.errf("deleting account: %s", err)
 			}
@@ -125,7 +125,7 @@ var accountCreateChecks = []Check{
 			"std:account:list",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
-			accountsPreCreate, _, _, err := cc.AccountList(ctx)
+			accountsPreCreate, _, _, err := cc.AccountList(ctx, nil, nil, nil)
 			if err != nil {
 				res.err(err)
 				return
@@ -140,19 +140,19 @@ var accountCreateChecks = []Check{
 
 			identity := getIdentity(input)
 
-			acct, _, err := cc.AccountCreate(ctx, &identity, input)
+			acct, _, err := cc.AccountCreate(ctx, &identity, input, nil)
 			if err != nil {
 				res.errf("creating account: %s", err)
 				return
 			}
 
-			accountsPostCreate, _, _, err := cc.AccountList(ctx)
+			accountsPostCreate, _, _, err := cc.AccountList(ctx, nil, nil, nil)
 			if err != nil {
 				res.err(err)
 				return
 			}
 
-			accountRead, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID())
+			accountRead, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), nil)
 			if err != nil {
 				res.err(err)
 				return
@@ -165,7 +165,7 @@ var accountCreateChecks = []Check{
 				}
 			}
 
-			_, err = cc.AccountDelete(ctx, acct.ID(), acct.UniqueID())
+			_, err = cc.AccountDelete(ctx, acct.ID(), acct.UniqueID(), nil)
 			if err != nil {
 				res.errf("deleting account: %s", err)
 			}
@@ -173,12 +173,12 @@ var accountCreateChecks = []Check{
 			// Allow deletion to propagate
 			time.Sleep(5 * time.Second)
 
-			_, _, err = cc.AccountRead(ctx, acct.ID(), acct.UniqueID())
+			_, _, err = cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), nil)
 			if err == nil {
 				res.errf("was able to read deleted account: %q", acct.Identity)
 			}
 
-			accountsPostDelete, _, _, err := cc.AccountList(ctx)
+			accountsPostDelete, _, _, err := cc.AccountList(ctx, nil, nil, nil)
 			if err != nil {
 				res.err(err)
 			}

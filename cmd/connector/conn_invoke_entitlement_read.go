@@ -28,7 +28,12 @@ func newConnInvokeEntitlementReadCmd(client client.Client) *cobra.Command {
 				uniqueID = args[1]
 			}
 
-			_, rawResponse, err := cc.EntitlementRead(ctx, args[0], uniqueID, t)
+			schema, err := getSchemaFromCommand(cmd)
+			if err != nil {
+				return err
+			}
+
+			_, rawResponse, err := cc.EntitlementRead(ctx, args[0], uniqueID, t, schema)
 			if err != nil {
 				return err
 			}
@@ -40,6 +45,8 @@ func newConnInvokeEntitlementReadCmd(client client.Client) *cobra.Command {
 
 	cmd.Flags().StringP("type", "t", "", "Entitlement Type")
 	_ = cmd.MarkFlagRequired("type")
+
+	cmd.Flags().String("schema", "", "Optional - Custom account schema")
 
 	return cmd
 }
