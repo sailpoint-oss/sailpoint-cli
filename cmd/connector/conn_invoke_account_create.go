@@ -34,7 +34,12 @@ func newConnInvokeAccountCreateCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			_, rawResponse, err := cc.AccountCreate(ctx, identity, attributes)
+			schema, err := getSchemaFromCommand(cmd)
+			if err != nil {
+				return err
+			}
+
+			_, rawResponse, err := cc.AccountCreate(ctx, identity, attributes, schema)
 			if err != nil {
 				return err
 			}
@@ -46,6 +51,7 @@ func newConnInvokeAccountCreateCmd(client client.Client) *cobra.Command {
 	}
 
 	cmd.Flags().StringP("attributes", "a", "{}", "Attributes")
+	cmd.Flags().String("schema", "", "Optional - Custom account schema")
 
 	return cmd
 }

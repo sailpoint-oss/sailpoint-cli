@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newCollectCmd() *cobra.Command {
+func newCollectCmd(term terminal.Terminal) *cobra.Command {
 	var output string
 	var logs bool
 	var config bool
@@ -37,7 +37,7 @@ func newCollectCmd() *cobra.Command {
 			}
 
 			for credential := 0; credential < len(args); credential++ {
-				password, _ := terminal.PromptPassword(fmt.Sprintf("Enter Password for %v:", args[credential]))
+				password, _ := term.PromptPassword(fmt.Sprintf("Enter Password for %v:", args[credential]))
 				credentials = append(credentials, password)
 			}
 

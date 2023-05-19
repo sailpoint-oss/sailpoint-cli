@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newUpdateCmd() *cobra.Command {
+func newUpdateCmd(term terminal.Terminal) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "update",
 		Short:   "Perform Update Operations on a SailPoint Virtual Appliance",
@@ -19,7 +19,7 @@ func newUpdateCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var credentials []string
 			for credential := 0; credential < len(args); credential++ {
-				password, _ := terminal.PromptPassword(fmt.Sprintf("Enter Password for %v:", args[credential]))
+				password, _ := term.PromptPassword(fmt.Sprintf("Enter Password for %v:", args[credential]))
 				credentials = append(credentials, password)
 			}
 			for i := 0; i < len(args); i++ {

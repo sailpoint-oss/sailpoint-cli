@@ -18,7 +18,7 @@ var accountUpdateChecks = []Check{
 			"std:account:update",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
-			accounts, _, _, err := cc.AccountList(ctx)
+			accounts, _, _, err := cc.AccountList(ctx, nil, nil, nil)
 			if err != nil {
 				res.err(err)
 			}
@@ -38,7 +38,7 @@ var accountUpdateChecks = []Check{
 					}
 					change := attrChange(&acct, &attr)
 
-					_, _, err = cc.AccountUpdate(ctx, acct.ID(), acct.UniqueID(), []connclient.AttributeChange{change})
+					_, _, err = cc.AccountUpdate(ctx, acct.ID(), acct.UniqueID(), []connclient.AttributeChange{change}, nil)
 					if err != nil {
 						res.errf("update for %q failed: %s", attr.Name, err.Error())
 						continue
@@ -47,7 +47,7 @@ var accountUpdateChecks = []Check{
 					// Give the update a chance to propagate
 					time.Sleep(time.Second)
 
-					acct, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID())
+					acct, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), nil)
 					if err != nil {
 						res.err(err)
 						continue
@@ -79,7 +79,7 @@ var accountUpdateChecks = []Check{
 				return
 			}
 
-			entitlements, _, _, err := cc.EntitlementList(ctx, "group")
+			entitlements, _, _, err := cc.EntitlementList(ctx, "group", nil, nil, nil)
 			if err != nil {
 				res.err(err)
 				return
@@ -100,7 +100,7 @@ var accountUpdateChecks = []Check{
 
 			identity := getIdentity(input)
 
-			acct, _, err := cc.AccountCreate(ctx, &identity, input)
+			acct, _, err := cc.AccountCreate(ctx, &identity, input, nil)
 			if err != nil {
 				res.errf("creating account: %s", err)
 				return
@@ -111,7 +111,7 @@ var accountUpdateChecks = []Check{
 
 			// Add entitlements
 			for _, e := range entitlements {
-				acct, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID())
+				acct, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), nil)
 				if err != nil {
 					res.errf("failed to read account %q", acct.Identity)
 				}
@@ -128,12 +128,12 @@ var accountUpdateChecks = []Check{
 							Attribute: entitlementAttr,
 							Value:     e.ID(),
 						},
-					})
+					}, nil)
 					if err != nil {
 						res.errf("failed to add entitlement %q", e.Identity)
 					}
 
-					acct, _, err = cc.AccountRead(ctx, acct.ID(), acct.UniqueID())
+					acct, _, err = cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), nil)
 					if err != nil {
 						res.errf("failed to read account %q", acct.Identity)
 					}
@@ -157,12 +157,12 @@ var accountUpdateChecks = []Check{
 							Attribute: entitlementAttr,
 							Value:     e.ID(),
 						},
-					})
+					}, nil)
 					if err != nil {
 						res.errf("failed to remove entitlement %q", e.ID())
 					}
 
-					acct, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID())
+					acct, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), nil)
 					if err != nil {
 						res.errf("failed to read account %q", acct.ID())
 					}
@@ -173,7 +173,7 @@ var accountUpdateChecks = []Check{
 				}
 			}
 
-			_, err = cc.AccountDelete(ctx, acct.ID(), acct.UniqueID())
+			_, err = cc.AccountDelete(ctx, acct.ID(), acct.UniqueID(), nil)
 			if err != nil {
 				res.errf("deleting account: %s", err)
 			}

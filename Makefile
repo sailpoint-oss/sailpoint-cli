@@ -5,7 +5,8 @@ clean:
 .PHONY: mocks
 mocks:
 	# Ref: https://github.com/golang/mock
-	mockgen -source=client/client.go -destination=mocks/client.go -package=mocks
+	mockgen -source=internal/client/client.go -destination=internal/mocks/client.go -package=mocks
+	mockgen -source=internal/terminal/terminal.go -destination=internal/mocks/terminal.go -package=mocks
 
 .PHONY: test
 test:
