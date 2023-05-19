@@ -6,12 +6,14 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/va"
 	"github.com/spf13/cobra"
 	"github.com/vbauerster/mpb/v8"
 )
 
 func newCollectCmd(term terminal.Terminal) *cobra.Command {
+	var credentials []string
 	var output string
 	var logs bool
 	var config bool
