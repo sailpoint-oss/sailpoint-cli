@@ -9,6 +9,7 @@ import (
 
 	connclient "github.com/sailpoint-oss/sailpoint-cli/cmd/connector/client"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +24,7 @@ const (
 	stdTestConnection  = "std:test-connection"
 )
 
-func newConnInvokeCmd(client client.Client) *cobra.Command {
+func newConnInvokeCmd(client client.Client, term terminal.Terminal) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "invoke",
 		Short: "Invoke Command on a connector",
@@ -42,7 +43,7 @@ func newConnInvokeCmd(client client.Client) *cobra.Command {
 
 	cmd.AddCommand(
 		newConnInvokeTestConnectionCmd(client),
-		newConnInvokeChangePasswordCmd(client),
+		newConnInvokeChangePasswordCmd(client, term),
 		newConnInvokeAccountCreateCmd(client),
 		newConnInvokeAccountDiscoverSchemaCmd(client),
 		newConnInvokeAccountListCmd(client),
@@ -106,4 +107,24 @@ func connClientWithCustomParams(spClient client.Client, cfg json.RawMessage, con
 	cc := connclient.NewConnClient(spClient, &v, cfg, connectorID, endpoint)
 
 	return cc, nil
+}
+
+// getSchemaFromCommand returns schema from command if it exists
+func getSchemaFromCommand(cmd *cobra.Command) (map[string]interface{}, error) {
+	var schema map[string]interface{}
+	if sc := cmd.Flags().Lookup("schema"); sc != nil {
+		if scv := sc.Value.String(); scv != "" {
+
+			b, err := os.ReadFile(scv)
+			if err != nil {
+				return nil, err
+			}
+
+			err = json.Unmarshal(b, &schema)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return schema, nil
 }

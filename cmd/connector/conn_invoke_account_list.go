@@ -10,8 +10,9 @@ import (
 
 func newConnInvokeAccountListCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "account-list",
-		Short: "Invoke a std:account:list command",
+		Use:     "account-list",
+		Short:   "Invoke a std:account:list command",
+		Example: `sail connectors invoke account-list`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			cc, err := connClient(cmd, client)
@@ -19,7 +20,27 @@ func newConnInvokeAccountListCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			_, state, printable, err := cc.AccountList(ctx)
+			var stateful *bool
+			if s := cmd.Flags().Lookup("stateful"); s != nil {
+				if s.Value.String() == "true" {
+					t := true
+					stateful = &t
+				}
+			}
+
+			var stateId *string
+			if si := cmd.Flags().Lookup("stateId"); si != nil {
+				if siv := si.Value.String(); siv != "" {
+					stateId = &siv
+				}
+			}
+
+			schema, err := getSchemaFromCommand(cmd)
+			if err != nil {
+				return err
+			}
+
+			_, state, printable, err := cc.AccountList(ctx, stateful, stateId, schema)
 			if err != nil {
 				return err
 			}
@@ -34,6 +55,10 @@ func newConnInvokeAccountListCmd(client client.Client) *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.Flags().Bool("stateful", false, "Optional - Run command with state")
+	cmd.Flags().String("stateId", "", "Optional - The state ID from a previous command invocation result")
+	cmd.Flags().String("schema", "", "Optional - Custom account schema")
 
 	return cmd
 }

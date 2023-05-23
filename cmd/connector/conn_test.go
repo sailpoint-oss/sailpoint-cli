@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/mocks"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 )
 
@@ -32,7 +33,7 @@ func TestNewConnCmd_noArgs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cmd := NewConnCmd()
+	cmd := NewConnCmd(mocks.NewMockTerm(ctrl))
 	if len(cmd.Commands()) != numConnSubcommands {
 		t.Fatalf("expected: %d, actual: %d", len(cmd.Commands()), numConnSubcommands)
 	}

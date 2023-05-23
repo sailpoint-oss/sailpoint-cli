@@ -39,8 +39,12 @@ func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 
 	fn := itemStyle.Render
 	if index == m.Index() {
-		fn = func(s string) string {
-			return selectedItemStyle.Render("> " + s)
+		fn = func(s ...string) string {
+			var fullString string
+			for _, v := range s {
+				fullString = fullString + v
+			}
+			return selectedItemStyle.Render("> " + fullString)
 		}
 	}
 

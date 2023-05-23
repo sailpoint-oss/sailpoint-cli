@@ -9,7 +9,7 @@ spconfig-exports
 # CLI binary
 sailpoint-cli
 
-
+vendor
 data
 .DS_Store
 assets/demo_create.json

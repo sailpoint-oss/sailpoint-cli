@@ -5,10 +5,10 @@ import (
 	"fmt"
 )
 
-func PrettyPrint(v interface{}) {
+func PrettyPrint(v interface{}) string {
 	b, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
 		fmt.Println("error:", err)
 	}
-	fmt.Print(string(b))
+	return (string(b))
 }

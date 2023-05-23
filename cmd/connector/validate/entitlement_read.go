@@ -16,7 +16,7 @@ var entitlementReadChecks = []Check{
 			"std:entitlement:read",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
-			_, _, err := cc.EntitlementRead(ctx, "__sailpoint__not__found__", "", "group")
+			_, _, err := cc.EntitlementRead(ctx, "__sailpoint__not__found__", "", "group", nil)
 			if err == nil {
 				res.errf("expected error for non-existant entitlement")
 			}
@@ -32,7 +32,7 @@ var entitlementReadChecks = []Check{
 			"std:entitlement:list",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
-			entitlements, _, _, err := cc.EntitlementList(ctx, "group")
+			entitlements, _, _, err := cc.EntitlementList(ctx, "group", nil, nil, nil)
 			if err != nil {
 				res.err(err)
 				return
@@ -44,7 +44,7 @@ var entitlementReadChecks = []Check{
 			}
 
 			for _, e := range entitlements {
-				eRead, _, err := cc.EntitlementRead(ctx, e.ID(), e.UniqueID(), "group")
+				eRead, _, err := cc.EntitlementRead(ctx, e.ID(), e.UniqueID(), "group", nil)
 				if err != nil {
 					res.errf("failed to read entitlement %q: %s", e.Identity, err.Error())
 					return
@@ -77,7 +77,7 @@ var entitlementReadChecks = []Check{
 				attrsByName[value.Name] = value
 			}
 
-			entitlements, _, _, err := cc.EntitlementList(ctx, "group")
+			entitlements, _, _, err := cc.EntitlementList(ctx, "group", nil, nil, nil)
 			if err != nil {
 				res.err(err)
 				return

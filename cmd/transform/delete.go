@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/transform"
 	tuitable "github.com/sailpoint-oss/sailpoint-cli/internal/tui/table"
@@ -25,8 +26,13 @@ func newDeleteCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var id []string
 
+			apiClient, err := config.InitAPIClient()
+			if err != nil {
+				return err
+			}
+
 			if len(args) < 1 {
-				transforms, err := transform.GetTransforms()
+				transforms, err := transform.GetTransforms(*apiClient)
 				if err != nil {
 					return err
 				}
@@ -84,17 +90,12 @@ func newDeleteCmd() *cobra.Command {
 
 				transformID := id[i]
 
-				apiClient, err := config.InitAPIClient()
-				if err != nil {
-					return err
-				}
-
 				_, err = apiClient.V3.TransformsApi.DeleteTransform(context.TODO(), transformID).Execute()
 				if err != nil {
 					return err
 				}
 
-				config.Log.Info("Transform successfully deleted", "TransformID", transformID)
+				log.Info("Transform successfully deleted", "TransformID", transformID)
 			}
 
 			return nil

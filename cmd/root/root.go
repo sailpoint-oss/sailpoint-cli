@@ -13,6 +13,7 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/spconfig"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/transform"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/va"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/spf13/cobra"
 )
 
@@ -34,13 +35,15 @@ func NewRootCmd() *cobra.Command {
 		},
 	}
 
+	t := &terminal.Term{}
+
 	root.AddCommand(
 		set.NewSetCommand(),
 		environment.NewEnvironmentCommand(),
-		configure.NewConfigureCmd(),
-		connector.NewConnCmd(),
+		configure.NewConfigureCmd(t),
+		connector.NewConnCmd(t),
 		transform.NewTransformCmd(),
-		va.NewVACmd(),
+		va.NewVACmd(t),
 		search.NewSearchCmd(),
 		spconfig.NewSPConfigCmd(),
 		report.NewReportCommand(),

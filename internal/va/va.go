@@ -6,14 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"os"
 	"path"
 	"sync"
-	"time"
 
-	"github.com/fatih/color"
+	"github.com/charmbracelet/log"
 	"github.com/pkg/sftp"
 	"github.com/vbauerster/mpb/v8"
 	"github.com/vbauerster/mpb/v8/decor"
@@ -91,8 +89,9 @@ func RunVACmdLive(addr string, password string, cmd string) error {
 	return nil
 }
 
-func CollectVAFiles(endpoint string, password string, output string, files []string) error {
-	color.Blue("Starting File Collection for %s\n", endpoint)
+func CollectVAFiles(endpoint string, password string, output string, files []string, p *mpb.Progress) error {
+	log.Info("Starting File Collection", "VA", endpoint)
+
 	config := &ssh.ClientConfig{
 		User:            "sailpoint",
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
@@ -101,88 +100,88 @@ func CollectVAFiles(endpoint string, password string, output string, files []str
 		},
 	}
 
-	var wg sync.WaitGroup
-	// passed wg will be accounted at p.Wait() call
-	p := mpb.New(mpb.WithWidth(60),
-		mpb.PopCompletedMode(),
-		mpb.WithRefreshRate(180*time.Millisecond),
-		mpb.WithWaitGroup(&wg))
-
-	log.SetOutput(p)
-
 	outputFolder := path.Join(output, endpoint)
 
-	for i := 0; i < len(files); i++ {
-		filePath := files[i]
+	// Connect
+	client, err := ssh.Dial("tcp", net.JoinHostPort(endpoint, "22"), config)
+	if err != nil {
+		return fmt.Errorf("failed to dial: %v", err)
+	}
+	defer client.Close()
+
+	sftp, err := sftp.NewClient(client)
+	if err != nil {
+		return fmt.Errorf("failed to create SFTP client: %v", err)
+	}
+	defer sftp.Close()
+
+	var wg sync.WaitGroup
+	for _, filePath := range files {
 		wg.Add(1)
-		go func(filePath string) error {
-			// Connect
-			client, err := ssh.Dial("tcp", net.JoinHostPort(endpoint, "22"), config)
-			if err != nil {
-				fmt.Println(err)
-			}
-
-			sftp, err := sftp.NewClient(client)
-			if err != nil {
-				fmt.Println(err)
-			}
-			defer sftp.Close()
-
+		go func(filePath string) {
 			defer wg.Done()
 
-			_, base := path.Split(filePath)
-			outputFile := path.Join(outputFolder, base)
-			if _, err := os.Stat(outputFolder); errors.Is(err, os.ErrNotExist) {
-				err := os.MkdirAll(outputFolder, 0700)
-				if err != nil {
-					fmt.Println(err)
-				}
+			err := collectFile(sftp, filePath, outputFolder, endpoint, p)
+			if err != nil {
+				log.Warn("Error collecting file", "file", filePath, "VA", endpoint, "err", err)
 			}
-			remoteFileStats, statErr := sftp.Stat(filePath)
-			if statErr == nil {
-				name := fmt.Sprintf("%v - %v", endpoint, base)
-				bar := p.AddBar(remoteFileStats.Size(),
-					mpb.BarFillerClearOnComplete(),
-					mpb.PrependDecorators(
-						// simple name decorator
-						decor.Name(name, decor.WCSyncSpaceR),
-						decor.Name(":", decor.WCSyncSpaceR),
-						decor.OnComplete(decor.CountersKiloByte("% .2f / % .2f", decor.WCSyncSpaceR), "Complete"),
-						decor.TotalKiloByte("% .2f", decor.WCSyncSpaceR),
-					),
-					mpb.AppendDecorators(
-						decor.OnComplete(decor.EwmaSpeed(decor.UnitKB, "% .2f", 90, decor.WCSyncWidth), ""),
-						decor.OnComplete(decor.Percentage(decor.WC{W: 5}), ""),
-					),
-				)
-
-				// Open the source file
-				srcFile, err := sftp.Open(filePath)
-				if err != nil {
-					log.Println(err)
-				}
-				defer srcFile.Close()
-
-				// Create the destination file
-				dstFile, err := os.Create(outputFile)
-				if err != nil {
-					return err
-				}
-				defer dstFile.Close()
-
-				writer := io.Writer(dstFile)
-
-				// create proxy reader
-				proxyWriter := bar.ProxyWriter(writer)
-				defer proxyWriter.Close()
-
-				io.Copy(proxyWriter, srcFile)
-			}
-			return nil
 		}(filePath)
 	}
 
-	p.Wait()
+	wg.Wait()
+
+	return nil
+}
+
+func collectFile(sftp *sftp.Client, filePath, outputFolder, endpoint string, p *mpb.Progress) error {
+	_, base := path.Split(filePath)
+
+	outputFile := path.Join(outputFolder, base)
+
+	if _, err := os.Stat(outputFolder); errors.Is(err, os.ErrNotExist) {
+		err := os.MkdirAll(outputFolder, 0700)
+		if err != nil {
+			return fmt.Errorf("failed to create output folder: %v", err)
+		}
+	}
+	remoteFileStats, statErr := sftp.Stat(filePath)
+	if statErr != nil {
+		return fmt.Errorf("failed to stat remote file: %v", statErr)
+	}
+
+	name := fmt.Sprintf("%v - %v", endpoint, base)
+	bar := p.AddBar(remoteFileStats.Size(),
+		mpb.BarFillerClearOnComplete(),
+		mpb.PrependDecorators(
+			decor.Name(name, decor.WCSyncSpaceR),
+			decor.Name(":", decor.WCSyncSpaceR),
+			decor.OnComplete(decor.CountersKiloByte("% .2f / % .2f", decor.WCSyncSpaceR), "Complete"),
+			decor.TotalKiloByte("% .2f", decor.WCSyncSpaceR),
+		),
+		mpb.AppendDecorators(
+			decor.OnComplete(decor.CountersKibiByte("% .2f / % .2f", decor.WCSyncWidth), "Complete")),
+	)
+
+	srcFile, err := sftp.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to open remote file: %v", err)
+	}
+	defer srcFile.Close()
+
+	dstFile, err := os.Create(outputFile)
+	if err != nil {
+		return fmt.Errorf("failed to create local file: %v", err)
+	}
+	defer dstFile.Close()
+
+	writer := io.Writer(dstFile)
+	proxyWriter := bar.ProxyWriter(writer)
+	defer proxyWriter.Close()
+
+	_, err = io.Copy(proxyWriter, srcFile)
+	if err != nil {
+		return fmt.Errorf("failed to copy file contents: %v", err)
+	}
 
 	return nil
 }

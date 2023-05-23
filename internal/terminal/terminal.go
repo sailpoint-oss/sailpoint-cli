@@ -11,8 +11,14 @@ import (
 	"golang.org/x/term"
 )
 
+type Term struct{}
+
+type Terminal interface {
+	PromptPassword(promptMsg string) (string, error)
+}
+
 // PromptPassword prompts user to enter password and then returns it
-func PromptPassword(promptMsg string) (string, error) {
+func (c *Term) PromptPassword(promptMsg string) (string, error) {
 	fmt.Print(promptMsg)
 	bytePassword, err := term.ReadPassword(int(syscall.Stdin))
 	if err != nil {

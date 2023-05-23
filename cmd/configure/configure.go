@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewConfigureCmd() *cobra.Command {
+func NewConfigureCmd(term terminal.Terminal) *cobra.Command {
 	var ClientID string
 	var ClientSecret string
 	var err error
@@ -20,7 +20,7 @@ func NewConfigureCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			if ClientID == "" {
-				ClientID, err = terminal.PromptPassword("Personal Access Token Client ID:")
+				ClientID, err = term.PromptPassword("Personal Access Token Client ID:")
 				if err != nil {
 					return err
 				}
@@ -29,7 +29,7 @@ func NewConfigureCmd() *cobra.Command {
 			config.SetPatClientID(ClientID)
 
 			if ClientSecret == "" {
-				ClientSecret, err = terminal.PromptPassword("Personal Access Token Client Secret:")
+				ClientSecret, err = term.PromptPassword("Personal Access Token Client Secret:")
 				if err != nil {
 					return err
 				}

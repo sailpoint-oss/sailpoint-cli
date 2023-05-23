@@ -2,6 +2,7 @@
 package spconfig
 
 import (
+	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/spconfig"
 	"github.com/spf13/cobra"
@@ -20,30 +21,35 @@ func newDownloadCmd() *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
+			apiClient, err := config.InitAPIClient()
+			if err != nil {
+				return err
+			}
+
 			if len(importIDs) > 0 {
 				for i := 0; i < len(importIDs); i++ {
 					jobId := importIDs[i]
-					config.Log.Info("Checking Import Job", "JobID", jobId)
-					err := spconfig.DownloadImport(jobId, "spconfig-import-"+jobId+".json", folderPath)
+					log.Info("Checking Import Job", "JobID", jobId)
+					err := spconfig.DownloadImport(*apiClient, jobId, "spconfig-import-"+jobId+".json", folderPath)
 					if err != nil {
 						return err
 					}
 				}
 			} else {
-				config.Log.Info("No Import Job IDs provided")
+				log.Info("No Import Job IDs provided")
 			}
 
 			if len(exportIDs) > 0 {
 				for i := 0; i < len(exportIDs); i++ {
 					jobId := exportIDs[i]
-					config.Log.Info("Checking Export Job", "JobID", jobId)
-					err := spconfig.DownloadExport(jobId, "spconfig-export-"+jobId+".json", folderPath)
+					log.Info("Checking Export Job", "JobID", jobId)
+					err := spconfig.DownloadExport(*apiClient, jobId, "spconfig-export-"+jobId+".json", folderPath)
 					if err != nil {
 						return err
 					}
 				}
 			} else {
-				config.Log.Info("No Export Job IDs provided")
+				log.Info("No Export Job IDs provided")
 			}
 
 			return nil

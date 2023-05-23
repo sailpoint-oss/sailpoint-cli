@@ -3,7 +3,7 @@ package set
 import (
 	"strings"
 
-	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -20,18 +20,18 @@ func newDebugCommand() *cobra.Command {
 			switch strings.ToLower(args[0]) {
 			case "enable":
 				viper.Set("debug", true)
-				config.Log.Info("Debug Enabled")
+				log.Info("Debug Enabled")
 			case "true":
 				viper.Set("debug", true)
-				config.Log.Info("Debug Enabled")
+				log.Info("Debug Enabled")
 			case "disable":
 				viper.Set("debug", false)
-				config.Log.Info("Debug Disabled")
+				log.Info("Debug Disabled")
 			case "false":
 				viper.Set("debug", false)
-				config.Log.Info("Debug Disabled")
+				log.Info("Debug Disabled")
 			default:
-				config.Log.Error("Invalid Selection")
+				log.Error("Invalid Selection")
 			}
 
 			return nil
