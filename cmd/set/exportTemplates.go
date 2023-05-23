@@ -1,6 +1,7 @@
 package set
 
 import (
+	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/spf13/cobra"
 )
@@ -17,7 +18,7 @@ func newExportTemplateCommand() *cobra.Command {
 
 			filePath := args[0]
 			if filePath == "" {
-				config.Log.Error("File Path Cannot Be Blank")
+				log.Error("File Path Cannot Be Blank")
 			}
 
 			config.SetCustomExportTemplatePath(filePath)

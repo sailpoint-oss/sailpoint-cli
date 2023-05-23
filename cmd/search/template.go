@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/search"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/templates"
@@ -55,13 +56,13 @@ func newTemplateCmd() *cobra.Command {
 				return fmt.Errorf("no template specified")
 			}
 
-			config.Log.Info("Selected Template", "template", template)
+			log.Info("Selected Template", "template", template)
 
 			matches := types.Filter(searchTemplates, func(st templates.SearchTemplate) bool { return st.Name == template })
 			if len(matches) < 1 {
 				return fmt.Errorf("no template matches for %s", template)
 			} else if len(matches) > 1 {
-				config.Log.Warn("multiple template matches, the first match will be used", "template", template)
+				log.Warn("multiple template matches, the first match will be used", "template", template)
 			}
 			selectedTemplate = matches[0]
 			varCount := len(selectedTemplate.Variables)
@@ -77,7 +78,7 @@ func newTemplateCmd() *cobra.Command {
 				}
 			}
 
-			config.Log.Info("Performing Search", "Query", selectedTemplate.SearchQuery.Query.GetQuery(), "Indicies", selectedTemplate.SearchQuery.Indices)
+			log.Info("Performing Search", "Query", selectedTemplate.SearchQuery.Query.GetQuery(), "Indicies", selectedTemplate.SearchQuery.Indices)
 
 			formattedResponse, err := search.PerformSearch(*apiClient, selectedTemplate.SearchQuery)
 			if err != nil {

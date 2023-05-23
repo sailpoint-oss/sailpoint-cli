@@ -4,6 +4,7 @@ package va
 import (
 	"fmt"
 
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/va/logConfig"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/spf13/cobra"
 )
@@ -22,8 +23,10 @@ func NewVACmd(term terminal.Terminal) *cobra.Command {
 	cmd.AddCommand(
 		newCollectCmd(term),
 		// newTroubleshootCmd(),
-		newUpdateCmd(term),
+		newListCmd(),
 		newParseCmd(),
+		newUpdateCmd(term),
+		logConfig.NewLogCmd(),
 	)
 
 	return cmd

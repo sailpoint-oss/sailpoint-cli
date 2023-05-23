@@ -2,18 +2,22 @@
 package transform
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 
-	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v3"
+	"github.com/charmbracelet/log"
+	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/spf13/cobra"
 )
 
 func newCreateCmd() *cobra.Command {
+	var filepath string
 	cmd := &cobra.Command{
 		Use:     "create",
 		Short:   "Create an IdentityNow Transform from a file",
@@ -22,48 +26,50 @@ func newCreateCmd() *cobra.Command {
 		Aliases: []string{"c"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var data map[string]interface{}
+			var transform sailpointbetasdk.Transform
+			var decoder *json.Decoder
 
-			filepath := cmd.Flags().Lookup("file").Value.String()
 			if filepath != "" {
 				file, err := os.Open(filepath)
 				if err != nil {
 					return err
 				}
 				defer file.Close()
-
-				err = json.NewDecoder(file).Decode(&data)
-				if err != nil {
-					return err
-				}
+				decoder = json.NewDecoder(bufio.NewReader(file))
 			} else {
-				err := json.NewDecoder(os.Stdin).Decode(&data)
-				if err != nil {
-					return err
-				}
+				decoder = json.NewDecoder(bufio.NewReader(os.Stdin))
 			}
 
-			if data["name"] == nil {
+			if err := decoder.Decode(&transform); err != nil {
+				return err
+			}
+
+			log.Debug("Filepath", "path", filepath)
+
+			log.Debug("Transform", "transform", transform)
+
+			if transform.GetName() == "" {
 				return fmt.Errorf("the transform must have a name")
 			}
 
-			if data["id"] != nil {
+			if transform.GetId() != "" {
 				return fmt.Errorf("the transform cannot have an ID")
 			}
-
-			transform := sailpointsdk.NewTransform(data["name"].(string), data["type"].(string), data["attributes"].(map[string]interface{}))
 
 			apiClient, err := config.InitAPIClient()
 			if err != nil {
 				return err
 			}
 
-			transformObj, resp, err := apiClient.V3.TransformsApi.CreateTransform(context.TODO()).Transform(*transform).Execute()
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+			defer cancel()
+
+			transformObj, resp, err := apiClient.Beta.TransformsApi.CreateTransform(ctx).Transform(transform).Execute()
 			if err != nil {
 				return sdk.HandleSDKError(resp, err)
 			}
 
-			config.Log.Info("Transform created successfully")
+			log.Info("Transform created successfully")
 
 			cmd.Print(*transformObj.Id)
 
@@ -71,7 +77,7 @@ func newCreateCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("file", "f", "", "The path to the transform file")
+	cmd.Flags().StringVarP(&filepath, "file", "f", "", "The path to the transform file")
 
 	return cmd
 }

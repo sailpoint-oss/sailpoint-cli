@@ -2,9 +2,12 @@ package sdk
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/charmbracelet/log"
 )
 
 type Message struct {
@@ -25,13 +28,13 @@ func HandleSDKError(resp *http.Response, sdkErr error) error {
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err)
+		log.Error(err)
 	}
 
 	var formattedBody SDKResp
 	err = json.Unmarshal(body, &formattedBody)
 	if err != nil {
-		fmt.Println(err)
+		log.Error(err)
 	}
 
 	outputErr := fmt.Sprintf("%s\ndate: %s\nslpt-request-id: %s\nmsgs:\n", sdkErr, resp.Header["Date"][0], resp.Header["Slpt-Request-Id"][0])
@@ -40,7 +43,10 @@ func HandleSDKError(resp *http.Response, sdkErr error) error {
 		for _, v := range formattedBody.Messages {
 			outputErr = outputErr + fmt.Sprintf("%s\n", v.Text)
 		}
+	} else {
+
 	}
-	return fmt.Errorf(outputErr)
+
+	return errors.New(outputErr)
 
 }

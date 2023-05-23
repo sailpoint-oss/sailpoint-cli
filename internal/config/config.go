@@ -14,15 +14,6 @@ import (
 	"gopkg.in/square/go-jose.v2/jwt"
 )
 
-var Log log.Logger
-
-func init() {
-	Log = log.New()
-	if GetDebug() {
-		Log.SetLevel(log.DebugLevel)
-	}
-}
-
 var ErrAccessTokenExpired = fmt.Errorf("accesstoken is expired")
 
 const (
@@ -149,6 +140,10 @@ func InitConfig() error {
 		}
 	}
 
+	if GetDebug() {
+		log.SetLevel(log.DebugLevel)
+	}
+
 	return nil
 }
 
@@ -162,12 +157,20 @@ func InitAPIClient() (*sailpoint.APIClient, error) {
 
 	token, err := GetAuthToken()
 	if err != nil {
-		Log.Debug("unable to retrieve accesstoken: %s ", err)
+		log.Debug("unable to retrieve accesstoken: %s ", err)
 	}
 
 	configuration := sailpoint.NewConfiguration(sailpoint.ClientConfiguration{Token: token, BaseURL: GetBaseUrl()})
 	apiClient = sailpoint.NewAPIClient(configuration)
-	if !GetDebug() {
+	if GetDebug() {
+		logger := log.NewWithOptions(os.Stdout, log.Options{
+			ReportTimestamp: true,
+			Level:           log.DebugLevel,
+		})
+		debugLogger := logger.StandardLog(log.StandardLogOptions{ForceLevel: log.DebugLevel})
+		apiClient.V3.GetConfig().HTTPClient.Logger = debugLogger
+		apiClient.Beta.GetConfig().HTTPClient.Logger = debugLogger
+	} else {
 		var DevNull types.DevNull
 		apiClient.V3.GetConfig().HTTPClient.Logger = DevNull
 		apiClient.Beta.GetConfig().HTTPClient.Logger = DevNull
@@ -187,10 +190,10 @@ func CheckToken(tokenString string) error {
 	token.UnsafeClaimsWithoutVerification(&claims)
 
 	if claims["user_name"] == nil {
-		Log.Warn("It looks like the token you are using is missing a user context, this will cause many of the CLI commands to fail.")
+		log.Warn("It looks like the token you are using is missing a user context, this will cause many of the CLI commands to fail.")
 	}
 
-	Log.Debug("Token Debug Info", "user_name", claims["user_name"], "org", claims["org"], "pod", claims["pod"])
+	log.Debug("Token Debug Info", "user_name", claims["user_name"], "org", claims["org"], "pod", claims["pod"])
 
 	return nil
 }
@@ -300,7 +303,7 @@ func SaveConfig() error {
 	if _, err := os.Stat(filepath.Join(home, configFolder)); os.IsNotExist(err) {
 		err = os.Mkdir(filepath.Join(home, configFolder), 0777)
 		if err != nil {
-			Log.Warn("failed to create %s folder for config. %v", configFolder, err)
+			log.Warn("failed to create %s folder for config. %v", configFolder, err)
 		}
 	}
 
@@ -327,35 +330,35 @@ func Validate() error {
 	case "pat":
 
 		if GetBaseUrl() == "" {
-			Log.Error("configured environment is missing BaseURL")
+			log.Error("configured environment is missing BaseURL")
 			errors++
 		}
 
 		if GetPatClientID() == "" {
-			Log.Error("configured environment is missing PAT ClientID")
+			log.Error("configured environment is missing PAT ClientID")
 			errors++
 		}
 
 		if GetPatClientSecret() == "" {
-			Log.Error("configured environment is missing PAT ClientSecret")
+			log.Error("configured environment is missing PAT ClientSecret")
 			errors++
 		}
 
 	case "oauth":
 
 		if GetBaseUrl() == "" {
-			Log.Error("configured environment is missing BaseURL")
+			log.Error("configured environment is missing BaseURL")
 			errors++
 		}
 
 		if GetTenantUrl() == "" {
-			Log.Error("configured environment is missing TenantURL")
+			log.Error("configured environment is missing TenantURL")
 			errors++
 		}
 
 	default:
 
-		Log.Error("invalid authtype '%s' configured", authType)
+		log.Error("invalid authtype '%s' configured", authType)
 		errors++
 
 	}
