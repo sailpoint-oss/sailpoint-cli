@@ -198,6 +198,19 @@ func CheckToken(tokenString string) error {
 	return nil
 }
 
+func SetTime(inputTime time.Time) string {
+	return inputTime.Format(time.RFC3339)
+}
+
+func GetTime(inputString string) (time.Time, error) {
+	var outputTime time.Time
+	outputTime, err := time.Parse(time.RFC3339, inputString)
+	if err != nil {
+		return outputTime, err
+	}
+	return outputTime, nil
+}
+
 func GetAuthToken() (string, error) {
 
 	var token string
@@ -214,9 +227,18 @@ func GetAuthToken() (string, error) {
 
 	switch GetAuthType() {
 	case "pat":
-		if GetPatTokenExpiry().After(time.Now()) {
+		authExpiry, err := GetPatTokenExpiry()
+		if err != nil {
+			return token, err
+		}
+		if authExpiry.After(time.Now()) {
 
-			token = GetPatToken()
+			tempToken, err := GetPatToken()
+			if err != nil {
+				return token, err
+			}
+
+			token = tempToken
 
 		} else {
 
@@ -225,22 +247,61 @@ func GetAuthToken() (string, error) {
 				return "", err
 			}
 
-			token = GetPatToken()
+			tempToken, err := GetPatToken()
+			if err != nil {
+				return token, err
+			}
+
+			token = tempToken
 		}
 	case "oauth":
 
-		if GetOAuthTokenExpiry().After(time.Now()) {
-			return GetOAuthToken(), nil
-		} else if GetOAuthRefreshExpiry().After(time.Now()) {
-			RefreshOAuth()
-			return GetOAuthToken(), nil
+		authExpiry, err := GetOAuthTokenExpiry()
+		if err != nil {
+			return token, err
+		}
+		refreshExpiry, err := GetOAuthRefreshExpiry()
+		if err != nil {
+			return token, err
+		}
+
+		if authExpiry.After(time.Now()) {
+
+			tempToken, err := GetOAuthToken()
+			if err != nil {
+				return token, err
+			}
+
+			token = tempToken
+
+		} else if refreshExpiry.After(time.Now()) {
+
+			err := RefreshOAuth()
+			if err != nil {
+				return token, err
+			}
+
+			tempToken, err := GetOAuthToken()
+			if err != nil {
+				return token, err
+			}
+
+			token = tempToken
+
 		} else {
+
 			err = OAuthLogin()
 			if err != nil {
 				return "", err
 			}
 
-			return GetOAuthToken(), nil
+			tempToken, err := GetOAuthToken()
+			if err != nil {
+				return token, err
+			}
+
+			token = tempToken
+
 		}
 
 	default:
@@ -334,13 +395,22 @@ func Validate() error {
 			errors++
 		}
 
-		if GetPatClientID() == "" {
-			log.Error("configured environment is missing PAT ClientID")
+		patClientID, err := GetPatClientID()
+		if err != nil {
+			return err
+		}
+		patClientSecret, err := GetPatClientSecret()
+		if err != nil {
+			return err
+		}
+
+		if patClientID == "" {
+			Log.Error("configured environment is missing PAT ClientID")
 			errors++
 		}
 
-		if GetPatClientSecret() == "" {
-			log.Error("configured environment is missing PAT ClientSecret")
+		if patClientSecret == "" {
+			Log.Error("configured environment is missing PAT ClientSecret")
 			errors++
 		}
 

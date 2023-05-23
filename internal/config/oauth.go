@@ -14,7 +14,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/skratchdot/open-golang/open"
-	"github.com/spf13/viper"
+	keyring "github.com/zalando/go-keyring"
 	"golang.org/x/oauth2"
 	"gopkg.in/square/go-jose.v2/jwt"
 )
@@ -36,36 +36,80 @@ type RefreshResponse struct {
 	Jti                 string `json:"jti"`
 }
 
-func GetOAuthToken() string {
-	return viper.GetString("environments." + GetActiveEnvironment() + ".oauth.accesstoken")
+func GetOAuthToken() (string, error) {
+	value, err := keyring.Get("environments.oauth.accesstoken", GetActiveEnvironment())
+	if err != nil {
+		return value, err
+	}
+	return value, nil
 }
 
-func SetOAuthToken(token string) {
-	viper.Set("environments."+GetActiveEnvironment()+".oauth.accesstoken", token)
+func SetOAuthToken(token string) error {
+	err := keyring.Set("environments.oauth.accesstoken", GetActiveEnvironment(), token)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func GetOAuthTokenExpiry() time.Time {
-	return viper.GetTime("environments." + GetActiveEnvironment() + ".oauth.expiry")
+func GetOAuthTokenExpiry() (time.Time, error) {
+	var valueTime time.Time
+	valueString, err := keyring.Get("environments.oauth.expiry", GetActiveEnvironment())
+	if err != nil {
+		return valueTime, err
+	}
+
+	valueTime, err = GetTime(valueString)
+	if err != nil {
+		return valueTime, err
+	}
+
+	return valueTime, nil
 }
 
-func SetOAuthTokenExpiry(expiry time.Time) {
-	viper.Set("environments."+GetActiveEnvironment()+".oauth.expiry", expiry)
+func SetOAuthTokenExpiry(expiry time.Time) error {
+	err := keyring.Set("environments.oauth.expiry", GetActiveEnvironment(), SetTime(expiry))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func GetRefreshToken() string {
-	return viper.GetString("environments." + GetActiveEnvironment() + ".oauth.refreshtoken")
+func GetRefreshToken() (string, error) {
+	value, err := keyring.Get("environments.oauth.refreshtoken", GetActiveEnvironment())
+
+	if err != nil {
+		return value, err
+	}
+
+	return value, nil
 }
 
 func SetRefreshToken(token string) {
-	viper.Set("environments."+GetActiveEnvironment()+".oauth.refreshtoken", token)
+	keyring.Set("environments.oauth.refreshtoken", GetActiveEnvironment(), token)
 }
 
-func GetOAuthRefreshExpiry() time.Time {
-	return viper.GetTime("environments." + GetActiveEnvironment() + ".oauth.refreshexpiry")
+func GetOAuthRefreshExpiry() (time.Time, error) {
+	var valueTime time.Time
+	valueString, err := keyring.Get("environments.oauth.refreshexpiry", GetActiveEnvironment())
+	if err != nil {
+		return valueTime, err
+	}
+
+	valueTime, err = GetTime(valueString)
+	if err != nil {
+		return valueTime, err
+	}
+
+	return valueTime, nil
 }
 
-func SetOAuthRefreshExpiry(expiry time.Time) {
-	viper.Set("environments."+GetActiveEnvironment()+".oauth.refreshexpiry", expiry)
+func SetOAuthRefreshExpiry(expiry time.Time) error {
+	err := keyring.Set("environments.oauth.refreshexpiry", GetActiveEnvironment(), SetTime(expiry))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 var (
@@ -187,7 +231,12 @@ func OAuthLogin() error {
 func RefreshOAuth() error {
 	var response RefreshResponse
 
-	resp, err := http.Post(GetTokenUrl()+"?grant_type=refresh_token&client_id="+ClientID+"&refresh_token="+GetRefreshToken(), "application/json", nil)
+	tempRefreshToken, err := GetRefreshToken()
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.Post(GetTokenUrl()+"?grant_type=refresh_token&client_id="+ClientID+"&refresh_token="+tempRefreshToken, "application/json", nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
