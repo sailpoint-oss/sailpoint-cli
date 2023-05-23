@@ -405,12 +405,12 @@ func Validate() error {
 		}
 
 		if patClientID == "" {
-			Log.Error("configured environment is missing PAT ClientID")
+			log.Error("configured environment is missing PAT ClientID")
 			errors++
 		}
 
 		if patClientSecret == "" {
-			Log.Error("configured environment is missing PAT ClientSecret")
+			log.Error("configured environment is missing PAT ClientSecret")
 			errors++
 		}
 
