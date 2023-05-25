@@ -142,6 +142,7 @@ func InitConfig() error {
 
 	if GetDebug() {
 		log.SetLevel(log.DebugLevel)
+		log.SetReportCaller(true)
 	}
 
 	return nil
@@ -157,13 +158,14 @@ func InitAPIClient() (*sailpoint.APIClient, error) {
 
 	token, err := GetAuthToken()
 	if err != nil {
-		log.Debug("unable to retrieve accesstoken: %s ", err)
+		log.Debug("unable to retrieve accesstoken", "error", err)
 	}
 
 	configuration := sailpoint.NewConfiguration(sailpoint.ClientConfiguration{Token: token, BaseURL: GetBaseUrl()})
 	apiClient = sailpoint.NewAPIClient(configuration)
 	if GetDebug() {
 		logger := log.NewWithOptions(os.Stdout, log.Options{
+			ReportCaller:    true,
 			ReportTimestamp: true,
 			Level:           log.DebugLevel,
 		})
@@ -226,11 +228,11 @@ func GetAuthToken() (string, error) {
 	}
 
 	switch GetAuthType() {
+
 	case "pat":
-		authExpiry, err := GetPatTokenExpiry()
-		if err != nil {
-			return token, err
-		}
+
+		authExpiry, _ := GetPatTokenExpiry()
+
 		if authExpiry.After(time.Now()) {
 
 			tempToken, err := GetPatToken()
@@ -254,16 +256,11 @@ func GetAuthToken() (string, error) {
 
 			token = tempToken
 		}
+
 	case "oauth":
 
-		authExpiry, err := GetOAuthTokenExpiry()
-		if err != nil {
-			return token, err
-		}
-		refreshExpiry, err := GetOAuthRefreshExpiry()
-		if err != nil {
-			return token, err
-		}
+		authExpiry, _ := GetOAuthTokenExpiry()
+		refreshExpiry, _ := GetOAuthRefreshExpiry()
 
 		if authExpiry.After(time.Now()) {
 
