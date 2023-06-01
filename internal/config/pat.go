@@ -26,6 +26,27 @@ type PatConfig struct {
 	Expiry       time.Time `mapstructure:"expiry"`
 }
 
+type PATSet struct {
+	AccessToken  string
+	AccessExpiry time.Time
+}
+
+func CachePAT(set PATSet) error {
+	var err error
+
+	err = SetPatToken(set.AccessToken)
+	if err != nil {
+		return err
+	}
+
+	err = SetPatTokenExpiry(set.AccessExpiry)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func GetPatToken() (string, error) {
 	value, err := keyring.Get("environments.pat.accesstoken", GetActiveEnvironment())
 	if err != nil {
@@ -106,11 +127,12 @@ func SetPatClientSecret(ClientSecret string) error {
 	return nil
 }
 
-func PATLogin() error {
+func PATLogin() (PATSet, error) {
+	var set PATSet
 
 	uri, err := url.Parse(GetTokenUrl())
 	if err != nil {
-		return err
+		return set, err
 	}
 
 	query := &url.Values{}
@@ -121,11 +143,11 @@ func PATLogin() error {
 
 	patClientID, err := GetPatClientID()
 	if err != nil {
-		return err
+		return set, err
 	}
 	patClientSecret, err := GetPatClientSecret()
 	if err != nil {
-		return err
+		return set, err
 	}
 
 	data.Add("client_id", patClientID)
@@ -134,7 +156,7 @@ func PATLogin() error {
 	ctx := context.TODO()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, uri.String(), strings.NewReader(data.Encode()))
 	if err != nil {
-		return err
+		return set, err
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
@@ -142,32 +164,31 @@ func PATLogin() error {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return set, err
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
 	}(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to retrieve access token. status %s", resp.Status)
+		return set, fmt.Errorf("failed to retrieve access token. status %s", resp.Status)
 	}
 
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return set, err
 	}
 
 	var tResponse TokenResponse
 
 	err = json.Unmarshal(raw, &tResponse)
 	if err != nil {
-		return err
+		return set, err
 	}
 
 	now := time.Now()
 
-	SetPatToken(tResponse.AccessToken)
-	SetPatTokenExpiry(now.Add(time.Second * time.Duration(tResponse.ExpiresIn)))
+	set = PATSet{AccessToken: tResponse.AccessToken, AccessExpiry: now.Add(time.Second * time.Duration(tResponse.ExpiresIn))}
 
-	return nil
+	return set, nil
 }

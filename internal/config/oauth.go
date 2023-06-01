@@ -36,6 +36,13 @@ type RefreshResponse struct {
 	Jti                 string `json:"jti"`
 }
 
+type TokenSet struct {
+	AccessToken   string
+	AccessExpiry  time.Time
+	RefreshToken  string
+	RefreshExpiry time.Time
+}
+
 func GetOAuthToken() (string, error) {
 	value, err := keyring.Get("environments.oauth.accesstoken", GetActiveEnvironment())
 	if err != nil {
@@ -85,11 +92,19 @@ func GetRefreshToken() (string, error) {
 	return value, nil
 }
 
-func SetRefreshToken(token string) {
-	keyring.Set("environments.oauth.refreshtoken", GetActiveEnvironment(), token)
+func SetRefreshToken(token string) error {
+
+	err := keyring.Set("environments.oauth.refreshtoken", GetActiveEnvironment(), token)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }
 
 func GetOAuthRefreshExpiry() (time.Time, error) {
+
 	var valueTime time.Time
 	valueString, err := keyring.Get("environments.oauth.refreshexpiry", GetActiveEnvironment())
 	if err != nil {
@@ -102,14 +117,18 @@ func GetOAuthRefreshExpiry() (time.Time, error) {
 	}
 
 	return valueTime, nil
+
 }
 
 func SetOAuthRefreshExpiry(expiry time.Time) error {
+
 	err := keyring.Set("environments.oauth.refreshexpiry", GetActiveEnvironment(), SetTime(expiry))
 	if err != nil {
 		return err
 	}
+
 	return nil
+
 }
 
 var (
@@ -117,6 +136,7 @@ var (
 	conf        *oauth2.Config
 	ctx         context.Context
 	server      *http.Server
+	tokenSet    TokenSet
 )
 
 const (
@@ -125,6 +145,32 @@ const (
 	RedirectPath = "/callback"
 	RedirectURL  = "http://localhost:" + RedirectPort + RedirectPath
 )
+
+func CacheOAuth(set TokenSet) error {
+	var err error
+
+	err = SetOAuthToken(set.AccessToken)
+	if err != nil {
+		return err
+	}
+
+	err = SetOAuthTokenExpiry(set.AccessExpiry)
+	if err != nil {
+		return err
+	}
+
+	err = SetRefreshToken(set.RefreshToken)
+	if err != nil {
+		return err
+	}
+
+	err = SetOAuthRefreshExpiry(set.RefreshExpiry)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	queryParts, _ := url.ParseQuery(r.URL.RawQuery)
@@ -170,11 +216,7 @@ func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	refToken.UnsafeClaimsWithoutVerification(&refreshToken)
 
-	SetOAuthToken(tok.AccessToken)
-	SetOAuthTokenExpiry(time.Unix(int64(accessToken["exp"].(float64)), 0))
-
-	SetRefreshToken(tok.Extra("refresh_token").(string))
-	SetOAuthRefreshExpiry(time.Unix(int64(refreshToken["exp"].(float64)), 0))
+	tokenSet = TokenSet{AccessToken: tok.AccessToken, AccessExpiry: time.Unix(int64(accessToken["exp"].(float64)), 0), RefreshToken: tok.Extra("refresh_token").(string), RefreshExpiry: time.Unix(int64(refreshToken["exp"].(float64)), 0)}
 
 	// show succes page
 	fmt.Fprint(w, OAuthSuccessPage)
@@ -186,7 +228,7 @@ func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func OAuthLogin() error {
+func OAuthLogin() (TokenSet, error) {
 	ctx = context.Background()
 
 	conf = &oauth2.Config{
@@ -222,18 +264,19 @@ func OAuthLogin() error {
 	}()
 	wg.Wait()
 	if callbackErr != nil {
-		return callbackErr
+		return tokenSet, callbackErr
 	}
 
-	return nil
+	return tokenSet, nil
 }
 
-func RefreshOAuth() error {
+func RefreshOAuth() (TokenSet, error) {
 	var response RefreshResponse
+	var set TokenSet
 
 	tempRefreshToken, err := GetRefreshToken()
 	if err != nil {
-		return err
+		return set, err
 	}
 
 	resp, err := http.Post(GetTokenUrl()+"?grant_type=refresh_token&client_id="+ClientID+"&refresh_token="+tempRefreshToken, "application/json", nil)
@@ -248,28 +291,24 @@ func RefreshOAuth() error {
 
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return err
+		return set, err
 	}
 
 	var accessToken map[string]interface{}
 	accToken, err := jwt.ParseSigned(response.AccessToken)
 	if err != nil {
-		return err
+		return set, err
 	}
 	accToken.UnsafeClaimsWithoutVerification(&accessToken)
 
 	var refreshToken map[string]interface{}
 	refToken, err := jwt.ParseSigned(response.RefreshToken)
 	if err != nil {
-		return err
+		return set, err
 	}
 	refToken.UnsafeClaimsWithoutVerification(&refreshToken)
 
-	SetOAuthToken(response.AccessToken)
-	SetOAuthTokenExpiry(time.Unix(int64(accessToken["exp"].(float64)), 0))
+	set = TokenSet{AccessToken: response.AccessToken, AccessExpiry: time.Unix(int64(accessToken["exp"].(float64)), 0), RefreshToken: response.RefreshToken, RefreshExpiry: time.Unix(int64(refreshToken["exp"].(float64)), 0)}
 
-	SetRefreshToken(response.RefreshToken)
-	SetOAuthRefreshExpiry(time.Unix(int64(refreshToken["exp"].(float64)), 0))
-
-	return nil
+	return set, nil
 }

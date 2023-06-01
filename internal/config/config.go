@@ -213,6 +213,10 @@ func GetTime(inputString string) (time.Time, error) {
 	return outputTime, nil
 }
 
+func CacheWarn() {
+	log.Warn("There was an issue caching the token information in your Operating Systems native secrets platform\nThis means everytime you use a CLI command you will need to retrieve a new access token\nIf you are unable to resolve your local secrets solution, we suggest using PAT authentication\n\nThis could be due to being on an unsupported OS or some other configuration issue.\nFor more information: https://github.com/zalando/go-keyring#dependencies")
+}
+
 func GetAuthToken() (string, error) {
 
 	var token string
@@ -244,17 +248,18 @@ func GetAuthToken() (string, error) {
 
 		} else {
 
-			err = PATLogin()
-			if err != nil {
-				return "", err
-			}
-
-			tempToken, err := GetPatToken()
+			set, err := PATLogin()
 			if err != nil {
 				return token, err
 			}
 
-			token = tempToken
+			token = set.AccessToken
+
+			err = CachePAT(set)
+			if err != nil {
+				CacheWarn()
+			}
+
 		}
 
 	case "oauth":
@@ -273,36 +278,36 @@ func GetAuthToken() (string, error) {
 
 		} else if refreshExpiry.After(time.Now()) {
 
-			err := RefreshOAuth()
+			set, err := RefreshOAuth()
 			if err != nil {
 				return token, err
 			}
 
-			tempToken, err := GetOAuthToken()
-			if err != nil {
-				return token, err
-			}
+			token = set.AccessToken
 
-			token = tempToken
+			err = CacheOAuth(set)
+			if err != nil {
+				CacheWarn()
+			}
 
 		} else {
 
-			err = OAuthLogin()
+			set, err := OAuthLogin()
 			if err != nil {
 				return "", err
 			}
 
-			tempToken, err := GetOAuthToken()
-			if err != nil {
-				return token, err
-			}
+			token = set.AccessToken
 
-			token = tempToken
+			err = CacheOAuth(set)
+			if err != nil {
+				CacheWarn()
+			}
 
 		}
 
 	default:
-		return "", fmt.Errorf("invalid authtype configured")
+		return token, fmt.Errorf("invalid authtype configured")
 	}
 
 	err = CheckToken(token)
