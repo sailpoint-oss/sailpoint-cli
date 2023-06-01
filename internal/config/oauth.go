@@ -6,13 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+
 	"net/http"
 	"net/url"
 	"sync"
 	"time"
 
-	"github.com/fatih/color"
+	"github.com/charmbracelet/log"
 	"github.com/skratchdot/open-golang/open"
 	keyring "github.com/zalando/go-keyring"
 	"golang.org/x/oauth2"
@@ -181,7 +181,8 @@ func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	// Exchange will do the handshake to retrieve the initial access token.
 	tok, err := conf.Exchange(ctx, code)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		callbackErr = err
 	}
 
 	clientTok := tok
@@ -196,7 +197,7 @@ func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		callbackErr = err
 	} else {
-		color.Green("Authentication successful")
+		log.Info("Authentication successful")
 		defer func(Body io.ReadCloser) {
 			_ = Body.Close()
 		}(resp.Body)
@@ -205,6 +206,7 @@ func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	var accessToken map[string]interface{}
 	accToken, err := jwt.ParseSigned(tok.AccessToken)
 	if err != nil {
+		log.Error(err)
 		callbackErr = err
 	}
 	accToken.UnsafeClaimsWithoutVerification(&accessToken)
@@ -212,6 +214,7 @@ func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	var refreshToken map[string]interface{}
 	refToken, err := jwt.ParseSigned(tok.Extra("refresh_token").(string))
 	if err != nil {
+		log.Error(err)
 		callbackErr = err
 	}
 	refToken.UnsafeClaimsWithoutVerification(&refreshToken)
@@ -250,19 +253,27 @@ func OAuthLogin() (TokenSet, error) {
 	// Redirect user to login page
 	url := conf.AuthCodeURL("")
 
-	color.Green("Opening browser for authentication")
+	log.Info("Attempting to open browser for authentication")
 
-	open.Run(url)
+	err := open.Run(url)
+	if err != nil {
+		log.Warn("Cannot open automatically, Please manually open OAuth login page below")
+		fmt.Println(url)
+	}
 
 	http.HandleFunc(RedirectPath, CallbackHandler)
 	server = &http.Server{Addr: fmt.Sprintf(":%v", RedirectPort), Handler: nil}
+
 	var wg sync.WaitGroup
 	wg.Add(1)
+
 	go func() {
 		defer wg.Done()
 		server.ListenAndServe()
 	}()
+
 	wg.Wait()
+
 	if callbackErr != nil {
 		return tokenSet, callbackErr
 	}
@@ -281,12 +292,12 @@ func RefreshOAuth() (TokenSet, error) {
 
 	resp, err := http.Post(GetTokenUrl()+"?grant_type=refresh_token&client_id="+ClientID+"&refresh_token="+tempRefreshToken, "application/json", nil)
 	if err != nil {
-		log.Fatalln(err)
+		return set, err
 	}
 	//We Read the response body on the line below.
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalln(err)
+		return set, err
 	}
 
 	err = json.Unmarshal(body, &response)
