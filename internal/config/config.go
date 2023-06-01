@@ -214,7 +214,7 @@ func GetTime(inputString string) (time.Time, error) {
 }
 
 func CacheWarn() {
-	log.Warn("There was an issue caching the token information in your Operating Systems native secrets platform\nThis means everytime you use a CLI command you will need to retrieve a new access token\nIf you are unable to resolve your local secrets solution, we suggest using PAT authentication\nThis could be due to being on an unsupported OS or some other configuration issue.\n\nFor more information: https://github.com/zalando/go-keyring#dependencies")
+	log.Warn("There was an issue caching the token information in your Operating Systems native secrets platform\nThis could be due to being on an unsupported OS or some other configuration issue.\nThis means everytime you use a CLI command you will need to retrieve a new access token\nIf you are unable to resolve your local secrets solution, we suggest using PAT authentication\n\nFor more information: https://github.com/zalando/go-keyring#dependencies")
 }
 
 func GetAuthToken() (string, error) {
