@@ -11,6 +11,7 @@ import (
 	sailpoint "github.com/sailpoint-oss/golang-sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/spf13/viper"
+	keyring "github.com/zalando/go-keyring"
 	"gopkg.in/square/go-jose.v2/jwt"
 )
 
@@ -213,10 +214,6 @@ func GetTime(inputString string) (time.Time, error) {
 	return outputTime, nil
 }
 
-func CacheWarn() {
-	log.Warn("There was an issue caching the token information in your Operating Systems native secrets platform\nThis could be due to being on an unsupported OS or some other configuration issue.\nThis means everytime you use a CLI command you will need to retrieve a new access token\nIf you are unable to resolve your local secrets solution, we suggest using PAT authentication\n\nFor more information: https://github.com/zalando/go-keyring#dependencies")
-}
-
 func GetAuthToken() (string, error) {
 
 	var token string
@@ -255,10 +252,11 @@ func GetAuthToken() (string, error) {
 
 			token = set.AccessToken
 
-			err = CachePAT(set)
-			if err != nil {
-				CacheWarn()
-			}
+			//err =
+			CachePAT(set)
+			// if err != nil {
+			// 	log.Error(err)
+			// }
 
 		}
 
@@ -285,10 +283,11 @@ func GetAuthToken() (string, error) {
 
 			token = set.AccessToken
 
-			err = CacheOAuth(set)
-			if err != nil {
-				CacheWarn()
-			}
+			//err =
+			CacheOAuth(set)
+			// if err != nil {
+			// 	log.Error(err)
+			// }
 
 		} else {
 
@@ -299,10 +298,11 @@ func GetAuthToken() (string, error) {
 
 			token = set.AccessToken
 
-			err = CacheOAuth(set)
-			if err != nil {
-				CacheWarn()
-			}
+			//err =
+			CacheOAuth(set)
+			// if err != nil {
+			// 	log.Error(err)
+			// }
 
 		}
 
@@ -384,13 +384,29 @@ func SaveConfig() error {
 	return nil
 }
 
+func TestSecretsStorage() bool {
+	keyring.Set("test.service", "test.user", "test.secret")
+	secret, err := keyring.Get("test.service", "test.user")
+	if err != nil || secret != "test.secret" {
+		return false
+	} else {
+		return true
+	}
+}
+
 func Validate() error {
 	var errors int
 	authType := GetAuthType()
 
+	supportsSecrets := TestSecretsStorage()
+
 	switch authType {
 
 	case "pat":
+
+		if !supportsSecrets {
+			log.Warn("Secrets storage is not currently functional on this platform, PAT will only work with environment variables", "additional information", "URL")
+		}
 
 		if GetBaseUrl() == "" {
 			log.Error("configured environment is missing BaseURL")
@@ -417,6 +433,10 @@ func Validate() error {
 		}
 
 	case "oauth":
+
+		if !supportsSecrets {
+			log.Warn("Secrets storage is not currently functional on this platform, every command will reauthenticate with OAuth")
+		}
 
 		if GetBaseUrl() == "" {
 			log.Error("configured environment is missing BaseURL")
