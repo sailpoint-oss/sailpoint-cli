@@ -85,12 +85,20 @@ func SetPatTokenExpiry(expiry time.Time) error {
 	return nil
 }
 
+func GetClientID(env string) (string, error) {
+	value, err := keyring.Get("environments.pat.clientid", env)
+	if err != nil {
+		return value, err
+	}
+	return value, nil
+}
+
 func GetPatClientID() (string, error) {
 	envSecret := os.Getenv("SAIL_CLIENT_ID")
 	if envSecret != "" {
 		return envSecret, nil
 	} else {
-		value, err := keyring.Get("environments.pat.clientid", GetActiveEnvironment())
+		value, err := GetClientID(GetActiveEnvironment())
 		if err != nil {
 			return value, err
 		}
@@ -98,12 +106,20 @@ func GetPatClientID() (string, error) {
 	}
 }
 
+func GetClientSecret(env string) (string, error) {
+	value, err := keyring.Get("environments.pat.clientsecret", env)
+	if err != nil {
+		return value, err
+	}
+	return value, nil
+}
+
 func GetPatClientSecret() (string, error) {
 	envSecret := os.Getenv("SAIL_CLIENT_SECRET")
 	if envSecret != "" {
 		return envSecret, nil
 	} else {
-		value, err := keyring.Get("environments.pat.clientsecret", GetActiveEnvironment())
+		value, err := GetClientSecret(GetActiveEnvironment())
 		if err != nil {
 			return value, err
 		}
