@@ -12,7 +12,7 @@ func NewSearchCmd() *cobra.Command {
 		Use:     "search",
 		Short:   "Perform Search operations in IdentityNow with a specific query or a template",
 		Long:    "\nPerform Search operations in IdentityNow with a specific query or a template\n\n",
-		Example: "sail search -h",
+		Example: "sail search",
 		Aliases: []string{"se"},
 		Args:    cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {

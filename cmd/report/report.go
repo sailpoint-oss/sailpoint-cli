@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewReportCommand() *cobra.Command {
+func NewReportCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "report",
 		Short:   "Generate a report from a template using IdentityNow search queries",

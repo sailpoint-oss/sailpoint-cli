@@ -11,7 +11,7 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-func NewEnvironmentCommand() *cobra.Command {
+func NewEnvironmentCmd() *cobra.Command {
 	var env string
 	var overwrite bool
 	var erase bool
