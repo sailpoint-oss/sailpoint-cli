@@ -24,6 +24,7 @@ func newCollectCmd(term terminal.Terminal) *cobra.Command {
 		Example: "sail va collect 10.10.10.25, 10.10.10.26 -p S@ilp0int -p S@ilp0int \n\nLog Files:\n/home/sailpoint/log/ccg.log\n/home/sailpoint/log/charon.log\n/home/sailpoint/stuntlog.txt\n\nConfig Files:\n/home/sailpoint/proxy.yaml\n/etc/systemd/network/static.network\n/etc/resolv.conf\n",
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			var err error
 
 			if output == "" {
 				output, _ = os.Getwd()
@@ -44,6 +45,13 @@ func newCollectCmd(term terminal.Terminal) *cobra.Command {
 				mpb.WithWaitGroup(&wg))
 
 			for i, endpoint := range args {
+				password := credentials[i]
+				if password == "" {
+					password, err = term.PromptPassword("Please enter the password for " + endpoint)
+					if err != nil {
+						return err
+					}
+				}
 				wg.Add(1)
 				go func(endpoint, password string) {
 					defer wg.Done()
@@ -53,7 +61,7 @@ func newCollectCmd(term terminal.Terminal) *cobra.Command {
 					if err != nil {
 						log.Error("Error collecting files for", "VA", endpoint, "err", err)
 					}
-				}(endpoint, credentials[i])
+				}(endpoint, password)
 			}
 			p.Wait()
 

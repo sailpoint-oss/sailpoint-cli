@@ -6,15 +6,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+
 	"net/http"
 	"net/url"
 	"sync"
 	"time"
 
-	"github.com/fatih/color"
+	"github.com/charmbracelet/log"
 	"github.com/skratchdot/open-golang/open"
-	"github.com/spf13/viper"
+	keyring "github.com/zalando/go-keyring"
 	"golang.org/x/oauth2"
 	"gopkg.in/square/go-jose.v2/jwt"
 )
@@ -36,36 +36,99 @@ type RefreshResponse struct {
 	Jti                 string `json:"jti"`
 }
 
-func GetOAuthToken() string {
-	return viper.GetString("environments." + GetActiveEnvironment() + ".oauth.accesstoken")
+type TokenSet struct {
+	AccessToken   string
+	AccessExpiry  time.Time
+	RefreshToken  string
+	RefreshExpiry time.Time
 }
 
-func SetOAuthToken(token string) {
-	viper.Set("environments."+GetActiveEnvironment()+".oauth.accesstoken", token)
+func GetOAuthToken() (string, error) {
+	value, err := keyring.Get("environments.oauth.accesstoken", GetActiveEnvironment())
+	if err != nil {
+		return value, err
+	}
+	return value, nil
 }
 
-func GetOAuthTokenExpiry() time.Time {
-	return viper.GetTime("environments." + GetActiveEnvironment() + ".oauth.expiry")
+func SetOAuthToken(token string) error {
+	err := keyring.Set("environments.oauth.accesstoken", GetActiveEnvironment(), token)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func SetOAuthTokenExpiry(expiry time.Time) {
-	viper.Set("environments."+GetActiveEnvironment()+".oauth.expiry", expiry)
+func GetOAuthTokenExpiry() (time.Time, error) {
+	var valueTime time.Time
+	valueString, err := keyring.Get("environments.oauth.expiry", GetActiveEnvironment())
+	if err != nil {
+		return valueTime, err
+	}
+
+	valueTime, err = GetTime(valueString)
+	if err != nil {
+		return valueTime, err
+	}
+
+	return valueTime, nil
 }
 
-func GetRefreshToken() string {
-	return viper.GetString("environments." + GetActiveEnvironment() + ".oauth.refreshtoken")
+func SetOAuthTokenExpiry(expiry time.Time) error {
+	err := keyring.Set("environments.oauth.expiry", GetActiveEnvironment(), SetTime(expiry))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func SetRefreshToken(token string) {
-	viper.Set("environments."+GetActiveEnvironment()+".oauth.refreshtoken", token)
+func GetRefreshToken() (string, error) {
+	value, err := keyring.Get("environments.oauth.refreshtoken", GetActiveEnvironment())
+
+	if err != nil {
+		return value, err
+	}
+
+	return value, nil
 }
 
-func GetOAuthRefreshExpiry() time.Time {
-	return viper.GetTime("environments." + GetActiveEnvironment() + ".oauth.refreshexpiry")
+func SetRefreshToken(token string) error {
+
+	err := keyring.Set("environments.oauth.refreshtoken", GetActiveEnvironment(), token)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }
 
-func SetOAuthRefreshExpiry(expiry time.Time) {
-	viper.Set("environments."+GetActiveEnvironment()+".oauth.refreshexpiry", expiry)
+func GetOAuthRefreshExpiry() (time.Time, error) {
+
+	var valueTime time.Time
+	valueString, err := keyring.Get("environments.oauth.refreshexpiry", GetActiveEnvironment())
+	if err != nil {
+		return valueTime, err
+	}
+
+	valueTime, err = GetTime(valueString)
+	if err != nil {
+		return valueTime, err
+	}
+
+	return valueTime, nil
+
+}
+
+func SetOAuthRefreshExpiry(expiry time.Time) error {
+
+	err := keyring.Set("environments.oauth.refreshexpiry", GetActiveEnvironment(), SetTime(expiry))
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }
 
 var (
@@ -73,6 +136,7 @@ var (
 	conf        *oauth2.Config
 	ctx         context.Context
 	server      *http.Server
+	tokenSet    TokenSet
 )
 
 const (
@@ -81,6 +145,32 @@ const (
 	RedirectPath = "/callback"
 	RedirectURL  = "http://localhost:" + RedirectPort + RedirectPath
 )
+
+func CacheOAuth(set TokenSet) error {
+	var err error
+
+	err = SetOAuthToken(set.AccessToken)
+	if err != nil {
+		return err
+	}
+
+	err = SetOAuthTokenExpiry(set.AccessExpiry)
+	if err != nil {
+		return err
+	}
+
+	err = SetRefreshToken(set.RefreshToken)
+	if err != nil {
+		return err
+	}
+
+	err = SetOAuthRefreshExpiry(set.RefreshExpiry)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	queryParts, _ := url.ParseQuery(r.URL.RawQuery)
@@ -91,7 +181,8 @@ func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	// Exchange will do the handshake to retrieve the initial access token.
 	tok, err := conf.Exchange(ctx, code)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		callbackErr = err
 	}
 
 	clientTok := tok
@@ -106,7 +197,7 @@ func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		callbackErr = err
 	} else {
-		color.Green("Authentication successful")
+		log.Info("Authentication successful")
 		defer func(Body io.ReadCloser) {
 			_ = Body.Close()
 		}(resp.Body)
@@ -115,6 +206,7 @@ func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	var accessToken map[string]interface{}
 	accToken, err := jwt.ParseSigned(tok.AccessToken)
 	if err != nil {
+		log.Error(err)
 		callbackErr = err
 	}
 	accToken.UnsafeClaimsWithoutVerification(&accessToken)
@@ -122,15 +214,12 @@ func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	var refreshToken map[string]interface{}
 	refToken, err := jwt.ParseSigned(tok.Extra("refresh_token").(string))
 	if err != nil {
+		log.Error(err)
 		callbackErr = err
 	}
 	refToken.UnsafeClaimsWithoutVerification(&refreshToken)
 
-	SetOAuthToken(tok.AccessToken)
-	SetOAuthTokenExpiry(time.Unix(int64(accessToken["exp"].(float64)), 0))
-
-	SetRefreshToken(tok.Extra("refresh_token").(string))
-	SetOAuthRefreshExpiry(time.Unix(int64(refreshToken["exp"].(float64)), 0))
+	tokenSet = TokenSet{AccessToken: tok.AccessToken, AccessExpiry: time.Unix(int64(accessToken["exp"].(float64)), 0), RefreshToken: tok.Extra("refresh_token").(string), RefreshExpiry: time.Unix(int64(refreshToken["exp"].(float64)), 0)}
 
 	// show succes page
 	fmt.Fprint(w, OAuthSuccessPage)
@@ -142,7 +231,7 @@ func CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func OAuthLogin() error {
+func OAuthLogin() (TokenSet, error) {
 	ctx = context.Background()
 
 	conf = &oauth2.Config{
@@ -164,63 +253,73 @@ func OAuthLogin() error {
 	// Redirect user to login page
 	url := conf.AuthCodeURL("")
 
-	color.Green("Opening browser for authentication")
+	log.Info("Attempting to open browser for authentication")
 
-	open.Run(url)
+	err := open.Run(url)
+	if err != nil {
+		log.Warn("Cannot open automatically, Please manually open OAuth login page below")
+		fmt.Println(url)
+	}
 
 	http.HandleFunc(RedirectPath, CallbackHandler)
 	server = &http.Server{Addr: fmt.Sprintf(":%v", RedirectPort), Handler: nil}
+
 	var wg sync.WaitGroup
 	wg.Add(1)
+
 	go func() {
 		defer wg.Done()
 		server.ListenAndServe()
 	}()
+
 	wg.Wait()
+
 	if callbackErr != nil {
-		return callbackErr
+		return tokenSet, callbackErr
 	}
 
-	return nil
+	return tokenSet, nil
 }
 
-func RefreshOAuth() error {
+func RefreshOAuth() (TokenSet, error) {
 	var response RefreshResponse
+	var set TokenSet
 
-	resp, err := http.Post(GetTokenUrl()+"?grant_type=refresh_token&client_id="+ClientID+"&refresh_token="+GetRefreshToken(), "application/json", nil)
+	tempRefreshToken, err := GetRefreshToken()
 	if err != nil {
-		log.Fatalln(err)
+		return set, err
+	}
+
+	resp, err := http.Post(GetTokenUrl()+"?grant_type=refresh_token&client_id="+ClientID+"&refresh_token="+tempRefreshToken, "application/json", nil)
+	if err != nil {
+		return set, err
 	}
 	//We Read the response body on the line below.
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalln(err)
+		return set, err
 	}
 
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return err
+		return set, err
 	}
 
 	var accessToken map[string]interface{}
 	accToken, err := jwt.ParseSigned(response.AccessToken)
 	if err != nil {
-		return err
+		return set, err
 	}
 	accToken.UnsafeClaimsWithoutVerification(&accessToken)
 
 	var refreshToken map[string]interface{}
 	refToken, err := jwt.ParseSigned(response.RefreshToken)
 	if err != nil {
-		return err
+		return set, err
 	}
 	refToken.UnsafeClaimsWithoutVerification(&refreshToken)
 
-	SetOAuthToken(response.AccessToken)
-	SetOAuthTokenExpiry(time.Unix(int64(accessToken["exp"].(float64)), 0))
+	set = TokenSet{AccessToken: response.AccessToken, AccessExpiry: time.Unix(int64(accessToken["exp"].(float64)), 0), RefreshToken: response.RefreshToken, RefreshExpiry: time.Unix(int64(refreshToken["exp"].(float64)), 0)}
 
-	SetRefreshToken(response.RefreshToken)
-	SetOAuthRefreshExpiry(time.Unix(int64(refreshToken["exp"].(float64)), 0))
-
-	return nil
+	return set, nil
 }
