@@ -11,6 +11,7 @@ import (
 	sailpoint "github.com/sailpoint-oss/golang-sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/spf13/viper"
+	keyring "github.com/zalando/go-keyring"
 	"gopkg.in/square/go-jose.v2/jwt"
 )
 
@@ -142,6 +143,7 @@ func InitConfig() error {
 
 	if GetDebug() {
 		log.SetLevel(log.DebugLevel)
+		log.SetReportCaller(true)
 	}
 
 	return nil
@@ -157,13 +159,14 @@ func InitAPIClient() (*sailpoint.APIClient, error) {
 
 	token, err := GetAuthToken()
 	if err != nil {
-		log.Debug("unable to retrieve accesstoken: %s ", err)
+		log.Debug("unable to retrieve accesstoken", "error", err)
 	}
 
 	configuration := sailpoint.NewConfiguration(sailpoint.ClientConfiguration{Token: token, BaseURL: GetBaseUrl()})
 	apiClient = sailpoint.NewAPIClient(configuration)
 	if GetDebug() {
 		logger := log.NewWithOptions(os.Stdout, log.Options{
+			ReportCaller:    true,
 			ReportTimestamp: true,
 			Level:           log.DebugLevel,
 		})
@@ -198,6 +201,19 @@ func CheckToken(tokenString string) error {
 	return nil
 }
 
+func SetTime(inputTime time.Time) string {
+	return inputTime.Format(time.RFC3339)
+}
+
+func GetTime(inputString string) (time.Time, error) {
+	var outputTime time.Time
+	outputTime, err := time.Parse(time.RFC3339, inputString)
+	if err != nil {
+		return outputTime, err
+	}
+	return outputTime, nil
+}
+
 func GetAuthToken() (string, error) {
 
 	var token string
@@ -213,38 +229,85 @@ func GetAuthToken() (string, error) {
 	}
 
 	switch GetAuthType() {
-	case "pat":
-		if GetPatTokenExpiry().After(time.Now()) {
 
-			token = GetPatToken()
+	case "pat":
+
+		authExpiry, _ := GetPatTokenExpiry()
+
+		if authExpiry.After(time.Now()) {
+
+			tempToken, err := GetPatToken()
+			if err != nil {
+				return token, err
+			}
+
+			token = tempToken
 
 		} else {
 
-			err = PATLogin()
+			set, err := PATLogin()
 			if err != nil {
-				return "", err
+				return token, err
 			}
 
-			token = GetPatToken()
+			token = set.AccessToken
+
+			//err =
+			CachePAT(set)
+			// if err != nil {
+			// 	log.Error(err)
+			// }
+
 		}
+
 	case "oauth":
 
-		if GetOAuthTokenExpiry().After(time.Now()) {
-			return GetOAuthToken(), nil
-		} else if GetOAuthRefreshExpiry().After(time.Now()) {
-			RefreshOAuth()
-			return GetOAuthToken(), nil
+		authExpiry, _ := GetOAuthTokenExpiry()
+		refreshExpiry, _ := GetOAuthRefreshExpiry()
+
+		if authExpiry.After(time.Now()) {
+
+			tempToken, err := GetOAuthToken()
+			if err != nil {
+				return token, err
+			}
+
+			token = tempToken
+
+		} else if refreshExpiry.After(time.Now()) {
+
+			set, err := RefreshOAuth()
+			if err != nil {
+				return token, err
+			}
+
+			token = set.AccessToken
+
+			//err =
+			CacheOAuth(set)
+			// if err != nil {
+			// 	log.Error(err)
+			// }
+
 		} else {
-			err = OAuthLogin()
+
+			set, err := OAuthLogin()
 			if err != nil {
 				return "", err
 			}
 
-			return GetOAuthToken(), nil
+			token = set.AccessToken
+
+			//err =
+			CacheOAuth(set)
+			// if err != nil {
+			// 	log.Error(err)
+			// }
+
 		}
 
 	default:
-		return "", fmt.Errorf("invalid authtype configured")
+		return token, fmt.Errorf("invalid authtype configured")
 	}
 
 	err = CheckToken(token)
@@ -321,30 +384,59 @@ func SaveConfig() error {
 	return nil
 }
 
+func TestSecretsStorage() bool {
+	keyring.Set("test.service", "test.user", "test.secret")
+	secret, err := keyring.Get("test.service", "test.user")
+	if err != nil || secret != "test.secret" {
+		return false
+	} else {
+		return true
+	}
+}
+
 func Validate() error {
 	var errors int
 	authType := GetAuthType()
 
+	supportsSecrets := TestSecretsStorage()
+
 	switch authType {
 
 	case "pat":
+
+		if !supportsSecrets {
+			log.Warn("Secrets storage is not currently functional on this platform, PAT will only work with environment variables", "additional information", "URL")
+		}
 
 		if GetBaseUrl() == "" {
 			log.Error("configured environment is missing BaseURL")
 			errors++
 		}
 
-		if GetPatClientID() == "" {
+		patClientID, err := GetPatClientID()
+		if err != nil {
+			return err
+		}
+		patClientSecret, err := GetPatClientSecret()
+		if err != nil {
+			return err
+		}
+
+		if patClientID == "" {
 			log.Error("configured environment is missing PAT ClientID")
 			errors++
 		}
 
-		if GetPatClientSecret() == "" {
+		if patClientSecret == "" {
 			log.Error("configured environment is missing PAT ClientSecret")
 			errors++
 		}
 
 	case "oauth":
+
+		if !supportsSecrets {
+			log.Warn("Secrets storage is not currently functional on this platform, every command will reauthenticate with OAuth")
+		}
 
 		if GetBaseUrl() == "" {
 			log.Error("configured environment is missing BaseURL")

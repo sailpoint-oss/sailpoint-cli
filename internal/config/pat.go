@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/viper"
+	keyring "github.com/zalando/go-keyring"
 )
 
 type TokenResponse struct {
@@ -26,53 +26,129 @@ type PatConfig struct {
 	Expiry       time.Time `mapstructure:"expiry"`
 }
 
-func GetPatToken() string {
-	return viper.GetString("environments." + GetActiveEnvironment() + ".pat.accesstoken")
+type PATSet struct {
+	AccessToken  string
+	AccessExpiry time.Time
 }
 
-func SetPatToken(token string) {
-	viper.Set("environments."+GetActiveEnvironment()+".pat.accesstoken", token)
+func CachePAT(set PATSet) error {
+	var err error
+
+	err = SetPatToken(set.AccessToken)
+	if err != nil {
+		return err
+	}
+
+	err = SetPatTokenExpiry(set.AccessExpiry)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func GetPatTokenExpiry() time.Time {
-	return viper.GetTime("environments." + GetActiveEnvironment() + ".pat.expiry")
+func GetPatToken() (string, error) {
+	value, err := keyring.Get("environments.pat.accesstoken", GetActiveEnvironment())
+	if err != nil {
+		return "", err
+	}
+	return value, nil
 }
 
-func SetPatTokenExpiry(expiry time.Time) {
-	viper.Set("environments."+GetActiveEnvironment()+".pat.expiry", expiry)
+func SetPatToken(token string) error {
+	err := keyring.Set("environments.pat.accesstoken", GetActiveEnvironment(), token)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func GetPatClientID() string {
+func GetPatTokenExpiry() (time.Time, error) {
+	valueString, err := keyring.Get("environments.pat.expiry", GetActiveEnvironment())
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	valueTime, err := GetTime(valueString)
+	if err != nil {
+		return valueTime, err
+	}
+
+	return valueTime, nil
+}
+
+func SetPatTokenExpiry(expiry time.Time) error {
+	err := keyring.Set("environments.pat.expiry", GetActiveEnvironment(), SetTime(expiry))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetClientID(env string) (string, error) {
+	value, err := keyring.Get("environments.pat.clientid", env)
+	if err != nil {
+		return value, err
+	}
+	return value, nil
+}
+
+func GetPatClientID() (string, error) {
 	envSecret := os.Getenv("SAIL_CLIENT_ID")
 	if envSecret != "" {
-		return envSecret
+		return envSecret, nil
 	} else {
-		return viper.GetString("environments." + GetActiveEnvironment() + ".pat.clientid")
+		value, err := GetClientID(GetActiveEnvironment())
+		if err != nil {
+			return value, err
+		}
+		return value, nil
 	}
 }
 
-func GetPatClientSecret() string {
+func GetClientSecret(env string) (string, error) {
+	value, err := keyring.Get("environments.pat.clientsecret", env)
+	if err != nil {
+		return value, err
+	}
+	return value, nil
+}
+
+func GetPatClientSecret() (string, error) {
 	envSecret := os.Getenv("SAIL_CLIENT_SECRET")
 	if envSecret != "" {
-		return envSecret
+		return envSecret, nil
 	} else {
-		return viper.GetString("environments." + GetActiveEnvironment() + ".pat.clientsecret")
+		value, err := GetClientSecret(GetActiveEnvironment())
+		if err != nil {
+			return value, err
+		}
+		return value, nil
 	}
 }
 
-func SetPatClientID(ClientID string) {
-	viper.Set("environments."+GetActiveEnvironment()+".pat.clientid", ClientID)
+func SetPatClientID(ClientID string) error {
+	err := keyring.Set("environments.pat.clientid", GetActiveEnvironment(), ClientID)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func SetPatClientSecret(ClientSecret string) {
-	viper.Set("environments."+GetActiveEnvironment()+".pat.clientsecret", ClientSecret)
+func SetPatClientSecret(ClientSecret string) error {
+	err := keyring.Set("environments.pat.clientsecret", GetActiveEnvironment(), ClientSecret)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func PATLogin() error {
+func PATLogin() (PATSet, error) {
+	var set PATSet
 
 	uri, err := url.Parse(GetTokenUrl())
 	if err != nil {
-		return err
+		return set, err
 	}
 
 	query := &url.Values{}
@@ -80,13 +156,23 @@ func PATLogin() error {
 	uri.RawQuery = query.Encode()
 
 	data := &url.Values{}
-	data.Add("client_id", GetPatClientID())
-	data.Add("client_secret", GetPatClientSecret())
+
+	patClientID, err := GetPatClientID()
+	if err != nil {
+		return set, err
+	}
+	patClientSecret, err := GetPatClientSecret()
+	if err != nil {
+		return set, err
+	}
+
+	data.Add("client_id", patClientID)
+	data.Add("client_secret", patClientSecret)
 
 	ctx := context.TODO()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, uri.String(), strings.NewReader(data.Encode()))
 	if err != nil {
-		return err
+		return set, err
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
@@ -94,32 +180,31 @@ func PATLogin() error {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return set, err
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
 	}(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to retrieve access token. status %s", resp.Status)
+		return set, fmt.Errorf("failed to retrieve access token. status %s", resp.Status)
 	}
 
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return set, err
 	}
 
 	var tResponse TokenResponse
 
 	err = json.Unmarshal(raw, &tResponse)
 	if err != nil {
-		return err
+		return set, err
 	}
 
 	now := time.Now()
 
-	SetPatToken(tResponse.AccessToken)
-	SetPatTokenExpiry(now.Add(time.Second * time.Duration(tResponse.ExpiresIn)))
+	set = PATSet{AccessToken: tResponse.AccessToken, AccessExpiry: now.Add(time.Second * time.Duration(tResponse.ExpiresIn))}
 
-	return nil
+	return set, nil
 }

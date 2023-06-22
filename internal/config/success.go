@@ -28,10 +28,22 @@ p {
   padding: 24px;
   margin: 28px;
 }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background-image:
+			radial-gradient(at 0% 0%, rgba(0 113 206 / 0.33) 0px, transparent 50%),
+			radial-gradient(at 98% 1%, rgba(204 39 176 / 0.33) 0px, transparent 50%);
+}
+
 </style>
 <body>
   <div class="box">
-    <h1>Successfully authenticated SailPoint CLI</h1>
+    <h1>Successfully authenticated with the SailPoint CLI</h1>
     <p>You may now close this tab and return to the terminal.</p>
   </div>
 </body>

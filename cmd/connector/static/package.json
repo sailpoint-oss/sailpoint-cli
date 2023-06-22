@@ -7,6 +7,7 @@
     "prebuild": "npm run clean",
     "build": "npx ncc build ./src/index.ts -o ./dist -m -C",
     "dev": "cross-env NODE_OPTIONS=--enable-source-maps spcx run dist/index.js",
+    "debug": "spcx run dist/index.js",
     "prettier": "npx prettier --write .",
     "test": "jest --coverage",
     "prepack-zip": "npm ci && npm run build",

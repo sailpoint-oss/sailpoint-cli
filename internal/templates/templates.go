@@ -38,7 +38,7 @@ func GetSearchTemplates() ([]SearchTemplate, error) {
 		file, err := os.OpenFile(templateFile, os.O_RDWR, 0777)
 		if err != nil {
 
-			log.Debug("error opening file %s", templateFile)
+			log.Debug("error opening file", "file", templateFile)
 
 		} else {
 

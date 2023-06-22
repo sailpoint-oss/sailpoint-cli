@@ -114,14 +114,6 @@ func saveCanalLine(bytes []byte, dir string) {
 	}
 }
 
-func closeFiles() {
-	cacheLock.Lock()
-	defer cacheLock.Unlock()
-	for _, f := range cache {
-		f.Close()
-	}
-}
-
 func saveCCGLine(line CCG, dir string, isErr bool) error {
 	folder := "Standard"
 	if isErr {
