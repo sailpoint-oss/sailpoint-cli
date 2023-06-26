@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/log"
 	keyring "github.com/zalando/go-keyring"
 )
 
@@ -88,6 +89,7 @@ func SetPatTokenExpiry(expiry time.Time) error {
 func GetClientID(env string) (string, error) {
 	value, err := keyring.Get("environments.pat.clientid", env)
 	if err != nil {
+		log.Error("issue retrieving clientID", "env", env)
 		return value, err
 	}
 	return value, nil
@@ -109,6 +111,7 @@ func GetPatClientID() (string, error) {
 func GetClientSecret(env string) (string, error) {
 	value, err := keyring.Get("environments.pat.clientsecret", env)
 	if err != nil {
+		log.Error("issue retrieving clientSecret", "env", env)
 		return value, err
 	}
 	return value, nil

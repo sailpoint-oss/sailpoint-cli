@@ -318,12 +318,16 @@ func GetAuthToken() (string, error) {
 	return token, nil
 }
 
+func GetEnvBaseUrl(env string) string {
+	return viper.GetString("environments." + env + ".baseurl")
+}
+
 func GetBaseUrl() string {
 	envBaseUrl := os.Getenv("SAIL_BASE_URL")
 	if envBaseUrl != "" {
 		return envBaseUrl
 	} else {
-		return viper.GetString("environments." + GetActiveEnvironment() + ".baseurl")
+		return GetEnvBaseUrl(GetActiveEnvironment())
 	}
 }
 
@@ -337,6 +341,10 @@ func SetBaseUrl(baseUrl string) {
 
 func SetTenantUrl(tenantUrl string) {
 	viper.Set("environments."+GetActiveEnvironment()+".tenanturl", tenantUrl)
+}
+
+func GetEnvTokenUrl(env string) string {
+	return GetEnvBaseUrl(env) + "/oauth/token"
 }
 
 func GetTokenUrl() string {
