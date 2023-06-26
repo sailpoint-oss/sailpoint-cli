@@ -45,7 +45,12 @@ func newCollectCmd(term terminal.Terminal) *cobra.Command {
 				mpb.WithWaitGroup(&wg))
 
 			for i, endpoint := range args {
-				password := credentials[i]
+				var password string
+
+				if len(credentials) >= i-1 {
+					password = credentials[i]
+				}
+
 				if password == "" {
 					password, err = term.PromptPassword("Please enter the password for " + endpoint)
 					if err != nil {

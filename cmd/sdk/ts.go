@@ -3,7 +3,6 @@ package sdk
 
 import (
 	"embed"
-	"os"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/initialize"
 	"github.com/spf13/cobra"
@@ -30,10 +29,7 @@ func newTypescriptCmd() *cobra.Command {
 			if len(args) > 0 {
 				projName = args[0]
 			} else {
-				projName, err = os.Getwd()
-				if err != nil {
-					return err
-				}
+				projName = "typescript-template"
 			}
 
 			err = initialize.InitializeProject(tsTemplateContents, tsTemplateDirName, projName)

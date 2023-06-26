@@ -11,14 +11,18 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	"github.com/charmbracelet/log"
 )
 
-const packageJsonName = "package.json"
+const (
+	packageJsonName = "package.json"
+)
 
 func InitializeProject(templateContents embed.FS, templateDirName string, projName string) error {
 
 	if projName == "" {
-		return errors.New("connector name cannot be empty")
+		return errors.New("project name cannot be empty")
 
 	}
 
@@ -52,6 +56,10 @@ func InitializeProject(templateContents embed.FS, templateDirName string, projNa
 			if err != nil {
 				return err
 			}
+
+			log.Debug("creating file", "fileName", fileName)
+
+			fileName = strings.TrimSuffix(fileName, ".file")
 
 			if err := createFile(fileName, data); err != nil {
 				return err
