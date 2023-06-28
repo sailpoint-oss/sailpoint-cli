@@ -17,9 +17,9 @@ func newTypescriptCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "typescript",
-		Short:   "Perform Search operations in IdentityNow using a predefined search template",
-		Long:    "\nPerform Search operations in IdentityNow using a predefined search template\n\n",
-		Example: "sail search template",
+		Short:   "Initialize a new typescript SDK project",
+		Long:    "\nInitialize a new typescript SDK project\n\n",
+		Example: "sail sdk init typescript\nsail sdk init ts example-project",
 		Aliases: []string{"ts"},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

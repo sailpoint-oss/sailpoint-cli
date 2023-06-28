@@ -17,9 +17,9 @@ func newPowerShellCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "powershell",
-		Short:   "Perform Search operations in IdentityNow using a predefined search template",
-		Long:    "\nPerform Search operations in IdentityNow using a predefined search template\n\n",
-		Example: "sail search template",
+		Short:   "Initialize a new PowerShell SDK project",
+		Long:    "\nInitialize a new PowerShell SDK project\n\n",
+		Example: "sail sdk init powershell\nsail sdk init pwsh example-project",
 		Aliases: []string{"pwsh"},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

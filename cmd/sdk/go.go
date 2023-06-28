@@ -17,9 +17,9 @@ func newGolangCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "golang",
-		Short:   "Perform Search operations in IdentityNow using a predefined search template",
-		Long:    "\nPerform Search operations in IdentityNow using a predefined search template\n\n",
-		Example: "sail search template",
+		Short:   "Initialize a new GO SDK project",
+		Long:    "\nInitialize a new GO SDK project\n\n",
+		Example: "sail sdk init golang\nsail sdk init go example-project",
 		Aliases: []string{"go"},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
