@@ -1,14 +1,14 @@
 package environment
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"golang.org/x/exp/maps"
 )
 
 func NewEnvironmentCmd() *cobra.Command {
@@ -26,20 +26,11 @@ func NewEnvironmentCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			environments := config.GetEnvironments()
-			envKeys := maps.Keys(environments)
 
 			if len(args) > 0 {
 				env = args[0]
 			} else {
-				var choices []tui.Choice
-				for i := 0; i < len(envKeys); i++ {
-					choices = append(choices, tui.Choice{Title: envKeys[i]})
-				}
-				selectedEnv, err := tui.PromptList(choices, "Please select an existing environment: ")
-				if err != nil {
-					return err
-				}
-				env = selectedEnv.Title
+				env = config.GetActiveEnvironment()
 			}
 
 			if env != "" {
@@ -49,8 +40,9 @@ func NewEnvironmentCmd() *cobra.Command {
 					if show {
 						log.Warn("You are about to Print out the Environment", "env", env)
 						res := terminal.InputPrompt("Press Enter to continue")
+						log.Info("Response", "res", res)
 						if res == "" {
-							util.PrettyPrint(foundEnv)
+							fmt.Println(util.PrettyPrint(foundEnv))
 						}
 					} else if erase {
 						log.Warn("You are about to Erase the Environment", "env", env)
