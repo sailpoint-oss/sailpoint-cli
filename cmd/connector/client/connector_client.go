@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 )
@@ -865,6 +866,10 @@ func (cc *ConnClient) rawInvokeWithConfig(cmdType string, input json.RawMessage,
 }
 
 func connResourceUrl(endpoint string, resourceParts ...string) string {
+	if strings.HasPrefix(endpoint, "http") {
+		log.Printf("overriding endpoint %q", endpoint)
+		return endpoint
+	}
 	u, err := url.Parse(endpoint)
 	if err != nil {
 		log.Fatalf("invalid endpoint: %s (%q)", err, endpoint)

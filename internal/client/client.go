@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httputil"
+	"strings"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 )
@@ -107,7 +108,11 @@ func (c *SpClient) Post(ctx context.Context, url string, contentType string, bod
 
 	baseUrl := config.GetBaseUrl()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, baseUrl+url, body)
+	if strings.HasPrefix(url, "http") {
+		baseUrl = url
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, baseUrl, body)
 	if err != nil {
 		return nil, err
 	}

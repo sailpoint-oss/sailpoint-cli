@@ -4,6 +4,7 @@ package connector
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 
@@ -93,6 +94,7 @@ func connClient(cmd *cobra.Command, spClient client.Client) (*connclient.ConnCli
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("using endpoint %q", endpoint)
 	cc := connclient.NewConnClient(spClient, v, cfg, connectorRef, endpoint)
 
 	return cc, nil

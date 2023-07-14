@@ -2,6 +2,7 @@ package connector
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -19,6 +20,8 @@ func newConnValidateCmd(apiClient client.Client) *cobra.Command {
 		Short: "Validate connector behavior",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
+
+			//endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
 
 			// Check if we just need to list checks
 			list, _ := strconv.ParseBool(cmd.Flags().Lookup("list").Value.String())
@@ -39,8 +42,10 @@ func newConnValidateCmd(apiClient client.Client) *cobra.Command {
 			if err != nil {
 				return err
 			}
+			//cc := connclient.NewConnClient(spClient, v, cfg, connectorRef, endpoint)
 
-			check := cmd.Flags().Lookup("check").Value.String()
+			check := cmd.PersistentFlags().Lookup("check").Value.String()
+			log.Printf("CHECK %q", check)
 
 			isReadOnly, _ := strconv.ParseBool(cmd.Flags().Lookup("read-only").Value.String())
 			valid := connvalidate.NewValidator(connvalidate.Config{
