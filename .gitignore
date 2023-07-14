@@ -5,6 +5,7 @@
 transform_files
 search_results
 spconfig-exports
+reports
 
 # CLI binary
 sailpoint-cli
