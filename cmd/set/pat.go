@@ -1,5 +1,5 @@
 // Copyright (c) 2021, SailPoint Technologies, Inc. All rights reserved.
-package configure
+package set
 
 import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
@@ -7,16 +7,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewConfigureCmd(term terminal.Terminal) *cobra.Command {
+func newPATCommand(term terminal.Terminal) *cobra.Command {
 	var ClientID string
 	var ClientSecret string
 	var err error
 	cmd := &cobra.Command{
-		Use:     "configure",
-		Short:   "Configure PAT Authentication for the currently active environment",
-		Long:    "\nConfigure PAT Authentication for the CLI\n\nPrerequisites:\n\nCreate a Client ID and Client Secret\nhttps://developer.sailpoint.com/idn/api/authentication#personal-access-tokens",
-		Aliases: []string{"conf"},
-		Args:    cobra.NoArgs,
+		Use:   "pat",
+		Short: "Configure PAT Authentication for the currently active environment",
+		Long:  "\nConfigure PAT Authentication for the CLI\n\nPrerequisites:\n\nCreate a Client ID and Client Secret\nhttps://developer.sailpoint.com/idn/api/authentication#personal-access-tokens",
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			if ClientID == "" {

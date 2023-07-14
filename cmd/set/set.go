@@ -4,10 +4,11 @@ package set
 import (
 	"fmt"
 
+	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/spf13/cobra"
 )
 
-func NewSetCmd() *cobra.Command {
+func NewSetCmd(term terminal.Terminal) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "set",
 		Short:   "Configure settings for the SailPoint CLI",
@@ -24,6 +25,7 @@ func NewSetCmd() *cobra.Command {
 		newAuthCommand(),
 		newExportTemplateCommand(),
 		newSearchTemplateCommand(),
+		newPATCommand(term),
 	)
 
 	return cmd
