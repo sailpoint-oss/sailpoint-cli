@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 )
@@ -37,9 +38,7 @@ func (c *SpClient) Get(ctx context.Context, url string) (*http.Response, error) 
 		return nil, err
 	}
 
-	baseUrl := config.GetBaseUrl()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseUrl+url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.getUrl(url), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -67,9 +66,7 @@ func (c *SpClient) Delete(ctx context.Context, url string, params map[string]str
 		return nil, err
 	}
 
-	baseUrl := config.GetBaseUrl()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, baseUrl+url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.getUrl(url), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -105,9 +102,7 @@ func (c *SpClient) Post(ctx context.Context, url string, contentType string, bod
 		return nil, err
 	}
 
-	baseUrl := config.GetBaseUrl()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, baseUrl+url, body)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.getUrl(url), body)
 	if err != nil {
 		return nil, err
 	}
@@ -136,9 +131,7 @@ func (c *SpClient) Put(ctx context.Context, url string, contentType string, body
 		return nil, err
 	}
 
-	baseUrl := config.GetBaseUrl()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodPut, baseUrl+url, body)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, c.getUrl(url), body)
 	if err != nil {
 		return nil, err
 	}
@@ -172,4 +165,20 @@ func (c *SpClient) ensureAccessToken(ctx context.Context) error {
 	c.accessToken = token
 
 	return nil
+}
+
+// getUrl constructs the url to call out while supporting url overwrites if full url is provided
+func (s *SpClient) getUrl(path string) string {
+
+	u, err := url.Parse(path)
+	if err != nil {
+		// keep the url building process today if parsing fails
+		return config.GetBaseUrl() + path
+	}
+
+	if u.Host != "" && u.Scheme != "" {
+		return path
+	}
+
+	return config.GetBaseUrl() + path
 }
