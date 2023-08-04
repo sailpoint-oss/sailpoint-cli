@@ -36,8 +36,7 @@ func NewTroubleshootCmd(term terminal.Terminal) *cobra.Command {
 				credentials = append(credentials, password)
 			}
 
-			for host := 0; host < len(args); host++ {
-				endpoint := args[host]
+			for index, endpoint := range args {
 				outputDir := path.Join(output, endpoint)
 
 				if _, err := os.Stat(outputDir); errors.Is(err, os.ErrNotExist) {
@@ -47,7 +46,7 @@ func NewTroubleshootCmd(term terminal.Terminal) *cobra.Command {
 					}
 				}
 
-				password := credentials[host]
+				password := credentials[index]
 
 				orgErr := va.RunVACmdLive(endpoint, password, TroubleshootingScript)
 				if orgErr != nil {
