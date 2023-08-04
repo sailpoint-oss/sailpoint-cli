@@ -20,7 +20,7 @@ func TestNewListCmd(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cmd := newListCmd()
+	cmd := newListCommand()
 
 	b := new(bytes.Buffer)
 	cmd.SetOut(b)

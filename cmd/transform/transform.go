@@ -2,8 +2,6 @@
 package transform
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -14,7 +12,7 @@ const (
 	userEndpoint            = "/cc/api/identity/list"
 )
 
-func NewTransformCmd() *cobra.Command {
+func NewTransformCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "transform",
 		Short:   "Manage Transforms in IdentityNow",
@@ -22,19 +20,19 @@ func NewTransformCmd() *cobra.Command {
 		Example: "sail transform | sail tran",
 		Aliases: []string{"tran"},
 		Run: func(cmd *cobra.Command, args []string) {
-			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
+			cmd.Help()
 		},
 	}
 
 	cmd.PersistentFlags().StringP("transforms-endpoint", "e", transformsEndpoint, "Override transforms endpoint")
 
 	cmd.AddCommand(
-		newListCmd(),
-		newDownloadCmd(),
-		newCreateCmd(),
-		newUpdateCmd(),
-		newDeleteCmd(),
-		newPreviewCmd(),
+		newListCommand(),
+		newDownloadCommand(),
+		newCreateCommand(),
+		newUpdateCommand(),
+		newDeleteCommand(),
+		newPreviewCommand(),
 	)
 
 	return cmd

@@ -2,25 +2,23 @@
 package logConfig
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
-func NewLogCmd() *cobra.Command {
+func NewLogCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "log",
 		Short:   "Interact with a SailPoint Virtual Appliances log configuration",
 		Long:    "\nInteract with SailPoint Virtual Appliances log configuration\n\n",
 		Aliases: []string{"l"},
 		Run: func(cmd *cobra.Command, args []string) {
-			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
+			cmd.Help()
 		},
 	}
 
 	cmd.AddCommand(
-		newGetCmd(),
-		newSetCmd(),
+		newGetCommand(),
+		newSetCommand(),
 	)
 
 	return cmd

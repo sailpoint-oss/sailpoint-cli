@@ -13,7 +13,7 @@ var pwshTemplateContents embed.FS
 
 const pwshTemplateDirName = "powershell"
 
-func newPowerShellCmd() *cobra.Command {
+func newPowerShellCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "powershell",

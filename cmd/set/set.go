@@ -2,8 +2,6 @@
 package set
 
 import (
-	"fmt"
-
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/spf13/cobra"
 )
@@ -16,7 +14,7 @@ func NewSetCmd(term terminal.Terminal) *cobra.Command {
 		Example: "sail set",
 		Args:    cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
+			cmd.Help()
 		},
 	}
 

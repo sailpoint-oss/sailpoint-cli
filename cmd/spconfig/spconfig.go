@@ -2,29 +2,34 @@
 package spconfig
 
 import (
-	"fmt"
+	_ "embed"
 
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
-func NewSPConfigCmd() *cobra.Command {
+//go:embed spconfig.md
+var spconfigHelp string
+
+func NewSPConfigCommand() *cobra.Command {
+	help := util.ParseHelp(spconfigHelp)
 	cmd := &cobra.Command{
 		Use:     "spconfig",
 		Short:   "Perform SPConfig operations in IdentityNow",
-		Long:    "\nPerform SPConfig operations in IdentityNow\n\n",
-		Example: "sail spconfig",
+		Long:    help.Long,
+		Example: help.Example,
 		Aliases: []string{"spcon"},
 		Args:    cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
+			cmd.Help()
 		},
 	}
 
 	cmd.AddCommand(
-		newExportCmd(),
-		newStatusCmd(),
-		newTemplateCmd(),
-		newDownloadCmd(),
+		newExportCommand(),
+		newStatusCommand(),
+		newTemplateCommand(),
+		newDownloadCommand(),
 		newImportCommand(),
 	)
 

@@ -2,6 +2,7 @@ package logConfig
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/sailpoint-oss/golang-sdk/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
@@ -10,12 +11,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newGetCmd() *cobra.Command {
+//go:embed get.md
+var getHelp string
+
+func newGetCommand() *cobra.Command {
+	help := util.ParseHelp(getHelp)
 	cmd := &cobra.Command{
 		Use:     "get",
-		Short:   "Return a Virtual Appliances log configuration",
-		Long:    "\nReturn a Virtual Appliances log configuration\n\n",
-		Example: "sail va log get",
+		Short:   "Get a Virtual Appliances clusters log configuration",
+		Long:    help.Long,
+		Example: help.Example,
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -26,9 +31,7 @@ func newGetCmd() *cobra.Command {
 				return err
 			}
 
-			for i := 0; i < len(args); i++ {
-
-				clusterId := args[i]
+			for _, clusterId := range args {
 
 				configuration, resp, err := apiClient.Beta.ManagedClustersApi.GetClientLogConfiguration(context.TODO(), clusterId).Execute()
 				if err != nil {

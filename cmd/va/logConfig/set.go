@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newSetCmd() *cobra.Command {
+func newSetCommand() *cobra.Command {
 	var level string
 	var durationInMinutes int32
 	var connectors []string
@@ -27,7 +27,7 @@ func newSetCmd() *cobra.Command {
 
 			rootLevel := beta.StandardLevel(level)
 
-			if rootLevel.IsValid() == false {
+			if !rootLevel.IsValid() {
 				log.Fatal("logLevel provided is invalid", "level", level)
 			}
 
@@ -57,9 +57,7 @@ func newSetCmd() *cobra.Command {
 			logConfig := beta.NewClientLogConfiguration(durationInMinutes, rootLevel)
 			logConfig.LogLevels = &logLevels
 
-			for i := 0; i < len(args); i++ {
-
-				clusterId := args[i]
+			for _, clusterId := range args {
 
 				configuration, resp, err := apiClient.Beta.ManagedClustersApi.PutClientLogConfiguration(context.TODO(), clusterId).ClientLogConfiguration(*logConfig).Execute()
 				if err != nil {

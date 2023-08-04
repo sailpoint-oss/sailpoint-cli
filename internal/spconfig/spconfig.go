@@ -20,7 +20,7 @@ func PrintJob(job sailpointbetasdk.SpConfigJob) {
 func DownloadExport(apiClient sailpoint.APIClient, jobId string, fileName string, folderPath string) error {
 
 	for {
-		response, _, err := apiClient.Beta.SPConfigApi.ExportSpConfigJobStatus(context.TODO(), jobId).Execute()
+		response, _, err := apiClient.Beta.SPConfigApi.GetSpConfigExportStatus(context.TODO(), jobId).Execute()
 		if err != nil {
 			return err
 		}
@@ -31,7 +31,7 @@ func DownloadExport(apiClient sailpoint.APIClient, jobId string, fileName string
 			switch response.Status {
 			case "COMPLETE":
 				log.Info("Job Complete")
-				exportData, _, err := apiClient.Beta.SPConfigApi.ExportSpConfigDownload(context.TODO(), jobId).Execute()
+				exportData, _, err := apiClient.Beta.SPConfigApi.GetSpConfigExport(context.TODO(), jobId).Execute()
 				if err != nil {
 					return err
 				}
@@ -55,7 +55,7 @@ func DownloadExport(apiClient sailpoint.APIClient, jobId string, fileName string
 func DownloadImport(apiClient sailpoint.APIClient, jobId string, fileName string, folderPath string) error {
 
 	for {
-		response, _, err := apiClient.Beta.SPConfigApi.ImportSpConfigJobStatus(context.TODO(), jobId).Execute()
+		response, _, err := apiClient.Beta.SPConfigApi.GetSpConfigImportStatus(context.TODO(), jobId).Execute()
 		if err != nil {
 			return err
 		}
@@ -66,7 +66,7 @@ func DownloadImport(apiClient sailpoint.APIClient, jobId string, fileName string
 			switch response.Status {
 			case "COMPLETE":
 				color.Green("Downloading Import Data")
-				importData, _, err := apiClient.Beta.SPConfigApi.ImportSpConfigDownload(context.TODO(), jobId).Execute()
+				importData, _, err := apiClient.Beta.SPConfigApi.GetSpConfigImport(context.TODO(), jobId).Execute()
 				if err != nil {
 					return err
 				}

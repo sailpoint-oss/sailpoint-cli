@@ -1,22 +1,27 @@
-package va
+package list
 
 import (
 	"context"
+	_ "embed"
 
 	sailpoint "github.com/sailpoint-oss/golang-sdk"
-	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/beta"
+	"github.com/sailpoint-oss/golang-sdk/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
-func newListCmd() *cobra.Command {
+//go:embed list.md
+var listHelp string
+
+func NewListCommand() *cobra.Command {
+	help := util.ParseHelp(listHelp)
 	cmd := &cobra.Command{
 		Use:     "list",
 		Short:   "List the Clusters and Virtual Appliances configured in IdentityNow",
-		Long:    "\nList the Clusters and Virtual Appliances configured in IdentityNow\n\n",
-		Example: "sail va list",
+		Long:    help.Long,
+		Example: help.Example,
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -25,7 +30,7 @@ func newListCmd() *cobra.Command {
 				return err
 			}
 
-			clusters, resp, err := sailpoint.PaginateWithDefaults[sailpointbetasdk.ManagedCluster](apiClient.Beta.ManagedClustersApi.GetManagedClusters(context.TODO()))
+			clusters, resp, err := sailpoint.PaginateWithDefaults[beta.ManagedCluster](apiClient.Beta.ManagedClustersApi.GetManagedClusters(context.TODO()))
 			if err != nil {
 				return sdk.HandleSDKError(resp, err)
 			}

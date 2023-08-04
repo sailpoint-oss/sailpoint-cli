@@ -2,12 +2,10 @@
 package sdk
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
-func newInitCmd() *cobra.Command {
+func newInitCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "init",
@@ -17,15 +15,15 @@ func newInitCmd() *cobra.Command {
 		Aliases: []string{"temp"},
 		Args:    cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
+			cmd.Help()
 		},
 	}
 
 	cmd.AddCommand(
-		newTypescriptCmd(),
-		newGolangCmd(),
-		newPowerShellCmd(),
-		newConfigCmd(),
+		newTypescriptCommand(),
+		newGolangCommand(),
+		newPowerShellCommand(),
+		newConfigCommand(),
 	)
 
 	return cmd

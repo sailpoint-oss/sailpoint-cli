@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/charmbracelet/log"
@@ -26,7 +26,7 @@ type SDKResp struct {
 func HandleSDKError(resp *http.Response, sdkErr error) error {
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Error(err)
 	}
@@ -43,8 +43,8 @@ func HandleSDKError(resp *http.Response, sdkErr error) error {
 		for _, v := range formattedBody.Messages {
 			outputErr = outputErr + fmt.Sprintf("%s\n", v.Text)
 		}
-	} else {
-
+	} else if len(body) > 0 {
+		outputErr = outputErr + fmt.Sprintf("%s\n", string(body))
 	}
 
 	return errors.New(outputErr)

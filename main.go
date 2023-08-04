@@ -13,7 +13,7 @@ var rootCmd *cobra.Command
 func init() {
 
 	cobra.CheckErr(config.InitConfig())
-	rootCmd = root.NewRootCmd()
+	rootCmd = root.NewRootCommand()
 
 }
 

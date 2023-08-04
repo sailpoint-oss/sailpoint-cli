@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newStatusCmd() *cobra.Command {
+func newStatusCommand() *cobra.Command {
 	var exportJobs []string
 	var importJobs []string
 	cmd := &cobra.Command{
@@ -26,20 +26,18 @@ func newStatusCmd() *cobra.Command {
 				return err
 			}
 
-			for i := 0; i < len(exportJobs); i++ {
-				job := exportJobs[i]
+			for _, jobId := range exportJobs {
 
-				status, _, err := apiClient.Beta.SPConfigApi.ExportSpConfigJobStatus(context.TODO(), job).Execute() //SPConfigApi.SpConfigExportJobStatus(ctx, job).Execute()
+				status, _, err := apiClient.Beta.SPConfigApi.GetSpConfigExportStatus(context.TODO(), jobId).Execute()
 				if err != nil {
 					return err
 				}
 				spconfig.PrintJob(*status)
 			}
 
-			for i := 0; i < len(importJobs); i++ {
-				job := importJobs[i]
+			for _, jobId := range importJobs {
 
-				status, _, err := apiClient.Beta.SPConfigApi.ImportSpConfigJobStatus(context.TODO(), job).Execute()
+				status, _, err := apiClient.Beta.SPConfigApi.GetSpConfigImportStatus(context.TODO(), jobId).Execute()
 				if err != nil {
 					return err
 				}
@@ -50,8 +48,8 @@ func newStatusCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringArrayVarP(&importJobs, "import", "i", []string{}, "a list of import job ids to return the status of")
-	cmd.Flags().StringArrayVarP(&exportJobs, "export", "e", []string{}, "a list of export job ids to return the status of")
+	cmd.Flags().StringArrayVarP(&importJobs, "import", "", []string{}, "a list of import job ids to return the status of")
+	cmd.Flags().StringArrayVarP(&exportJobs, "export", "", []string{}, "a list of export job ids to return the status of")
 
 	return cmd
 }

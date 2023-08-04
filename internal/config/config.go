@@ -50,7 +50,7 @@ type CLIConfig struct {
 	ActiveEnvironment string                 `mapstructure:"activeenvironment"`
 	Environments      map[string]Environment `mapstructure:"environments"`
 
-	//Pipline Variables
+	//Pipeline Variables
 	ClientID     string    `mapstructure:"clientid, omitempty"`
 	ClientSecret string    `mapstructure:"clientsecret, omitempty"`
 	BaseURL      string    `mapstructure:"base_url, omitempty"`

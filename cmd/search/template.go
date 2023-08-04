@@ -12,12 +12,11 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/templates"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
-func newTemplateCmd() *cobra.Command {
-	var outputTypes []string
-	var folderPath string
+func newTemplateCmd(folderPath string, save bool) *cobra.Command {
 	var template string
 	cmd := &cobra.Command{
 		Use:     "template",
@@ -26,6 +25,12 @@ func newTemplateCmd() *cobra.Command {
 		Example: "sail search template",
 		Aliases: []string{"temp"},
 		Args:    cobra.MaximumNArgs(1),
+		PreRun: func(cmd *cobra.Command, args []string) {
+			folderPath, _ := cmd.Flags().GetString("folderPath")
+			if folderPath == "" {
+				cmd.MarkFlagRequired("save")
+			}
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			err := config.InitConfig()
@@ -65,10 +70,10 @@ func newTemplateCmd() *cobra.Command {
 				log.Warn("multiple template matches, the first match will be used", "template", template)
 			}
 			selectedTemplate = matches[0]
-			varCount := len(selectedTemplate.Variables)
-			if varCount > 0 {
-				for i := 0; i < varCount; i++ {
-					varEntry := selectedTemplate.Variables[i]
+
+			if len(selectedTemplate.Variables) > 0 {
+				for _, varEntry := range selectedTemplate.Variables {
+
 					resp := terminal.InputPrompt("Input " + varEntry.Prompt + ":")
 					selectedTemplate.Raw = []byte(strings.ReplaceAll(string(selectedTemplate.Raw), "{{"+varEntry.Name+"}}", resp))
 				}
@@ -85,17 +90,17 @@ func newTemplateCmd() *cobra.Command {
 				return err
 			}
 
-			err = search.IterateIndices(formattedResponse, selectedTemplate.SearchQuery.Query.GetQuery(), folderPath, outputTypes)
-			if err != nil {
-				return err
+			if save {
+				err = search.IterateIndices(formattedResponse, selectedTemplate.SearchQuery.Query.GetQuery(), folderPath, []string{"json"})
+				if err != nil {
+					return err
+				}
+			} else {
+				cmd.Println(util.PrettyPrint(formattedResponse))
 			}
 
 			return nil
 		},
 	}
-
-	cmd.Flags().StringArrayVarP(&outputTypes, "output types", "o", []string{"json"}, "the sort value for the api call (examples)")
-	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "search_results", "folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
-
 	return cmd
 }

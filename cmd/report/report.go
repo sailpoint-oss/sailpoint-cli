@@ -20,7 +20,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewReportCmd() *cobra.Command {
+func NewReportCommand() *cobra.Command {
 	var save bool
 	var folderPath string
 	var template string
@@ -70,10 +70,10 @@ func NewReportCmd() *cobra.Command {
 				log.Warn("multiple template matches, the first match will be used", "template", template)
 			}
 			selectedTemplate = matches[0]
-			varCount := len(selectedTemplate.Variables)
-			if varCount > 0 {
-				for i := 0; i < varCount; i++ {
-					varEntry := selectedTemplate.Variables[i]
+
+			if len(selectedTemplate.Variables) > 0 {
+				for _, varEntry := range selectedTemplate.Variables {
+
 					resp := terminal.InputPrompt("Input " + varEntry.Prompt + ":")
 					selectedTemplate.Raw = []byte(strings.ReplaceAll(string(selectedTemplate.Raw), "{{"+varEntry.Name+"}}", resp))
 				}
@@ -83,9 +83,7 @@ func NewReportCmd() *cobra.Command {
 				}
 			}
 
-			for i := 0; i < len(selectedTemplate.Queries); i++ {
-
-				currentQuery := selectedTemplate.Queries[i]
+			for i, currentQuery := range selectedTemplate.Queries {
 
 				searchQuery := v3.NewSearch()
 				query := v3.NewQuery()
@@ -99,11 +97,6 @@ func NewReportCmd() *cobra.Command {
 				}
 				selectedTemplate.Queries[i].ResultCount = resp.Header["X-Total-Count"][0]
 			}
-
-			// for i := 0; i < len(selectedTemplate.Queries); i++ {
-			// 	currentQuery := selectedTemplate.Queries[i]
-			// 	fmt.Println(currentQuery.QueryTitle + ": " + currentQuery.ResultCount)
-			// }
 
 			if save {
 				fileName := selectedTemplate.Name + ".json"

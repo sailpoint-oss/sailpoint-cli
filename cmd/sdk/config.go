@@ -24,7 +24,7 @@ func (c Config) printEnv() {
 	fmt.Println("CLIENT_SECRT=" + c.ClientSecret)
 }
 
-func newConfigCmd() *cobra.Command {
+func newConfigCommand() *cobra.Command {
 	var env bool
 	cmd := &cobra.Command{
 		Use:     "config",

@@ -13,7 +13,7 @@ var tsTemplateContents embed.FS
 
 const tsTemplateDirName = "typescript"
 
-func newTypescriptCmd() *cobra.Command {
+func newTypescriptCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "typescript",

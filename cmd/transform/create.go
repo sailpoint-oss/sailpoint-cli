@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newCreateCmd() *cobra.Command {
+func newCreateCommand() *cobra.Command {
 	var filepath string
 	cmd := &cobra.Command{
 		Use:     "create",

@@ -2,7 +2,7 @@
 package root
 
 import (
-	"fmt"
+	_ "embed"
 
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/connector"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/environment"
@@ -13,18 +13,26 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/spconfig"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/transform"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/va"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/workflow"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var version = "1.2.0"
 
-func NewRootCmd() *cobra.Command {
+//go:embed root.md
+var rootHelp string
+
+func NewRootCommand() *cobra.Command {
+	help := util.ParseHelp(rootHelp)
 	var env string
+	var debug bool
 	root := &cobra.Command{
 		Use:          "sail",
-		Short:        "The SailPoint CLI allows you to administer your IdentityNow tenant from the command line.\nNavigate to https://developer.sailpoint.com/idn/tools/cli to learn more.",
+		Long:         help.Long,
+		Example:      help.Example,
 		Version:      version,
 		SilenceUsage: true,
 		CompletionOptions: cobra.CompletionOptions{
@@ -33,17 +41,7 @@ func NewRootCmd() *cobra.Command {
 			DisableDescriptions: true,
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			var tempEnv string
-			if env != "" {
-				tempEnv = config.GetActiveEnvironment()
-				config.SetActiveEnvironment(env)
-			}
-
-			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
-
-			if tempEnv != "" {
-				config.SetActiveEnvironment(tempEnv)
-			}
+			cmd.Help()
 		},
 	}
 
@@ -51,17 +49,21 @@ func NewRootCmd() *cobra.Command {
 
 	root.AddCommand(
 		set.NewSetCmd(t),
-		environment.NewEnvironmentCmd(),
+		environment.NewEnvironmentCommand(),
 		connector.NewConnCmd(t),
-		transform.NewTransformCmd(),
-		va.NewVACmd(t),
-		search.NewSearchCmd(),
-		spconfig.NewSPConfigCmd(),
-		report.NewReportCmd(),
-		sdk.NewSDKCmd(),
+		transform.NewTransformCommand(),
+		va.NewVACommand(t),
+		search.NewSearchCommand(),
+		spconfig.NewSPConfigCommand(),
+		report.NewReportCommand(),
+		sdk.NewSDKCommand(),
+		workflow.NewWorkflowCommand(),
 	)
 
-	root.PersistentFlags().StringVar(&env, "env", "", "Environment to use for SailPoint CLI commands")
+	root.PersistentFlags().StringVarP(&env, "env", "", "", "Environment to use for SailPoint CLI commands")
+	root.PersistentFlags().BoolVarP(&debug, "debug", "", false, "Enable debug logging")
+	viper.BindPFlag("activeenvironment", root.PersistentFlags().Lookup("env"))
+	viper.BindPFlag("debug", root.PersistentFlags().Lookup("debug"))
 
 	return root
 }

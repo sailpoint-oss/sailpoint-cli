@@ -13,7 +13,7 @@ var goTemplateContents embed.FS
 
 const goTemplateDirName = "golang"
 
-func newGolangCmd() *cobra.Command {
+func newGolangCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "golang",

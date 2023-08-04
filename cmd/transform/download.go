@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newDownloadCmd() *cobra.Command {
+func newDownloadCommand() *cobra.Command {
 	var destination string
 	cmd := &cobra.Command{
 		Use:     "download",
