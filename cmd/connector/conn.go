@@ -39,7 +39,7 @@ func NewConnCmd(term terminal.Terminal) *cobra.Command {
 	conn.PersistentFlags().StringP("conn-endpoint", "e", connectorsEndpoint, "Override connectors endpoint")
 
 	conn.AddCommand(
-		newConnInitCmd(),
+		newConnInitCommand(),
 		newConnListCmd(Client),
 		newConnGetCmd(Client),
 		newConnUpdateCmd(Client),

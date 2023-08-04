@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func NewEnvironmentCmd() *cobra.Command {
+func NewEnvironmentCommand() *cobra.Command {
 	var env string
 	var overwrite bool
 	var erase bool
