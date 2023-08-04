@@ -8,6 +8,8 @@ Manage Workflows in IdentityNow
 
 ==Example==
 ```bash
-sail workflow
+sail workflow list
+sail workflow download
+sail workflow update -f 
 ```
 ====
