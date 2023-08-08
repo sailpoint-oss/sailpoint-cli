@@ -30,12 +30,20 @@ func NewListCommand() *cobra.Command {
 				return err
 			}
 
-			clusters, resp, err := sailpoint.PaginateWithDefaults[beta.ManagedCluster](apiClient.Beta.ManagedClustersApi.GetManagedClusters(context.TODO()))
-			if err != nil {
-				return sdk.HandleSDKError(resp, err)
+			clusters, resp, clustersErr := sailpoint.PaginateWithDefaults[beta.ManagedCluster](apiClient.Beta.ManagedClustersApi.GetManagedClusters(context.TODO()))
+			if clustersErr != nil {
+				return sdk.HandleSDKError(resp, clustersErr)
 			}
 
-			cmd.Println(util.PrettyPrint(clusters))
+			for _, cluster := range clusters {
+				for _, id := range cluster.ClientIds {
+					clientStatus, resp, clientErr := apiClient.Beta.ManagedClientsApi.GetManagedClientStatus(context.TODO(), id).Type_("VA").Execute()
+					if clientErr != nil {
+						return sdk.HandleSDKError(resp, clientErr)
+					}
+					cmd.Println(util.PrettyPrint(clientStatus))
+				}
+			}
 
 			return nil
 		},

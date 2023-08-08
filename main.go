@@ -23,13 +23,9 @@ func init() {
 // goes wrong. This will exit the cli container during pipeline build and fail that stage.
 func main() {
 
-	err := rootCmd.Execute()
+	_ = rootCmd.Execute()
 
 	if saveErr := config.SaveConfig(); saveErr != nil {
 		log.Warn("Issue saving config file", "error", saveErr)
-	}
-
-	if err != nil {
-		log.Fatal(err)
 	}
 }

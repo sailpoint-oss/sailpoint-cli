@@ -10,6 +10,6 @@ Manage Workflows in IdentityNow
 ```bash
 sail workflow list
 sail workflow download
-sail workflow update -f 
+sail workflow update -f ./workflow-file.json
 ```
 ====

@@ -53,9 +53,6 @@ func NewTroubleshootCmd(term terminal.Terminal) *cobra.Command {
 					return orgErr
 				}
 
-				color.Green("Troubleshooting Complete")
-				color.Blue("Collecting stuntlog")
-
 				var wg sync.WaitGroup
 				p := mpb.New(mpb.WithWidth(60),
 					mpb.PopCompletedMode(),

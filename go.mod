@@ -7,7 +7,7 @@ require (
 	github.com/charmbracelet/bubbletea v0.24.2
 	github.com/charmbracelet/glamour v0.6.0
 	github.com/charmbracelet/lipgloss v0.7.1
-	github.com/charmbracelet/log v0.2.2
+	github.com/charmbracelet/log v0.2.3
 	github.com/fatih/color v1.15.0
 	github.com/golang/mock v1.6.0
 	github.com/kr/pretty v0.3.1
@@ -23,9 +23,9 @@ require (
 	github.com/spf13/viper v1.16.0
 	github.com/vbauerster/mpb/v8 v8.5.2
 	github.com/zalando/go-keyring v0.2.3
-	golang.org/x/crypto v0.11.0
-	golang.org/x/oauth2 v0.10.0
-	golang.org/x/term v0.10.0
+	golang.org/x/crypto v0.12.0
+	golang.org/x/oauth2 v0.11.0
+	golang.org/x/term v0.11.0
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -79,10 +79,10 @@ require (
 	github.com/subosito/gotenv v1.4.2 // indirect
 	github.com/yuin/goldmark v1.5.5 // indirect
 	github.com/yuin/goldmark-emoji v1.0.2 // indirect
-	golang.org/x/net v0.12.0 // indirect
+	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/sys v0.10.0 // indirect
-	golang.org/x/text v0.11.0 // indirect
+	golang.org/x/sys v0.11.0 // indirect
+	golang.org/x/text v0.12.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

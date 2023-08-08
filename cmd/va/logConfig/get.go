@@ -4,7 +4,6 @@ import (
 	"context"
 	_ "embed"
 
-	"github.com/sailpoint-oss/golang-sdk/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
@@ -24,8 +23,6 @@ func newGetCommand() *cobra.Command {
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			var output []beta.ClientLogConfiguration
-
 			apiClient, err := config.InitAPIClient()
 			if err != nil {
 				return err
@@ -38,13 +35,8 @@ func newGetCommand() *cobra.Command {
 					return sdk.HandleSDKError(resp, err)
 				}
 
-				if configuration != nil {
-					output = append(output, *configuration)
-				}
-
+				cmd.Println(util.PrettyPrint(configuration))
 			}
-
-			cmd.Println(util.PrettyPrint(output))
 
 			return nil
 		},
