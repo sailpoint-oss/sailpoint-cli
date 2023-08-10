@@ -12,7 +12,7 @@ import (
 
 // Expected number of subcommands to `sail` root command
 const (
-	numRootSubcommands = 9
+	numRootSubcommands = 11
 )
 
 func TestNewRootCmd_noArgs(t *testing.T) {
@@ -21,7 +21,7 @@ func TestNewRootCmd_noArgs(t *testing.T) {
 
 	cmd := NewRootCommand()
 	if len(cmd.Commands()) != numRootSubcommands {
-		t.Fatalf("expected: %d, actual: %d", len(cmd.Commands()), numRootSubcommands)
+		t.Fatalf("expected: %d, actual: %d", numRootSubcommands, len(cmd.Commands()))
 	}
 
 	b := new(bytes.Buffer)
