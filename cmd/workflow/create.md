@@ -12,15 +12,14 @@ Create Workflows in IdentityNow
 **Note:** File paths are relative to the current working directory, and only one workflow is allowed per file path. Multiple Workflows can be provided by specifying multiple file paths as arguments.
 
 ```bash
-sail Workflow create -f {file-path}  
-sail Workflow create -f {file-path} {file-path} ...
+sail workflow create -f {file-path}  
+sail workflow create -f {file-path} {file-path} ...
 ```
 
-## Standard Input:
-**Note:** Only one workflow is allowed via standard input.
-
+## Folder Paths:
 ```bash
-sail Workflow create -s < {file-path}  
-cat {file-path} | sail Workflow create -s
+sail workflow create -d {folder-path}
+sail workflow create -d {folder-path} {folder-path} ...
 ```
+
 ====

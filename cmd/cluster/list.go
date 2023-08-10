@@ -1,4 +1,4 @@
-package list
+package cluster
 
 import (
 	"context"
@@ -15,13 +15,14 @@ import (
 //go:embed list.md
 var listHelp string
 
-func NewListCommand() *cobra.Command {
+func newListCommand() *cobra.Command {
 	help := util.ParseHelp(listHelp)
 	cmd := &cobra.Command{
 		Use:     "list",
-		Short:   "List the Clusters and Virtual Appliances configured in IdentityNow",
+		Short:   "List the Clusters configured in IdentityNow",
 		Long:    help.Long,
 		Example: help.Example,
+		Aliases: []string{"ls"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -35,15 +36,7 @@ func NewListCommand() *cobra.Command {
 				return sdk.HandleSDKError(resp, clustersErr)
 			}
 
-			for _, cluster := range clusters {
-				for _, id := range cluster.ClientIds {
-					clientStatus, resp, clientErr := apiClient.Beta.ManagedClientsApi.GetManagedClientStatus(context.TODO(), id).Type_("VA").Execute()
-					if clientErr != nil {
-						return sdk.HandleSDKError(resp, clientErr)
-					}
-					cmd.Println(util.PrettyPrint(clientStatus))
-				}
-			}
+			cmd.Println(util.PrettyPrint(clusters))
 
 			return nil
 		},

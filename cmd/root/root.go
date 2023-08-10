@@ -1,9 +1,9 @@
-// Copyright (c) 2021, SailPoint Technologies, Inc. All rights reserved.
 package root
 
 import (
 	_ "embed"
 
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/cluster"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/connector"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/environment"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/report"
@@ -48,15 +48,16 @@ func NewRootCommand() *cobra.Command {
 	t := &terminal.Term{}
 
 	root.AddCommand(
-		set.NewSetCmd(t),
-		environment.NewEnvironmentCommand(),
+		cluster.NewClusterCommand(),
 		connector.NewConnCmd(t),
-		transform.NewTransformCommand(),
-		va.NewVACommand(t),
-		search.NewSearchCommand(),
-		spconfig.NewSPConfigCommand(),
+		environment.NewEnvironmentCommand(),
 		report.NewReportCommand(),
 		sdk.NewSDKCommand(),
+		search.NewSearchCommand(),
+		set.NewSetCmd(t),
+		spconfig.NewSPConfigCommand(),
+		transform.NewTransformCommand(),
+		va.NewVACommand(t),
 		workflow.NewWorkflowCommand(),
 	)
 

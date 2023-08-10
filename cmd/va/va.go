@@ -4,8 +4,6 @@ package va
 import (
 	_ "embed"
 
-	"github.com/sailpoint-oss/sailpoint-cli/cmd/va/list"
-	"github.com/sailpoint-oss/sailpoint-cli/cmd/va/logConfig"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
@@ -18,7 +16,7 @@ func NewVACommand(term terminal.Terminal) *cobra.Command {
 	help := util.ParseHelp(vaHelp)
 	cmd := &cobra.Command{
 		Use:     "va",
-		Short:   "Manage Virtual Appliances in IdentityNow",
+		Short:   "Manage SailPoint Virtual Appliances",
 		Long:    help.Long,
 		Example: help.Example,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -31,8 +29,7 @@ func NewVACommand(term terminal.Terminal) *cobra.Command {
 		// newTroubleshootCommand(),
 		newParseCommand(),
 		newUpdateCommand(term),
-		list.NewListCommand(),
-		logConfig.NewLogCommand(),
+		newListCommand(),
 	)
 
 	return cmd
