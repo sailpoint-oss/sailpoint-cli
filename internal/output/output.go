@@ -3,11 +3,13 @@ package output
 import (
 	"bufio"
 	"encoding/json"
+	"io"
 	"os"
 	"path"
 
 	"github.com/charmbracelet/log"
 	"github.com/mrz1836/go-sanitize"
+	"github.com/olekukonko/tablewriter"
 )
 
 func SaveJSONFile[T any](formattedResponse T, fileName string, folderPath string) error {
@@ -54,4 +56,18 @@ func WriteFile(path string, data []byte) error {
 // GetSanitizedPath makes sure the provided path works on all OS
 func GetSanitizedPath(filePath string, fileName string, extension string) string {
 	return path.Join(filePath, sanitize.PathName(fileName)+"."+extension)
+}
+
+type TableEntry struct {
+	Name string
+	ID   string
+}
+
+func WriteTable(writer io.Writer, entries []TableEntry) {
+	table := tablewriter.NewWriter(writer)
+	table.SetHeader([]string{"Name", "ID"})
+	for _, line := range entries {
+		table.Append([]string{line.Name, line.ID})
+	}
+	table.Render()
 }
