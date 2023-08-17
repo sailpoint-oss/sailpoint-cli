@@ -30,6 +30,7 @@ func NewWorkflowCommand() *cobra.Command {
 		newCreateCommand(),
 		newUpdateCommand(),
 		newDeleteCommand(),
+		newGetCommand(),
 	)
 
 	return cmd
