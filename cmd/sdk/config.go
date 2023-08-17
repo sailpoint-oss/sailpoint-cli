@@ -21,7 +21,7 @@ type Config struct {
 func (c Config) printEnv() {
 	fmt.Println("BASE_URL=" + c.BaseUrl)
 	fmt.Println("CLIENT_ID=" + c.ClientID)
-	fmt.Println("CLIENT_SECRT=" + c.ClientSecret)
+	fmt.Println("CLIENT_SECRET=" + c.ClientSecret)
 }
 
 func newConfigCommand() *cobra.Command {
