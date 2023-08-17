@@ -58,16 +58,11 @@ func GetSanitizedPath(filePath string, fileName string, extension string) string
 	return path.Join(filePath, sanitize.PathName(fileName)+"."+extension)
 }
 
-type TableEntry struct {
-	Name string
-	ID   string
-}
-
-func WriteTable(writer io.Writer, entries []TableEntry) {
+func WriteTable(writer io.Writer, headers []string, entries [][]string) {
 	table := tablewriter.NewWriter(writer)
-	table.SetHeader([]string{"Name", "ID"})
+	table.SetHeader(headers)
 	for _, line := range entries {
-		table.Append([]string{line.Name, line.ID})
+		table.Append(line)
 	}
 	table.Render()
 }

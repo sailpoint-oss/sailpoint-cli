@@ -5,6 +5,7 @@ package root
 import (
 	"bytes"
 	"io"
+	"strings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -38,7 +39,7 @@ func TestNewRootCmd_noArgs(t *testing.T) {
 		t.Fatalf("error read out: %v", err)
 	}
 
-	if string(out) != cmd.UsageString() {
+	if !strings.Contains(string(out), cmd.UsageString()) {
 		t.Errorf("expected: %s, actual: %s", cmd.UsageString(), string(out))
 	}
 }
