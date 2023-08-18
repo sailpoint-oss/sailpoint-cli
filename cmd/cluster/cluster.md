@@ -10,5 +10,10 @@ Manage SailPoint IdentityNow Clusters
 ==Example==
 ```bash
 sail cluster list
+
+sail cluster get {cluster-id}
+sail cluster get {cluster-id} {cluster-id} ...
+
+sail cluster log
 ```
 ====
