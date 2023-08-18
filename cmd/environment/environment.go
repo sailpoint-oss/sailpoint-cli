@@ -1,6 +1,7 @@
 package environment
 
 import (
+	_ "embed"
 	"fmt"
 
 	"github.com/charmbracelet/log"
@@ -11,7 +12,11 @@ import (
 	"github.com/spf13/viper"
 )
 
+//go:embed environment.md
+var environmentHelp string
+
 func NewEnvironmentCommand() *cobra.Command {
+	help := util.ParseHelp(environmentHelp)
 	var env string
 	var overwrite bool
 	var erase bool
@@ -19,8 +24,8 @@ func NewEnvironmentCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "environment",
 		Short:   "Manage Environments for the CLI",
-		Long:    "\nManage Environments for the CLI\n\n",
-		Example: "sail env dev",
+		Long:    help.Long,
+		Example: help.Example,
 		Aliases: []string{"env"},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -65,7 +70,7 @@ func NewEnvironmentCommand() *cobra.Command {
 
 				}
 			} else {
-				log.Warn("No Environment Provided")
+				cmd.Help()
 			}
 
 			return nil
