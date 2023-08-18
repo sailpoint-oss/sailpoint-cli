@@ -3,6 +3,7 @@ package report
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -20,15 +21,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
+//go:embed report.md
+var reportHelp string
+
 func NewReportCommand() *cobra.Command {
+	help := util.ParseHelp(reportHelp)
 	var save bool
 	var folderPath string
 	var template string
 	cmd := &cobra.Command{
 		Use:     "report",
 		Short:   "Generate a report from a template using IdentityNow search queries",
-		Long:    "Generate a report from a template using IdentityNow search queries",
-		Example: "sail report \"\"",
+		Long:    help.Long,
+		Example: help.Example,
 		Aliases: []string{"rep"},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
