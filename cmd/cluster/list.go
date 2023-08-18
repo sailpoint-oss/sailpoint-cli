@@ -7,6 +7,7 @@ import (
 	sailpoint "github.com/sailpoint-oss/golang-sdk"
 	"github.com/sailpoint-oss/golang-sdk/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
@@ -36,7 +37,12 @@ func newListCommand() *cobra.Command {
 				return sdk.HandleSDKError(resp, clustersErr)
 			}
 
-			cmd.Println(util.PrettyPrint(clusters))
+			var entries [][]string
+			for _, cluster := range clusters {
+				entries = append(entries, []string{*cluster.Name, *cluster.Org, cluster.Id})
+			}
+
+			output.WriteTable(cmd.OutOrStdout(), []string{"Name", "Org", "ID"}, entries)
 
 			return nil
 		},
