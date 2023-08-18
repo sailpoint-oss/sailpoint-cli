@@ -26,6 +26,7 @@ func NewClusterCommand() *cobra.Command {
 
 	cmd.AddCommand(
 		newListCommand(),
+		newGetCommand(),
 		logConfig.NewLogCommand(),
 	)
 
