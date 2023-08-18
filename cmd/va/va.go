@@ -27,6 +27,7 @@ func NewVACommand(term terminal.Terminal) *cobra.Command {
 	cmd.AddCommand(
 		newCollectCommand(term),
 		// newTroubleshootCommand(),
+		newGetCommand(),
 		newParseCommand(),
 		newUpdateCommand(term),
 		newListCommand(),
