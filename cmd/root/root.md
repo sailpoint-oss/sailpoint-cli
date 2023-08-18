@@ -8,6 +8,6 @@ Navigate to the [CLI Documentation](https://developer.sailpoint.com/idn/tools/cl
 
 ==Example==
 ```bash
-sail search template 
+sail 
 ```
 ====
