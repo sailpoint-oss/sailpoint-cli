@@ -6,6 +6,7 @@ import (
 	_ "embed"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
@@ -38,7 +39,12 @@ func newListCommand() *cobra.Command {
 				}
 			}
 
-			cmd.Println(util.PrettyPrint(workflows))
+			var tableList [][]string
+			for _, entry := range workflows {
+				tableList = append(tableList, []string{*entry.Name, *entry.Id})
+			}
+
+			output.WriteTable(cmd.OutOrStdout(), []string{"Name", "ID"}, tableList)
 
 			return nil
 		},
