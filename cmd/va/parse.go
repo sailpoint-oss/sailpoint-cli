@@ -325,8 +325,7 @@ var parseHelp string
 
 func newParseCommand() *cobra.Command {
 	help := util.ParseHelp(parseHelp)
-	var ccg bool
-	var canal bool
+	var fileType string
 	var all bool
 	cmd := &cobra.Command{
 		Use:     "parse",
@@ -335,7 +334,9 @@ func newParseCommand() *cobra.Command {
 		Example: help.Example,
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if ccg || canal {
+
+			if fileType != "" {
+
 				var wg sync.WaitGroup
 
 				p := mpb.New(
@@ -350,7 +351,8 @@ func newParseCommand() *cobra.Command {
 				for _, filepath := range args {
 					wg.Add(1)
 
-					if ccg {
+					switch fileType {
+					case "ccg":
 						go func(filepath string) {
 							defer wg.Done()
 							err := ParseCCGFile(p, filepath, all)
@@ -358,7 +360,7 @@ func newParseCommand() *cobra.Command {
 								log.Error("Issue Parsing log file", "file", filepath, "error", err)
 							}
 						}(filepath)
-					} else if canal {
+					case "canal":
 						go func(filepath string) {
 							defer wg.Done()
 							err := ParseCanalFile(p, filepath, all)
@@ -367,21 +369,20 @@ func newParseCommand() *cobra.Command {
 							}
 						}(filepath)
 					}
-				}
-				wg.Wait()
 
-				return nil
+				}
+
+				wg.Wait()
 			} else {
-				return errors.New("must specify either ccg or canal")
+				cmd.Help()
 			}
+			return nil
+
 		},
 	}
 
-	cmd.Flags().BoolVarP(&ccg, "ccg", "", false, "Specifies the provided files are CCG Files")
-	cmd.Flags().BoolVarP(&canal, "canal", "", false, "Specifies the provided files are CANAL Files")
+	cmd.Flags().StringVarP(&fileType, "type", "t", "", "Specifies the log type to parse (ccg, canal)")
 	cmd.Flags().BoolVarP(&all, "all", "a", false, "Specifies all log traffic should be parsed, not just errors")
-	cmd.MarkFlagsMutuallyExclusive("ccg", "canal")
-	cmd.MarkFlagsMutuallyExclusive("all", "canal")
 
 	return cmd
 }
