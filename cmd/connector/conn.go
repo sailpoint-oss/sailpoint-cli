@@ -16,7 +16,9 @@ import (
 )
 
 const (
-	connectorsEndpoint = "/beta/platform-connectors"
+	connectorsEndpoint           = "/beta/platform-connectors"
+	connectorInstancesEndpoint   = "/beta/connector-instances"
+	connectorCustomizersEndpoint = "/beta/connector-customizers"
 )
 
 func NewConnCmd(term terminal.Terminal) *cobra.Command {
@@ -53,6 +55,7 @@ func NewConnCmd(term terminal.Terminal) *cobra.Command {
 		newConnLogsCmd(Client),
 		newConnStatsCmd(Client),
 		newConnDeleteCmd(Client),
+		newConnCustomizersCmd(Client),
 	)
 
 	return conn

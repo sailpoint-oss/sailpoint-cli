@@ -53,3 +53,14 @@ type TagCreate struct {
 type TagUpdate struct {
 	ActiveVersion uint32 `json:"activeVersion"`
 }
+
+type customizer struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+func (c customizer) columns() []string {
+	return []string{c.ID, c.Name}
+}
+
+var customizerColumns = []string{"ID", "Name"}
