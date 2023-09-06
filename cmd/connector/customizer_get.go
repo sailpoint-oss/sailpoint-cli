@@ -2,7 +2,6 @@
 package connector
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,23 +13,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newCustomizerUpdateCmd(client client.Client) *cobra.Command {
+func newCustomizerGetCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "update",
-		Short:   "Create connector customizer",
-		Example: "sail conn customizers update -c 1234 -n \"My Customizer\"",
+		Use:     "get",
+		Short:   "Get connector customizer",
+		Example: "sail conn customizers update -c 1234",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-
 			id := cmd.Flags().Lookup("id").Value.String()
-			name := cmd.Flags().Lookup("name").Value.String()
 
-			raw, err := json.Marshal(customizer{Name: name})
-			if err != nil {
-				return err
-			}
-
-			resp, err := client.Put(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint, id), "application/json", bytes.NewReader(raw))
+			resp, err := client.Get(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint, id))
 			if err != nil {
 				return err
 			}
@@ -58,11 +50,8 @@ func newCustomizerUpdateCmd(client client.Client) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("id", "c", "", "Specify connector customizer id")
+	cmd.Flags().StringP("id", "c", "", "Connector ID or Alias")
 	_ = cmd.MarkFlagRequired("id")
-
-	cmd.Flags().StringP("name", "n", "", "name of the connector customizer")
-	_ = cmd.MarkFlagRequired("name")
 
 	return cmd
 }
