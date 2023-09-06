@@ -39,7 +39,7 @@ func newCustomizerDeleteCmd(client client.Client) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("id", "c", "", "Connector ID or Alias")
+	cmd.Flags().StringP("id", "c", "", "Connector customizer ID")
 	_ = cmd.MarkFlagRequired("id")
 
 	return cmd

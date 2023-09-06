@@ -39,17 +39,6 @@ func newCustomizerListCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			// raw, err := io.ReadAll(resp.Body)
-			// if err != nil {
-			// 	return err
-			// }
-
-			// var tags []tag
-			// err = json.Unmarshal(raw, &tags)
-			// if err != nil {
-			// 	return err
-			// }
-
 			table := tablewriter.NewWriter(cmd.OutOrStdout())
 			table.SetHeader(customizerColumns)
 			for _, c := range customizers {

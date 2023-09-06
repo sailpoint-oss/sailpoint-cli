@@ -58,7 +58,7 @@ func newCustomizerUpdateCmd(client client.Client) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("id", "c", "", "Specify connector customizer id")
+	cmd.Flags().StringP("id", "c", "", "Connector customizer ID")
 	_ = cmd.MarkFlagRequired("id")
 
 	cmd.Flags().StringP("name", "n", "", "name of the connector customizer")

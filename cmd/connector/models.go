@@ -68,3 +68,15 @@ func (c customizer) columns() []string {
 }
 
 var customizerColumns = []string{"ID", "Name", "Version"}
+
+type customizerVersion struct {
+	CustomizerID string `json:"connectorCustomizerId"`
+	ImageID      string `json:"imageId"`
+	Version      int    `json:"version"`
+}
+
+func (c customizerVersion) columns() []string {
+	return []string{c.CustomizerID, c.ImageID, strconv.Itoa(c.Version)}
+}
+
+var customizerVersionColumns = []string{"Customizer ID", "Image ID", "Version"}

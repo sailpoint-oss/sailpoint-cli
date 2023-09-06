@@ -23,6 +23,7 @@ func newConnCustomizersCmd(client client.Client) *cobra.Command {
 		newCustomizerGetCmd(client),
 		newCustomizerUpdateCmd(client),
 		newCustomizerDeleteCmd(client),
+		newCustomizerCreateVersionCmd(client),
 	)
 
 	return cmd
