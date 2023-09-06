@@ -55,12 +55,16 @@ type TagUpdate struct {
 }
 
 type customizer struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	ImageVersion *int   `json:"imageVersion,omitempty"`
 }
 
 func (c customizer) columns() []string {
-	return []string{c.ID, c.Name}
+	if c.ImageVersion == nil {
+		return []string{c.ID, c.Name, ""}
+	}
+	return []string{c.ID, c.Name, strconv.Itoa(*c.ImageVersion)}
 }
 
-var customizerColumns = []string{"ID", "Name"}
+var customizerColumns = []string{"ID", "Name", "Version"}

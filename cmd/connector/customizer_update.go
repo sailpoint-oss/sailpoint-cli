@@ -14,19 +14,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newCustomizerCreateCmd(client client.Client) *cobra.Command {
+func newCustomizerUpdateCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "create <customizer-name>",
-		Short:   "Create connector customizer",
-		Example: "sail conn customizers create \"My Customizer\"",
-		Args:    cobra.ExactArgs(1),
+		Use:   "update",
+		Short: "Create connector customizer",
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			raw, err := json.Marshal(customizer{Name: args[0]})
+
+			id := cmd.Flags().Lookup("id").Value.String()
+			name := cmd.Flags().Lookup("name").Value.String()
+
+			raw, err := json.Marshal(customizer{Name: name})
 			if err != nil {
 				return err
 			}
 
-			resp, err := client.Post(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint), "application/json", bytes.NewReader(raw))
+			resp, err := client.Put(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint, id), "application/json", bytes.NewReader(raw))
 			if err != nil {
 				return err
 			}
@@ -53,6 +56,12 @@ func newCustomizerCreateCmd(client client.Client) *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.Flags().StringP("id", "c", "", "Specify connector customizer id")
+	_ = cmd.MarkFlagRequired("id")
+
+	cmd.Flags().StringP("name", "n", "", "name of the connector customizer")
+	_ = cmd.MarkFlagRequired("name")
 
 	return cmd
 }
