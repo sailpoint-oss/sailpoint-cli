@@ -17,6 +17,7 @@ type Client interface {
 	Delete(ctx context.Context, url string, params map[string]string) (*http.Response, error)
 	Post(ctx context.Context, url string, contentType string, body io.Reader) (*http.Response, error)
 	Put(ctx context.Context, url string, contentType string, body io.Reader) (*http.Response, error)
+	Patch(ctx context.Context, url string, body io.Reader) (*http.Response, error)
 }
 
 // SpClient provides access to SP APIs.
@@ -136,6 +137,35 @@ func (c *SpClient) Put(ctx context.Context, url string, contentType string, body
 		return nil, err
 	}
 	req.Header.Add("Content-Type", contentType)
+	req.Header.Add("Authorization", "Bearer "+c.accessToken)
+
+	if c.cfg.Debug {
+		dbg, _ := httputil.DumpRequest(req, true)
+		fmt.Println(string(dbg))
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if c.cfg.Debug {
+		dbg, _ := httputil.DumpResponse(resp, true)
+		fmt.Println(string(dbg))
+	}
+
+	return resp, nil
+}
+
+func (c *SpClient) Patch(ctx context.Context, url string, body io.Reader) (*http.Response, error) {
+	if err := c.ensureAccessToken(ctx); err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPatch, c.getUrl(url), body)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Add("Authorization", "Bearer "+c.accessToken)
 
 	if c.cfg.Debug {

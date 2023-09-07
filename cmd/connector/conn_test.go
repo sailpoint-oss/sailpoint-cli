@@ -15,7 +15,7 @@ import (
 // Unit tests for conn.go
 
 // Expected number of subcommands to `connectors`
-const numConnSubcommands = 14
+const numConnSubcommands = 16
 
 func TestConnResourceUrl(t *testing.T) {
 	testEndpoint := "http://localhost:7100/resources"
@@ -33,7 +33,7 @@ func TestNewConnCmd_noArgs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cmd := NewConnCmd(mocks.NewMockTerm(ctrl))
+	cmd := NewConnCmd(mocks.NewMockTerminal(ctrl))
 	if len(cmd.Commands()) != numConnSubcommands {
 		t.Fatalf("expected: %d, actual: %d", len(cmd.Commands()), numConnSubcommands)
 	}

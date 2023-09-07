@@ -16,7 +16,7 @@ func TestChangePasswordWithoutInput(t *testing.T) {
 	defer ctrl.Finish()
 
 	client := mocks.NewMockClient(ctrl)
-	term := mocks.NewMockTerm(ctrl)
+	term := mocks.NewMockTerminal(ctrl)
 
 	cmd := newConnInvokeChangePasswordCmd(client, term)
 	addRequiredFlagsFromParentCmd(cmd)
@@ -43,7 +43,7 @@ func TestChangePasswordWithIdentityAndPassword(t *testing.T) {
 		Post(gomock.Any(), gomock.Any(), "application/json", bytes.NewReader([]byte(i))).
 		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("{}")))}, nil)
 
-	term := mocks.NewMockTerm(ctrl)
+	term := mocks.NewMockTerminal(ctrl)
 	term.EXPECT().
 		PromptPassword(gomock.Any()).
 		Return("password", nil)
@@ -73,7 +73,7 @@ func TestChangePasswordWithIdentityAndPasswordAndUniqueId(t *testing.T) {
 		Post(gomock.Any(), gomock.Any(), "application/json", bytes.NewReader([]byte(i))).
 		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("{}")))}, nil)
 
-	term := mocks.NewMockTerm(ctrl)
+	term := mocks.NewMockTerminal(ctrl)
 	term.EXPECT().
 		PromptPassword(gomock.Any()).
 		Return("password", nil)
