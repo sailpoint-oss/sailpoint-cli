@@ -1,4 +1,4 @@
-// Copyright (c) 2021, SailPoint Technologies, Inc. All rights reserved.
+// Copyright (c) 2023, SailPoint Technologies, Inc. All rights reserved.
 package connector
 
 import (
