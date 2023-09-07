@@ -10,31 +10,31 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockTerm is a mock of Term interface.
-type MockTerm struct {
+// MockTerminal is a mock of Terminal interface.
+type MockTerminal struct {
 	ctrl     *gomock.Controller
-	recorder *MockTermMockRecorder
+	recorder *MockTerminalMockRecorder
 }
 
-// MockTermMockRecorder is the mock recorder for MockTerm.
-type MockTermMockRecorder struct {
-	mock *MockTerm
+// MockTerminalMockRecorder is the mock recorder for MockTerminal.
+type MockTerminalMockRecorder struct {
+	mock *MockTerminal
 }
 
-// NewMockTerm creates a new mock instance.
-func NewMockTerm(ctrl *gomock.Controller) *MockTerm {
-	mock := &MockTerm{ctrl: ctrl}
-	mock.recorder = &MockTermMockRecorder{mock}
+// NewMockTerminal creates a new mock instance.
+func NewMockTerminal(ctrl *gomock.Controller) *MockTerminal {
+	mock := &MockTerminal{ctrl: ctrl}
+	mock.recorder = &MockTerminalMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockTerm) EXPECT() *MockTermMockRecorder {
+func (m *MockTerminal) EXPECT() *MockTerminalMockRecorder {
 	return m.recorder
 }
 
 // PromptPassword mocks base method.
-func (m *MockTerm) PromptPassword(promptMsg string) (string, error) {
+func (m *MockTerminal) PromptPassword(promptMsg string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PromptPassword", promptMsg)
 	ret0, _ := ret[0].(string)
@@ -43,7 +43,7 @@ func (m *MockTerm) PromptPassword(promptMsg string) (string, error) {
 }
 
 // PromptPassword indicates an expected call of PromptPassword.
-func (mr *MockTermMockRecorder) PromptPassword(promptMsg interface{}) *gomock.Call {
+func (mr *MockTerminalMockRecorder) PromptPassword(promptMsg interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PromptPassword", reflect.TypeOf((*MockTerm)(nil).PromptPassword), promptMsg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PromptPassword", reflect.TypeOf((*MockTerminal)(nil).PromptPassword), promptMsg)
 }

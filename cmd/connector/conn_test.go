@@ -33,7 +33,7 @@ func TestNewConnCmd_noArgs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cmd := NewConnCmd(mocks.NewMockTerm(ctrl))
+	cmd := NewConnCmd(mocks.NewMockTerminal(ctrl))
 	if len(cmd.Commands()) != numConnSubcommands {
 		t.Fatalf("expected: %d, actual: %d", len(cmd.Commands()), numConnSubcommands)
 	}

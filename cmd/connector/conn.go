@@ -56,6 +56,7 @@ func NewConnCmd(term terminal.Terminal) *cobra.Command {
 		newConnStatsCmd(Client),
 		newConnDeleteCmd(Client),
 		newConnCustomizersCmd(Client),
+		newConnInstancesCmd(Client),
 	)
 
 	return conn

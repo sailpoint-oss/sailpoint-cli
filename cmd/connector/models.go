@@ -54,6 +54,18 @@ type TagUpdate struct {
 	ActiveVersion uint32 `json:"activeVersion"`
 }
 
+type instance struct {
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	CustomizerId string `json:"connectorCustomizerId"`
+}
+
+func (c instance) columns() []string {
+	return []string{c.ID, c.Name, c.CustomizerId}
+}
+
+var instanceColumns = []string{"ID", "Name", "Customizer ID"}
+
 type customizer struct {
 	ID           string `json:"id"`
 	Name         string `json:"name"`
