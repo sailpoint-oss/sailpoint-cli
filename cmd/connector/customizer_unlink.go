@@ -41,7 +41,7 @@ func newCustomizerUnlinkCmd(client client.Client) *cobra.Command {
 
 			if resp.StatusCode != http.StatusOK {
 				body, _ := io.ReadAll(resp.Body)
-				return fmt.Errorf("link customizer failed. status: %s\nbody: %s", resp.Status, string(body))
+				return fmt.Errorf("unlink customizer failed. status: %s\nbody: %s", resp.Status, string(body))
 			}
 
 			var i instance
