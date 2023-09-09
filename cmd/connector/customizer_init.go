@@ -12,14 +12,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const customizerDirName = "static/customizer"
+const (
+	customizerDirName      = "customizer"
+	customizerTemplatePath = "static/" + customizerDirName
+)
 
 func newCustomizerInitCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "init <customizer-name>",
 		Short:   "Initialize new connector customizer project",
 		Long:    `init sets up a new TypeScript project with sample connector customizer included for reference.`,
-		Example: "sail conn customizers init \"My Connector\"",
+		Example: "sail conn customizers init \"My Customizer\"",
 		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			projName := args[0]
@@ -39,7 +42,7 @@ func newCustomizerInitCmd() *cobra.Command {
 				return
 			}
 
-			err := fs.WalkDir(staticDir, customizerDirName, func(path string, d fs.DirEntry, err error) error {
+			err := fs.WalkDir(staticDir, customizerTemplatePath, func(path string, d fs.DirEntry, err error) error {
 				if err != nil {
 					return err
 				}
@@ -53,7 +56,7 @@ func newCustomizerInitCmd() *cobra.Command {
 						return err
 					}
 				} else {
-					fileName := filepath.Join(projName, strings.TrimPrefix(path, customizerDirName))
+					fileName := filepath.Join(projName, strings.TrimPrefix(path, customizerTemplatePath))
 
 					data, err := staticDir.ReadFile(path)
 					if err != nil {
@@ -66,7 +69,7 @@ func newCustomizerInitCmd() *cobra.Command {
 				}
 
 				if d.Name() == packageJsonName {
-					fileAbsPath, err := filepath.Abs(filepath.Join(projName, strings.TrimPrefix(path, customizerDirName)))
+					fileAbsPath, err := filepath.Abs(filepath.Join(projName, strings.TrimPrefix(path, customizerTemplatePath)))
 					if err != nil {
 						return err
 					}
