@@ -1,24 +1,43 @@
-import { connector } from './index'
-import { StandardCommand } from '@sailpoint/connector-sdk'
-import { PassThrough } from 'stream'
+import { connectorCustomizer } from './index'
+import { CustomizerType, StandardCommand } from '@sailpoint/connector-sdk'
 
 const mockConfig: any = {
     token: 'xxx123'
 }
 process.env.CONNECTOR_CONFIG = Buffer.from(JSON.stringify(mockConfig)).toString('base64')
 
-describe('connector unit tests', () => {
+describe('connector customizer unit tests', () => {
 
-    it('connector SDK major version should be 0', async () => {
-        expect((await connector()).sdkVersion).toStrictEqual(0)
+    it('should not change input from beforeStdAccountReadHandler', async () => {
+        let customizer = await connectorCustomizer()
+        let input = {
+            identity: 'john.doe',
+        }
+        let updatedInput = await customizer._exec(
+            customizer.handlerKey(CustomizerType.Before, StandardCommand.StdAccountRead),
+            {},
+            input
+        )
+
+        expect(input).toStrictEqual(updatedInput)
     })
 
-    it('should execute stdTestConnectionHandler', async () => {
-        await (await connector())._exec(
-            StandardCommand.StdTestConnection,
+    it('should add location attribute from afterStdAccountReadHandler', async () => {
+        let customizer = await connectorCustomizer()
+        let output = await customizer._exec(
+            customizer.handlerKey(CustomizerType.After, StandardCommand.StdAccountRead),
             {},
-            undefined,
-            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk).toStrictEqual({}))
+            {
+                identity: '',
+                attributes: {
+                    username: 'john.doe',
+                    firstName: 'john',
+                    lastName: 'doe',
+                    email: 'john.doe@example.com',
+                }
+            }
         )
+
+        expect(output.attributes.location).toStrictEqual('Austin')
     })
 })
