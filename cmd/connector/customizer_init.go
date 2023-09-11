@@ -2,6 +2,7 @@
 package connector
 
 import (
+	"embed"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -11,6 +12,9 @@ import (
 
 	"github.com/spf13/cobra"
 )
+
+//go:embed static/customizer/*
+var customizerStaticDir embed.FS
 
 const (
 	customizerDirName      = "customizer"
@@ -42,7 +46,7 @@ func newCustomizerInitCmd() *cobra.Command {
 				return
 			}
 
-			err := fs.WalkDir(staticDir, customizerTemplatePath, func(path string, d fs.DirEntry, err error) error {
+			err := fs.WalkDir(customizerStaticDir, customizerTemplatePath, func(path string, d fs.DirEntry, err error) error {
 				if err != nil {
 					return err
 				}
@@ -58,7 +62,7 @@ func newCustomizerInitCmd() *cobra.Command {
 				} else {
 					fileName := filepath.Join(projName, strings.TrimPrefix(path, customizerTemplatePath))
 
-					data, err := staticDir.ReadFile(path)
+					data, err := customizerStaticDir.ReadFile(path)
 					if err != nil {
 						return err
 					}

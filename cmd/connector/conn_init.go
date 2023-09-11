@@ -17,8 +17,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//go:embed static/*
-var staticDir embed.FS
+//go:embed static/connector/*
+var connectorStaticDir embed.FS
 
 const (
 	connectorDirName      = "connector"
@@ -55,7 +55,7 @@ func newConnInitCmd() *cobra.Command {
 				return
 			}
 
-			err := fs.WalkDir(staticDir, connectorTemplatePath, func(path string, d fs.DirEntry, err error) error {
+			err := fs.WalkDir(connectorStaticDir, connectorTemplatePath, func(path string, d fs.DirEntry, err error) error {
 				if err != nil {
 					return err
 				}
@@ -71,7 +71,7 @@ func newConnInitCmd() *cobra.Command {
 				} else {
 					fileName := filepath.Join(projName, strings.TrimPrefix(path, connectorTemplatePath))
 
-					data, err := staticDir.ReadFile(path)
+					data, err := connectorStaticDir.ReadFile(path)
 					if err != nil {
 						return err
 					}
