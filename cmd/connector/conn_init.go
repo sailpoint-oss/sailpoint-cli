@@ -29,7 +29,7 @@ const (
 // newConnInitCmd is a connectors subcommand used to initialize a new connector project.
 // It accepts one argument, project name, and generates appropriate directories and files
 // to set up a working, sample project.
-func newConnInitCmd() *cobra.Command {
+func newConnInitCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "init <connector-name>",
 		Short:   "Initialize new connector project",

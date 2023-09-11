@@ -2,6 +2,8 @@ package logConfig
 
 import (
 	"context"
+	_ "embed"
+	"errors"
 	"strings"
 
 	"github.com/charmbracelet/log"
@@ -12,7 +14,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newSetCmd() *cobra.Command {
+//go:embed set.md
+var setHelp string
+
+func newSetCommand() *cobra.Command {
+	help := util.ParseHelp(setHelp)
 	var level string
 	var durationInMinutes int32
 	var connectors []string
@@ -20,22 +26,21 @@ func newSetCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "set",
 		Short:   "Set a Virtual Appliances log configuration",
-		Long:    "\nSet a Virtual Appliances log configuration\n\nA list of Connectors can be found here:\nhttps://community.sailpoint.com/t5/IdentityNow-Articles/Enabling-Connector-Logging-in-IdentityNow/ta-p/188107\n\n",
-		Example: "sail va log set",
+		Long:    help.Long,
+		Example: help.Example,
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			rootLevel := beta.StandardLevel(level)
 
-			if rootLevel.IsValid() == false {
-				log.Fatal("logLevel provided is invalid", "level", level)
+			if !rootLevel.IsValid() {
+				return errors.New("invalid logLevel: " + level)
+
 			}
 
 			if durationInMinutes < 5 || durationInMinutes > 1440 {
-				log.Fatal("durationInMinutes provided is invalid", "durationInMinutes", durationInMinutes)
+				return errors.New("invalid durationInMinutes: " + string(durationInMinutes))
 			}
-
-			var output []beta.ClientLogConfiguration
 
 			apiClient, err := config.InitAPIClient()
 			if err != nil {
@@ -43,8 +48,8 @@ func newSetCmd() *cobra.Command {
 			}
 
 			logLevels := make(map[string]beta.StandardLevel)
-			for j := 0; j < len(connectors); j++ {
-				connector := connectors[j]
+
+			for _, connector := range connectors {
 				parts := strings.Split(connector, "=")
 				conLevel := beta.StandardLevel(parts[1])
 				if conLevel.IsValid() {
@@ -54,22 +59,15 @@ func newSetCmd() *cobra.Command {
 				}
 			}
 
-			logConfig := beta.NewClientLogConfiguration(durationInMinutes, rootLevel)
-			logConfig.LogLevels = &logLevels
+			for _, clusterId := range args {
 
-			for i := 0; i < len(args); i++ {
-
-				clusterId := args[i]
-
-				configuration, resp, err := apiClient.Beta.ManagedClustersApi.PutClientLogConfiguration(context.TODO(), clusterId).ClientLogConfiguration(*logConfig).Execute()
+				configuration, resp, err := apiClient.Beta.ManagedClustersApi.PutClientLogConfiguration(context.TODO(), clusterId).ClientLogConfiguration(beta.ClientLogConfiguration{DurationMinutes: durationInMinutes, RootLevel: rootLevel, LogLevels: &logLevels}).Execute()
 				if err != nil {
 					return sdk.HandleSDKError(resp, err)
 				}
 
-				output = append(output, *configuration)
+				cmd.Println(util.PrettyPrint(configuration))
 			}
-
-			cmd.Println(util.PrettyPrint(output))
 
 			return nil
 		},

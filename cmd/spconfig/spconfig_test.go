@@ -19,7 +19,7 @@ func TestNewSPConfigCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cmd := NewSPConfigCmd()
+	cmd := NewSPConfigCommand()
 
 	b := new(bytes.Buffer)
 	cmd.SetOut(b)

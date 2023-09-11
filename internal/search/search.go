@@ -26,8 +26,9 @@ func ParseIndices(indices string) (sailpointsdk.Index, error) {
 		return sailpointsdk.INDEX_IDENTITIES, nil
 	case "roles":
 		return sailpointsdk.INDEX_ROLES, nil
+	default:
+		return "*", fmt.Errorf("index provided is invalid")
 	}
-	return "*", fmt.Errorf("index provided is invalid")
 }
 
 func BuildSearch(searchQuery string, sort []string, indices []string) (sailpointsdk.Search, error) {
@@ -120,45 +121,44 @@ func PerformSearch(apiClient sailpoint.APIClient, search sailpointsdk.Search) (S
 }
 
 func IterateIndices(SearchResults SearchResults, searchQuery string, folderPath string, outputTypes []string) error {
-	var err error
 	if len(SearchResults.AccountActivities) > 0 {
 		fileName := "query=" + searchQuery + "&indices=AccountActivities"
-		err = SaveResults(SearchResults.AccountActivities, fileName, folderPath, outputTypes)
+		err := SaveResults(SearchResults.AccountActivities, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
 		}
 	}
 	if len(SearchResults.AccessProfiles) > 0 {
 		fileName := "query=" + searchQuery + "&indices=AccessProfiles"
-		err = SaveResults(SearchResults.AccessProfiles, fileName, folderPath, outputTypes)
+		err := SaveResults(SearchResults.AccessProfiles, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
 		}
 	}
 	if len(SearchResults.Entitlements) > 0 {
 		fileName := "query=" + searchQuery + "&indices=Entitlements"
-		err = SaveResults(SearchResults.Entitlements, fileName, folderPath, outputTypes)
+		err := SaveResults(SearchResults.Entitlements, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
 		}
 	}
 	if len(SearchResults.Events) > 0 {
 		fileName := "query=" + searchQuery + "&indices=Events"
-		err = SaveResults(SearchResults.Events, fileName, folderPath, outputTypes)
+		err := SaveResults(SearchResults.Events, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
 		}
 	}
 	if len(SearchResults.Identities) > 0 {
 		fileName := "query=" + searchQuery + "&indices=Identities"
-		err = SaveResults(SearchResults.Identities, fileName, folderPath, outputTypes)
+		err := SaveResults(SearchResults.Identities, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
 		}
 	}
 	if len(SearchResults.Roles) > 0 {
 		fileName := "query=" + searchQuery + "&indices=Roles"
-		err = SaveResults(SearchResults.Roles, fileName, folderPath, outputTypes)
+		err := SaveResults(SearchResults.Roles, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
 		}
@@ -171,18 +171,9 @@ func SaveResults[T any](formattedResponse []T, fileName string, filePath string,
 		outputType := outputTypes[i]
 		switch outputType {
 		case "json":
-			fileName = fileName + ".json"
-			savePath := output.GetSanitizedPath(filePath, fileName)
+			savePath := output.GetSanitizedPath(filePath, fileName, "json")
 			log.Info("Saving Results", "file", savePath)
 			err := output.SaveJSONFile(formattedResponse, fileName, filePath)
-			if err != nil {
-				return err
-			}
-		case "csv":
-			fileName = fileName + ".csv"
-			savePath := output.GetSanitizedPath(filePath, fileName)
-			log.Info("Saving Results", "file", savePath)
-			err := output.SaveCSVFile(formattedResponse, fileName, filePath)
 			if err != nil {
 				return err
 			}

@@ -19,7 +19,7 @@ func updateAndRebootVA(endpoint, password string) {
 		log.Info("Virtual Appliance Updating", "VA", endpoint)
 		reboot, rebootErr := va.RunVACmd(endpoint, password, RebootCommand)
 		if rebootErr != nil && rebootErr.Error() != "wait: remote command exited without exit status or exit signal" {
-			log.Error("Problem Rebooting", "VA", endpoint, "err", rebootErr, "resp", reboot)
+			log.Error("Problem Rebooting", "Server", endpoint, "err", rebootErr, "resp", reboot)
 		} else {
 			log.Info("Virtual Appliance Rebooting", "VA", endpoint)
 		}
@@ -28,7 +28,7 @@ func updateAndRebootVA(endpoint, password string) {
 	fmt.Println()
 }
 
-func newUpdateCmd(term terminal.Terminal) *cobra.Command {
+func newUpdateCommand(term terminal.Terminal) *cobra.Command {
 	var credentials []string
 	cmd := &cobra.Command{
 		Use:     "update",

@@ -19,7 +19,7 @@ func TestNewSearchCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cmd := NewSearchCmd()
+	cmd := NewSearchCommand()
 
 	b := new(bytes.Buffer)
 	cmd.SetOut(b)

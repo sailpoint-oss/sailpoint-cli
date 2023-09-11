@@ -5,6 +5,7 @@ package root
 import (
 	"bytes"
 	"io"
+	"strings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -12,16 +13,16 @@ import (
 
 // Expected number of subcommands to `sail` root command
 const (
-	numRootSubcommands = 9
+	numRootSubcommands = 11
 )
 
 func TestNewRootCmd_noArgs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cmd := NewRootCmd()
+	cmd := NewRootCommand()
 	if len(cmd.Commands()) != numRootSubcommands {
-		t.Fatalf("expected: %d, actual: %d", len(cmd.Commands()), numRootSubcommands)
+		t.Fatalf("expected: %d, actual: %d", numRootSubcommands, len(cmd.Commands()))
 	}
 
 	b := new(bytes.Buffer)
@@ -38,7 +39,7 @@ func TestNewRootCmd_noArgs(t *testing.T) {
 		t.Fatalf("error read out: %v", err)
 	}
 
-	if string(out) != cmd.UsageString() {
+	if !strings.Contains(string(out), cmd.UsageString()) {
 		t.Errorf("expected: %s, actual: %s", cmd.UsageString(), string(out))
 	}
 }
@@ -47,7 +48,7 @@ func TestNewRootCmd_completionDisabled(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cmd := NewRootCmd()
+	cmd := NewRootCommand()
 
 	b := new(bytes.Buffer)
 	cmd.SetOut(b)

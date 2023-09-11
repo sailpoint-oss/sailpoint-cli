@@ -11,7 +11,7 @@ import (
 )
 
 func TestNewConnInitCmd_noArgs(t *testing.T) {
-	cmd := newConnInitCmd()
+	cmd := newConnInitCommand()
 	cmd.SetArgs([]string{})
 
 	if err := cmd.Execute(); err == nil {
@@ -20,7 +20,7 @@ func TestNewConnInitCmd_noArgs(t *testing.T) {
 }
 
 func TestNewConnInitCmd_emptyName(t *testing.T) {
-	cmd := newConnInitCmd()
+	cmd := newConnInitCommand()
 
 	b := new(bytes.Buffer)
 	cmd.SetErr(b)
@@ -42,7 +42,7 @@ func TestNewConnInitCmd_emptyName(t *testing.T) {
 }
 
 func TestNewConnInitCmd(t *testing.T) {
-	cmd := newConnInitCmd()
+	cmd := newConnInitCommand()
 
 	testProjName := "test-connector-project"
 

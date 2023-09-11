@@ -1,52 +1,35 @@
 package sdk
 
 import (
+	_ "embed"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"strings"
 
 	"github.com/charmbracelet/log"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 )
 
-type Message struct {
-	Locale       string `json:"locale,omitempty"`
-	LocaleOrigin string `json:"localeOrigin,omitempty"`
-	Text         string `json:"text,omitempty"`
-}
-
-type SDKResp struct {
-	DetailCode string        `json:"detailCode,omitempty"`
-	TrackingID string        `json:"trackingId,omitempty"`
-	Messages   []Message     `json:"messages,omitempty"`
-	Causes     []interface{} `json:"causes,omitempty"`
-}
+//go:embed sdkErr.md
+var sdkErrBody string
+var sdkErrParts = strings.Split(sdkErrBody, "====")
 
 func HandleSDKError(resp *http.Response, sdkErr error) error {
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Error(err)
 	}
 
-	var formattedBody SDKResp
-	err = json.Unmarshal(body, &formattedBody)
+	var data map[string]interface{}
+
+	err = json.Unmarshal(body, &data)
 	if err != nil {
 		log.Error(err)
 	}
 
-	outputErr := fmt.Sprintf("%s\ndate: %s\nslpt-request-id: %s\nmsgs:\n", sdkErr, resp.Header["Date"][0], resp.Header["Slpt-Request-Id"][0])
-
-	if len(formattedBody.Messages) > 0 {
-		for _, v := range formattedBody.Messages {
-			outputErr = outputErr + fmt.Sprintf("%s\n", v.Text)
-		}
-	} else {
-
-	}
-
-	return errors.New(outputErr)
-
+	return errors.New(util.RenderMarkdown(sdkErrParts[0] + util.PrettyPrint(resp.Header) + sdkErrParts[1] + util.PrettyPrint(data) + sdkErrParts[2]))
 }
