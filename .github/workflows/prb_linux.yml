@@ -52,7 +52,7 @@ jobs:
           npm run pack-zip
 
       - name: Test customizer project from init command
-        working-directory: ./../customizerTest
+        working-directory: ./customizerTest
         run: |
           npm install
           npm run test
