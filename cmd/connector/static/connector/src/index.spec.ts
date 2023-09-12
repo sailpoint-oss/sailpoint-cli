@@ -9,7 +9,7 @@ process.env.CONNECTOR_CONFIG = Buffer.from(JSON.stringify(mockConfig)).toString(
 
 describe('connector unit tests', () => {
 
-    it('connector SDK major version should be 0', async () => {
+    it('connector SDK major version should be the same as Connector.SDK_VERSION', async () => {
         expect((await connector()).sdkVersion).toStrictEqual(Connector.SDK_VERSION)
     })
 
