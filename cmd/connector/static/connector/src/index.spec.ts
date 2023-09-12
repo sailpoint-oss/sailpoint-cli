@@ -1,5 +1,5 @@
 import { connector } from './index'
-import { StandardCommand } from '@sailpoint/connector-sdk'
+import { Connector, RawResponse, ResponseType, StandardCommand } from '@sailpoint/connector-sdk'
 import { PassThrough } from 'stream'
 
 const mockConfig: any = {
@@ -9,8 +9,8 @@ process.env.CONNECTOR_CONFIG = Buffer.from(JSON.stringify(mockConfig)).toString(
 
 describe('connector unit tests', () => {
 
-    it('connector SDK major version should be 0', async () => {
-        expect((await connector()).sdkVersion).toStrictEqual(0)
+    it('connector SDK major version should be the same as Connector.SDK_VERSION', async () => {
+        expect((await connector()).sdkVersion).toStrictEqual(Connector.SDK_VERSION)
     })
 
     it('should execute stdTestConnectionHandler', async () => {
@@ -18,7 +18,7 @@ describe('connector unit tests', () => {
             StandardCommand.StdTestConnection,
             {},
             undefined,
-            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk).toStrictEqual({}))
+            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk).toStrictEqual(new RawResponse ({}, ResponseType.Output)))
         )
     })
 })
