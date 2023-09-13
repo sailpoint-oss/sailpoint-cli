@@ -19,7 +19,7 @@ func TestNewTemplateCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cmd := newTemplateCmd()
+	cmd := newTemplateCommand()
 
 	b := new(bytes.Buffer)
 	cmd.SetOut(b)

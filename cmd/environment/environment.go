@@ -1,17 +1,22 @@
 package environment
 
 import (
+	_ "embed"
+	"fmt"
+
 	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"golang.org/x/exp/maps"
 )
 
+//go:embed environment.md
+var environmentHelp string
+
 func NewEnvironmentCommand() *cobra.Command {
+	help := util.ParseHelp(environmentHelp)
 	var env string
 	var overwrite bool
 	var erase bool
@@ -19,27 +24,18 @@ func NewEnvironmentCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "environment",
 		Short:   "Manage Environments for the CLI",
-		Long:    "\nManage Environments for the CLI\n\n",
-		Example: "sail env dev",
+		Long:    help.Long,
+		Example: help.Example,
 		Aliases: []string{"env"},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			environments := config.GetEnvironments()
-			envKeys := maps.Keys(environments)
 
 			if len(args) > 0 {
 				env = args[0]
 			} else {
-				var choices []tui.Choice
-				for i := 0; i < len(envKeys); i++ {
-					choices = append(choices, tui.Choice{Title: envKeys[i]})
-				}
-				selectedEnv, err := tui.PromptList(choices, "Please select an existing environment: ")
-				if err != nil {
-					return err
-				}
-				env = selectedEnv.Title
+				env = config.GetActiveEnvironment()
 			}
 
 			if env != "" {
@@ -49,8 +45,9 @@ func NewEnvironmentCommand() *cobra.Command {
 					if show {
 						log.Warn("You are about to Print out the Environment", "env", env)
 						res := terminal.InputPrompt("Press Enter to continue")
+						log.Info("Response", "res", res)
 						if res == "" {
-							util.PrettyPrint(foundEnv)
+							fmt.Println(util.PrettyPrint(foundEnv))
 						}
 					} else if erase {
 						log.Warn("You are about to Erase the Environment", "env", env)
@@ -73,7 +70,7 @@ func NewEnvironmentCommand() *cobra.Command {
 
 				}
 			} else {
-				log.Warn("No Environment Provided")
+				cmd.Help()
 			}
 
 			return nil

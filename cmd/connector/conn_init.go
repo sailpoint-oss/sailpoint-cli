@@ -17,19 +17,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//go:embed static/*
-var staticDir embed.FS
+//go:embed static/connector/*
+var connectorStaticDir embed.FS
 
 const (
-	staticDirName     = "static"
-	packageJsonName   = "package.json"
-	connectorSpecName = "connector-spec.json"
+	connectorDirName      = "connector"
+	connectorTemplatePath = "static/" + connectorDirName
+	packageJsonName       = "package.json"
+	connectorSpecName     = "connector-spec.json"
 )
 
 // newConnInitCmd is a connectors subcommand used to initialize a new connector project.
 // It accepts one argument, project name, and generates appropriate directories and files
 // to set up a working, sample project.
-func newConnInitCmd() *cobra.Command {
+func newConnInitCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "init <connector-name>",
 		Short:   "Initialize new connector project",
@@ -54,12 +55,12 @@ func newConnInitCmd() *cobra.Command {
 				return
 			}
 
-			err := fs.WalkDir(staticDir, staticDirName, func(path string, d fs.DirEntry, err error) error {
+			err := fs.WalkDir(connectorStaticDir, connectorTemplatePath, func(path string, d fs.DirEntry, err error) error {
 				if err != nil {
 					return err
 				}
 
-				if d.Name() == staticDirName {
+				if d.Name() == connectorDirName {
 					return nil
 				}
 
@@ -68,9 +69,9 @@ func newConnInitCmd() *cobra.Command {
 						return err
 					}
 				} else {
-					fileName := filepath.Join(projName, strings.TrimPrefix(path, staticDirName))
+					fileName := filepath.Join(projName, strings.TrimPrefix(path, connectorTemplatePath))
 
-					data, err := staticDir.ReadFile(path)
+					data, err := connectorStaticDir.ReadFile(path)
 					if err != nil {
 						return err
 					}
@@ -81,7 +82,7 @@ func newConnInitCmd() *cobra.Command {
 				}
 
 				if d.Name() == packageJsonName || d.Name() == connectorSpecName {
-					fileAbsPath, err := filepath.Abs(filepath.Join(projName, strings.TrimPrefix(path, staticDirName)))
+					fileAbsPath, err := filepath.Abs(filepath.Join(projName, strings.TrimPrefix(path, connectorTemplatePath)))
 					if err != nil {
 						return err
 					}

@@ -19,7 +19,7 @@ import (
 
 var implicitInput bool
 
-func newPreviewCmd() *cobra.Command {
+func newPreviewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "preview",
 		Short:   "Preview the effects of an IdentityNow Transform",

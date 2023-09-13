@@ -104,7 +104,7 @@ func TestNewCRUDCmd(t *testing.T) {
 	// ctrl := gomock.NewController(t)
 	// defer ctrl.Finish()
 
-	createCMD := newCreateCmd()
+	createCMD := newCreateCommand()
 
 	createBuffer := new(bytes.Buffer)
 	createCMD.SetOut(createBuffer)
@@ -134,7 +134,7 @@ func TestNewCRUDCmd(t *testing.T) {
 		t.Fatalf("Unable to save test data: %v", err)
 	}
 
-	cmd := newUpdateCmd()
+	cmd := newUpdateCommand()
 
 	cmd.Flags().Set("file", PATH.Join(path, updateFile))
 
@@ -143,7 +143,7 @@ func TestNewCRUDCmd(t *testing.T) {
 		t.Fatalf("error execute cmd: %v", err)
 	}
 
-	deleteCMD := newDeleteCmd()
+	deleteCMD := newDeleteCommand()
 
 	deleteBuffer := new(bytes.Buffer)
 	deleteCMD.SetOut(deleteBuffer)

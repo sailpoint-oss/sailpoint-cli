@@ -2,18 +2,21 @@
 package transform
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/log"
+	sailpoint "github.com/sailpoint-oss/golang-sdk"
+	v3 "github.com/sailpoint-oss/golang-sdk/v3"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/transform"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/spf13/cobra"
 )
 
-func newDownloadCmd() *cobra.Command {
+func newDownloadCommand() *cobra.Command {
 	var destination string
 	cmd := &cobra.Command{
 		Use:     "download",
@@ -29,14 +32,9 @@ func newDownloadCmd() *cobra.Command {
 				return err
 			}
 
-			transforms, err := transform.GetTransforms(*apiClient)
+			transforms, resp, err := sailpoint.PaginateWithDefaults[v3.Transform](apiClient.V3.TransformsApi.ListTransforms(context.TODO()))
 			if err != nil {
-				return err
-			}
-
-			err = transform.ListTransforms(transforms)
-			if err != nil {
-				return err
+				return sdk.HandleSDKError(resp, err)
 			}
 
 			for _, v := range transforms {

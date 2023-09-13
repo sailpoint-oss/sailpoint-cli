@@ -24,7 +24,7 @@ func TestNewConnInvokeCmd_noArgs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cmd := newConnInvokeCmd(mocks.NewMockClient(ctrl), mocks.NewMockTerm(ctrl))
+	cmd := newConnInvokeCmd(mocks.NewMockClient(ctrl), mocks.NewMockTerminal(ctrl))
 	if len(cmd.Commands()) != numConnInvokeSubcommands {
 		t.Fatalf("expected: %d, actual: %d", len(cmd.Commands()), numConnInvokeSubcommands)
 	}

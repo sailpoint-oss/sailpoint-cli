@@ -3,6 +3,7 @@ package spconfig
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -13,19 +14,23 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/templates"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
-func newTemplateCmd() *cobra.Command {
-	var outputTypes []string
+//go:embed template.md
+var templateHelp string
+
+func newTemplateCommand() *cobra.Command {
+	help := util.ParseHelp(templateHelp)
 	var folderPath string
 	var template string
 	var wait bool
 	cmd := &cobra.Command{
 		Use:     "template",
 		Short:   "Begin an SPConfig Export task in IdentityNow using a template",
-		Long:    "\nBegin an SPConfig Export task in IdentityNow using a template\n\n",
-		Example: "sail spconfig template --wait",
+		Long:    help.Long,
+		Example: help.Example,
 		Aliases: []string{"temp"},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -91,7 +96,6 @@ func newTemplateCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringArrayVarP(&outputTypes, "outputTypes", "o", []string{"json"}, "the sort value for the api call (examples)")
 	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "spconfig-exports", "folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
 	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "wait for the export job to finish, and download the results")
 

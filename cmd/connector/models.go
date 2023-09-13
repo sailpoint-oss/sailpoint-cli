@@ -53,3 +53,42 @@ type TagCreate struct {
 type TagUpdate struct {
 	ActiveVersion uint32 `json:"activeVersion"`
 }
+
+type instance struct {
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	CustomizerId string `json:"connectorCustomizerId"`
+}
+
+func (c instance) columns() []string {
+	return []string{c.ID, c.Name, c.CustomizerId}
+}
+
+var instanceColumns = []string{"ID", "Name", "Customizer ID"}
+
+type customizer struct {
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	ImageVersion *int   `json:"imageVersion,omitempty"`
+}
+
+func (c customizer) columns() []string {
+	if c.ImageVersion == nil {
+		return []string{c.ID, c.Name, ""}
+	}
+	return []string{c.ID, c.Name, strconv.Itoa(*c.ImageVersion)}
+}
+
+var customizerColumns = []string{"ID", "Name", "Version"}
+
+type customizerVersion struct {
+	CustomizerID string `json:"connectorCustomizerId"`
+	ImageID      string `json:"imageId"`
+	Version      int    `json:"version"`
+}
+
+func (c customizerVersion) columns() []string {
+	return []string{c.CustomizerID, c.ImageID, strconv.Itoa(c.Version)}
+}
+
+var customizerVersionColumns = []string{"Customizer ID", "Image ID", "Version"}

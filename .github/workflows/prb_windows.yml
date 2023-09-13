@@ -36,11 +36,21 @@ jobs:
       - name: Install
         run: go build -o sail.exe
 
-      - name: Init connector project
-        run: ./sail.exe conn init connTest
+      - name: Init connector and customizer project
+        run: |
+          ./sail.exe conn init connectorTest
+          ./sail.exe conn customizers init customizerTest
 
-      - name: Build and package connector zip file
-        working-directory: ./connTest
+      - name: Test connector project from init command
+        working-directory: ./connectorTest
         run: |
           npm install
+          npm run test
+          npm run pack-zip
+
+      - name: Test customizer project from init command
+        working-directory: ./customizerTest
+        run: |
+          npm install
+          npm run test
           npm run pack-zip

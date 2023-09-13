@@ -55,7 +55,7 @@ func newAuthCommand() *cobra.Command {
 				log.Info("Authentication method set to OAuth")
 
 			default:
-				log.Error("Invalid Selection")
+				log.Warn("No selection made")
 			}
 
 			return nil

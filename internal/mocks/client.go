@@ -66,6 +66,21 @@ func (mr *MockClientMockRecorder) Get(ctx, url interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockClient)(nil).Get), ctx, url)
 }
 
+// Patch mocks base method.
+func (m *MockClient) Patch(ctx context.Context, url string, body io.Reader) (*http.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Patch", ctx, url, body)
+	ret0, _ := ret[0].(*http.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Patch indicates an expected call of Patch.
+func (mr *MockClientMockRecorder) Patch(ctx, url, body interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Patch", reflect.TypeOf((*MockClient)(nil).Patch), ctx, url, body)
+}
+
 // Post mocks base method.
 func (m *MockClient) Post(ctx context.Context, url, contentType string, body io.Reader) (*http.Response, error) {
 	m.ctrl.T.Helper()

@@ -3,6 +3,7 @@ package va
 import (
 	"bufio"
 	"bytes"
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/vbauerster/mpb/v8"
 	"github.com/vbauerster/mpb/v8/decor"
@@ -174,7 +176,7 @@ func ErrorCheck(token []byte) bool {
 	return bytes.Contains(token, errorString) || bytes.Contains(token, exceptionString)
 }
 
-func ParseCCGFile(p *mpb.Progress, filepath string, everything bool) error {
+func ParseCCGFile(p *mpb.Progress, filepath string, all bool) error {
 	file, err := os.Open(filepath)
 	if err != nil {
 		return err
@@ -230,7 +232,7 @@ func ParseCCGFile(p *mpb.Progress, filepath string, everything bool) error {
 		if err != nil {
 			break
 		} else {
-			if ErrorCheck(token) || everything {
+			if ErrorCheck(token) || all {
 				var line CCG
 				unErr := json.Unmarshal(token, &line)
 				if unErr == nil && line.Org != "" {
@@ -250,7 +252,7 @@ func ParseCCGFile(p *mpb.Progress, filepath string, everything bool) error {
 	return nil
 }
 
-func ParseCanalFile(p *mpb.Progress, filepath string, everything bool) error {
+func ParseCanalFile(p *mpb.Progress, filepath string, all bool) error {
 	file, err := os.Open(filepath)
 	if err != nil {
 		return err
@@ -318,18 +320,23 @@ func ParseCanalFile(p *mpb.Progress, filepath string, everything bool) error {
 	return nil
 }
 
-func newParseCmd() *cobra.Command {
-	var ccg bool
-	var canal bool
-	var everything bool
+//go:embed parse.md
+var parseHelp string
+
+func newParseCommand() *cobra.Command {
+	help := util.ParseHelp(parseHelp)
+	var fileType string
+	var all bool
 	cmd := &cobra.Command{
 		Use:     "parse",
 		Short:   "Parse Log Files from SailPoint Virtual Appliances",
-		Long:    "\nParse Log Files from SailPoint Virtual Appliances\n\n",
-		Example: "sail va parse ./path/to/ccg.log ./path/to/ccg.log ./path/to/canal.log ./path/to/canal.log",
+		Long:    help.Long,
+		Example: help.Example,
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if ccg || canal {
+
+			if fileType != "" {
+
 				var wg sync.WaitGroup
 
 				p := mpb.New(
@@ -341,43 +348,41 @@ func newParseCmd() *cobra.Command {
 				log.Info("Parsing Log Files", "files", args)
 
 				log.SetOutput(p)
-				for i := 0; i < len(args); i++ {
+				for _, filepath := range args {
 					wg.Add(1)
 
-					filepath := args[i]
-
-					if ccg {
-						go func() {
+					switch fileType {
+					case "ccg":
+						go func(filepath string) {
 							defer wg.Done()
-							err := ParseCCGFile(p, filepath, everything)
+							err := ParseCCGFile(p, filepath, all)
 							if err != nil {
 								log.Error("Issue Parsing log file", "file", filepath, "error", err)
 							}
-						}()
-					} else if canal {
-						go func() {
+						}(filepath)
+					case "canal":
+						go func(filepath string) {
 							defer wg.Done()
-							err := ParseCanalFile(p, filepath, everything)
+							err := ParseCanalFile(p, filepath, all)
 							if err != nil {
 								log.Error("Issue Parsing log file", "file", filepath, "error", err)
 							}
-						}()
+						}(filepath)
 					}
-				}
-				wg.Wait()
 
-				return nil
+				}
+
+				wg.Wait()
 			} else {
-				return errors.New("must specify either ccg or canal")
+				cmd.Help()
 			}
+			return nil
+
 		},
 	}
 
-	cmd.Flags().BoolVarP(&ccg, "ccg", "", false, "Specifies the provided files are CCG Files")
-	cmd.Flags().BoolVarP(&canal, "canal", "", false, "Specifies the provided files are CANAL Files")
-	cmd.Flags().BoolVarP(&everything, "everything", "e", false, "Specifies all log traffic should be parsed, not just errors")
-	cmd.MarkFlagsMutuallyExclusive("ccg", "canal")
-	cmd.MarkFlagsMutuallyExclusive("everything", "canal")
+	cmd.Flags().StringVarP(&fileType, "type", "t", "", "Specifies the log type to parse (ccg, canal)")
+	cmd.Flags().BoolVarP(&all, "all", "a", false, "Specifies all log traffic should be parsed, not just errors")
 
 	return cmd
 }

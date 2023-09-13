@@ -2,31 +2,35 @@
 package va
 
 import (
-	"fmt"
+	_ "embed"
 
-	"github.com/sailpoint-oss/sailpoint-cli/cmd/va/logConfig"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
-func NewVACmd(term terminal.Terminal) *cobra.Command {
+//go:embed va.md
+var vaHelp string
+
+func NewVACommand(term terminal.Terminal) *cobra.Command {
+	help := util.ParseHelp(vaHelp)
 	cmd := &cobra.Command{
 		Use:     "va",
-		Short:   "Interact with SailPoint Virtual Appliances",
-		Long:    "\nInteract with SailPoint Virtual Appliances\n\n",
-		Aliases: []string{"va"},
+		Short:   "Manage SailPoint Virtual Appliances",
+		Long:    help.Long,
+		Example: help.Example,
 		Run: func(cmd *cobra.Command, args []string) {
-			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
+			cmd.Help()
 		},
 	}
 
 	cmd.AddCommand(
-		newCollectCmd(term),
-		// newTroubleshootCmd(),
-		newListCmd(),
-		newParseCmd(),
-		newUpdateCmd(term),
-		logConfig.NewLogCmd(),
+		newCollectCommand(term),
+		// newTroubleshootCommand(),
+		newGetCommand(),
+		newParseCommand(),
+		newUpdateCommand(term),
+		newListCommand(),
 	)
 
 	return cmd
