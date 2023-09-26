@@ -910,7 +910,7 @@ func (cc *ConnClient) SourceDataDiscover(ctx context.Context, queryInput map[str
 		return nil, nil, err
 	}
 
-	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke-direct"), "application/json", bytes.NewReader(cmdRaw))
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint), "application/json", bytes.NewReader(cmdRaw))
 	if err != nil {
 		return nil, nil, err
 	}

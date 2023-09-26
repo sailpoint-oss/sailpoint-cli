@@ -102,6 +102,28 @@ func connClient(cmd *cobra.Command, spClient client.Client) (*connclient.ConnCli
 	return cc, nil
 }
 
+func connRuntimeClient(cmd *cobra.Command, spClient client.Client) (*connclient.ConnClient, error) {
+	connectorRef := cmd.Flags().Lookup("id").Value.String()
+	version := cmd.Flags().Lookup("version").Value.String()
+
+	var v *int
+	if version != "" {
+		ver, err := strconv.Atoi(version)
+		if err != nil {
+			return nil, err
+		}
+		v = &ver
+	}
+
+	cfg, err := invokeConfig(cmd)
+	if err != nil {
+		return nil, err
+	}
+	cc := connclient.NewConnClient(spClient, v, cfg, connectorRef, connectorRuntimeDirectExecuteEndpoint)
+
+	return cc, nil
+}
+
 func connClientWithCustomParams(spClient client.Client, cfg json.RawMessage, connectorID, version, endpoint string) (*connclient.ConnClient, error) {
 	v, err := strconv.Atoi(version)
 	if err != nil {
