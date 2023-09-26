@@ -894,7 +894,7 @@ type sourceDataReadInput struct {
 type sourceData struct {
 	Key      string `json:"key"`
 	Label    string `json:"label"`
-	SubLabel string `json:"sub_label"`
+	SubLabel string `json:"sublabel"`
 }
 
 func (cc *ConnClient) SourceDataDiscover(ctx context.Context, queryInput map[string]any) (sData []sourceData, raw []byte, err error) {
