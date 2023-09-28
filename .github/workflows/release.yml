@@ -2,12 +2,15 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: The version to release
   push:
     tags:
       - "*"
 
 env:
-  REF: ${{ github.event.inputs.tag || github.ref }}
+  REF: ${{ github.event.inputs.tag || github.event.inputs.version }}
 
 jobs:
   goreleaser:
