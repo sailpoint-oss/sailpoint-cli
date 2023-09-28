@@ -1,6 +1,6 @@
 name: "Update CLI Version"
 
-run-name: Update SailPoint CLI Version to ${{ github.event.inputs.version}}
+run-name: Update SailPoint CLI Version to ${{ github.event.inputs.version }}
 
 on:
   workflow_dispatch:
