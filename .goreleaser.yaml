@@ -52,13 +52,13 @@ archives:
     files:
       - LICENSE
 
-dockers:
-  - image_templates:
-      - sailpoint/sailpoint-cli:{{.Tag}}
-    use: buildx
-    dockerfile: Dockerfile
-    build_flag_templates:
-      - "--platform=linux/amd64"
+# dockers:
+#   - image_templates:
+#       - sailpoint/sailpoint-cli:{{.Tag}}
+#     use: buildx
+#     dockerfile: Dockerfile
+#     build_flag_templates:
+#       - "--platform=linux/amd64"
 
 brews:
   - name: sailpoint-cli
