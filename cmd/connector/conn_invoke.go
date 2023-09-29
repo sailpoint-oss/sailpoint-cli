@@ -14,14 +14,16 @@ import (
 )
 
 const (
-	stdAccountCreate   = "std:account:create"
-	stdAccountList     = "std:account:list"
-	stdAccountRead     = "std:account:read"
-	stdAccountUpdate   = "std:account:update"
-	stdAccountDelete   = "std:account:delete"
-	stdEntitlementList = "std:entitlement:list"
-	stdEntitlementRead = "std:entitlement:read"
-	stdTestConnection  = "std:test-connection"
+	stdAccountCreate      = "std:account:create"
+	stdAccountList        = "std:account:list"
+	stdAccountRead        = "std:account:read"
+	stdAccountUpdate      = "std:account:update"
+	stdAccountDelete      = "std:account:delete"
+	stdEntitlementList    = "std:entitlement:list"
+	stdEntitlementRead    = "std:entitlement:read"
+	stdTestConnection     = "std:test-connection"
+	stdSourceDataDiscover = "std:source-data:discover"
+	stdSourceDataRead     = "std:source-data:read"
 )
 
 func newConnInvokeCmd(client client.Client, term terminal.Terminal) *cobra.Command {
@@ -53,6 +55,8 @@ func newConnInvokeCmd(client client.Client, term terminal.Terminal) *cobra.Comma
 		newConnInvokeEntitlementListCmd(client),
 		newConnInvokeEntitlementReadCmd(client),
 		newConnInvokeRaw(client),
+		newConnInvokeSourceDataDiscoverCmd(client),
+		newConnInvokeSourceDataReadCmd(client),
 	)
 
 	bindDevConfig(cmd.PersistentFlags())
@@ -94,6 +98,28 @@ func connClient(cmd *cobra.Command, spClient client.Client) (*connclient.ConnCli
 		return nil, err
 	}
 	cc := connclient.NewConnClient(spClient, v, cfg, connectorRef, endpoint)
+
+	return cc, nil
+}
+
+func connRuntimeClient(cmd *cobra.Command, spClient client.Client) (*connclient.ConnClient, error) {
+	connectorRef := cmd.Flags().Lookup("id").Value.String()
+	version := cmd.Flags().Lookup("version").Value.String()
+
+	var v *int
+	if version != "" {
+		ver, err := strconv.Atoi(version)
+		if err != nil {
+			return nil, err
+		}
+		v = &ver
+	}
+
+	cfg, err := invokeConfig(cmd)
+	if err != nil {
+		return nil, err
+	}
+	cc := connclient.NewConnClient(spClient, v, cfg, connectorRef, connectorRuntimeDirectExecuteEndpoint)
 
 	return cc, nil
 }

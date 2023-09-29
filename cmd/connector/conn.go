@@ -16,9 +16,10 @@ import (
 )
 
 const (
-	connectorsEndpoint           = "/beta/platform-connectors"
-	connectorInstancesEndpoint   = "/beta/connector-instances"
-	connectorCustomizersEndpoint = "/beta/connector-customizers"
+	connectorsEndpoint                    = "/beta/platform-connectors"
+	connectorInstancesEndpoint            = "/beta/connector-instances"
+	connectorCustomizersEndpoint          = "/beta/connector-customizers"
+	connectorRuntimeDirectExecuteEndpoint = "/sp-conn-runtime-exec/runtime-connector-invoke"
 )
 
 func NewConnCmd(term terminal.Terminal) *cobra.Command {

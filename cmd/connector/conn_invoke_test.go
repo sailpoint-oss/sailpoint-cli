@@ -18,7 +18,7 @@ import (
 // Unit tests for conn_invoke.go and its subcommands
 
 // Expected number of subcommands to `sp` root command
-const numConnInvokeSubcommands = 11
+const numConnInvokeSubcommands = 13
 
 func TestNewConnInvokeCmd_noArgs(t *testing.T) {
 	ctrl := gomock.NewController(t)

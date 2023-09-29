@@ -881,3 +881,107 @@ type invokeCommand struct {
 	Config       json.RawMessage `json:"config"`
 	Input        json.RawMessage `json:"input"`
 }
+
+type sourceDataDiscoverInput struct {
+	Query map[string]any `json:"queryInput"`
+}
+
+type sourceDataReadInput struct {
+	SourceDataKey string         `json:"sourceDataKey"`
+	Query         map[string]any `json:"queryInput"`
+}
+
+type sourceData struct {
+	Key      string `json:"key"`
+	Label    string `json:"label"`
+	SubLabel string `json:"sublabel"`
+}
+
+func (cc *ConnClient) SourceDataDiscover(ctx context.Context, queryInput map[string]any) (sData []sourceData, raw []byte, err error) {
+	input, err := json.Marshal(sourceDataDiscoverInput{
+		Query: queryInput,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	cmdRaw, err := cc.rawInvoke("std:source-data:discover", input)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint), "application/json", bytes.NewReader(cmdRaw))
+	if err != nil {
+		return nil, nil, err
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode != 200 {
+		return nil, nil, newResponseError(resp)
+	}
+
+	raw, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	rawResp, err := parseResponse(raw)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	data := make([]sourceData, 0)
+	err = json.Unmarshal(rawResp.Data, &data)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return data, rawResp.Data, nil
+}
+
+func (cc *ConnClient) SourceDataRead(ctx context.Context, sourceDataKey string, queryInput map[string]any) (sData []sourceData, raw []byte, err error) {
+	input, err := json.Marshal(sourceDataReadInput{
+		SourceDataKey: sourceDataKey,
+		Query:         queryInput,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	cmdRaw, err := cc.rawInvoke("std:source-data:read", input)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke-direct"), "application/json", bytes.NewReader(cmdRaw))
+	if err != nil {
+		return nil, nil, err
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode != 200 {
+		return nil, nil, newResponseError(resp)
+	}
+
+	raw, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	rawResp, err := parseResponse(raw)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	data := make([]sourceData, 0)
+	err = json.Unmarshal(rawResp.Data, &data)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return data, rawResp.Data, nil
+}
