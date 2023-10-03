@@ -47,7 +47,10 @@ func newImportCommand() *cobra.Command {
 
 			if wait {
 				log.Warn("Waiting for import task to complete")
-				spconfig.DownloadImport(*apiClient, job.JobId, "spconfig-import-"+job.JobId+".json", folderPath)
+				downloadErr := spconfig.DownloadImport(*apiClient, job.JobId, "spconfig-import-"+job.JobId, folderPath)
+				if downloadErr != nil {
+					return downloadErr
+				}
 			}
 
 			return nil
