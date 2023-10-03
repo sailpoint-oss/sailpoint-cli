@@ -13,14 +13,14 @@ import (
 )
 
 type Config struct {
-	ClientID     string
+	ClientId     string
 	ClientSecret string
-	BaseUrl      string
+	BaseURL      string
 }
 
 func (c Config) printEnv() {
-	fmt.Println("BASE_URL=" + c.BaseUrl)
-	fmt.Println("CLIENT_ID=" + c.ClientID)
+	fmt.Println("BASE_URL=" + c.BaseURL)
+	fmt.Println("CLIENT_ID=" + c.ClientId)
 	fmt.Println("CLIENT_SECRET=" + c.ClientSecret)
 }
 
@@ -52,7 +52,7 @@ func newConfigCommand() *cobra.Command {
 				return err
 			}
 
-			SDKConfig := Config{ClientID: clientID, ClientSecret: clientSecret, BaseUrl: config.GetEnvBaseUrl(envName)}
+			SDKConfig := Config{ClientId: clientID, ClientSecret: clientSecret, BaseURL: config.GetEnvBaseUrl(envName)}
 
 			if env {
 				SDKConfig.printEnv()
