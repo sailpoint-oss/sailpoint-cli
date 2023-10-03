@@ -22,7 +22,7 @@ func newImportCommand() *cobra.Command {
 		Long:    "\nStart an Import job in IdentityNow\n\n",
 		Example: "sail spconfig import",
 		Aliases: []string{"imp"},
-		Args:    cobra.ExactArgs(1),
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			apiClient, err := config.InitAPIClient()
