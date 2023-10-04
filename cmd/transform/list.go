@@ -27,7 +27,7 @@ func newListCommand() *cobra.Command {
 				return err
 			}
 
-			transforms, resp, err := sailpoint.PaginateWithDefaults[v3.Transform](apiClient.V3.TransformsApi.ListTransforms(context.TODO()))
+			transforms, resp, err := sailpoint.PaginateWithDefaults[v3.TransformRead](apiClient.V3.TransformsApi.ListTransforms(context.TODO()))
 			if err != nil {
 				return sdk.HandleSDKError(resp, err)
 			}
@@ -35,7 +35,7 @@ func newListCommand() *cobra.Command {
 			var entries [][]string
 
 			for _, v := range transforms {
-				entries = append(entries, []string{v.Name, *v.Id})
+				entries = append(entries, []string{v.Name, v.Id})
 			}
 
 			output.WriteTable(cmd.OutOrStdout(), []string{"Name", "ID"}, entries)
