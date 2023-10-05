@@ -24,12 +24,12 @@ Valid Types that can be included or excluded are:
  - SOURCE
  - TRANSFORM
  - TRIGGER_SUBSCRIPTION
- - WORKFLOWS
+ - WORKFLOW
 ====
 
 ==Example==
 ```bash
-sail spconfig export --include WORKFLOWS --include SOURCE
+sail spconfig export --include WORKFLOW --include SOURCE
 sail spconfig export --include SOURCE --wait
 sail spconfig export --include TRANSFORM --objectOptions '{
     "TRANSFORM": {

@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
-	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/beta"
+	"github.com/sailpoint-oss/golang-sdk/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/spf13/cobra"
@@ -26,7 +26,7 @@ func newCreateCommand() *cobra.Command {
 		Aliases: []string{"c"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var transform sailpointbetasdk.Transform
+			var transform beta.Transform
 			var decoder *json.Decoder
 
 			if filepath != "" {
@@ -52,10 +52,6 @@ func newCreateCommand() *cobra.Command {
 				return fmt.Errorf("the transform must have a name")
 			}
 
-			if transform.GetId() != "" {
-				return fmt.Errorf("the transform cannot have an ID")
-			}
-
 			apiClient, err := config.InitAPIClient()
 			if err != nil {
 				return err
@@ -71,7 +67,7 @@ func newCreateCommand() *cobra.Command {
 
 			log.Info("Transform created successfully")
 
-			cmd.Print(*transformObj.Id)
+			cmd.Print(transformObj.Id)
 
 			return nil
 		},

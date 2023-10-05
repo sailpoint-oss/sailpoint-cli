@@ -13,9 +13,9 @@ import (
 )
 
 func SaveJSONFile[T any](formattedResponse T, fileName string, folderPath string) error {
-	savePath := GetSanitizedPath(folderPath, fileName, "json")
+	saveName := GetSanitizedPath(fileName, "json")
 
-	log.Debug("Saving JSON file", "file path", savePath)
+	log.Debug("Saving JSON file", "path", folderPath, "file", saveName)
 
 	dataToSave, err := json.MarshalIndent(formattedResponse, "", "  ")
 	if err != nil {
@@ -24,11 +24,25 @@ func SaveJSONFile[T any](formattedResponse T, fileName string, folderPath string
 
 	log.Debug("Formatted Data", "data", string(dataToSave))
 
-	return WriteFile(savePath, dataToSave)
+	saveErr := WriteFile(folderPath, saveName, dataToSave)
+	if saveErr != nil {
+		return saveErr
+	}
+
+	return nil
 }
 
-func WriteFile(path string, data []byte) error {
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0777)
+func WriteFile(folderPath string, filePath string, data []byte) error {
+
+	// Create the folder if it doesn't exist
+	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
+		err = os.MkdirAll(folderPath, 0777)
+		if err != nil {
+			return err
+		}
+	}
+
+	file, err := os.OpenFile(path.Join(folderPath, filePath), os.O_CREATE|os.O_RDWR, 0777)
 	if err != nil {
 		return err
 	}
@@ -54,8 +68,8 @@ func WriteFile(path string, data []byte) error {
 }
 
 // GetSanitizedPath makes sure the provided path works on all OS
-func GetSanitizedPath(filePath string, fileName string, extension string) string {
-	return path.Join(filePath, sanitize.PathName(fileName)+"."+extension)
+func GetSanitizedPath(fileName string, extension string) string {
+	return sanitize.PathName(fileName) + "." + extension
 }
 
 func WriteTable(writer io.Writer, headers []string, entries [][]string) {

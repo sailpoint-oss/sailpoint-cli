@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/charmbracelet/log"
-	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/beta"
+	"github.com/sailpoint-oss/golang-sdk/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/spf13/cobra"
@@ -23,7 +23,7 @@ func newUpdateCommand() *cobra.Command {
 		Aliases: []string{"u"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var transform sailpointbetasdk.Transform
+			var transform beta.TransformRead
 
 			filepath := cmd.Flags().Lookup("file").Value.String()
 			if filepath != "" {
@@ -44,23 +44,23 @@ func newUpdateCommand() *cobra.Command {
 				}
 			}
 
-			if transform.Id == nil {
+			if transform.Id == "" {
 				return fmt.Errorf("the input must contain an id")
 			}
 
 			id := transform.Id
-			transform.Id = nil // ID can't be present in the update payload
+			// ID, Internal, Name, and Type can't be present in the update payload
 
 			log.Info("Updating Transform", "transformID", id)
 
-			updateTransform := sailpointbetasdk.NewTransform(transform.Name, transform.Type, transform.Attributes)
+			updateTransform := beta.Transform{Attributes: transform.Attributes, Type: transform.Type, Name: transform.Name}
 
 			apiClient, err := config.InitAPIClient()
 			if err != nil {
 				return err
 			}
 
-			_, resp, err := apiClient.Beta.TransformsApi.UpdateTransform(context.TODO(), *id).Transform(*updateTransform).Execute()
+			_, resp, err := apiClient.Beta.TransformsApi.UpdateTransform(context.TODO(), id).Transform(updateTransform).Execute()
 			if err != nil {
 				return sdk.HandleSDKError(resp, err)
 			}

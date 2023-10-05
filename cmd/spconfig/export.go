@@ -60,7 +60,10 @@ func newExportCommand() *cobra.Command {
 
 			if wait {
 				log.Warn("Waiting for export task to complete")
-				spconfig.DownloadExport(*apiClient, job.JobId, "spconfig-export-"+job.JobId+".json", folderPath)
+				downloadErr := spconfig.DownloadExport(*apiClient, job.JobId, "spconfig-export-"+job.JobId, folderPath)
+				if downloadErr != nil {
+					return downloadErr
+				}
 			}
 
 			return nil

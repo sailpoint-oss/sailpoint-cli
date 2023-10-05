@@ -22,7 +22,7 @@ func newImportCommand() *cobra.Command {
 		Long:    "\nStart an Import job in IdentityNow\n\n",
 		Example: "sail spconfig import",
 		Aliases: []string{"imp"},
-		Args:    cobra.ExactArgs(1),
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			apiClient, err := config.InitAPIClient()
@@ -47,7 +47,10 @@ func newImportCommand() *cobra.Command {
 
 			if wait {
 				log.Warn("Waiting for import task to complete")
-				spconfig.DownloadImport(*apiClient, job.JobId, "spconfig-import-"+job.JobId+".json", folderPath)
+				downloadErr := spconfig.DownloadImport(*apiClient, job.JobId, "spconfig-import-"+job.JobId, folderPath)
+				if downloadErr != nil {
+					return downloadErr
+				}
 			}
 
 			return nil

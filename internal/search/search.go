@@ -171,7 +171,7 @@ func SaveResults[T any](formattedResponse []T, fileName string, filePath string,
 		outputType := outputTypes[i]
 		switch outputType {
 		case "json":
-			savePath := output.GetSanitizedPath(filePath, fileName, "json")
+			savePath := output.GetSanitizedPath(fileName, "json")
 			log.Info("Saving Results", "file", savePath)
 			err := output.SaveJSONFile(formattedResponse, fileName, filePath)
 			if err != nil {
