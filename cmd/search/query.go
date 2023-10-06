@@ -2,21 +2,17 @@
 package search
 
 import (
-	"fmt"
-
 	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/search"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
-func newQueryCmd(folderPath string, save bool) *cobra.Command {
-
+func newQueryCmd() *cobra.Command {
 	var indices []string
-
 	var sort []string
 	var searchQuery string
+	var folderPath string
 	cmd := &cobra.Command{
 		Use:     "query",
 		Short:   "Manually Search using a specific Query and Indicies",
@@ -24,12 +20,6 @@ func newQueryCmd(folderPath string, save bool) *cobra.Command {
 		Example: "sail search query \"(type:provisioning AND created:[now-90d TO now])\" --indices events",
 		Aliases: []string{"que"},
 		Args:    cobra.ExactArgs(1),
-		PreRun: func(cmd *cobra.Command, args []string) {
-			folderPath, _ := cmd.Flags().GetString("folderPath")
-			if folderPath == "" {
-				cmd.MarkFlagRequired("save")
-			}
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			err := config.InitConfig()
@@ -43,7 +33,7 @@ func newQueryCmd(folderPath string, save bool) *cobra.Command {
 			}
 
 			searchQuery = args[0]
-			fmt.Println(searchQuery)
+			// fmt.Println(searchQuery)
 
 			searchObj, err := search.BuildSearch(searchQuery, sort, indices)
 			if err != nil {
@@ -57,19 +47,16 @@ func newQueryCmd(folderPath string, save bool) *cobra.Command {
 				return err
 			}
 
-			if save {
-				err = search.IterateIndices(formattedResponse, searchQuery, folderPath, []string{"json"})
-				if err != nil {
-					return err
-				}
-			} else {
-				cmd.Println(util.PrettyPrint(formattedResponse))
+			err = search.IterateIndices(formattedResponse, searchQuery, folderPath, []string{"json"})
+			if err != nil {
+				return err
 			}
 
 			return nil
 		},
 	}
 
+	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "search_results", "Folder path to save the search results to. If the directory doesn't exist, then it will be created. (defaults to the current working directory)")
 	cmd.Flags().StringArrayVar(&indices, "indices", []string{}, "indices to perform the search query on (accessprofiles, accountactivities, entitlements, events, identities, roles)")
 	cmd.Flags().StringArrayVar(&sort, "sort", []string{}, "the sort value for the api call (displayName, +id...)")
 	cmd.MarkFlagRequired("indices")

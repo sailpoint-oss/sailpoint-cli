@@ -52,15 +52,17 @@ func newCollectCommand(term terminal.Terminal) *cobra.Command {
 			}
 
 			var wg sync.WaitGroup
-			p := mpb.New(mpb.WithWidth(60),
+			p := mpb.New(
 				mpb.PopCompletedMode(),
 				mpb.WithRefreshRate(180*time.Millisecond),
 				mpb.WithWaitGroup(&wg))
 
+			log.SetOutput(p)
+
 			for i, endpoint := range args {
 				var password string
 
-				if len(credentials) >= i-1 {
+				if len(credentials) > i {
 					password = credentials[i]
 				}
 

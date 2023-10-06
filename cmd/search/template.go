@@ -12,11 +12,11 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/templates"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
-func newTemplateCmd(folderPath string, save bool) *cobra.Command {
+func newTemplateCmd() *cobra.Command {
+	var folderPath string
 	var template string
 	cmd := &cobra.Command{
 		Use:     "template",
@@ -90,17 +90,16 @@ func newTemplateCmd(folderPath string, save bool) *cobra.Command {
 				return err
 			}
 
-			if save {
-				err = search.IterateIndices(formattedResponse, selectedTemplate.SearchQuery.Query.GetQuery(), folderPath, []string{"json"})
-				if err != nil {
-					return err
-				}
-			} else {
-				cmd.Println(util.PrettyPrint(formattedResponse))
+			err = search.IterateIndices(formattedResponse, selectedTemplate.SearchQuery.Query.GetQuery(), folderPath, []string{"json"})
+			if err != nil {
+				return err
 			}
 
 			return nil
 		},
 	}
+
+	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "search_results", "Folder path to save the search results to. If the directory doesn't exist, then it will be created. (defaults to the current working directory)")
+
 	return cmd
 }

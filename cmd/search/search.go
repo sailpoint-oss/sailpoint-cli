@@ -6,8 +6,6 @@ import (
 )
 
 func NewSearchCommand() *cobra.Command {
-	var folderPath string
-	var save bool
 	cmd := &cobra.Command{
 		Use:     "search",
 		Short:   "Perform Search operations in IdentityNow with a specific query or a template",
@@ -21,12 +19,9 @@ func NewSearchCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newQueryCmd(folderPath, save),
-		newTemplateCmd(folderPath, save),
+		newQueryCmd(),
+		newTemplateCmd(),
 	)
-
-	cmd.PersistentFlags().StringVarP(&folderPath, "folderPath", "f", "", "Folder path to save the search results to. If the directory doesn't exist, then it will be created. (defaults to the current working directory)")
-	cmd.PersistentFlags().BoolVarP(&save, "save", "s", false, "Save the search results to a file")
 
 	return cmd
 
