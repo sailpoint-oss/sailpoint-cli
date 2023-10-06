@@ -2,9 +2,9 @@
 Output assets/img/vhs/Sail.gif
 
 # Set up a 1200x600 terminal with 46px font.
-Set FontSize 16
+Set FontSize 14
 Set Width 1200
-Set Height 600
+Set Height 800
 
 Hide Sleep 1.5s Show
 

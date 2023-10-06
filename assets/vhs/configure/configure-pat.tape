@@ -6,7 +6,27 @@ Set FontSize 16
 Set Width 1200
 Set Height 500
 
-Hide Sleep 2s Show
+Hide 
+
+Sleep 2s
+
+Type "sail env example --erase"
+
+Enter
+
+Sleep 2s 
+
+Enter
+
+Sleep 2s 
+
+Type "clear"
+
+Enter
+
+Sleep 1s
+
+Show
 
 # Start ...
 
@@ -34,7 +54,7 @@ Enter
 Sleep 1s
 
 # Type a command in the terminal.
-Type "sail configure"
+Type "sail set pat"
 
 Enter 
 
@@ -50,6 +70,9 @@ Sleep 1s
 # Run the command by pressing enter.
 Enter 
 
+# Pause for dramatic effect...
+Sleep 1s
+
 # Type a command in the terminal.
 Type "example-client-secret"
 
@@ -57,4 +80,18 @@ Type "example-client-secret"
 Enter 
 
 # Admire the output for a bit.
-Sleep 5s
+Sleep 4s
+
+Hide
+
+Type "sail env css-255"
+
+Sleep 1s
+
+Enter
+
+Type "sail set auth oauth"
+
+Sleep 1s
+
+Enter

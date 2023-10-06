@@ -4,7 +4,7 @@ Output assets/img/vhs/search/search.gif
 # Set up a 1200x600 terminal with 46px font.
 Set FontSize 16
 Set Width 1200
-Set Height 600
+Set Height 700
 
 Hide Sleep 2s Show
 

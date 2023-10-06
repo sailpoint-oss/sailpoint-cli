@@ -14,19 +14,7 @@ Hide Sleep 2s Show
 Sleep 300ms
 
 # Type a command in the terminal.
-Type "sail va collect 10.10.10.5"
-
-# Pause for dramatic effect...
-Sleep 1s
-
-# Run the command by pressing enter.
-Enter 
-
-# Pause for dramatic effect...
-Sleep 1s
-
-# Type a command in the terminal.
-Type "S@ilp0int"
+Type "sail va collect 10.10.10.25 10.10.10.26 -p S@ilp0int -p S@ilp0int"
 
 # Pause for dramatic effect...
 Sleep 1s
@@ -35,4 +23,4 @@ Sleep 1s
 Enter 
 
 # Admire the output for a bit.
-Sleep 15s
+Sleep 60s

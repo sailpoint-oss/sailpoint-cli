@@ -14,7 +14,7 @@ Hide Sleep 2s Show
 Sleep 300ms
 
 # Type a command in the terminal.
-Type "sail va update 10.10.10.5"
+Type "sail va update 10.10.10.25"
 
 # Pause for dramatic effect...
 Sleep 1s
