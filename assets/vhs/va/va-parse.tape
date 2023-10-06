@@ -14,7 +14,7 @@ Hide Sleep 2s Show
 Sleep 300ms
 
 # Type a command in the terminal.
-Type "sail va parse --ccg ./10.10.10.5/ccg.log"
+Type "sail va parse --type ccg ./10.10.10.25/ccg.log"
 
 # Pause for dramatic effect...
 Sleep 1s

@@ -123,7 +123,8 @@ func CollectVAFiles(endpoint string, password string, output string, files []str
 
 			err := collectFile(sftp, filePath, outputFolder, endpoint, p)
 			if err != nil {
-				log.Warn("Error collecting file", "file", filePath, "VA", endpoint, "err", err)
+				log.Warn("Skipping file", "file", filePath, "VA", endpoint)
+				log.Debug("Error collecting file", "file", filePath, "VA", endpoint, "err", err)
 			}
 		}(filePath)
 	}
@@ -153,9 +154,9 @@ func collectFile(sftp *sftp.Client, filePath, outputFolder, endpoint string, p *
 	bar := p.AddBar(remoteFileStats.Size(),
 		mpb.BarFillerClearOnComplete(),
 		mpb.PrependDecorators(
-			decor.Name(name, decor.WCSyncSpaceR),
-			decor.Name(":", decor.WCSyncSpaceR),
-			decor.OnComplete(decor.CountersKiloByte("% .2f / % .2f", decor.WCSyncSpaceR), "Complete"),
+			decor.Name(name, decor.WCSyncWidthR),
+			decor.Name(" : ", decor.WCSyncWidthR),
+			// decor.OnComplete(decor.CountersKiloByte("% .2f / % .2f", decor.WCSyncSpaceR), "Complete"),
 			decor.TotalKiloByte("% .2f", decor.WCSyncSpaceR),
 		),
 		mpb.AppendDecorators(

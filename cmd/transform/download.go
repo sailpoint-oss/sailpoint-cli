@@ -3,15 +3,13 @@ package transform
 
 import (
 	"context"
-	"encoding/json"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/log"
 	sailpoint "github.com/sailpoint-oss/golang-sdk"
 	v3 "github.com/sailpoint-oss/golang-sdk/v3"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/spf13/cobra"
 )
@@ -22,7 +20,7 @@ func newDownloadCommand() *cobra.Command {
 		Use:     "download",
 		Short:   "Download all Transforms from IdentityNow",
 		Long:    "\nDownload all Transforms from IdentityNow\n\n",
-		Example: "sail transform downlooad -d transform_files | sail transform dl",
+		Example: "sail transform download -d transform_files | sail transform dl",
 		Aliases: []string{"dl"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -32,33 +30,15 @@ func newDownloadCommand() *cobra.Command {
 				return err
 			}
 
-			transforms, resp, err := sailpoint.PaginateWithDefaults[v3.Transform](apiClient.V3.TransformsApi.ListTransforms(context.TODO()))
+			transforms, resp, err := sailpoint.PaginateWithDefaults[v3.TransformRead](apiClient.V3.TransformsApi.ListTransforms(context.TODO()))
 			if err != nil {
 				return sdk.HandleSDKError(resp, err)
 			}
 
 			for _, v := range transforms {
-				filename := strings.ReplaceAll(v.Name, " ", "") + ".json"
-				content, _ := json.MarshalIndent(v, "", "    ")
+				filename := strings.ReplaceAll(v.Name, " ", "")
 
-				var err error
-
-				// Make sure the output dir exists first
-				err = os.MkdirAll(destination, os.ModePerm)
-				if err != nil {
-					return err
-				}
-
-				// Make sure to create the files if they dont exist
-				file, err := os.OpenFile((filepath.Join(destination, filename)), os.O_RDWR|os.O_CREATE, 0777)
-				if err != nil {
-					return err
-				}
-				_, err = file.Write(content)
-				if err != nil {
-					return err
-				}
-
+				err := output.SaveJSONFile(v, filename, destination)
 				if err != nil {
 					return err
 				}

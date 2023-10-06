@@ -38,8 +38,11 @@ func newUpdateCommand(term terminal.Terminal) *cobra.Command {
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			for i, endpoint := range args {
+				var password string
 
-				password := credentials[i]
+				if len(credentials) > i {
+					password = credentials[i]
+				}
 
 				if password == "" {
 					password, _ = term.PromptPassword("Enter Password for " + endpoint + ":")

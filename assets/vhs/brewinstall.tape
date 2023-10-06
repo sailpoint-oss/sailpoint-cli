@@ -4,7 +4,7 @@ Output assets/img/vhs/brewinstall.gif
 # Set up a 1200x600 terminal with 46px font.
 Set FontSize 16
 Set Width 1200
-Set Height 600
+Set Height 700
 
 Hide 
 
@@ -51,4 +51,26 @@ Sleep 500ms
 Enter 
 
 # Pause for dramatic effect...
+Sleep 35s
+
+Hide 
+
 Sleep 20s
+
+Type "brew uninstall sailpoint-cli"
+
+Enter
+
+Sleep 20s
+
+Type "brew untap sailpoint-oss/tap"
+
+Enter
+
+Sleep 20s
+
+Type "clear"
+
+Enter
+
+Sleep 500ms

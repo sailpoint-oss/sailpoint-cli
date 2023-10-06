@@ -14,7 +14,7 @@ Hide Sleep 2s Show
 Sleep 300ms
 
 # Type a command in the terminal.
-Type 'sail search query "*" -i events'
+Type `sail search query 'created: [now-30d TO now]' --indices events`
 
 # Pause for dramatic effect...
 Sleep 1s
@@ -23,4 +23,4 @@ Sleep 1s
 Enter 
 
 # Admire the output for a bit.
-Sleep 15s
+Sleep 20s
