@@ -79,7 +79,7 @@ jobs:
         id: download_exe
         shell: bash
         run: |
-          hub release download "${GITHUB_REF#refs/tags/}" -i '*windows_amd64*.zip'
+          gh release download "${GITHUB_REF#refs/tags/}" -p '*windows_amd64*.zip'
           printf "zip=%s\n" *.zip >> $GITHUB_OUTPUT
           unzip -o *.zip && rm -v *.zip
         env:
