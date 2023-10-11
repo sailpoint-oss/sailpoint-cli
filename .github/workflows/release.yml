@@ -117,7 +117,7 @@ jobs:
         shell: bash
         run: |
           tag_name="${GITHUB_REF#refs/tags/}"
-          hub release edit "$tag_name" -m "" -a "$MSI_FILE"
+          gh release upload "$tag_name" "$MSI_FILE"
           release_url="$(gh api repos/:owner/:repo/releases -q ".[]|select(.tag_name==\"${tag_name}\")|.url")"
           publish_args=( -F draft=false )
           gh api -X PATCH "$release_url" "${publish_args[@]}"
