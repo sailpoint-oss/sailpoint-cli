@@ -99,7 +99,7 @@ func newTemplateCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&folderPath, "FolderPath", "f", "search_results", "Folder path to save the search results to. If the directory doesn't exist, then it will be created. (defaults to the current working directory)")
+	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "search_results", "Folder path to save the search results to. If the directory doesn't exist, then it will be created. (defaults to the current working directory)")
 
 	return cmd
 }
