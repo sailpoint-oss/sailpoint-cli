@@ -1,7 +1,7 @@
 ==Long==
 # Sanitize
 
-Sanitize a har file of sensitive data 
+Sanitize a har file of sensitive data  
 Specifically removes access tokens and origin urls similar to the examples below:
 
 Access Token
