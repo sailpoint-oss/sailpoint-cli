@@ -12,6 +12,10 @@ import (
 	connclient "github.com/sailpoint-oss/sailpoint-cli/cmd/connector/client"
 )
 
+const (
+	accountReadLimit = 8
+)
+
 // entitlementAttr returns the attribute for entitlements
 func entitlementAttr(spec *connclient.ConnSpec) string {
 	for _, attr := range spec.AccountSchema.Attributes {

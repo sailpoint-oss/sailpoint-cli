@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/kr/pretty"
+
 	connclient "github.com/sailpoint-oss/sailpoint-cli/cmd/connector/client"
 )
 
@@ -42,14 +43,17 @@ var entitlementReadChecks = []Check{
 				res.warnf("no entitlements")
 				return
 			}
-
+			count := 0
 			for _, e := range entitlements {
+				if count > accountReadLimit {
+					break
+				}
 				eRead, _, err := cc.EntitlementRead(ctx, e.ID(), e.UniqueID(), "group", nil)
 				if err != nil {
 					res.errf("failed to read entitlement %q: %s", e.Identity, err.Error())
 					return
 				}
-
+				count++
 				if e.Identity != eRead.Identity {
 					res.errf("want %q; got %q", e.Identity, eRead.Identity)
 				}

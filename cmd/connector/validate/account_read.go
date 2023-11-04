@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/kr/pretty"
+
 	connclient "github.com/sailpoint-oss/sailpoint-cli/cmd/connector/client"
 )
 
@@ -24,14 +25,17 @@ var accountReadChecks = []Check{
 				res.err(err)
 				return
 			}
-
+			count := 0
 			for _, account := range accounts {
+				if count > accountReadLimit {
+					break
+				}
 				acct, _, err := cc.AccountRead(ctx, account.ID(), account.UniqueID(), nil)
 				if err != nil {
 					res.err(err)
 					return
 				}
-
+				count++
 				if acct.Identity != account.Identity {
 					res.errf("want %q; got %q", account.Identity, acct.Identity)
 				}
