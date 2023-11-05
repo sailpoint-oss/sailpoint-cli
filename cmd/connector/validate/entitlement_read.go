@@ -16,7 +16,7 @@ var entitlementReadChecks = []Check{
 		RequiredCommands: []string{
 			"std:entitlement:read",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit bool) {
 			_, _, err := cc.EntitlementRead(ctx, "__sailpoint__not__found__", "", "group", nil)
 			if err == nil {
 				res.errf("expected error for non-existant entitlement")
@@ -32,7 +32,7 @@ var entitlementReadChecks = []Check{
 			"std:entitlement:read",
 			"std:entitlement:list",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit bool) {
 			entitlements, _, _, err := cc.EntitlementList(ctx, "group", nil, nil, nil)
 			if err != nil {
 				res.err(err)
@@ -45,7 +45,7 @@ var entitlementReadChecks = []Check{
 			}
 			count := 0
 			for _, e := range entitlements {
-				if count > accountReadLimit {
+				if readLimit && count > accountReadLimit {
 					break
 				}
 				eRead, _, err := cc.EntitlementRead(ctx, e.ID(), e.UniqueID(), "group", nil)
@@ -73,7 +73,7 @@ var entitlementReadChecks = []Check{
 		RequiredCommands: []string{
 			"std:entitlement:list",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit bool) {
 			additionalAttributes := map[string]string{}
 
 			attrsByName := map[string]connclient.EntitlementSchemaAttribute{}

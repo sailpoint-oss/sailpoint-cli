@@ -19,7 +19,7 @@ var accountReadChecks = []Check{
 			"std:account:read",
 			"std:account:list",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit bool) {
 			accounts, _, _, err := cc.AccountList(ctx, nil, nil, nil)
 			if err != nil {
 				res.err(err)
@@ -27,7 +27,7 @@ var accountReadChecks = []Check{
 			}
 			count := 0
 			for _, account := range accounts {
-				if count > accountReadLimit {
+				if readLimit && count > accountReadLimit {
 					break
 				}
 				acct, _, err := cc.AccountRead(ctx, account.ID(), account.UniqueID(), nil)
@@ -59,7 +59,7 @@ var accountReadChecks = []Check{
 		RequiredCommands: []string{
 			"std:account:read",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit bool) {
 			_, _, err := cc.AccountRead(ctx, "__sailpoint__not__found__", "", nil)
 			if err == nil {
 				res.errf("expected error for non-existant identity")
@@ -73,7 +73,7 @@ var accountReadChecks = []Check{
 		RequiredCommands: []string{
 			"std:account:list",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit bool) {
 			additionalAttributes := map[string]string{}
 
 			attrsByName := map[string]connclient.AccountSchemaAttribute{}

@@ -28,6 +28,10 @@ type Config struct {
 	// ReadOnly specifies a type of validation.
 	// If ReadOnly set 'true' validator will run all checks that don't make any modifications.
 	ReadOnly bool
+
+	// ReadLimit specifies whether to limit the number of account read
+	// If ReadLimit set 'true', check for account and entitlement read will only read 8 accounts
+	ReadLimit bool
 }
 
 // NewValidator creates a new validator with provided config and ConnClient
@@ -62,7 +66,7 @@ func (v *Validator) Run(ctx context.Context) (results []CheckResult, err error) 
 		}
 
 		if ok, results := isCheckPossible(spec.Commands, check.RequiredCommands); ok {
-			check.Run(ctx, spec, v.cc, res)
+			check.Run(ctx, spec, v.cc, res, v.cfg.ReadLimit)
 		} else {
 			res.skipf("Skipping check due to unimplemented commands on a connector: %s", strings.Join(results, ", "))
 		}

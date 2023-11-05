@@ -17,7 +17,7 @@ var accountUpdateChecks = []Check{
 			"std:account:list",
 			"std:account:update",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit bool) {
 			accounts, _, _, err := cc.AccountList(ctx, nil, nil, nil)
 			if err != nil {
 				res.err(err)
@@ -72,7 +72,7 @@ var accountUpdateChecks = []Check{
 			"std:account:update",
 			"std:account:delete",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit bool) {
 			entitlementAttr := entitlementAttr(spec)
 			if entitlementAttr == "" {
 				res.warnf("no entitlement attribute")

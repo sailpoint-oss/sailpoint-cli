@@ -8,9 +8,10 @@ import (
 
 	"github.com/logrusorgru/aurora"
 	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/cobra"
+
 	connvalidate "github.com/sailpoint-oss/sailpoint-cli/cmd/connector/validate"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
-	"github.com/spf13/cobra"
 )
 
 func newConnValidateCmd(apiClient client.Client) *cobra.Command {
@@ -43,9 +44,11 @@ func newConnValidateCmd(apiClient client.Client) *cobra.Command {
 			check := cmd.Flags().Lookup("check").Value.String()
 
 			isReadOnly, _ := strconv.ParseBool(cmd.Flags().Lookup("read-only").Value.String())
+			isReadLimit, _ := strconv.ParseBool(cmd.Flags().Lookup("read-limit").Value.String())
 			valid := connvalidate.NewValidator(connvalidate.Config{
-				Check:    check,
-				ReadOnly: isReadOnly,
+				Check:     check,
+				ReadOnly:  isReadOnly,
+				ReadLimit: isReadLimit,
 			}, cc)
 
 			results, err := valid.Run(ctx)
