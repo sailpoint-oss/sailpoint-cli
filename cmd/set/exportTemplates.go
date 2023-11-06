@@ -9,8 +9,8 @@ import (
 func newExportTemplateCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "exportTemplates",
-		Short:   "Set the custom SPConfig Export templates file path",
-		Long:    "\nSet the custom SPConfig Export templates file path\n\n",
+		Short:   "Set the custom SPConfig export templates file path",
+		Long:    "\nSet the custom SPConfig export templates file path\n\n",
 		Example: "sail set export full/path/to/export/templates.json",
 		Aliases: []string{"export"},
 		Args:    cobra.ExactArgs(1),
@@ -18,7 +18,7 @@ func newExportTemplateCommand() *cobra.Command {
 
 			filePath := args[0]
 			if filePath == "" {
-				log.Error("File Path Cannot Be Blank")
+				log.Error("File path cannot be blank")
 			}
 
 			config.SetCustomExportTemplatePath(filePath)

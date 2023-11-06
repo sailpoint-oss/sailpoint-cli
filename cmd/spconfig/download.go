@@ -53,9 +53,9 @@ func newDownloadCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringArrayVarP(&importIDs, "import", "", []string{}, "specify the IDs of the import jobs to download results for")
-	cmd.Flags().StringArrayVarP(&exportIDs, "export", "", []string{}, "specify the IDs of the export jobs to download results for")
-	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "spconfig-exports", "folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
+	cmd.Flags().StringArrayVarP(&importIDs, "import", "", []string{}, "Specify the IDs of the import jobs to download results for")
+	cmd.Flags().StringArrayVarP(&exportIDs, "export", "", []string{}, "Specify the IDs of the export jobs to download results for")
+	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "spconfig-exports", "Folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
 
 	return cmd
 }

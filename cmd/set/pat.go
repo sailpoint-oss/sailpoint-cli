@@ -13,8 +13,8 @@ func newPATCommand(term terminal.Terminal) *cobra.Command {
 	var err error
 	cmd := &cobra.Command{
 		Use:   "pat",
-		Short: "Configure PAT Authentication for the currently active environment",
-		Long:  "\nConfigure PAT Authentication for the CLI\n\nPrerequisites:\n\nCreate a Client ID and Client Secret\nhttps://developer.sailpoint.com/idn/api/authentication#personal-access-tokens",
+		Short: "Configure PAT authentication for the currently active environment",
+		Long:  "\nConfigure PAT authentication for the CLI\n\nPrerequisites:\n\nCreate a client ID and client secret\nhttps://developer.sailpoint.com/idn/api/authentication#personal-access-tokens",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 

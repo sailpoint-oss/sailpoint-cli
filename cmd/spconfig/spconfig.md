@@ -1,6 +1,6 @@
 ==Long==
 # SPConfig
-Perform SP-Config operations in IdentityNow
+Perform SP-Config operations in IdentityNow.
 
 API References:
  - https://developer.sailpoint.com/idn/api/beta/sp-config

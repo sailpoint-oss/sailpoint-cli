@@ -15,8 +15,8 @@ const (
 func NewTransformCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "transform",
-		Short:   "Manage Transforms in IdentityNow",
-		Long:    "\nManage Transforms in IdentityNow\n\n",
+		Short:   "Manage transforms in IdentityNow",
+		Long:    "\nManage transforms in IdentityNow\n\n",
 		Example: "sail transform | sail tran",
 		Aliases: []string{"tran"},
 		Run: func(cmd *cobra.Command, args []string) {

@@ -1,7 +1,7 @@
 ==Long==
 # Update
 
-Update a Workflow in IdentityNow
+Update a workflow in IdentityNow.
 
 Arguments can be a list of directories or files. 
 If a directory is specified, all JSON files in the directory will be parsed and the workflows uploaded.

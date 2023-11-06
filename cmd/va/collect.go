@@ -25,7 +25,7 @@ func newCollectCommand(term terminal.Terminal) *cobra.Command {
 	var config bool
 	cmd := &cobra.Command{
 		Use:     "collect [-c | -l] [-o output] VA-Network-Address... [-p va-password]",
-		Short:   "Collect files from a SailPoint Virtual Appliance",
+		Short:   "Collect files from a SailPoint virtual appliance",
 		Long:    help.Long,
 		Example: help.Example,
 		Args:    cobra.MinimumNArgs(1),
@@ -90,10 +90,10 @@ func newCollectCommand(term terminal.Terminal) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&output, "output", "o", "", "The path to save the log files")
-	cmd.Flags().BoolVarP(&logs, "log", "l", false, "retrieve log files")
-	cmd.Flags().BoolVarP(&config, "config", "c", false, "retrieve config files")
-	cmd.Flags().StringArrayVarP(&credentials, "passwords", "p", []string{}, "passwords for the servers in the same order that the servers are listed as arguments")
+	cmd.Flags().StringVarP(&output, "output", "o", "", "Path to save the log files")
+	cmd.Flags().BoolVarP(&logs, "log", "l", false, "Retrieve log files")
+	cmd.Flags().BoolVarP(&config, "config", "c", false, "Retrieve config files")
+	cmd.Flags().StringArrayVarP(&credentials, "passwords", "p", []string{}, "Passwords for the servers in the same order that the servers are listed as arguments")
 
 	cmd.MarkFlagsMutuallyExclusive("config", "log")
 

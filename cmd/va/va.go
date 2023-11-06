@@ -16,7 +16,7 @@ func NewVACommand(term terminal.Terminal) *cobra.Command {
 	help := util.ParseHelp(vaHelp)
 	cmd := &cobra.Command{
 		Use:     "va",
-		Short:   "Manage SailPoint Virtual Appliances",
+		Short:   "Manage SailPoint virtual appliances",
 		Long:    help.Long,
 		Example: help.Example,
 		Run: func(cmd *cobra.Command, args []string) {

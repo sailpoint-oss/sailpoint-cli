@@ -1,9 +1,9 @@
 ==Long==
 # Collect
 
-Collect files from a remote Virtual Appliance
+Collect files from a remote virtual appliance.
 
-Files are collected over SFTP. Passwords are provided via the --password (-p) flag or they will be prompted for at runtime. Server addresses can be DNS names or IP addresses, and are provided as arguments separated by spaces.
+Files are collected over SFTP. Passwords are provided via the --password (-p) flag or they will be prompted for at runtime. Server addresses can be DNS names or IP addresses, and they're provided as arguments, separated by spaces.
 
 Log Files:
 ```bash

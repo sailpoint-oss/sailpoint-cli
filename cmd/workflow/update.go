@@ -23,7 +23,7 @@ func newUpdateCommand() *cobra.Command {
 	var directory bool
 	cmd := &cobra.Command{
 		Use:     "update",
-		Short:   "Update a Workflow in IdentityNow",
+		Short:   "Update a workflow in IdentityNow",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"up"},

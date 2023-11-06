@@ -1,6 +1,6 @@
 ==Long==
 # Delete
-Delete a workflow in IdentityNow
+Delete a workflow in IdentityNow.
 
 ## API References:
  - https://developer.sailpoint.com/idn/api/beta/delete-workflow

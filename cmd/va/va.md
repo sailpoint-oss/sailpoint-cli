@@ -1,7 +1,7 @@
 ==Long==
 # VA
 
-Manage Virtual Appliances in IdentityNow
+Manage virtual appliances in IdentityNow.
 
 ====
 

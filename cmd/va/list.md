@@ -2,7 +2,7 @@
 
 # List
 
-List the Clusters and Virtual Appliances in the configured IdentityNow tenant
+List the clusters and virtual appliances in the configured IdentityNow tenant.
 
 ====
 

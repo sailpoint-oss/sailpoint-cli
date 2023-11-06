@@ -1,8 +1,8 @@
 ==Long==
 # Export
-Start an Export job in IdentityNow
+Start an export job in IdentityNow.
 
-Valid Types that can be included or excluded are:
+You can include or exclude the following valid types:
  - ACCESS_PROFILE
  - ACCESS_REQUEST_CONFIG
  - ATTR_SYNC_SOURCE_CONFIG

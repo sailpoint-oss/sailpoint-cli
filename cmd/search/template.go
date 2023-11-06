@@ -20,8 +20,8 @@ func newTemplateCmd() *cobra.Command {
 	var template string
 	cmd := &cobra.Command{
 		Use:     "template",
-		Short:   "Perform Search operations in IdentityNow using a predefined search template",
-		Long:    "\nPerform Search operations in IdentityNow using a predefined search template\n\n",
+		Short:   "Perform search operations in IdentityNow, using a predefined search template",
+		Long:    "\nPerform search operations in IdentityNow, using a predefined search template\n\n",
 		Example: "sail search template",
 		Aliases: []string{"temp"},
 		Args:    cobra.MaximumNArgs(1),

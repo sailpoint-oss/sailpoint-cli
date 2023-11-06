@@ -18,8 +18,8 @@ func newImportCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "import",
-		Short:   "Start an Import job in IdentityNow",
-		Long:    "\nStart an Import job in IdentityNow\n\n",
+		Short:   "Start an import job in IdentityNow",
+		Long:    "\nStart an import job in IdentityNow\n\n",
 		Example: "sail spconfig import",
 		Aliases: []string{"imp"},
 		Args:    cobra.NoArgs,
@@ -57,9 +57,9 @@ func newImportCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&filePath, "filePath", "f", "", "the path to the file containing the import payload")
-	cmd.Flags().StringVarP(&folderPath, "folderPath", "p", "spconfig-imports", "folder path to save the import results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
-	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "wait for the import job to finish, and download the results")
+	cmd.Flags().StringVarP(&filePath, "filePath", "f", "", "Path to the file containing the import payload")
+	cmd.Flags().StringVarP(&folderPath, "folderPath", "p", "spconfig-imports", "Folder path to save the import results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
+	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "Wait for the import job to finish, and then download the results")
 	cmd.MarkFlagRequired("filepath")
 
 	return cmd

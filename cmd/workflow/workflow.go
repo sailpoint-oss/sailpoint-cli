@@ -15,7 +15,7 @@ func NewWorkflowCommand() *cobra.Command {
 	help := util.ParseHelp(workflowHelp)
 	cmd := &cobra.Command{
 		Use:     "workflow",
-		Short:   "Manage Workflows in IdentityNow",
+		Short:   "Manage workflows in IdentityNow",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"work"},

@@ -24,7 +24,7 @@ func newCreateCommand() *cobra.Command {
 	var directory bool
 	cmd := &cobra.Command{
 		Use:     "create [-f file1 file2 ... | -d workflowDirectory ]",
-		Short:   "Create Workflows in IdentityNow",
+		Short:   "Create workflows in IdentityNow",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"cr"},
@@ -112,8 +112,8 @@ func newCreateCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVarP(&file, "file", "f", false, "specifies that workflow file paths are provided as arguments to be created")
-	cmd.Flags().BoolVarP(&directory, "directory", "d", false, "specifies that a directory of workflows is provided to be created")
+	cmd.Flags().BoolVarP(&file, "file", "f", false, "Specifies that workflow file paths are provided as arguments to be created")
+	cmd.Flags().BoolVarP(&directory, "directory", "d", false, "Specifies that a directory of workflows is provided to be created")
 	cmd.MarkFlagsMutuallyExclusive("file", "directory")
 
 	return cmd

@@ -1,8 +1,8 @@
 ==Long==
 # Sanitize
 
-Sanitize a har file of sensitive data  
-Specifically removes access tokens and origin urls similar to the examples below:
+Run this command to sanitize a HAR file of sensitive data. 
+Sanitizing a HAR file means specifically removing access tokens and origin URLS from the file to ensure that such sensitive information is secure. 
 
 Access Token
 ```

@@ -2,7 +2,7 @@
 
 # Workflows
 
-Manage Workflows in IdentityNow
+Manage workflows in IdentityNow.
 
 ====
 

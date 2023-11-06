@@ -1,6 +1,6 @@
 ==Long==
 # Download
-Downloads all Workflows from IdentityNow 
+Downloads all workflows from IdentityNow.
 
 ## API References:
  - https://developer.sailpoint.com/idn/api/beta/list-workflows

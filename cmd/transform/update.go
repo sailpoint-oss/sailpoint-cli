@@ -17,8 +17,8 @@ import (
 func newUpdateCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "update",
-		Short:   "Update a Transform in IdentityNow from a File",
-		Long:    "\nUpdate a Transform in IdentityNow from a File\n\n",
+		Short:   "Update a transform in IdentityNow from a file",
+		Long:    "\nUpdate a transform in IdentityNow from a file\n\n",
 		Example: "sail transform update --file ./assets/demo_update.json\nsail transform u -f /path/to/transform.json\nsail transform u < /path/to/transform.json\necho /path/to/transform.json | sail transform u",
 		Aliases: []string{"u"},
 		Args:    cobra.NoArgs,
@@ -69,7 +69,7 @@ func newUpdateCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("file", "f", "", "The path to the transform file")
+	cmd.Flags().StringP("file", "f", "", "Path to the transform file")
 
 	return cmd
 }
