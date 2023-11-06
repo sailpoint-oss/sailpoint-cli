@@ -31,7 +31,7 @@ type Config struct {
 
 	// ReadLimit specifies whether to limit the number of account read
 	// If ReadLimit set 'true', check for account and entitlement read will only read 8 accounts
-	ReadLimit bool
+	ReadLimit int64
 }
 
 // NewValidator creates a new validator with provided config and ConnClient

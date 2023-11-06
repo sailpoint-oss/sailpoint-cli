@@ -3,6 +3,7 @@ package connvalidate
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"strconv"
 
 	"github.com/kr/pretty"
@@ -19,15 +20,23 @@ var accountReadChecks = []Check{
 			"std:account:read",
 			"std:account:list",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit bool) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			accounts, _, _, err := cc.AccountList(ctx, nil, nil, nil)
 			if err != nil {
 				res.err(err)
 				return
 			}
-			count := 0
+			if len(accounts) == 0 {
+				res.warnf("no entitlements")
+				return
+			}
+
+			rand.Shuffle(len(accounts), func(i, j int) {
+				accounts[i], accounts[j] = accounts[j], accounts[i]
+			})
+			count := int64(0)
 			for _, account := range accounts {
-				if readLimit && count > accountReadLimit {
+				if count > readLimit {
 					break
 				}
 				acct, _, err := cc.AccountRead(ctx, account.ID(), account.UniqueID(), nil)
@@ -59,7 +68,7 @@ var accountReadChecks = []Check{
 		RequiredCommands: []string{
 			"std:account:read",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit bool) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			_, _, err := cc.AccountRead(ctx, "__sailpoint__not__found__", "", nil)
 			if err == nil {
 				res.errf("expected error for non-existant identity")
@@ -73,7 +82,7 @@ var accountReadChecks = []Check{
 		RequiredCommands: []string{
 			"std:account:list",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit bool) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			additionalAttributes := map[string]string{}
 
 			attrsByName := map[string]connclient.AccountSchemaAttribute{}
