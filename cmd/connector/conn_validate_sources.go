@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -70,7 +69,16 @@ func newConnValidateSourcesCmd(apiClient client.Client) *cobra.Command {
 			ctx := cmd.Context()
 
 			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
-			isReadLimit, _ := strconv.ParseBool(cmd.Flags().Lookup("read-limit").Value.String())
+			readLimit := cmd.Flags().Lookup("read-limit").Value.String()
+			readLimitVal := int64(accountReadLimit)
+			var err error
+
+			if readLimit != "" {
+				readLimitVal, err = getReadLimitVal(readLimit)
+				if err != nil {
+					return fmt.Errorf("invalid value of readLimit: %v", err)
+				}
+			}
 
 			listOfSources, err := getSourceFromFile(sourceFile)
 			if err != nil {
@@ -86,7 +94,7 @@ func newConnValidateSourcesCmd(apiClient client.Client) *cobra.Command {
 					return err
 				}
 
-				res, err := validateConnectors(ctx, apiClient, source, endpoint, isReadLimit)
+				res, err := validateConnectors(ctx, apiClient, source, endpoint, readLimitVal)
 				if err != nil {
 					return err
 				}
@@ -135,7 +143,7 @@ func getSourceFromFile(filePath string) ([]Source, error) {
 	return config, err
 }
 
-func validateConnectors(ctx context.Context, apiClient client.Client, source Source, endpoint string, isReadLimit bool) (*ValidationResults, error) {
+func validateConnectors(ctx context.Context, apiClient client.Client, source Source, endpoint string, readLimit int64) (*ValidationResults, error) {
 	resp, err := apiClient.Get(ctx, endpoint)
 	if err != nil {
 		return nil, err
@@ -175,7 +183,7 @@ func validateConnectors(ctx context.Context, apiClient client.Client, source Sou
 	validator := connvalidate.NewValidator(connvalidate.Config{
 		Check:     "",
 		ReadOnly:  source.ReadOnly,
-		ReadLimit: isReadLimit,
+		ReadLimit: readLimit,
 	}, cc)
 
 	results, err := validator.Run(ctx)

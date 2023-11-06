@@ -14,6 +14,10 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 )
 
+const (
+	accountReadLimit = 8
+)
+
 func newConnValidateCmd(apiClient client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "validate",
@@ -44,11 +48,20 @@ func newConnValidateCmd(apiClient client.Client) *cobra.Command {
 			check := cmd.Flags().Lookup("check").Value.String()
 
 			isReadOnly, _ := strconv.ParseBool(cmd.Flags().Lookup("read-only").Value.String())
-			isReadLimit, _ := strconv.ParseBool(cmd.Flags().Lookup("read-limit").Value.String())
+			readLimit := cmd.Flags().Lookup("read-limit").Value.String()
+			readLimitVal := int64(accountReadLimit)
+
+			if readLimit != "" {
+				readLimitVal, err = getReadLimitVal(readLimit)
+				if err != nil {
+					return fmt.Errorf("invalid value of readLimit: %v", err)
+				}
+			}
+
 			valid := connvalidate.NewValidator(connvalidate.Config{
 				Check:     check,
 				ReadOnly:  isReadOnly,
-				ReadLimit: isReadLimit,
+				ReadLimit: readLimitVal,
 			}, cc)
 
 			results, err := valid.Run(ctx)
@@ -100,4 +113,15 @@ func newConnValidateCmd(apiClient client.Client) *cobra.Command {
 	cmd.MarkFlagRequired("id")
 
 	return cmd
+}
+
+func getReadLimitVal(readLimit string) (int64, error) {
+	readLimitVal, err := strconv.ParseInt(readLimit, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	if readLimitVal <= 0 {
+		return 0, fmt.Errorf("readLimit value cannot be smaller than or equal to 0")
+	}
+	return readLimitVal, nil
 }
