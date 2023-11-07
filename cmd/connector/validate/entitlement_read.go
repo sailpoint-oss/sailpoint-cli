@@ -49,9 +49,8 @@ var entitlementReadChecks = []Check{
 				entitlements[i], entitlements[j] = entitlements[j], entitlements[i]
 			})
 
-			count := int64(0)
-			for _, e := range entitlements {
-				if count == readLimit {
+			for index, e := range entitlements {
+				if int64(index) == readLimit {
 					break
 				}
 				eRead, _, err := cc.EntitlementRead(ctx, e.ID(), e.UniqueID(), "group", nil)
@@ -59,7 +58,6 @@ var entitlementReadChecks = []Check{
 					res.errf("failed to read entitlement %q: %s", e.Identity, err.Error())
 					return
 				}
-				count++
 				if e.Identity != eRead.Identity {
 					res.errf("want %q; got %q", e.Identity, eRead.Identity)
 				}

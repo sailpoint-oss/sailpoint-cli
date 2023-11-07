@@ -34,9 +34,9 @@ var accountReadChecks = []Check{
 			rand.Shuffle(len(accounts), func(i, j int) {
 				accounts[i], accounts[j] = accounts[j], accounts[i]
 			})
-			count := int64(0)
-			for _, account := range accounts {
-				if count == readLimit {
+
+			for index, account := range accounts {
+				if int64(index) == readLimit {
 					break
 				}
 				acct, _, err := cc.AccountRead(ctx, account.ID(), account.UniqueID(), nil)
@@ -44,7 +44,6 @@ var accountReadChecks = []Check{
 					res.err(err)
 					return
 				}
-				count++
 				if acct.Identity != account.Identity {
 					res.errf("want %q; got %q", account.Identity, acct.Identity)
 				}
