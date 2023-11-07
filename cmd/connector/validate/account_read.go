@@ -27,7 +27,7 @@ var accountReadChecks = []Check{
 				return
 			}
 			if len(accounts) == 0 {
-				res.warnf("no entitlements")
+				res.warnf("no accounts")
 				return
 			}
 
@@ -36,7 +36,7 @@ var accountReadChecks = []Check{
 			})
 			count := int64(0)
 			for _, account := range accounts {
-				if count > readLimit {
+				if count == readLimit {
 					break
 				}
 				acct, _, err := cc.AccountRead(ctx, account.ID(), account.UniqueID(), nil)

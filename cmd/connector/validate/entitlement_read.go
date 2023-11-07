@@ -51,7 +51,7 @@ var entitlementReadChecks = []Check{
 
 			count := int64(0)
 			for _, e := range entitlements {
-				if count > readLimit {
+				if count == readLimit {
 					break
 				}
 				eRead, _, err := cc.EntitlementRead(ctx, e.ID(), e.UniqueID(), "group", nil)
