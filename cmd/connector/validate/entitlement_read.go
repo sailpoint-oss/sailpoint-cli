@@ -2,8 +2,10 @@ package connvalidate
 
 import (
 	"context"
+	"math/rand"
 
 	"github.com/kr/pretty"
+
 	connclient "github.com/sailpoint-oss/sailpoint-cli/cmd/connector/client"
 )
 
@@ -15,7 +17,7 @@ var entitlementReadChecks = []Check{
 		RequiredCommands: []string{
 			"std:entitlement:read",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			_, _, err := cc.EntitlementRead(ctx, "__sailpoint__not__found__", "", "group", nil)
 			if err == nil {
 				res.errf("expected error for non-existant entitlement")
@@ -31,7 +33,7 @@ var entitlementReadChecks = []Check{
 			"std:entitlement:read",
 			"std:entitlement:list",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			entitlements, _, _, err := cc.EntitlementList(ctx, "group", nil, nil, nil)
 			if err != nil {
 				res.err(err)
@@ -43,13 +45,19 @@ var entitlementReadChecks = []Check{
 				return
 			}
 
-			for _, e := range entitlements {
+			rand.Shuffle(len(entitlements), func(i, j int) {
+				entitlements[i], entitlements[j] = entitlements[j], entitlements[i]
+			})
+
+			for index, e := range entitlements {
+				if int64(index) == readLimit {
+					break
+				}
 				eRead, _, err := cc.EntitlementRead(ctx, e.ID(), e.UniqueID(), "group", nil)
 				if err != nil {
 					res.errf("failed to read entitlement %q: %s", e.Identity, err.Error())
 					return
 				}
-
 				if e.Identity != eRead.Identity {
 					res.errf("want %q; got %q", e.Identity, eRead.Identity)
 				}
@@ -69,7 +77,7 @@ var entitlementReadChecks = []Check{
 		RequiredCommands: []string{
 			"std:entitlement:list",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			additionalAttributes := map[string]string{}
 
 			attrsByName := map[string]connclient.EntitlementSchemaAttribute{}

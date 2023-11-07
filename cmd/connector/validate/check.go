@@ -24,7 +24,7 @@ type Check struct {
 
 	// IsDataModifier determines a checking that will modify connectors data after applying
 	IsDataModifier bool
-	Run            func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult)
+	Run            func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64)
 	// RequiredCommands represents a list of commands that use for this check
 	RequiredCommands []string
 }

@@ -7,12 +7,13 @@ import (
 	"log"
 	"os"
 
-	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v2"
+
+	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 )
 
 const (
@@ -40,6 +41,7 @@ func NewConnCmd(term terminal.Terminal) *cobra.Command {
 	Client := client.NewSpClient(Config)
 
 	conn.PersistentFlags().StringP("conn-endpoint", "e", connectorsEndpoint, "Override connectors endpoint")
+	conn.PersistentFlags().Int64("read-limit", accountReadLimit, "Set read limit for accounts and entitlements read")
 
 	conn.AddCommand(
 		newConnInitCommand(),

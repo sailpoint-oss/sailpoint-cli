@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/kr/pretty"
+
 	connclient "github.com/sailpoint-oss/sailpoint-cli/cmd/connector/client"
 )
 
@@ -16,7 +17,7 @@ var accountCreateChecks = []Check{
 		RequiredCommands: []string{
 			"std:account:create",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			input := map[string]interface{}{}
 			_, _, err := cc.AccountCreate(ctx, nil, input, nil)
 			if err == nil {
@@ -33,7 +34,7 @@ var accountCreateChecks = []Check{
 			"std:account:read",
 			"std:account:delete",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			input := map[string]interface{}{}
 			for _, field := range spec.AccountCreateTemplate.Fields {
 				if field.Required {
@@ -79,7 +80,7 @@ var accountCreateChecks = []Check{
 			"std:account:read",
 			"std:account:delete",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			input := map[string]interface{}{}
 			for _, field := range spec.AccountCreateTemplate.Fields {
 				input[getFieldName(field)] = genCreateField(field)
@@ -124,7 +125,7 @@ var accountCreateChecks = []Check{
 			"std:account:delete",
 			"std:account:list",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			accountsPreCreate, _, _, err := cc.AccountList(ctx, nil, nil, nil)
 			if err != nil {
 				res.err(err)

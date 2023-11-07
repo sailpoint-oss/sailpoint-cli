@@ -3,9 +3,11 @@ package connvalidate
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"strconv"
 
 	"github.com/kr/pretty"
+
 	connclient "github.com/sailpoint-oss/sailpoint-cli/cmd/connector/client"
 )
 
@@ -18,20 +20,30 @@ var accountReadChecks = []Check{
 			"std:account:read",
 			"std:account:list",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			accounts, _, _, err := cc.AccountList(ctx, nil, nil, nil)
 			if err != nil {
 				res.err(err)
 				return
 			}
+			if len(accounts) == 0 {
+				res.warnf("no accounts")
+				return
+			}
 
-			for _, account := range accounts {
+			rand.Shuffle(len(accounts), func(i, j int) {
+				accounts[i], accounts[j] = accounts[j], accounts[i]
+			})
+
+			for index, account := range accounts {
+				if int64(index) == readLimit {
+					break
+				}
 				acct, _, err := cc.AccountRead(ctx, account.ID(), account.UniqueID(), nil)
 				if err != nil {
 					res.err(err)
 					return
 				}
-
 				if acct.Identity != account.Identity {
 					res.errf("want %q; got %q", account.Identity, acct.Identity)
 				}
@@ -55,7 +67,7 @@ var accountReadChecks = []Check{
 		RequiredCommands: []string{
 			"std:account:read",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			_, _, err := cc.AccountRead(ctx, "__sailpoint__not__found__", "", nil)
 			if err == nil {
 				res.errf("expected error for non-existant identity")
@@ -69,7 +81,7 @@ var accountReadChecks = []Check{
 		RequiredCommands: []string{
 			"std:account:list",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			additionalAttributes := map[string]string{}
 
 			attrsByName := map[string]connclient.AccountSchemaAttribute{}

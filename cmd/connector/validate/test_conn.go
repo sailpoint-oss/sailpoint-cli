@@ -15,7 +15,7 @@ var testConnChecks = []Check{
 		RequiredCommands: []string{
 			"std:test-connection",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			err := cc.TestConnectionWithConfig(ctx, json.RawMessage("{}"))
 			if err == nil {
 				res.errf("expected test-connection failure for empty config")
@@ -29,7 +29,7 @@ var testConnChecks = []Check{
 		RequiredCommands: []string{
 			"std:test-connection",
 		},
-		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult) {
+		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			_, err := cc.TestConnection(ctx)
 			if err != nil {
 				res.err(err)
