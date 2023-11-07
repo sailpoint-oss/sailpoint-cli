@@ -69,15 +69,9 @@ func newConnValidateSourcesCmd(apiClient client.Client) *cobra.Command {
 			ctx := cmd.Context()
 
 			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
-			readLimit := cmd.Flags().Lookup("read-limit").Value.String()
-			readLimitVal := int64(accountReadLimit)
-			var err error
-
-			if readLimit != "" {
-				readLimitVal, err = getReadLimitVal(readLimit)
-				if err != nil {
-					return fmt.Errorf("invalid value of readLimit: %v", err)
-				}
+			readLimitVal, err := getReadLimitVal(cmd)
+			if err != nil {
+				return fmt.Errorf("invalid value of readLimit: %v", err)
 			}
 
 			listOfSources, err := getSourceFromFile(sourceFile)

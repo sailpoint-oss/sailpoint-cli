@@ -48,14 +48,9 @@ func newConnValidateCmd(apiClient client.Client) *cobra.Command {
 			check := cmd.Flags().Lookup("check").Value.String()
 
 			isReadOnly, _ := strconv.ParseBool(cmd.Flags().Lookup("read-only").Value.String())
-			readLimit := cmd.Flags().Lookup("read-limit").Value.String()
-			readLimitVal := int64(accountReadLimit)
-
-			if readLimit != "" {
-				readLimitVal, err = getReadLimitVal(readLimit)
-				if err != nil {
-					return fmt.Errorf("invalid value of readLimit: %v", err)
-				}
+			readLimitVal, err := getReadLimitVal(cmd)
+			if err != nil {
+				return fmt.Errorf("invalid value of readLimit: %v", err)
 			}
 
 			valid := connvalidate.NewValidator(connvalidate.Config{
@@ -115,8 +110,8 @@ func newConnValidateCmd(apiClient client.Client) *cobra.Command {
 	return cmd
 }
 
-func getReadLimitVal(readLimit string) (int64, error) {
-	readLimitVal, err := strconv.ParseInt(readLimit, 10, 64)
+func getReadLimitVal(cmd *cobra.Command) (int64, error) {
+	readLimitVal, err := cmd.Flags().GetInt64("read-limit")
 	if err != nil {
 		return 0, err
 	}
