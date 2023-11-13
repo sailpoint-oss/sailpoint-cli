@@ -2,7 +2,7 @@
 
 # Get
 
-Get a virtual appliance configuration from IdentityNow.
+Get a VA configuration from IdentityNow.
 
 ====
 

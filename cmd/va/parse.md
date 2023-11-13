@@ -1,7 +1,7 @@
 ==Long==
 # Parse
 
-Parse log files from SailPoint virtual appliances.
+Parse log files from SailPoint VAs.
 ====
 
 ==Example==

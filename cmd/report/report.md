@@ -1,7 +1,7 @@
 ==Long==
 # Report
 
-Generate a report from IdentityNow
+Generate a report from IdentityNow.
 
 ## API References:
  - https://developer.sailpoint.com/idn/api/v3/search
@@ -9,12 +9,12 @@ Generate a report from IdentityNow
 ====
 
 ==Example==
-## Selecting a report
+## Select a report
 ```bash
 sail report
 ```
 
-## Running a specific report
+## Run a specific report
 ```bash
 sail report {report-name}
 ```

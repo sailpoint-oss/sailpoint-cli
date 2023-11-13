@@ -1,7 +1,7 @@
 ==Long==
 # Cluster
 
-Manage IdentityNow clusters.
+Manage IdentityNow VA clusters.
 
 ## API Reference:
  - https://developer.sailpoint.com/idn/api/beta/managed-clusters

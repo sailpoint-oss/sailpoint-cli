@@ -1,7 +1,7 @@
 ==Long==
 # Troubleshoot
 
-Perform troubleshooting operations against a virtual appliance. 
+Perform troubleshooting operations against a VA. 
 
 ====
 

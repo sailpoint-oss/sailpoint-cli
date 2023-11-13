@@ -1,7 +1,7 @@
 ==Long==
 # Update
 
-Update a SailPoint virtual appliance.
+Update a SailPoint VA.
 ====
 
 ==Example==

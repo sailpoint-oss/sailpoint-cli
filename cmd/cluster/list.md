@@ -1,7 +1,7 @@
 ==Long==
 # List
 
-List all clusters from IdentityNow.
+List all VA clusters from IdentityNow.
 
 ## API References:
  - https://developer.sailpoint.com/idn/api/beta/get-managed-clusters
