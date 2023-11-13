@@ -5,7 +5,7 @@
 Get workflows from IdentityNow.
 
 ## API References
- - https://developer.sailpoint.com/idn/api/beta/list-workflows
+ - https://developer.sailpoint.com/idn/api/beta/get-workflow
 ====
 
 ==Example==

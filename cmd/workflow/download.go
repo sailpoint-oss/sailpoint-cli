@@ -75,7 +75,7 @@ func newDownloadCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&folderPath, "folder", "f", "workflows", "Folder to save the Workflows to")
+	cmd.Flags().StringVarP(&folderPath, "folder", "f", "workflows", "Folder to save the workflows to.")
 
 	return cmd
 

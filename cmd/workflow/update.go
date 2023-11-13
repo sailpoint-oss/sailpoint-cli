@@ -93,8 +93,8 @@ func newUpdateCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVarP(&file, "file", "f", false, "Read workflow from file(s)")
-	cmd.Flags().BoolVarP(&directory, "directory", "d", false, "Read workflow from stdin")
+	cmd.Flags().BoolVarP(&file, "file", "f", false, "Read workflow from file(s).")
+	cmd.Flags().BoolVarP(&directory, "directory", "d", false, "Read workflow from stdin.")
 	cmd.MarkFlagsMutuallyExclusive("file", "directory")
 
 	return cmd

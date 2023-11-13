@@ -3,7 +3,7 @@
 
 Update a workflow in IdentityNow.
 
-Arguments can be a list of directories or files. 
+Arguments can be a list of directories or files. You can update multiple workflows by specifying multiple file paths as arguments.
 If a directory is specified, all JSON files in the directory will be parsed and the workflows uploaded.
 
 ## API References:
@@ -13,11 +13,11 @@ If a directory is specified, all JSON files in the directory will be parsed and 
 ==Example==
 ## File:
 ```bash
-sail Workflow update -f {file-path} {file-path}
+sail workflow update -f {file-path} {file-path}
 ```
 
 ## Directory:
 ```bash
-sail Workflow update -d {folder-path} {folder-path}
+sail workflow update -d {folder-path} {folder-path}
 ```
 ====

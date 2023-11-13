@@ -1,9 +1,9 @@
 ==Long==
 # Set
 
-Set a managed clusters log configuration
+Set a VA cluster's log configuration.
 
-A list of Connectors (can be found here)[https://community.sailpoint.com/t5/IdentityNow-Articles/Enabling-Connector-Logging-in-IdentityNow/ta-p/188107]
+A list of connectors (can be found here)[https://community.sailpoint.com/t5/IdentityNow-Articles/Enabling-Connector-Logging-in-IdentityNow/ta-p/188107].
 ====
 
 ==Example==

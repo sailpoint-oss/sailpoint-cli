@@ -15,7 +15,7 @@ func NewClusterCommand() *cobra.Command {
 	help := util.ParseHelp(clusterHelp)
 	cmd := &cobra.Command{
 		Use:     "cluster",
-		Short:   "Manage Clusters in IdentityNow",
+		Short:   "Manage clusters in IdentityNow",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"cl"},
