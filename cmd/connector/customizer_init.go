@@ -36,7 +36,7 @@ func newCustomizerInitCmd() *cobra.Command {
 			}
 
 			if f, err := os.Stat(projName); err == nil && f.IsDir() && f.Name() == projName {
-				printError(cmd.ErrOrStderr(), fmt.Errorf("Error: project '%s' already exists.\n", projName))
+				printError(cmd.ErrOrStderr(), fmt.Errorf("error: project '%s' already exists.\n", projName))
 				return
 			}
 

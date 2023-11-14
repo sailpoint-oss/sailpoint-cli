@@ -49,7 +49,7 @@ func newCreateCommand() *cobra.Command {
 			log.Debug("Transform", "transform", transform)
 
 			if transform.GetName() == "" {
-				return fmt.Errorf("The transform must have a name")
+				return fmt.Errorf("transform must have a name")
 			}
 
 			apiClient, err := config.InitAPIClient()

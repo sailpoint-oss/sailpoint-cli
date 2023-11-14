@@ -69,7 +69,7 @@ func invokeConfig(cmd *cobra.Command) (json.RawMessage, error) {
 	configJSONFlag := cmd.Flags().Lookup("config-json")
 
 	if (configPathFlag == nil || configPathFlag.Value.String() == "") && (configJSONFlag == nil || configJSONFlag.Value.String() == "") {
-		return nil, fmt.Errorf("Either config-path or config-json must be set")
+		return nil, fmt.Errorf("either config-path or config-json must be set")
 	}
 
 	if cmd.Flags().Lookup("config-json") != nil && cmd.Flags().Lookup("config-json").Value.String() != "" {

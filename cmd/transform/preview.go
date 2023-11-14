@@ -143,14 +143,14 @@ func newPreviewCommand() *cobra.Command {
 							accountAttName = def.Input.Attributes.AttributeName
 							sourceName = def.Input.Attributes.SourceName
 						} else {
-							return fmt.Errorf("Unknown transform definition encountered when parsing identity profile: " + transType)
+							return fmt.Errorf("unknown transform definition encountered when parsing identity profile: " + transType)
 						}
 					}
 				}
 
 				name := cmd.Flags().Lookup("name").Value.String()
 				if name == "" {
-					return fmt.Errorf("the transform name must be specified when previewing with implicit input")
+					return fmt.Errorf("transform name must be specified when previewing with implicit input")
 				}
 
 				previewBody := transmodel.MakePreviewBodyImplicit(attribute, name, accountAttName, sourceName)
