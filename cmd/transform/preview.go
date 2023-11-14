@@ -143,7 +143,7 @@ func newPreviewCommand() *cobra.Command {
 							accountAttName = def.Input.Attributes.AttributeName
 							sourceName = def.Input.Attributes.SourceName
 						} else {
-							return fmt.Errorf("Unknown transform definition encountered when parsing identity profile: " + transType)
+							return fmt.Errorf("unknown transform definition encountered when parsing identity profile: " + transType)
 						}
 					}
 				}
