@@ -57,7 +57,7 @@ func TestInvokeConfig(t *testing.T) {
 		cmd.Flags().String("config-json", "", "")
 
 		_, err := invokeConfig(cmd)
-		expectedErr := fmt.Errorf("either config-path or config-json must be set")
+		expectedErr := fmt.Errorf("Either config-path or config-json must be set")
 		if err.Error() != expectedErr.Error() {
 			t.Fatalf("expected err: %s, actual: %s", expectedErr, err)
 		}

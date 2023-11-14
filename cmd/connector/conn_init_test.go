@@ -37,7 +37,7 @@ func TestNewConnInitCmd_emptyName(t *testing.T) {
 	}
 
 	if !strings.Contains(string(out), "connector name cannot be empty") {
-		t.Errorf("expected: %s, actual: %s", "error: connector name cannot be empty", string(out))
+		t.Errorf("expected: %s, actual: %s", "Error: connector name cannot be empty", string(out))
 	}
 }
 
@@ -97,7 +97,7 @@ func TestNewConnInitCmd(t *testing.T) {
 		t.Fatalf("error read out: %v", err)
 	}
 
-	if !strings.Contains(string(out), "successfully created project") {
-		t.Errorf("expected out to contain '%s', actual: %s", "successfully created project", string(out))
+	if !strings.Contains(string(out), "Successfully created project") {
+		t.Errorf("expected out to contain '%s', actual: %s", "Successfully created project", string(out))
 	}
 }
