@@ -9,8 +9,8 @@ import (
 func newSearchTemplateCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "searchTemplates",
-		Short:   "Set the custom IdentityNow Search templates file path",
-		Long:    "\nSet the custom IdentityNow Search templates file path\n\n",
+		Short:   "Set the custom IdentityNow search templates file path",
+		Long:    "\nSet the custom IdentityNow search templates file path\n\n",
 		Example: "sail set search /path/to/search/templates.json",
 		Aliases: []string{"search"},
 		Args:    cobra.ExactArgs(1),
@@ -18,7 +18,7 @@ func newSearchTemplateCommand() *cobra.Command {
 
 			filePath := args[0]
 			if filePath == "" {
-				log.Error("File Path Cannot Be Blank")
+				log.Error("File path cannot be blank")
 			}
 
 			config.SetCustomSearchTemplatePath(filePath)

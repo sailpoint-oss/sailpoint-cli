@@ -329,7 +329,7 @@ func newParseCommand() *cobra.Command {
 	var all bool
 	cmd := &cobra.Command{
 		Use:     "parse",
-		Short:   "Parse Log Files from SailPoint Virtual Appliances",
+		Short:   "Parse log files from SailPoint virtual appliances",
 		Long:    help.Long,
 		Example: help.Example,
 		Args:    cobra.MinimumNArgs(1),
@@ -345,7 +345,7 @@ func newParseCommand() *cobra.Command {
 					mpb.WithRefreshRate(180*time.Millisecond),
 				)
 
-				log.Info("Parsing Log Files", "files", args)
+				log.Info("Parsing log files", "files", args)
 
 				log.SetOutput(p)
 				for _, filepath := range args {
@@ -382,7 +382,7 @@ func newParseCommand() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&fileType, "type", "t", "", "Specifies the log type to parse (ccg, canal)")
-	cmd.Flags().BoolVarP(&all, "all", "a", false, "Specifies all log traffic should be parsed, not just errors")
+	cmd.Flags().BoolVarP(&all, "all", "a", false, "Specifies that all log traffic should be parsed, not just errors")
 
 	return cmd
 }

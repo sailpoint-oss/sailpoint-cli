@@ -18,7 +18,7 @@ func newGetCommand() *cobra.Command {
 	help := util.ParseHelp(getHelp)
 	cmd := &cobra.Command{
 		Use:     "get",
-		Short:   "Get a Cluster from IdentityNow",
+		Short:   "Get a cluster from IdentityNow",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"get"},

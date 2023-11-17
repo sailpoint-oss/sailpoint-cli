@@ -18,8 +18,8 @@ func newDownloadCommand() *cobra.Command {
 	var destination string
 	cmd := &cobra.Command{
 		Use:     "download",
-		Short:   "Download all Transforms from IdentityNow",
-		Long:    "\nDownload all Transforms from IdentityNow\n\n",
+		Short:   "Download all transforms from IdentityNow",
+		Long:    "\nDownload all transforms from IdentityNow\n\n",
 		Example: "sail transform download -d transform_files | sail transform dl",
 		Aliases: []string{"dl"},
 		Args:    cobra.NoArgs,
@@ -50,7 +50,7 @@ func newDownloadCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&destination, "destination", "d", "transform_files", "The path to the directory to save the files in (default current working directory).  If the directory doesn't exist, then it will be automatically created.")
+	cmd.Flags().StringVarP(&destination, "destination", "d", "transform_files", "Path to the directory to save the files in (default current working directory). If the directory doesn't exist, then it will be automatically created.")
 
 	return cmd
 }

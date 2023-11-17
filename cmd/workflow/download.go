@@ -22,7 +22,7 @@ func newDownloadCommand() *cobra.Command {
 	var folderPath string
 	cmd := &cobra.Command{
 		Use:     "download",
-		Short:   "Download Workflows from IdentityNow",
+		Short:   "Download workflows from IdentityNow",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"down"},
@@ -75,7 +75,7 @@ func newDownloadCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&folderPath, "folder", "f", "workflows", "Folder to save the Workflows to")
+	cmd.Flags().StringVarP(&folderPath, "folder", "f", "workflows", "Folder to save the workflows to.")
 
 	return cmd
 

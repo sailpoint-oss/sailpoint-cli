@@ -10,18 +10,18 @@ import (
 )
 
 func updateAndRebootVA(endpoint, password string) {
-	log.Info("Attempting to Update", "VA", endpoint)
+	log.Info("Attempting to update", "VA", endpoint)
 
 	update, updateErr := va.RunVACmd(endpoint, password, UpdateCommand)
 	if updateErr != nil {
-		log.Error("Problem Updating", "VA", endpoint, "err", updateErr, "resp", update)
+		log.Error("Problem updating", "VA", endpoint, "err", updateErr, "resp", update)
 	} else {
-		log.Info("Virtual Appliance Updating", "VA", endpoint)
+		log.Info("Virtual appliance updating", "VA", endpoint)
 		reboot, rebootErr := va.RunVACmd(endpoint, password, RebootCommand)
 		if rebootErr != nil && rebootErr.Error() != "wait: remote command exited without exit status or exit signal" {
-			log.Error("Problem Rebooting", "Server", endpoint, "err", rebootErr, "resp", reboot)
+			log.Error("Problem rebooting", "Server", endpoint, "err", rebootErr, "resp", reboot)
 		} else {
-			log.Info("Virtual Appliance Rebooting", "VA", endpoint)
+			log.Info("Virtual appliance rebooting", "VA", endpoint)
 		}
 	}
 
@@ -32,8 +32,8 @@ func newUpdateCommand(term terminal.Terminal) *cobra.Command {
 	var credentials []string
 	cmd := &cobra.Command{
 		Use:     "update",
-		Short:   "Perform Update Operations on a SailPoint Virtual Appliance",
-		Long:    "\nPerform Update Operations on a SailPoint Virtual Appliance\n\n",
+		Short:   "Perform update operations on a SailPoint virtual appliance",
+		Long:    "\nPerform update operations on a SailPoint virtual appliance\n\n",
 		Example: "sail va update 10.10.10.10 10.10.10.11 -c S@ilp0int -c S@ilp0int",
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -45,7 +45,7 @@ func newUpdateCommand(term terminal.Terminal) *cobra.Command {
 				}
 
 				if password == "" {
-					password, _ = term.PromptPassword("Enter Password for " + endpoint + ":")
+					password, _ = term.PromptPassword("Enter password for " + endpoint + ":")
 				}
 
 				updateAndRebootVA(endpoint, password)
@@ -54,7 +54,7 @@ func newUpdateCommand(term terminal.Terminal) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringArrayVarP(&credentials, "Passwords", "p", []string{}, "You can enter the Passwords for the servers in the same order that the servers are listed as arguments")
+	cmd.Flags().StringArrayVarP(&credentials, "Passwords", "p", []string{}, "You can enter the passwords for the servers in the same order that the servers are listed as arguments")
 
 	return cmd
 }

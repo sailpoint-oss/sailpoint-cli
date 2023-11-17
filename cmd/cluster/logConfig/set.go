@@ -25,7 +25,7 @@ func newSetCommand() *cobra.Command {
 	var expiration string
 	cmd := &cobra.Command{
 		Use:     "set",
-		Short:   "Set a Virtual Appliances log configuration",
+		Short:   "Set a VA cluster's log configuration",
 		Long:    help.Long,
 		Example: help.Example,
 		Args:    cobra.MinimumNArgs(1),
@@ -73,7 +73,7 @@ func newSetCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&level, "rootLogLevel", "r", "", "Root Log Level for the log configuration")
+	cmd.Flags().StringVarP(&level, "rootLogLevel", "r", "", "Root log level for the log configuration.")
 	cmd.Flags().Int32VarP(&durationInMinutes, "durationInMinutes", "d", 30, "Duration in minutes for the log configuration.\nProvided value must be above 5 and below 1440")
 	cmd.Flags().StringVarP(&expiration, "expiration", "e", "", "Expiration string value for the log configuration. Example: 2020-12-15T19:13:36.079Z")
 	cmd.Flags().StringArrayVarP(&connectors, "connector", "c", []string{}, "Connectors and Log Level to configure. Example:\n-c sailpoint.connector.ADLDAPConnector=TRACE\n--connector sailpoint.connector.ADLDAPConnector=TRACE")

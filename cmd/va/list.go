@@ -20,7 +20,7 @@ func newListCommand() *cobra.Command {
 	help := util.ParseHelp(listHelp)
 	cmd := &cobra.Command{
 		Use:     "list",
-		Short:   "List the Virtual Appliances configured in IdentityNow",
+		Short:   "List the virtual appliances configured in IdentityNow",
 		Long:    help.Long,
 		Example: help.Example,
 		Args:    cobra.NoArgs,

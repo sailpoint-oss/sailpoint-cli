@@ -15,8 +15,8 @@ func newQueryCmd() *cobra.Command {
 	var folderPath string
 	cmd := &cobra.Command{
 		Use:     "query",
-		Short:   "Manually Search using a specific Query and Indicies",
-		Long:    "\nRun a search query in IdentityNow using a specific Query and Indicies\n\n",
+		Short:   "Manually search using a specific query and indices",
+		Long:    "\nRun a search query in IdentityNow, using a specific query and indicies\n\n",
 		Example: "sail search query \"(type:provisioning AND created:[now-90d TO now])\" --indices events",
 		Aliases: []string{"que"},
 		Args:    cobra.ExactArgs(1),
@@ -57,8 +57,8 @@ func newQueryCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "search_results", "Folder path to save the search results to. If the directory doesn't exist, then it will be created. (defaults to the current working directory)")
-	cmd.Flags().StringArrayVar(&indices, "indices", []string{}, "indices to perform the search query on (accessprofiles, accountactivities, entitlements, events, identities, roles)")
-	cmd.Flags().StringArrayVar(&sort, "sort", []string{}, "the sort value for the api call (displayName, +id...)")
+	cmd.Flags().StringArrayVar(&indices, "indices", []string{}, "Indices to perform the search query on (accessprofiles, accountactivities, entitlements, events, identities, roles)")
+	cmd.Flags().StringArrayVar(&sort, "sort", []string{}, "The sort value for the api call (displayName, +id...)")
 	cmd.MarkFlagRequired("indices")
 
 	return cmd

@@ -28,7 +28,7 @@ func newTemplateCommand() *cobra.Command {
 	var wait bool
 	cmd := &cobra.Command{
 		Use:     "template",
-		Short:   "Begin an SPConfig Export task in IdentityNow using a template",
+		Short:   "Begin an SPConfig export task in IdentityNow, using a template",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"temp"},
@@ -96,8 +96,8 @@ func newTemplateCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "spconfig-exports", "folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
-	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "wait for the export job to finish, and download the results")
+	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "spconfig-exports", "Folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
+	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "Wait for the export job to finish, and then download the results")
 
 	return cmd
 }

@@ -11,6 +11,6 @@ List workflows from IdentityNow.
 ==Example==
 
 ```bash
-    sail Workflow list
+    sail workflow list
 ```
 ====

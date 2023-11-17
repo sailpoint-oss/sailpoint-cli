@@ -23,7 +23,7 @@ func newUpdateCommand() *cobra.Command {
 	var directory bool
 	cmd := &cobra.Command{
 		Use:     "update",
-		Short:   "Update a Workflow in IdentityNow",
+		Short:   "Update a workflow in IdentityNow",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"up"},
@@ -93,8 +93,8 @@ func newUpdateCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVarP(&file, "file", "f", false, "Read workflow from file(s)")
-	cmd.Flags().BoolVarP(&directory, "directory", "d", false, "Read workflow from stdin")
+	cmd.Flags().BoolVarP(&file, "file", "f", false, "Read workflow from file(s).")
+	cmd.Flags().BoolVarP(&directory, "directory", "d", false, "Read workflow from stdin.")
 	cmd.MarkFlagsMutuallyExclusive("file", "directory")
 
 	return cmd

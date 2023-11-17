@@ -2,7 +2,7 @@
 
 # Template
 
-Begin an SPConfig Export task in IdentityNow using a template
+Begin an SPConfig export task in IdentityNow, using a template.
 
 ====
 

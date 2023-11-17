@@ -30,7 +30,7 @@ func newExportCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "export",
-		Short:   "Start an Export job in IdentityNow",
+		Short:   "Start an export job in IdentityNow",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"exp"},
@@ -70,12 +70,12 @@ func newExportCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "spconfig-exports", "folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
-	cmd.Flags().StringVarP(&description, "description", "", "", "optional description for the export job")
-	cmd.Flags().StringArrayVarP(&includeTypes, "include", "i", []string{}, "types to include in export job")
-	cmd.Flags().StringArrayVarP(&excludeTypes, "exclude", "e", []string{}, "types to exclude in export job")
-	cmd.Flags().StringVarP(&objectOptions, "objectOptions", "o", "", "options for the object types being exported")
-	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "wait for the export job to finish, and download the results")
+	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "spconfig-exports", "Folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
+	cmd.Flags().StringVarP(&description, "description", "", "", "Optional description for the export job")
+	cmd.Flags().StringArrayVarP(&includeTypes, "include", "i", []string{}, "Types to include in export job")
+	cmd.Flags().StringArrayVarP(&excludeTypes, "exclude", "e", []string{}, "Types to exclude in export job")
+	cmd.Flags().StringVarP(&objectOptions, "objectOptions", "o", "", "Options for the object types being exported")
+	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "Wait for the export job to finish, and then download the results")
 
 	return cmd
 }

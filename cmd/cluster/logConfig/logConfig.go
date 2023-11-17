@@ -15,7 +15,7 @@ func NewLogCommand() *cobra.Command {
 	help := util.ParseHelp(logConfigHelp)
 	cmd := &cobra.Command{
 		Use:     "log",
-		Short:   "Interact with a SailPoint Virtual Appliances log configuration",
+		Short:   "Interact with a VA's log configuration",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"l"},

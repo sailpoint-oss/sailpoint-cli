@@ -1,7 +1,7 @@
 ==Long==
 # Download
 
-Download the results of Import or Export jobs from IdentityNow
+Download the results of import or export jobs from IdentityNow.
 
 ====
 

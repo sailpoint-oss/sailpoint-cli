@@ -19,7 +19,7 @@ func newDeleteCommand() *cobra.Command {
 	help := util.ParseHelp(deleteHelp)
 	cmd := &cobra.Command{
 		Use:     "delete workflowID... ",
-		Short:   "Delete a Workflow in IdentityNow",
+		Short:   "Delete a workflow in IdentityNow",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"del"},

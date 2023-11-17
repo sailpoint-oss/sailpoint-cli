@@ -1,7 +1,8 @@
 ==Long==
 # Get
 
-Get a managed clusters log configuration
+Get a VA cluster's log configuration.
+
 ====
 
 ==Example==

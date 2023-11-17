@@ -22,8 +22,8 @@ var implicitInput bool
 func newPreviewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "preview",
-		Short:   "Preview the effects of an IdentityNow Transform",
-		Long:    "\nPreview the effects of an IdentityNow Transform\n\n",
+		Short:   "Preview the effects of an IdentityNow transform",
+		Long:    "\nPreview the effects of an IdentityNow transform\n\n",
 		Example: "sail transform preview -i 020523e172fb4448b0814643ae52ff32 -a lastname -n ToLower --implicit\nsail transform preview -i 020523e172fb4448b0814643ae52ff32 -a lastname -n ToUpper --implicit\nsail transform p -i 12a199b967b64ffe992ef4ecfd076728 -a lastname -f /path/to/transform.json\nsail transform p -i 12a199b967b64ffe992ef4ecfd076728 -a lastname -n ToLower --implicit",
 		Aliases: []string{"p"},
 		Args:    cobra.NoArgs,
@@ -143,7 +143,7 @@ func newPreviewCommand() *cobra.Command {
 							accountAttName = def.Input.Attributes.AttributeName
 							sourceName = def.Input.Attributes.SourceName
 						} else {
-							return fmt.Errorf("Unknown transform definition encountered when parsing identity profile: " + transType)
+							return fmt.Errorf("unknown transform definition encountered when parsing identity profile: " + transType)
 						}
 					}
 				}
@@ -204,14 +204,14 @@ func newPreviewCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("identity-profile", "i", "", "The GUID of an identity profile (required)")
+	cmd.Flags().StringP("identity-profile", "i", "", "GUID of an identity profile (required)")
 	cmd.Flags().StringP("attribute", "a", "", "Attribute name (required)")
 	cmd.Flags().StringP("name", "n", "", "Transform name.  Only needed if using implicit input.  The transform must be uploaded to IDN first.")
 	cmd.Flags().BoolVar(&implicitInput, "implicit", false, "Use implicit input.  Default is explicit input defined by the transform.")
 	cmd.Flags().String("preview-endpoint", previewEndpoint, "Override preview endpoint")
 	cmd.Flags().String("identity-profile-endpoint", identityProfileEndpoint, "Override identity profile endpoint")
 	cmd.Flags().String("user-endpoint", userEndpoint, "Override user endpoint")
-	cmd.Flags().StringP("file", "f", "", "The path to the transform file.  Only needed if using explicit input.")
+	cmd.Flags().StringP("file", "f", "", "Path to the transform file.  Only needed if using explicit input.")
 
 	cmd.MarkFlagRequired("identity-profile")
 	cmd.MarkFlagRequired("attribute")

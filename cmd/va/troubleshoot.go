@@ -20,8 +20,8 @@ func NewTroubleshootCmd(term terminal.Terminal) *cobra.Command {
 	var output string
 	cmd := &cobra.Command{
 		Use:     "troubleshoot",
-		Short:   "Perform Troubleshooting Operations against a Virtual Appliance",
-		Long:    "\nPerform Troubleshooting Operations against a Virtual Appliance\n\n",
+		Short:   "Perform troubleshooting operations against a virtual appliance",
+		Long:    "\nPerform troubleshooting operations against a virtual appliance\n\n",
 		Example: "sail va troubleshoot 10.10.10.10",
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -71,8 +71,8 @@ func NewTroubleshootCmd(term terminal.Terminal) *cobra.Command {
 
 		}}
 
-	cmd.Flags().StringP("endpoint", "e", "", "The host to troubleshoot")
-	cmd.Flags().StringVarP(&output, "output", "o", "", "The path to save the log file")
+	cmd.Flags().StringP("endpoint", "e", "", "Host to troubleshoot")
+	cmd.Flags().StringVarP(&output, "output", "o", "", "Path to save the log file")
 
 	return cmd
 

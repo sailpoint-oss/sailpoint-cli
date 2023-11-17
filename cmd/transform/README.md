@@ -1,6 +1,6 @@
 # Transforms
 
-The `transforms` command makes it easy to create, manage, and test transforms. Please [read our transforms guide](https://developer.sailpoint.com/idn/docs/transforms) for more information about transforms.
+The `transforms` command makes it easy to create, manage, and test transforms. To learn more about transforms, refer to [Transforms](https://developer.sailpoint.com/idn/docs/transforms).
 
 - [Transforms](#transforms)
   - [List transforms](#list-transforms)
@@ -12,6 +12,7 @@ The `transforms` command makes it easy to create, manage, and test transforms. P
     - [Implicit input](#implicit-input)
     - [Output](#output)
   - [Delete transform](#delete-transform)
+  - [Override transform endpoint flag](#override-transforms-endpoint-flag)
 
 ## List transforms
 
@@ -123,3 +124,8 @@ sail transform list
 +--------------------------------------+--------------------------+
 sail transform delete 03d5187b-ab96-402c-b5a1-40b74285d77a
 ```
+## Override transforms endpoint flag
+
+You can append the `--transforms-endpoint` flag, `-e` for short, to override the transforms endpoint. The default endpoint is "/v3/transforms". 
+
+

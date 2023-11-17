@@ -17,7 +17,7 @@ func newGetCommand() *cobra.Command {
 	help := util.ParseHelp(getHelp)
 	cmd := &cobra.Command{
 		Use:     "get",
-		Short:   "Get a Virtual Appliances clusters log configuration",
+		Short:   "Get a VA cluster's log configuration",
 		Long:    help.Long,
 		Example: help.Example,
 		Args:    cobra.MinimumNArgs(1),

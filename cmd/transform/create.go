@@ -20,8 +20,8 @@ func newCreateCommand() *cobra.Command {
 	var filepath string
 	cmd := &cobra.Command{
 		Use:     "create",
-		Short:   "Create an IdentityNow Transform from a file",
-		Long:    "\nCreate an IdentityNow Transform from a file\n\n",
+		Short:   "Create an IdentityNow transform from a file",
+		Long:    "\nCreate an IdentityNow transform from a file\n\n",
 		Example: "sail transform c -f /path/to/transform.json\nsail transform c < /path/to/transform.json\necho /path/to/transform.json | sail transform c",
 		Aliases: []string{"c"},
 		Args:    cobra.NoArgs,
