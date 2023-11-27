@@ -36,6 +36,8 @@ func newPATCommand(term terminal.Terminal) *cobra.Command {
 
 			config.SetPatClientSecret(ClientSecret)
 
+			config.ResetCachePAT()
+
 			return nil
 		},
 	}
