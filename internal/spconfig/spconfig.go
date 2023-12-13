@@ -8,19 +8,28 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/fatih/color"
-	sailpoint "github.com/sailpoint-oss/golang-sdk"
-	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/beta"
+	sailpoint "github.com/sailpoint-oss/golang-sdk/v2"
+	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/v2/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 )
 
-func PrintJob(job sailpointbetasdk.SpConfigJob) {
-	fmt.Printf("Job Type: %s\nJob ID: %s\nStatus: %s\nExpired: %s\nCreated: %s\nModified: %s\nCompleted: %s\n", job.Type, job.JobId, job.Status, job.GetExpiration(), job.GetCreated(), job.GetModified(), job.GetCompleted())
+func PrintJob(x interface{}) {
+	switch job := x.(type) {
+	case sailpointbetasdk.SpConfigJob:
+		fmt.Printf("Job Type: %s\nJob ID: %s\nStatus: %s\nExpired: %s\nCreated: %s\nModified: %s\n", job.Type, job.JobId, job.Status, job.GetExpiration(), job.GetCreated(), job.GetModified())
+	case sailpointbetasdk.SpConfigExportJob:
+		fmt.Printf("Job Type: %s\nJob ID: %s\nStatus: %s\nExpired: %s\nCreated: %s\nModified: %s\n", job.Type, job.JobId, job.Status, job.GetExpiration(), job.GetCreated(), job.GetModified())
+	case sailpointbetasdk.SpConfigExportJobStatus:
+		fmt.Printf("Job Type: %s\nJob ID: %s\nStatus: %s\nExpired: %s\nCreated: %s\nModified: %s\nCompleted: %s\n", job.Type, job.JobId, job.Status, job.GetExpiration(), job.GetCreated(), job.GetModified(), job.GetCompleted())
+	case sailpointbetasdk.SpConfigImportJobStatus:
+		fmt.Printf("Job Type: %s\nJob ID: %s\nStatus: %s\nExpired: %s\nCreated: %s\nModified: %s\nCompleted: %s\n", job.Type, job.JobId, job.Status, job.GetExpiration(), job.GetCreated(), job.GetModified(), job.GetCompleted())
+	}
 }
 
 func DownloadExport(apiClient sailpoint.APIClient, jobId string, fileName string, folderPath string) error {
 
 	for {
-		response, _, err := apiClient.Beta.SPConfigApi.GetSpConfigExportStatus(context.TODO(), jobId).Execute()
+		response, _, err := apiClient.Beta.SPConfigAPI.GetSpConfigExportStatus(context.TODO(), jobId).Execute()
 		if err != nil {
 			return err
 		}
@@ -31,7 +40,7 @@ func DownloadExport(apiClient sailpoint.APIClient, jobId string, fileName string
 			switch response.Status {
 			case "COMPLETE":
 				log.Info("Job Complete")
-				exportData, _, err := apiClient.Beta.SPConfigApi.GetSpConfigExport(context.TODO(), jobId).Execute()
+				exportData, _, err := apiClient.Beta.SPConfigAPI.GetSpConfigExport(context.TODO(), jobId).Execute()
 				if err != nil {
 					return err
 				}
@@ -55,7 +64,7 @@ func DownloadExport(apiClient sailpoint.APIClient, jobId string, fileName string
 func DownloadImport(apiClient sailpoint.APIClient, jobId string, fileName string, folderPath string) error {
 
 	for {
-		response, _, err := apiClient.Beta.SPConfigApi.GetSpConfigImportStatus(context.TODO(), jobId).Execute()
+		response, _, err := apiClient.Beta.SPConfigAPI.GetSpConfigImportStatus(context.TODO(), jobId).Execute()
 		if err != nil {
 			return err
 		}
@@ -66,7 +75,7 @@ func DownloadImport(apiClient sailpoint.APIClient, jobId string, fileName string
 			switch response.Status {
 			case "COMPLETE":
 				color.Green("Downloading Import Data")
-				importData, _, err := apiClient.Beta.SPConfigApi.GetSpConfigImport(context.TODO(), jobId).Execute()
+				importData, _, err := apiClient.Beta.SPConfigAPI.GetSpConfigImport(context.TODO(), jobId).Execute()
 				if err != nil {
 					return err
 				}

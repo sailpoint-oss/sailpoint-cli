@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
-	"github.com/sailpoint-oss/golang-sdk/beta"
+	"github.com/sailpoint-oss/golang-sdk/v2/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/spf13/cobra"
@@ -60,7 +60,7 @@ func newCreateCommand() *cobra.Command {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 			defer cancel()
 
-			transformObj, resp, err := apiClient.Beta.TransformsApi.CreateTransform(ctx).Transform(transform).Execute()
+			transformObj, resp, err := apiClient.Beta.TransformsAPI.CreateTransform(ctx).Transform(transform).Execute()
 			if err != nil {
 				return sdk.HandleSDKError(resp, err)
 			}

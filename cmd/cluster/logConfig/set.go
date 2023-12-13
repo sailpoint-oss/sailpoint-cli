@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/log"
-	"github.com/sailpoint-oss/golang-sdk/beta"
+	"github.com/sailpoint-oss/golang-sdk/v2/beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
@@ -61,7 +61,7 @@ func newSetCommand() *cobra.Command {
 
 			for _, clusterId := range args {
 
-				configuration, resp, err := apiClient.Beta.ManagedClustersApi.PutClientLogConfiguration(context.TODO(), clusterId).ClientLogConfiguration(beta.ClientLogConfiguration{DurationMinutes: durationInMinutes, RootLevel: rootLevel, LogLevels: &logLevels}).Execute()
+				configuration, resp, err := apiClient.Beta.ManagedClustersAPI.PutClientLogConfiguration(context.TODO(), clusterId).ClientLogConfiguration(beta.ClientLogConfiguration{DurationMinutes: durationInMinutes, RootLevel: rootLevel, LogLevels: &logLevels}).Execute()
 				if err != nil {
 					return sdk.HandleSDKError(resp, err)
 				}

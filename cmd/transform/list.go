@@ -4,8 +4,8 @@ package transform
 import (
 	"context"
 
-	sailpoint "github.com/sailpoint-oss/golang-sdk"
-	v3 "github.com/sailpoint-oss/golang-sdk/v3"
+	sailpoint "github.com/sailpoint-oss/golang-sdk/v2"
+	v3 "github.com/sailpoint-oss/golang-sdk/v2/v3"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
@@ -27,7 +27,7 @@ func newListCommand() *cobra.Command {
 				return err
 			}
 
-			transforms, resp, err := sailpoint.PaginateWithDefaults[v3.TransformRead](apiClient.V3.TransformsApi.ListTransforms(context.TODO()))
+			transforms, resp, err := sailpoint.PaginateWithDefaults[v3.TransformRead](apiClient.V3.TransformsAPI.ListTransforms(context.TODO()))
 			if err != nil {
 				return sdk.HandleSDKError(resp, err)
 			}
