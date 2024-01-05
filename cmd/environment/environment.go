@@ -35,7 +35,15 @@ func NewEnvironmentCommand() *cobra.Command {
 			if len(args) > 0 {
 				env = args[0]
 			} else {
-				env = config.GetActiveEnvironment()
+				var choices []tui.Choice
+				for i := 0; i < len(envKeys); i++ {
+					choices = append(choices, tui.Choice{Title: envKeys[i]})
+				}
+				selectedEnv, err := tui.PromptList(choices, "Please select an existing environment: ")
+				if err != nil {
+					return err
+				}
+				env = selectedEnv.Title
 			}
 
 			if env != "" {
