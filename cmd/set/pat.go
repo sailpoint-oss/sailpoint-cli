@@ -25,7 +25,10 @@ func newPATCommand(term terminal.Terminal) *cobra.Command {
 				}
 			}
 
-			config.SetPatClientID(ClientID)
+			err = config.SetPatClientID(ClientID)
+			if err != nil {
+				return err
+			}
 
 			if ClientSecret == "" {
 				ClientSecret, err = term.PromptPassword("Personal Access Token Client Secret:")
@@ -34,7 +37,15 @@ func newPATCommand(term terminal.Terminal) *cobra.Command {
 				}
 			}
 
-			config.SetPatClientSecret(ClientSecret)
+			err = config.SetPatClientSecret(ClientSecret)
+			if err != nil {
+				return err
+			}
+
+			err = config.ResetCachePAT()
+			if err != nil {
+				return err
+			}
 
 			return nil
 		},

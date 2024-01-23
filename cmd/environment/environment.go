@@ -54,6 +54,13 @@ func NewEnvironmentCommand() *cobra.Command {
 						res := terminal.InputPrompt("Press Enter to continue")
 						if res == "" {
 							viper.Set("environments."+config.GetActiveEnvironment(), config.Environment{})
+							config.DeleteOAuthToken()
+							config.DeleteOAuthTokenExpiry()
+							config.DeleteRefreshToken()
+							config.DeleteRefreshTokenExpiry()
+							config.DeletePatToken()
+							config.DeletePatTokenExpiry()
+
 						}
 
 					} else {
