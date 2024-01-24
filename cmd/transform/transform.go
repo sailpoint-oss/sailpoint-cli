@@ -7,7 +7,6 @@ import (
 
 const (
 	transformsEndpoint      = "/v3/transforms"
-	previewEndpoint         = "/cc/api/user/preview"
 	identityProfileEndpoint = "/v3/identity-profiles"
 	userEndpoint            = "/cc/api/identity/list"
 )
@@ -32,7 +31,6 @@ func NewTransformCommand() *cobra.Command {
 		newCreateCommand(),
 		newUpdateCommand(),
 		newDeleteCommand(),
-		newPreviewCommand(),
 	)
 
 	return cmd
