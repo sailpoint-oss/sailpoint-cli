@@ -7,10 +7,6 @@ The `transforms` command makes it easy to create, manage, and test transforms. T
   - [Download transforms](#download-transforms)
   - [Create transform](#create-transform)
   - [Update transform](#update-transform)
-  - [Preview transform](#preview-transform)
-    - [Explicit input](#explicit-input)
-    - [Implicit input](#implicit-input)
-    - [Output](#output)
   - [Delete transform](#delete-transform)
   - [Override transform endpoint flag](#override-transforms-endpoint-flag)
 
@@ -55,47 +51,6 @@ sail transform update -f transform.json
 ```
 
 A common workflow is to download the transforms first, make edits to the transform file, and then use the update command to save those edits in IdentityNow.
-
-## Preview transform
-
-The preview command will show you the final output a transform using real account data from IdentityNow. This command is safe to use when testing as it will not modify account or identity details in IdentityNow.
-
-### Explicit input
-
-Transforms that have **explicit input** will reference the account attribute to pull data from directly in the transform specification. The following flags are required to run this command.
-
-- `-i` The ID of the identity profile to use for the preview. You can find the ID of the identity profile you are interested in by using the [get identity profiles API](https://developer.sailpoint.com/idn/api/v3/list-identity-profiles).
-- `-a` The name of the identity attribute to apply the transform to. This will depend on the attributes available in the identity profile.
-
-Run the following command to preview an **explicit input** transform.
-
-```shell
-sail transform preview -i 2c91808876628b6201767b4bfea61dbb -a department -f transform.json
-```
-
-### Implicit input
-
-Transforms that use **implicit input** will rely on the identity profile mapping in IdentityNow to determine which account attribute will be used in the transform. These transforms require additional flags.
-
-- `--implicit` indicates that the transform to preview uses implicit input. It does not specify an account attribute directly in the JSON.
-- `-n <transform-name>` The name of the transform. The transform must be saved in IdentityNow before running this command.
-
-```shell
-sail transform preview -i 2c91808876628b6201767b4bfea61dbb -a department -n ToUpper --implicit
-```
-
-### Output
-
-The preview command will produce the following output.
-
-```shell
-Original value: adam.archer
-Transformed value: ADAM.ARCHER
-```
-
-The `Original value` is the value of the identity attribute as of the last identity refresh. It is **NOT** the value of the account attribute as it exists on the source. This value may already have been transformed if the identity profile mapping has a transform mapped to the attribute.
-
-The `Transformed value` is a result of the account attribute from the source being changed according to the transform specification. It is what the identity attribute will become if this transform is used in the identity profile.
 
 ## Delete transform
 
