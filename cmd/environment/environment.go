@@ -21,6 +21,7 @@ func NewEnvironmentCommand() *cobra.Command {
 	var overwrite bool
 	var erase bool
 	var show bool
+	var list bool
 	cmd := &cobra.Command{
 		Use:     "environment",
 		Short:   "Manage Environments for the CLI",
@@ -40,6 +41,18 @@ func NewEnvironmentCommand() *cobra.Command {
 
 			if env != "" {
 				config.SetActiveEnvironment(env)
+
+				if environments != nil {
+					if list {
+						log.Warn("You are about to Print out the list of Environments")
+						res := terminal.InputPrompt("Press Enter to continue")
+						log.Info("Response", "res", res)
+						if res == "" {
+							fmt.Println(util.PrettyPrint(environments))
+						}
+
+					}
+				}
 
 				if foundEnv, exists := environments[env]; exists && !overwrite && config.GetTenantUrl() != "" && config.GetBaseUrl() != "" {
 					if show {
@@ -87,7 +100,8 @@ func NewEnvironmentCommand() *cobra.Command {
 	cmd.Flags().BoolVarP(&overwrite, "overwrite", "o", false, "use to overwrite an existing environments configuration")
 	cmd.Flags().BoolVarP(&erase, "erase", "e", false, "use to erase an existing environments configuration")
 	cmd.Flags().BoolVarP(&show, "show", "s", false, "use to show an existing environments configuration")
-	cmd.MarkFlagsMutuallyExclusive("overwrite", "erase", "show")
+	cmd.Flags().BoolVarP(&list, "list", "l", false, "use to show a list of envionments")
+	cmd.MarkFlagsMutuallyExclusive("overwrite", "erase", "show", "list")
 
 	return cmd
 

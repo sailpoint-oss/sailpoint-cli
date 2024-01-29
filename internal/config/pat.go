@@ -33,15 +33,33 @@ type PATSet struct {
 }
 
 func ResetCachePAT() error {
-	err := DeletePatToken()
-	if err != nil {
-		return err
+
+	token, err := GetPatToken()
+	if token != "" && err == nil {
+
+		err = DeletePatToken()
+		if err != nil {
+			return err
+		}
 	}
 
-	err = DeletePatTokenExpiry()
-	if err != nil {
-		return err
+	expiry, err := GetPatTokenExpiry()
+	if !expiry.IsZero() && err == nil {
+		err = DeletePatTokenExpiry()
+		if err != nil {
+			return err
+		}
 	}
+
+	// err := DeletePatToken()
+	// if err != nil {
+	// 	return err
+	// }
+
+	// err = DeletePatTokenExpiry()
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
