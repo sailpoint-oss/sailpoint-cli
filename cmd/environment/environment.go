@@ -91,13 +91,13 @@ func NewEnvironmentCommand() *cobra.Command {
 					}
 				} else {
 					const maxAttempts = 3
-					tenant := terminal.InputPrompt("Tenant Name (ie: https://{tenant}.identitynow.com) [" + env + "]:")
+					tenant := terminal.InputPrompt("Tenant Name (ie: https://{tenant}.identitynow.com): (" + env + ")")
 
 					if tenant == "" {
 						tenant = env
 					}
 
-					domain := terminal.InputPrompt("Domain Name [identitynow.com]:")
+					domain := terminal.InputPrompt("Domain Name: (identitynow.com)")
 					tenantUrl := "https://" + tenant + ".identitynow.com"
 					baseUrl := "https://" + tenant + ".api.identitynow.com"
 					if domain != "" {

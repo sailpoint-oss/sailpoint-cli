@@ -269,7 +269,7 @@ func PromptForClientID() (string, error) {
 			fmt.Println("Valid Client ID provided.")
 			return ClientID, nil
 		} else {
-			fmt.Printf("Invalid Client ID.Please ensure it is either 32 or 36 characters long Attempt %d/%d.\n", attempt, maxAttempts)
+			fmt.Printf("Invalid Client ID. Please ensure it is either 32 or 36 characters long. Attempt %d/%d.\n", attempt, maxAttempts)
 		}
 	}
 
