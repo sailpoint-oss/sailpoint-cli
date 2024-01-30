@@ -22,6 +22,7 @@ func NewEnvironmentCommand() *cobra.Command {
 	var erase bool
 	var show bool
 	var list bool
+	var clear bool
 	cmd := &cobra.Command{
 		Use:     "environment",
 		Short:   "Manage Environments for the CLI",
@@ -30,7 +31,6 @@ func NewEnvironmentCommand() *cobra.Command {
 		Aliases: []string{"env"},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-
 			environments := config.GetEnvironments()
 
 			if len(args) > 0 {
@@ -42,18 +42,6 @@ func NewEnvironmentCommand() *cobra.Command {
 			if env != "" {
 				config.SetActiveEnvironment(env)
 
-				if environments != nil {
-					if list {
-						log.Warn("You are about to Print out the list of Environments")
-						res := terminal.InputPrompt("Press Enter to continue")
-						log.Info("Response", "res", res)
-						if res == "" {
-							fmt.Println(util.PrettyPrint(environments))
-						}
-
-					}
-				}
-
 				if foundEnv, exists := environments[env]; exists && !overwrite && config.GetTenantUrl() != "" && config.GetBaseUrl() != "" {
 					if show {
 						log.Warn("You are about to Print out the Environment", "env", env)
@@ -62,8 +50,8 @@ func NewEnvironmentCommand() *cobra.Command {
 						if res == "" {
 							fmt.Println(util.PrettyPrint(foundEnv))
 						}
-					} else if erase {
-						log.Warn("You are about to Erase the Environment", "env", env)
+					} else if clear {
+						log.Warn("You are about to Clear the Environment", "env", env)
 						res := terminal.InputPrompt("Press Enter to continue")
 						if res == "" {
 							viper.Set("environments."+config.GetActiveEnvironment(), config.Environment{})
@@ -80,6 +68,27 @@ func NewEnvironmentCommand() *cobra.Command {
 						log.Info("Environment changed", "env", env)
 					}
 
+				} else if environments != nil && list {
+					log.Warn("You are about to Print out the list of Environments")
+					res := terminal.InputPrompt("Press Enter to continue")
+					log.Info("Response", "res", res)
+					if res == "" {
+						fmt.Println(util.PrettyPrint(environments))
+					}
+				} else if erase {
+					log.Warn("You are about to Erase the Environment", "env", env)
+					res := terminal.InputPrompt("Press Enter to continue")
+					if res == "" {
+						delete(environments, env)
+						viper.Set("environments", environments)
+						config.DeleteOAuthToken()
+						config.DeleteOAuthTokenExpiry()
+						config.DeleteRefreshToken()
+						config.DeleteRefreshTokenExpiry()
+						config.DeletePatToken()
+						config.DeletePatTokenExpiry()
+
+					}
 				} else {
 
 					tenantUrl := terminal.InputPrompt("Tenant URL (ex. https://tenant.identitynow.com):")
@@ -98,9 +107,10 @@ func NewEnvironmentCommand() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&overwrite, "overwrite", "o", false, "use to overwrite an existing environments configuration")
-	cmd.Flags().BoolVarP(&erase, "erase", "e", false, "use to erase an existing environments configuration")
+	cmd.Flags().BoolVarP(&erase, "erase", "e", false, "use to erase an existing environment")
 	cmd.Flags().BoolVarP(&show, "show", "s", false, "use to show an existing environments configuration")
 	cmd.Flags().BoolVarP(&list, "list", "l", false, "use to show a list of envionments")
+	cmd.Flags().BoolVarP(&clear, "clear", "c", false, "use to clear an existing environments configuration")
 	cmd.MarkFlagsMutuallyExclusive("overwrite", "erase", "show", "list")
 
 	return cmd
