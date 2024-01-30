@@ -42,7 +42,7 @@ func NewEnvironmentCommand() *cobra.Command {
 			if env != "" {
 				config.SetActiveEnvironment(env)
 
-				if foundEnv, exists := environments[env]; exists && !overwrite && config.GetTenantUrl() != "" && config.GetBaseUrl() != "" {
+				if foundEnv, exists := environments[env]; exists && !overwrite && !list && !erase && config.GetTenantUrl() != "" && config.GetBaseUrl() != "" {
 					if show {
 						log.Warn("You are about to Print out the Environment", "env", env)
 						res := terminal.InputPrompt("Press Enter to continue")
