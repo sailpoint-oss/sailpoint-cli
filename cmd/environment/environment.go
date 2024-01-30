@@ -91,7 +91,8 @@ func NewEnvironmentCommand() *cobra.Command {
 
 					}
 				} else {
-					fmt.Print("This utility will walk you through creating a new environment.\n\nPress ^C at any time to quit.\n\n")
+					fmt.Print("This utility will walk you through creating a new environment.\n\n")
+					fmt.Print("Press ^C at any time to quit.\n\n")
 
 					tenant := terminal.InputPrompt("Tenant Name (ie: https://{tenant}.identitynow.com): (" + env + ")")
 
@@ -145,6 +146,12 @@ func NewEnvironmentCommand() *cobra.Command {
 						config.GetAuthToken()
 					}
 
+					fmt.Print("\n\nEnvironment successfully created.\n\n")
+					fmt.Print("You can change your authentication type at any time by running `sail set auth`.\n\n")
+
+					if authType == "pat" {
+						fmt.Print("You can change your client id and secret at any time by running `sail set pat`.\n\n")
+					}
 				}
 			} else {
 				cmd.Help()
