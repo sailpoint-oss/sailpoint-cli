@@ -110,8 +110,14 @@ func NewEnvironmentCommand() *cobra.Command {
 					if authType == "pat" {
 
 						clientID, err := config.PromptForClientID()
+						if err != nil {
+							return err
+						}
 
 						ClientSecret, err := config.PromptForClientSecret()
+						if err != nil {
+							return err
+						}
 
 						err = config.SetPatClientSecret(ClientSecret)
 						if err != nil {
