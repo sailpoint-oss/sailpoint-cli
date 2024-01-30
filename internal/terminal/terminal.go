@@ -28,6 +28,17 @@ func (c *Term) PromptPassword(promptMsg string) (string, error) {
 	return strings.TrimSpace(string(bytePassword)), nil
 }
 
+// PromptPassword prompts user to enter password and then returns it
+func PromptPassword(promptMsg string) (string, error) {
+	fmt.Print(promptMsg)
+	bytePassword, err := term.ReadPassword(int(syscall.Stdin))
+	if err != nil {
+		return "", err
+	}
+	fmt.Println()
+	return strings.TrimSpace(string(bytePassword)), nil
+}
+
 // InputPrompt receives a string value using the label
 func InputPrompt(label string) string {
 	var s string

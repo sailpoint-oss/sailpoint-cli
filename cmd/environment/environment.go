@@ -90,12 +90,55 @@ func NewEnvironmentCommand() *cobra.Command {
 
 					}
 				} else {
+					const maxAttempts = 3
+					tenant := terminal.InputPrompt("Tenant Name [" + env + "]:")
 
-					tenantUrl := terminal.InputPrompt("Tenant URL (ex. https://tenant.identitynow.com):")
-					config.SetTenantUrl(tenantUrl)
+					if tenant == "" {
+						tenant = env
+					}
 
-					baseUrl := terminal.InputPrompt("API Base URL (ex. https://tenant.api.identitynow.com):")
-					config.SetBaseUrl(baseUrl)
+					domain := terminal.InputPrompt("Domain Name: default is identitynow.com:")
+					tenantUrl := "https://" + tenant + ".identitynow.com"
+					baseUrl := "https://" + tenant + ".api.identitynow.com"
+					if domain != "" {
+						tenantUrl = "https://" + tenant + "." + domain
+						baseUrl = "https://" + tenant + ".api." + domain
+					}
+
+					// tenantUrl := terminal.InputPrompt("Tenant URL (ex. https://tenant.identitynow.com):")
+
+					// baseUrl := terminal.InputPrompt("API Base URL (ex. https://tenant.api.identitynow.com):")
+
+					authType := terminal.InputPrompt("Authentication Type (oauth, pat):")
+
+					if authType == "pat" {
+
+						clientID, err := config.PromptForClientID()
+
+						ClientSecret, err := config.PromptForClientSecret()
+
+						err = config.SetPatClientSecret(ClientSecret)
+						if err != nil {
+							return err
+						}
+
+						err = config.ResetCachePAT()
+						if err != nil {
+							return err
+						}
+
+						config.SetTenantUrl(tenantUrl)
+						config.SetBaseUrl(baseUrl)
+						config.SetAuthType(authType)
+						config.SetPatClientID(clientID)
+					}
+
+					if authType == "oauth" {
+						config.SetTenantUrl(tenantUrl)
+						config.SetBaseUrl(baseUrl)
+						config.SetAuthType(authType)
+						config.GetAuthToken()
+					}
 
 				}
 			} else {
