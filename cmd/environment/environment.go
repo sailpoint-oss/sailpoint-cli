@@ -91,23 +91,19 @@ func NewEnvironmentCommand() *cobra.Command {
 					}
 				} else {
 					const maxAttempts = 3
-					tenant := terminal.InputPrompt("Tenant Name [" + env + "]:")
+					tenant := terminal.InputPrompt("Tenant Name (ie: https://{tenant}.identitynow.com) [" + env + "]:")
 
 					if tenant == "" {
 						tenant = env
 					}
 
-					domain := terminal.InputPrompt("Domain Name: default is identitynow.com:")
+					domain := terminal.InputPrompt("Domain Name [identitynow.com]:")
 					tenantUrl := "https://" + tenant + ".identitynow.com"
 					baseUrl := "https://" + tenant + ".api.identitynow.com"
 					if domain != "" {
 						tenantUrl = "https://" + tenant + "." + domain
 						baseUrl = "https://" + tenant + ".api." + domain
 					}
-
-					// tenantUrl := terminal.InputPrompt("Tenant URL (ex. https://tenant.identitynow.com):")
-
-					// baseUrl := terminal.InputPrompt("API Base URL (ex. https://tenant.api.identitynow.com):")
 
 					authType := terminal.InputPrompt("Authentication Type (oauth, pat):")
 
