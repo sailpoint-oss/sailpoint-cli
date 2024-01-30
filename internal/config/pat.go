@@ -51,16 +51,6 @@ func ResetCachePAT() error {
 		}
 	}
 
-	// err := DeletePatToken()
-	// if err != nil {
-	// 	return err
-	// }
-
-	// err = DeletePatTokenExpiry()
-	// if err != nil {
-	// 	return err
-	// }
-
 	return nil
 }
 
