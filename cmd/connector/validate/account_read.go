@@ -21,7 +21,14 @@ var accountReadChecks = []Check{
 			"std:account:list",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
-			accounts, _, _, err := cc.AccountList(ctx, nil, nil, nil)
+			schema := map[string]interface{}{
+				"displayAttribute":  spec.AccountSchema.DisplayAttribute,
+				"groupAttribute":    spec.AccountSchema.GroupAttribute,
+				"identityAttribute": spec.AccountSchema.IdentityAttribute,
+				"attributes":        spec.AccountSchema.Attributes,
+			}
+
+			accounts, _, _, err := cc.AccountList(ctx, nil, nil, schema)
 			if err != nil {
 				res.err(err)
 				return
@@ -39,7 +46,7 @@ var accountReadChecks = []Check{
 				if int64(index) == readLimit {
 					break
 				}
-				acct, _, err := cc.AccountRead(ctx, account.ID(), account.UniqueID(), nil)
+				acct, _, err := cc.AccountRead(ctx, account.ID(), account.UniqueID(), schema)
 				if err != nil {
 					res.err(err)
 					return
@@ -68,7 +75,14 @@ var accountReadChecks = []Check{
 			"std:account:read",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
-			_, _, err := cc.AccountRead(ctx, "__sailpoint__not__found__", "", nil)
+			schema := map[string]interface{}{
+				"displayAttribute":  spec.AccountSchema.DisplayAttribute,
+				"groupAttribute":    spec.AccountSchema.GroupAttribute,
+				"identityAttribute": spec.AccountSchema.IdentityAttribute,
+				"attributes":        spec.AccountSchema.Attributes,
+			}
+
+			_, _, err := cc.AccountRead(ctx, "__sailpoint__not__found__", "", schema)
 			if err == nil {
 				res.errf("expected error for non-existant identity")
 			}
@@ -83,13 +97,19 @@ var accountReadChecks = []Check{
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			additionalAttributes := map[string]string{}
+			schema := map[string]interface{}{
+				"displayAttribute":  spec.AccountSchema.DisplayAttribute,
+				"groupAttribute":    spec.AccountSchema.GroupAttribute,
+				"identityAttribute": spec.AccountSchema.IdentityAttribute,
+				"attributes":        spec.AccountSchema.Attributes,
+			}
 
 			attrsByName := map[string]connclient.AccountSchemaAttribute{}
 			for _, value := range spec.AccountSchema.Attributes {
 				attrsByName[value.Name] = value
 			}
 
-			accounts, _, _, err := cc.AccountList(ctx, nil, nil, nil)
+			accounts, _, _, err := cc.AccountList(ctx, nil, nil, schema)
 			if err != nil {
 				res.err(err)
 				return

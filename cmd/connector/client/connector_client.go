@@ -799,10 +799,11 @@ type AccountSchema struct {
 }
 
 type EntitlementSchema struct {
-	Type              string                       `json:"type"`
-	DisplayName       string                       `json:"displayName"`
-	IdentityAttribute string                       `json:"identityAttribute"`
-	Attributes        []EntitlementSchemaAttribute `json:"attributes"`
+	Type               string                       `json:"type"`
+	DisplayAttribute   string                       `json:"displayAttribute"`
+	IdentityAttribute  string                       `json:"identityAttribute"`
+	HierarchyAttribute string                       `json:"hierarchyAttribute"`
+	Attributes         []EntitlementSchemaAttribute `json:"attributes"`
 }
 
 type AccountSchemaAttribute struct {
@@ -823,7 +824,8 @@ type EntitlementSchemaAttribute struct {
 	Type        string `json:"type"`
 	Description string `json:"description"`
 
-	Multi bool `json:"multi"`
+	Multi    bool `json:"multi"`
+	Required bool `json:"required"`
 }
 
 // ConnSpec is a connector config. See ConnConfig method.
