@@ -82,6 +82,10 @@ func NewEnvironmentCommand() *cobra.Command {
 					if res == "" {
 						delete(environments, env)
 						viper.Set("environments", environments)
+						for k, _ := range environments {
+							config.SetActiveEnvironment(k)
+							break
+						}
 						config.DeleteOAuthToken()
 						config.DeleteOAuthTokenExpiry()
 						config.DeleteRefreshToken()
