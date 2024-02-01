@@ -19,7 +19,8 @@ func newPATCommand(term terminal.Terminal) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			if ClientID == "" {
-				ClientID, err = term.PromptPassword("Personal Access Token Client ID:")
+
+				ClientID, err = config.PromptForClientID()
 				if err != nil {
 					return err
 				}
@@ -31,7 +32,7 @@ func newPATCommand(term terminal.Terminal) *cobra.Command {
 			}
 
 			if ClientSecret == "" {
-				ClientSecret, err = term.PromptPassword("Personal Access Token Client Secret:")
+				ClientSecret, err = config.PromptForClientSecret()
 				if err != nil {
 					return err
 				}
