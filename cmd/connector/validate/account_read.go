@@ -21,13 +21,7 @@ var accountReadChecks = []Check{
 			"std:account:list",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
-			schema := map[string]interface{}{
-				"displayAttribute":  spec.AccountSchema.DisplayAttribute,
-				"groupAttribute":    spec.AccountSchema.GroupAttribute,
-				"identityAttribute": spec.AccountSchema.IdentityAttribute,
-				"attributes":        spec.AccountSchema.Attributes,
-			}
-
+			schema := cc.BuildAccountSchema(spec)
 			accounts, _, _, err := cc.AccountList(ctx, nil, nil, schema)
 			if err != nil {
 				res.err(err)
@@ -75,12 +69,7 @@ var accountReadChecks = []Check{
 			"std:account:read",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
-			schema := map[string]interface{}{
-				"displayAttribute":  spec.AccountSchema.DisplayAttribute,
-				"groupAttribute":    spec.AccountSchema.GroupAttribute,
-				"identityAttribute": spec.AccountSchema.IdentityAttribute,
-				"attributes":        spec.AccountSchema.Attributes,
-			}
+			schema := cc.BuildAccountSchema(spec)
 
 			_, _, err := cc.AccountRead(ctx, "__sailpoint__not__found__", "", schema)
 			if err == nil {
@@ -97,12 +86,7 @@ var accountReadChecks = []Check{
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			additionalAttributes := map[string]string{}
-			schema := map[string]interface{}{
-				"displayAttribute":  spec.AccountSchema.DisplayAttribute,
-				"groupAttribute":    spec.AccountSchema.GroupAttribute,
-				"identityAttribute": spec.AccountSchema.IdentityAttribute,
-				"attributes":        spec.AccountSchema.Attributes,
-			}
+			schema := cc.BuildAccountSchema(spec)
 
 			attrsByName := map[string]connclient.AccountSchemaAttribute{}
 			for _, value := range spec.AccountSchema.Attributes {

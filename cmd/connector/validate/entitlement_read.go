@@ -18,13 +18,7 @@ var entitlementReadChecks = []Check{
 			"std:entitlement:read",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
-			schema := map[string]interface{}{
-				"type":               spec.EntitlementSchemas[0].Type,
-				"displayAttribute":   spec.EntitlementSchemas[0].DisplayAttribute,
-				"identityAttribute":  spec.EntitlementSchemas[0].IdentityAttribute,
-				"hierarchyAttribute": spec.EntitlementSchemas[0].HierarchyAttribute,
-				"attributes":         spec.EntitlementSchemas[0].Attributes,
-			}
+			schema := cc.BuildEntitlementSchema(spec)
 
 			_, _, err := cc.EntitlementRead(ctx, "__sailpoint__not__found__", "", "group", schema)
 			if err == nil {
@@ -42,13 +36,7 @@ var entitlementReadChecks = []Check{
 			"std:entitlement:list",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
-			schema := map[string]interface{}{
-				"type":               spec.EntitlementSchemas[0].Type,
-				"displayAttribute":   spec.EntitlementSchemas[0].DisplayAttribute,
-				"identityAttribute":  spec.EntitlementSchemas[0].IdentityAttribute,
-				"hierarchyAttribute": spec.EntitlementSchemas[0].HierarchyAttribute,
-				"attributes":         spec.EntitlementSchemas[0].Attributes,
-			}
+			schema := cc.BuildEntitlementSchema(spec)
 
 			entitlements, _, _, err := cc.EntitlementList(ctx, "group", nil, nil, schema)
 			if err != nil {
@@ -95,13 +83,7 @@ var entitlementReadChecks = []Check{
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
 			additionalAttributes := map[string]string{}
-			schema := map[string]interface{}{
-				"type":               spec.EntitlementSchemas[0].Type,
-				"displayAttribute":   spec.EntitlementSchemas[0].DisplayAttribute,
-				"identityAttribute":  spec.EntitlementSchemas[0].IdentityAttribute,
-				"hierarchyAttribute": spec.EntitlementSchemas[0].HierarchyAttribute,
-				"attributes":         spec.EntitlementSchemas[0].Attributes,
-			}
+			schema := cc.BuildEntitlementSchema(spec)
 
 			attrsByName := map[string]connclient.EntitlementSchemaAttribute{}
 			for _, value := range spec.EntitlementSchemas[0].Attributes {

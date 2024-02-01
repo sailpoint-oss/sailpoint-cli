@@ -723,6 +723,37 @@ func (cc *ConnClient) SpecRead(ctx context.Context) (connSpec *ConnSpec, err err
 	return cfg.Specification, nil
 }
 
+// Builds account schema that is used as cmd input
+func (cc *ConnClient) BuildAccountSchema(spec *ConnSpec) map[string]interface{} {
+	if spec == nil {
+		return map[string]interface{}{}
+	}
+
+	accountSchema := map[string]interface{}{
+		"displayAttribute":  spec.AccountSchema.DisplayAttribute,
+		"groupAttribute":    spec.AccountSchema.GroupAttribute,
+		"identityAttribute": spec.AccountSchema.IdentityAttribute,
+		"attributes":        spec.AccountSchema.Attributes,
+	}
+	return accountSchema
+}
+
+// Builds entitlement schema that is used as cmd input
+func (cc *ConnClient) BuildEntitlementSchema(spec *ConnSpec) map[string]interface{} {
+	if spec == nil {
+		return map[string]interface{}{}
+	}
+
+	entitlementSchema := map[string]interface{}{
+		"type":               spec.EntitlementSchemas[0].Type,
+		"displayAttribute":   spec.EntitlementSchemas[0].DisplayAttribute,
+		"identityAttribute":  spec.EntitlementSchemas[0].IdentityAttribute,
+		"hierarchyAttribute": spec.EntitlementSchemas[0].HierarchyAttribute,
+		"attributes":         spec.EntitlementSchemas[0].Attributes,
+	}
+	return entitlementSchema
+}
+
 // Invoke allows you to send an arbitrary json payload as a command
 func (cc *ConnClient) Invoke(ctx context.Context, cmdType string, input json.RawMessage) (rawResponse []byte, err error) {
 	cmdRaw, err := cc.rawInvoke(cmdType, input)

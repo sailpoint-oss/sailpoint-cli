@@ -18,12 +18,7 @@ var accountUpdateChecks = []Check{
 			"std:account:update",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
-			schema := map[string]interface{}{
-				"displayAttribute":  spec.AccountSchema.DisplayAttribute,
-				"groupAttribute":    spec.AccountSchema.GroupAttribute,
-				"identityAttribute": spec.AccountSchema.IdentityAttribute,
-				"attributes":        spec.AccountSchema.Attributes,
-			}
+			schema := cc.BuildAccountSchema(spec)
 
 			accounts, _, _, err := cc.AccountList(ctx, nil, nil, schema)
 			if err != nil {
@@ -80,19 +75,8 @@ var accountUpdateChecks = []Check{
 			"std:account:delete",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
-			as := map[string]interface{}{
-				"displayAttribute":  spec.AccountSchema.DisplayAttribute,
-				"groupAttribute":    spec.AccountSchema.GroupAttribute,
-				"identityAttribute": spec.AccountSchema.IdentityAttribute,
-				"attributes":        spec.AccountSchema.Attributes,
-			}
-			es := map[string]interface{}{
-				"type":               spec.EntitlementSchemas[0].Type,
-				"displayAttribute":   spec.EntitlementSchemas[0].DisplayAttribute,
-				"identityAttribute":  spec.EntitlementSchemas[0].IdentityAttribute,
-				"hierarchyAttribute": spec.EntitlementSchemas[0].HierarchyAttribute,
-				"attributes":         spec.EntitlementSchemas[0].Attributes,
-			}
+			accountSchema := cc.BuildAccountSchema(spec)
+			entitlementSchema := cc.BuildEntitlementSchema(spec)
 
 			entitlementAttr := entitlementAttr(spec)
 			if entitlementAttr == "" {
@@ -100,7 +84,7 @@ var accountUpdateChecks = []Check{
 				return
 			}
 
-			entitlements, _, _, err := cc.EntitlementList(ctx, "group", nil, nil, es)
+			entitlements, _, _, err := cc.EntitlementList(ctx, "group", nil, nil, entitlementSchema)
 			if err != nil {
 				res.err(err)
 				return
@@ -132,7 +116,7 @@ var accountUpdateChecks = []Check{
 
 			// Add entitlements
 			for _, e := range entitlements {
-				acct, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), as)
+				acct, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), accountSchema)
 				if err != nil {
 					res.errf("failed to read account %q", acct.Identity)
 				}
@@ -154,7 +138,7 @@ var accountUpdateChecks = []Check{
 						res.errf("failed to add entitlement %q", e.Identity)
 					}
 
-					acct, _, err = cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), as)
+					acct, _, err = cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), accountSchema)
 					if err != nil {
 						res.errf("failed to read account %q", acct.Identity)
 					}
@@ -183,7 +167,7 @@ var accountUpdateChecks = []Check{
 						res.errf("failed to remove entitlement %q", e.ID())
 					}
 
-					acct, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), as)
+					acct, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), accountSchema)
 					if err != nil {
 						res.errf("failed to read account %q", acct.ID())
 					}
