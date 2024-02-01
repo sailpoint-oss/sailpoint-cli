@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/fatih/color"
 	sailpoint "github.com/sailpoint-oss/golang-sdk/v2"
-	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/v2/beta"
+	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 )
 

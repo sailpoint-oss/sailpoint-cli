@@ -7,7 +7,7 @@ import (
 	"os"
 
 	sailpoint "github.com/sailpoint-oss/golang-sdk/v2"
-	v3 "github.com/sailpoint-oss/golang-sdk/v2/v3"
+	v3 "github.com/sailpoint-oss/golang-sdk/v2/api_v3"
 )
 
 func main() {
