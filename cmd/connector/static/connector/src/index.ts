@@ -8,7 +8,8 @@ import {
     StdAccountReadInput,
     StdAccountReadOutput,
     StdTestConnectionOutput,
-    StdAccountListInput
+    StdAccountListInput,
+    StdTestConnectionInput
 } from '@sailpoint/connector-sdk'
 import { MyClient } from './my-client'
 
@@ -22,7 +23,7 @@ export const connector = async () => {
     const myClient = new MyClient(config)
 
     return createConnector()
-        .stdTestConnection(async (context: Context, input: undefined, res: Response<StdTestConnectionOutput>) => {
+        .stdTestConnection(async (context: Context, input: StdTestConnectionInput, res: Response<StdTestConnectionOutput>) => {
             logger.info("Running test connection")
             res.send(await myClient.testConnection())
         })
