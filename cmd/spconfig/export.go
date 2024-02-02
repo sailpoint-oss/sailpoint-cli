@@ -7,8 +7,8 @@ import (
 	"encoding/json"
 
 	"github.com/charmbracelet/log"
-	"github.com/sailpoint-oss/golang-sdk/beta"
 
+	beta "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/spconfig"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
@@ -51,7 +51,7 @@ func newExportCommand() *cobra.Command {
 				}
 			}
 
-			job, _, err := apiClient.Beta.SPConfigApi.ExportSpConfig(context.TODO()).ExportPayload(beta.ExportPayload{Description: &description, IncludeTypes: includeTypes, ExcludeTypes: excludeTypes, ObjectOptions: options}).Execute()
+			job, _, err := apiClient.Beta.SPConfigAPI.ExportSpConfig(context.TODO()).ExportPayload(beta.ExportPayload{Description: &description, IncludeTypes: includeTypes, ExcludeTypes: excludeTypes, ObjectOptions: options}).Execute()
 			if err != nil {
 				return err
 			}

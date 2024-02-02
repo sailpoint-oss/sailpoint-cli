@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/sailpoint-oss/golang-sdk/beta"
+	beta "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
@@ -94,7 +94,7 @@ func newCreateCommand() *cobra.Command {
 					return err
 				}
 
-				workflowResp, resp, sdkErr := apiClient.Beta.WorkflowsApi.CreateWorkflow(context.TODO()).CreateWorkflowRequest(createReq).Execute()
+				workflowResp, resp, sdkErr := apiClient.Beta.WorkflowsAPI.CreateWorkflow(context.TODO()).CreateWorkflowRequest(createReq).Execute()
 				if sdkErr != nil {
 					err := sdk.HandleSDKError(resp, sdkErr)
 					if err != nil {

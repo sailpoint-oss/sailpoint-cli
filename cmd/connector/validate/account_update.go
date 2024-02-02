@@ -18,7 +18,9 @@ var accountUpdateChecks = []Check{
 			"std:account:update",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
-			accounts, _, _, err := cc.AccountList(ctx, nil, nil, nil)
+			schema := cc.BuildAccountSchema(spec)
+
+			accounts, _, _, err := cc.AccountList(ctx, nil, nil, schema)
 			if err != nil {
 				res.err(err)
 			}
@@ -47,7 +49,7 @@ var accountUpdateChecks = []Check{
 					// Give the update a chance to propagate
 					time.Sleep(time.Second)
 
-					acct, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), nil)
+					acct, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), schema)
 					if err != nil {
 						res.err(err)
 						continue
@@ -73,13 +75,16 @@ var accountUpdateChecks = []Check{
 			"std:account:delete",
 		},
 		Run: func(ctx context.Context, spec *connclient.ConnSpec, cc *connclient.ConnClient, res *CheckResult, readLimit int64) {
+			accountSchema := cc.BuildAccountSchema(spec)
+			entitlementSchema := cc.BuildEntitlementSchema(spec)
+
 			entitlementAttr := entitlementAttr(spec)
 			if entitlementAttr == "" {
 				res.warnf("no entitlement attribute")
 				return
 			}
 
-			entitlements, _, _, err := cc.EntitlementList(ctx, "group", nil, nil, nil)
+			entitlements, _, _, err := cc.EntitlementList(ctx, "group", nil, nil, entitlementSchema)
 			if err != nil {
 				res.err(err)
 				return
@@ -111,7 +116,7 @@ var accountUpdateChecks = []Check{
 
 			// Add entitlements
 			for _, e := range entitlements {
-				acct, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), nil)
+				acct, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), accountSchema)
 				if err != nil {
 					res.errf("failed to read account %q", acct.Identity)
 				}
@@ -133,7 +138,7 @@ var accountUpdateChecks = []Check{
 						res.errf("failed to add entitlement %q", e.Identity)
 					}
 
-					acct, _, err = cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), nil)
+					acct, _, err = cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), accountSchema)
 					if err != nil {
 						res.errf("failed to read account %q", acct.Identity)
 					}
@@ -162,7 +167,7 @@ var accountUpdateChecks = []Check{
 						res.errf("failed to remove entitlement %q", e.ID())
 					}
 
-					acct, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), nil)
+					acct, _, err := cc.AccountRead(ctx, acct.ID(), acct.UniqueID(), accountSchema)
 					if err != nil {
 						res.errf("failed to read account %q", acct.ID())
 					}

@@ -5,7 +5,7 @@ import (
 	"context"
 	_ "embed"
 
-	"github.com/sailpoint-oss/golang-sdk/beta"
+	beta "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
@@ -31,7 +31,7 @@ func newGetCommand() *cobra.Command {
 				return err
 			}
 
-			workflows, resp, sdkErr := apiClient.Beta.WorkflowsApi.ListWorkflows(context.TODO()).Execute()
+			workflows, resp, sdkErr := apiClient.Beta.WorkflowsAPI.ListWorkflows(context.TODO()).Execute()
 			if sdkErr != nil {
 				err := sdk.HandleSDKError(resp, sdkErr)
 				if err != nil {

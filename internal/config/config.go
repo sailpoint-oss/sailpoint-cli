@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
-	sailpoint "github.com/sailpoint-oss/golang-sdk"
+	sailpoint "github.com/sailpoint-oss/golang-sdk/v2"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/spf13/viper"
 	keyring "github.com/zalando/go-keyring"
