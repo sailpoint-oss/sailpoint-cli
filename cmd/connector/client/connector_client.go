@@ -723,6 +723,37 @@ func (cc *ConnClient) SpecRead(ctx context.Context) (connSpec *ConnSpec, err err
 	return cfg.Specification, nil
 }
 
+// Builds account schema that is used as cmd input
+func (cc *ConnClient) BuildAccountSchema(spec *ConnSpec) map[string]interface{} {
+	if spec == nil {
+		return map[string]interface{}{}
+	}
+
+	accountSchema := map[string]interface{}{
+		"displayAttribute":  spec.AccountSchema.DisplayAttribute,
+		"groupAttribute":    spec.AccountSchema.GroupAttribute,
+		"identityAttribute": spec.AccountSchema.IdentityAttribute,
+		"attributes":        spec.AccountSchema.Attributes,
+	}
+	return accountSchema
+}
+
+// Builds entitlement schema that is used as cmd input
+func (cc *ConnClient) BuildEntitlementSchema(spec *ConnSpec) map[string]interface{} {
+	if spec == nil {
+		return map[string]interface{}{}
+	}
+
+	entitlementSchema := map[string]interface{}{
+		"type":               spec.EntitlementSchemas[0].Type,
+		"displayAttribute":   spec.EntitlementSchemas[0].DisplayAttribute,
+		"identityAttribute":  spec.EntitlementSchemas[0].IdentityAttribute,
+		"hierarchyAttribute": spec.EntitlementSchemas[0].HierarchyAttribute,
+		"attributes":         spec.EntitlementSchemas[0].Attributes,
+	}
+	return entitlementSchema
+}
+
 // Invoke allows you to send an arbitrary json payload as a command
 func (cc *ConnClient) Invoke(ctx context.Context, cmdType string, input json.RawMessage) (rawResponse []byte, err error) {
 	cmdRaw, err := cc.rawInvoke(cmdType, input)
@@ -799,10 +830,11 @@ type AccountSchema struct {
 }
 
 type EntitlementSchema struct {
-	Type              string                       `json:"type"`
-	DisplayName       string                       `json:"displayName"`
-	IdentityAttribute string                       `json:"identityAttribute"`
-	Attributes        []EntitlementSchemaAttribute `json:"attributes"`
+	Type               string                       `json:"type"`
+	DisplayAttribute   string                       `json:"displayAttribute"`
+	IdentityAttribute  string                       `json:"identityAttribute"`
+	HierarchyAttribute string                       `json:"hierarchyAttribute"`
+	Attributes         []EntitlementSchemaAttribute `json:"attributes"`
 }
 
 type AccountSchemaAttribute struct {
@@ -823,7 +855,8 @@ type EntitlementSchemaAttribute struct {
 	Type        string `json:"type"`
 	Description string `json:"description"`
 
-	Multi bool `json:"multi"`
+	Multi    bool `json:"multi"`
+	Required bool `json:"required"`
 }
 
 // ConnSpec is a connector config. See ConnConfig method.
