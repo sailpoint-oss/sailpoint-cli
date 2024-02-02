@@ -80,7 +80,7 @@ func newTemplateCommand() *cobra.Command {
 				}
 			}
 
-			job, _, err := apiClient.Beta.SPConfigApi.ExportSpConfig(context.TODO()).ExportPayload(selectedTemplate.ExportBody).Execute()
+			job, _, err := apiClient.Beta.SPConfigAPI.ExportSpConfig(context.TODO()).ExportPayload(selectedTemplate.ExportBody).Execute()
 			if err != nil {
 				return err
 			}

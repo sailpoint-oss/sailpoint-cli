@@ -4,8 +4,8 @@ import (
 	"context"
 	_ "embed"
 
-	sailpoint "github.com/sailpoint-oss/golang-sdk"
-	"github.com/sailpoint-oss/golang-sdk/beta"
+	sailpoint "github.com/sailpoint-oss/golang-sdk/v2"
+	beta "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
@@ -33,7 +33,7 @@ func newGetCommand() *cobra.Command {
 			var ClientIDs []string
 			var VAs []beta.ManagedClientStatus
 
-			clusters, resp, clustersErr := sailpoint.PaginateWithDefaults[beta.ManagedCluster](apiClient.Beta.ManagedClustersApi.GetManagedClusters(context.TODO()))
+			clusters, resp, clustersErr := sailpoint.PaginateWithDefaults[beta.ManagedCluster](apiClient.Beta.ManagedClustersAPI.GetManagedClusters(context.TODO()))
 			if clustersErr != nil {
 				return sdk.HandleSDKError(resp, clustersErr)
 			}
@@ -52,7 +52,7 @@ func newGetCommand() *cobra.Command {
 			}
 
 			for _, id := range ClientIDs {
-				clientStatus, resp, clientErr := apiClient.Beta.ManagedClientsApi.GetManagedClientStatus(context.TODO(), id).Type_("VA").Execute()
+				clientStatus, resp, clientErr := apiClient.Beta.ManagedClientsAPI.GetManagedClientStatus(context.TODO(), id).Type_("VA").Execute()
 				if clientErr != nil {
 					return sdk.HandleSDKError(resp, clientErr)
 				}

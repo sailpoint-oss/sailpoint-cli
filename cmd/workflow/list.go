@@ -31,7 +31,7 @@ func newListCommand() *cobra.Command {
 				return err
 			}
 
-			workflows, resp, sdkErr := apiClient.Beta.WorkflowsApi.ListWorkflows(context.TODO()).Execute()
+			workflows, resp, sdkErr := apiClient.Beta.WorkflowsAPI.ListWorkflows(context.TODO()).Execute()
 			if sdkErr != nil {
 				err := sdk.HandleSDKError(resp, sdkErr)
 				if err != nil {
