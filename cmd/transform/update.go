@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/charmbracelet/log"
-	"github.com/sailpoint-oss/golang-sdk/beta"
+	beta "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/spf13/cobra"
@@ -60,7 +60,7 @@ func newUpdateCommand() *cobra.Command {
 				return err
 			}
 
-			_, resp, err := apiClient.Beta.TransformsApi.UpdateTransform(context.TODO(), id).Transform(updateTransform).Execute()
+			_, resp, err := apiClient.Beta.TransformsAPI.UpdateTransform(context.TODO(), id).Transform(updateTransform).Execute()
 			if err != nil {
 				return sdk.HandleSDKError(resp, err)
 			}

@@ -1,9 +1,9 @@
-import { AccountsApi, Configuration, axiosRetry, Paginator, SearchApi, TransformsApi, TransformsApiCreateTransformRequest, Search, IdentityDocument} from "sailpoint-api-client"
+import { AccountsAPI, Configuration, axiosRetry, Paginator, SearchAPI, TransformsAPI, TransformsApiCreateTransformRequest, Search, IdentityDocument} from "sailpoint-api-client"
 
 const createTransform = async () => {
 
     let apiConfig = new Configuration()
-    let api = new TransformsApi(apiConfig)
+    let api = new TransformsAPI(apiConfig)
     let transform: TransformsApiCreateTransformRequest = 
     {
         transform:
@@ -22,7 +22,7 @@ const createTransform = async () => {
 
 const search = async () => {
     let apiConfig = new Configuration()
-    let api = new SearchApi(apiConfig)
+    let api = new SearchAPI(apiConfig)
     let search: Search = {
         indices: [
             "identities"
@@ -32,7 +32,7 @@ const search = async () => {
         },
         sort: ["-name"]
 	}
-    const val = await Paginator.paginateSearchApi(api, search, 100, 1000)
+    const val = await Paginator.paginateSearchAPI(api, search, 100, 1000)
 
     for (const result of val.data) {
         const castedResult: IdentityDocument = result
@@ -52,7 +52,7 @@ const getPaginatedAccounts = async () => {
             console.log(`retrying due to request error, try number ${retryCount}`)
         },
     }
-    let api = new AccountsApi(apiConfig)
+    let api = new AccountsAPI(apiConfig)
     
     const val = await Paginator.paginate(api, api.listAccounts, {limit: 100}, 10)
 
@@ -72,7 +72,7 @@ const getPaginatedTransforms = async () => {
             console.log(`retrying due to request error, try number ${retryCount}`)
         },
     }
-    let api = new TransformsApi(apiConfig)
+    let api = new TransformsAPI(apiConfig)
     
     const val = await Paginator.paginate(api, api.listTransforms, {limit: 250}, 100)
 

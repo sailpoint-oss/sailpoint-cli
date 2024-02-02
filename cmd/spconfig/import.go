@@ -38,7 +38,7 @@ func newImportCommand() *cobra.Command {
 
 			ctx := context.TODO()
 
-			job, _, err := apiClient.Beta.SPConfigApi.ImportSpConfig(ctx).Data(file).Execute()
+			job, _, err := apiClient.Beta.SPConfigAPI.ImportSpConfig(ctx).Data(file).Execute()
 			if err != nil {
 				return err
 			}

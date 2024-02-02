@@ -34,7 +34,7 @@ func newDeleteCommand() *cobra.Command {
 
 				for _, id := range args {
 
-					resp, sdkErr := apiClient.Beta.WorkflowsApi.DeleteWorkflow(context.TODO(), id).Execute()
+					resp, sdkErr := apiClient.Beta.WorkflowsAPI.DeleteWorkflow(context.TODO(), id).Execute()
 					if sdkErr != nil {
 						err := sdk.HandleSDKError(resp, sdkErr)
 						if err != nil {

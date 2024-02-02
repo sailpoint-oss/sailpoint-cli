@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
-	v3 "github.com/sailpoint-oss/golang-sdk/v3"
+	v3 "github.com/sailpoint-oss/golang-sdk/v2/api_v3"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 )
@@ -126,6 +126,7 @@ func TestNewCRUDCmd(t *testing.T) {
 	updateTransform["name"] = transformName
 	updateTransform["type"] = transform.Type
 	updateTransform["id"] = transformID
+	updateTransform["internal"] = false
 
 	t.Log(util.PrettyPrint(updateTransform))
 
