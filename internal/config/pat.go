@@ -32,6 +32,28 @@ type PATSet struct {
 	AccessExpiry time.Time
 }
 
+func ResetCachePAT() error {
+
+	token, err := GetPatToken()
+	if token != "" && err == nil {
+
+		err = DeletePatToken()
+		if err != nil {
+			return err
+		}
+	}
+
+	expiry, err := GetPatTokenExpiry()
+	if !expiry.IsZero() && err == nil {
+		err = DeletePatTokenExpiry()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func CachePAT(set PATSet) error {
 	var err error
 
@@ -48,6 +70,14 @@ func CachePAT(set PATSet) error {
 	return nil
 }
 
+func DeletePatToken() error {
+	err := keyring.Delete("environments.pat.accesstoken", GetActiveEnvironment())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetPatToken() (string, error) {
 	value, err := keyring.Get("environments.pat.accesstoken", GetActiveEnvironment())
 	if err != nil {
@@ -58,6 +88,14 @@ func GetPatToken() (string, error) {
 
 func SetPatToken(token string) error {
 	err := keyring.Set("environments.pat.accesstoken", GetActiveEnvironment(), token)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeletePatTokenExpiry() error {
+	err := keyring.Delete("environments.pat.expiry", GetActiveEnvironment())
 	if err != nil {
 		return err
 	}

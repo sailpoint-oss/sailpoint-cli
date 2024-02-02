@@ -43,6 +43,14 @@ type TokenSet struct {
 	RefreshExpiry time.Time
 }
 
+func DeleteOAuthToken() error {
+	err := keyring.Delete("environments.auth.accesstoken", GetActiveEnvironment())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetOAuthToken() (string, error) {
 	value, err := keyring.Get("environments.oauth.accesstoken", GetActiveEnvironment())
 	if err != nil {
@@ -53,6 +61,14 @@ func GetOAuthToken() (string, error) {
 
 func SetOAuthToken(token string) error {
 	err := keyring.Set("environments.oauth.accesstoken", GetActiveEnvironment(), token)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteOAuthTokenExpiry() error {
+	err := keyring.Delete("environments.oauth.expiry", GetActiveEnvironment())
 	if err != nil {
 		return err
 	}
@@ -82,6 +98,14 @@ func SetOAuthTokenExpiry(expiry time.Time) error {
 	return nil
 }
 
+func DeleteRefreshToken() error {
+	err := keyring.Delete("environments.oauth.refreshtoken", GetActiveEnvironment())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetRefreshToken() (string, error) {
 	value, err := keyring.Get("environments.oauth.refreshtoken", GetActiveEnvironment())
 
@@ -95,6 +119,17 @@ func GetRefreshToken() (string, error) {
 func SetRefreshToken(token string) error {
 
 	err := keyring.Set("environments.oauth.refreshtoken", GetActiveEnvironment(), token)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func DeleteRefreshTokenExpiry() error {
+
+	err := keyring.Delete("environments.oauth.refreshexpiry", GetActiveEnvironment())
 	if err != nil {
 		return err
 	}
@@ -145,6 +180,30 @@ const (
 	RedirectPath = "/callback"
 	RedirectURL  = "http://localhost:" + RedirectPort + RedirectPath
 )
+
+func ResetCacheOAuth() error {
+	err := DeleteOAuthToken()
+	if err != nil {
+		return err
+	}
+
+	err = DeleteOAuthTokenExpiry()
+	if err != nil {
+		return err
+	}
+
+	err = DeleteRefreshToken()
+	if err != nil {
+		return err
+	}
+
+	err = DeleteRefreshTokenExpiry()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func CacheOAuth(set TokenSet) error {
 	var err error
