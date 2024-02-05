@@ -22,7 +22,6 @@ func NewEnvironmentCommand() *cobra.Command {
 	var erase bool
 	var show bool
 	var list bool
-	var domain bool
 	var clear bool
 	cmd := &cobra.Command{
 		Use:     "environment",
@@ -107,13 +106,19 @@ func NewEnvironmentCommand() *cobra.Command {
 					tenantUrl := "https://" + tenant + ".identitynow.com"
 					baseUrl := "https://" + tenant + ".api.identitynow.com"
 
-					if domain {
-						domainName := terminal.InputPrompt("Domain Name: (identitynow.com)")
-						tenantUrl = "https://" + tenant + "." + domainName
-						baseUrl = "https://" + tenant + ".api." + domainName
-					}
+					fmt.Print("The following two prompts will allow you to set a custom base and tenant url if the generated URL does not apply. If the generated URL is correct simply press enter to proceed\n\n")
+					confirmTenantUrl := terminal.InputPrompt("Tenant URL (ie: https://{tenant}.identitynow.com): (" + tenantUrl + ")")
+					confirmBaseURL := terminal.InputPrompt("Base URL (ie: https://{tenant}.api.identitynow.com): (" + baseUrl + ")")
 
 					authType := terminal.InputPrompt("Authentication Type (oauth, pat):")
+
+					if confirmTenantUrl != "" {
+						tenantUrl = confirmTenantUrl
+					}
+
+					if confirmBaseURL != "" {
+						baseUrl = confirmBaseURL
+					}
 
 					if authType == "pat" {
 
@@ -170,7 +175,6 @@ func NewEnvironmentCommand() *cobra.Command {
 	cmd.Flags().BoolVarP(&show, "show", "s", false, "use to show an existing environments configuration")
 	cmd.Flags().BoolVarP(&list, "list", "l", false, "use to show a list of envionments")
 	cmd.Flags().BoolVarP(&clear, "clear", "c", false, "use to clear an existing environments configuration")
-	cmd.Flags().BoolVarP(&domain, "with-domain", "d", false, "use to add a custom domain to the tenant url when configuring an environment, this is typically used for demo hub environments.")
 	cmd.MarkFlagsMutuallyExclusive("overwrite", "erase", "show", "list")
 
 	return cmd
