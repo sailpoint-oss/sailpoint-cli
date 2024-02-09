@@ -8,7 +8,6 @@ import (
 const (
 	transformsEndpoint      = "/v3/transforms"
 	identityProfileEndpoint = "/v3/identity-profiles"
-	userEndpoint            = "/cc/api/identity/list"
 )
 
 func NewTransformCommand() *cobra.Command {
