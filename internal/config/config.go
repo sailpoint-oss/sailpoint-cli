@@ -162,7 +162,7 @@ func InitAPIClient() (*sailpoint.APIClient, error) {
 		log.Debug("unable to retrieve accesstoken", "error", err)
 	}
 
-	configuration := sailpoint.NewConfiguration(sailpoint.ClientConfiguration{Token: token, BaseURL: GetBaseUrl()})
+	configuration := sailpoint.CLINewConfiguration(sailpoint.ClientConfiguration{Token: token, BaseURL: GetBaseUrl()})
 	apiClient = sailpoint.NewAPIClient(configuration)
 	if GetDebug() {
 		logger := log.NewWithOptions(os.Stdout, log.Options{
