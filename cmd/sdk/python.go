@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//go:embed typescript/*
+//go:embed python/*
 var pyTemplateContents embed.FS
 
 const pyTemplateDirName = "python"
