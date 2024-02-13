@@ -23,6 +23,7 @@ func newInitCommand() *cobra.Command {
 		newTypescriptCommand(),
 		newGolangCommand(),
 		newPowerShellCommand(),
+		newPythonCommand(),
 		newConfigCommand(),
 	)
 
