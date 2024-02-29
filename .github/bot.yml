@@ -1,3 +1,92 @@
+##### Labeler ##########################################################################################################
+# Enable "labeler" for your PR that would add labels to PRs based on the paths that are modified in the PR.
+labelPRBasedOnFilePath:
+  Docs:
+    - products/**/*.md*
+  IdentityNow:
+    - products/idn/**/*
+  IdentityIQ:
+    - products/iiq/**/*
+  Event Trigger Docs:
+    - products/idn/docs/identity-now/event-triggers/**/*.md*
+  SaaS Connectivity Docs:
+    - products/idn/docs/identity-now/saas-connectivity/**/*.md*
+  Transform Docs:
+    - products/idn/docs/identity-now/transforms/**/*.md*
+  Rules Docs:
+    - products/idn/docs/identity-now/rules/**/*.md*
+  SaaS Configuration Docs:
+    - products/idn/docs/identity-now/saas-configuration.md*
+  Introduction Doc:
+    - products/idn/docs/identity-now/index.md*
+  Pages:
+    - src/pages/**/*
+  Components:
+    - src/components/**/*
+  CSS:
+    - src/**/*.css
+  Swizzled Components:
+    - src/theme/**/*
+  Sidebar:
+    - sidebars.js
+    - products/**/sidebar.js
+  Docusaurus Config:
+    - docusaurus.config.js
+  Footer:
+    - footer.js
+  Navbar:
+    - navbar.js
+  Plugins:
+    - plugins.js
+##### Reviewer #########################################################################################################
+addReviewerBasedOnLabel:
+  labels:
+    Docs:
+      - james-haytko-sp
+    IdentityNow:
+      - colin-mckibben-sp
+    IdentityIQ:
+      - colin-mckibben-sp
+    Event Trigger Docs:
+      - colin-mckibben-sp
+    SaaS Connectivity Docs:
+      - philip-ellis-sp
+    Transform Docs:
+      - tyler-mairose-sp
+    Rules Docs:
+      - tyler-mairose-sp
+    SaaS Configuration Docs:
+      - colin-mckibben-sp
+    Introduction Doc:
+      - jordan-violet-sp
+      - colin-mckibben-sp
+      - tyler-mairose-sp
+      - james-haytko-sp
+      - philip-ellis-sp
+    Pages:
+      - philip-ellis-sp
+    Components:
+      - philip-ellis-sp
+    CSS:
+      - philip-ellis-sp
+    Swizzled Components:
+      - philip-ellis-sp
+      - jordan-violet-sp
+    Sidebar:
+      - philip-ellis-sp
+    Docusaurus Config:
+      - philip-ellis-sp
+    Footer:
+      - jordan-violet-sp
+      - philip-ellis-sp
+    Navbar:
+      - jordan-violet-sp
+      - colin-mckibben-sp
+      - tyler-mairose-sp
+      - james-haytko-sp
+      - philip-ellis-sp
+    Plugins:
+      - philip-ellis-sp
 ##### Greetings ########################################################################################################
 # Comment to be posted to welcome users when they open their first PR
 firstPRWelcomeComment: >
