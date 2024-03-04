@@ -3,31 +3,36 @@ package rule
 
 import (
 	"context"
-	"time"
 	"encoding/json"
 	"fmt"
+	"slices"
+	"time"
 
+	"github.com/charmbracelet/log"
+	"github.com/fatih/color"
 	beta "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
-	"github.com/charmbracelet/log"
-	"github.com/fatih/color"
 )
 
 // var includeTypes = [...]string {"RULE"}
 
 func newListCommand() *cobra.Command {
 
-	var description = string ("Export of all rules")
+	var description = string("Export of all rules")
 	var objectOptions string
-	var includeTypes = []string {"RULE"}
+	var includeTypes = []string{"RULE"}
 	var excludeTypes []string
 
-	return &cobra.Command{
+	var cloud bool
+	var connector bool
+	var cloudRuleTypes = []string{"AttributeGenerator", "AttributeGeneratorFromTemplate", "BeforeProvisioning", "BuildMap", "Correlation", "IdentityAttribute", "ManagerCorrelation"}
+
+	cmd := &cobra.Command{
 		Use:     "list",
-		Short:   "List all cloud rules in IdentityNow",
+		Short:   "List all rules in IdentityNow",
 		Long:    "\nList all rules in IdentityNow\n\n",
 		Example: "sail rule list | sail rule ls",
 		Aliases: []string{"ls"},
@@ -60,7 +65,6 @@ func newListCommand() *cobra.Command {
 			for {
 				response, _, err := apiClient.Beta.SPConfigAPI.GetSpConfigExportStatus(context.TODO(), job.JobId).Execute()
 				if err != nil {
-					fmt.Println("Error YO")
 					return err
 				}
 				if response.Status == "NOT_STARTED" || response.Status == "IN_PROGRESS" {
@@ -78,12 +82,23 @@ func newListCommand() *cobra.Command {
 						// Save name and id to entries
 
 						util.PrettyPrint(exportData)
-						
+
 						for _, v := range exportData.Objects {
-							entries = append(entries, []string{v.Object["id"].(string), v.Object["name"].(string)})
+							if cloud {
+								if v.Object["type"] == nil || slices.Contains(cloudRuleTypes, v.Object["type"].(string)) {
+									entries = append(entries, []string{v.Object["id"].(string), v.Object["name"].(string)})
+								}
+							} else if connector {
+								if (v.Object["type"]) != nil {
+									if !slices.Contains(cloudRuleTypes, v.Object["type"].(string)) {
+										entries = append(entries, []string{v.Object["id"].(string), v.Object["name"].(string)})
+									}
+								}
+							} else {
+								entries = append(entries, []string{v.Object["id"].(string), v.Object["name"].(string)})
+							}
 						}
 
-						
 						output.WriteTable(cmd.OutOrStdout(), []string{"Id", "Name"}, entries)
 
 						return nil
@@ -99,4 +114,9 @@ func newListCommand() *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.Flags().BoolVarP(&cloud, "cloud", "c", false, "Only return cloud rules")
+	cmd.Flags().BoolVarP(&connector, "connector", "n", false, "Only return connector rules")
+
+	return cmd
 }
