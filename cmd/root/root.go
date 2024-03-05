@@ -7,13 +7,13 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/connector"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/environment"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/report"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/rule"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/sanitize"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/search"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/set"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/spconfig"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/transform"
-	"github.com/sailpoint-oss/sailpoint-cli/cmd/rule"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/va"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/workflow"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var version = "2.0.5"
+var version = "2.0.4"
 
 //go:embed root.md
 var rootHelp string
