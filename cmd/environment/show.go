@@ -18,21 +18,36 @@ func newShowCommand() *cobra.Command {
 		Long:    "\nShow the current active environment in the CLI\n\n",
 		Example: "sail env show | sail env s",
 		Aliases: []string{"s"},
-		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			environments := config.GetEnvironments()
 
-			env := config.GetActiveEnvironment()
-
-			if env != "" && env != " " {
-				log.Warn("You are about to Print out the Environment", "env", env)
-				res := terminal.InputPrompt("Press Enter to continue")
-				if res == "" {
-					fmt.Println(util.PrettyPrint(environments[env]))
+			for _, environmentName := range args {
+				if environments[environmentName] != nil {
+					log.Warn("You are about to Print out the Environment", "env", environmentName)
+					res := terminal.InputPrompt("Press Enter to continue")
+					if res == "" {
+						fmt.Println(util.PrettyPrint(environments[environmentName]))
+					}
+				} else {
+					log.Warn("Environment does not exist", "env", environmentName)
+					return nil
 				}
-			} else {
-				log.Warn("No environments configured")
-				return nil
+
+			}
+
+			if len(args) == 0 {
+				env := config.GetActiveEnvironment()
+
+				if env != "" && env != " " {
+					log.Warn("You are about to Print out the Environment", "env", env)
+					res := terminal.InputPrompt("Press Enter to continue")
+					if res == "" {
+						fmt.Println(util.PrettyPrint(environments[env]))
+					}
+				} else {
+					log.Warn("No environments configured")
+					return nil
+				}
 			}
 
 			return nil
