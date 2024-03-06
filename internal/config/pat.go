@@ -263,12 +263,13 @@ func PromptForClientID() (string, error) {
 			return "", err
 		}
 
-		log.Warn("ClientID", "length", len(ClientID))
 		// Check length
 		if len(ClientID) == 36 || len(ClientID) == 32 {
+			log.Info("ClientID", "length", len(ClientID))
 			fmt.Println("Valid Client ID provided.")
 			return ClientID, nil
 		} else {
+			log.Warn("ClientID", "length", len(ClientID))
 			fmt.Printf("Invalid Client ID. Please ensure it is either 32 or 36 characters long. Attempt %d/%d.\n", attempt, maxAttempts)
 		}
 	}
