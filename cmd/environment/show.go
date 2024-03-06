@@ -14,8 +14,8 @@ import (
 func newShowCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:     "show",
-		Short:   "Show the current active environment in the CLI",
-		Long:    "\nShow the current active environment in the CLI\n\n",
+		Short:   "View an environment in the CLI",
+		Long:    "\nView an environment in the CLI\n\n",
 		Example: "sail env show | sail env s",
 		Aliases: []string{"s"},
 		RunE: func(cmd *cobra.Command, args []string) error {

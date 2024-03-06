@@ -115,7 +115,7 @@ func CreateOrUpdateEnvironment(environmentName string, update bool) error {
 		tenantUrl := "https://" + tenant + ".identitynow.com"
 		baseUrl := "https://" + tenant + ".api.identitynow.com"
 
-		fmt.Print("\nThe following two prompts will allow you to set a custom base and tenant url if the generated URL does not apply.\nIf the generated URL is correct simply press enter to proceed\n\n")
+		fmt.Print("\nThe following two prompts will allow you to set a custom base and tenant url if the generated URL\ndoes not apply. If the generated URL is correct simply press enter to proceed\n\n")
 		confirmTenantUrl := terminal.InputPrompt("Tenant URL (ie: https://{tenant}.identitynow.com): (" + tenantUrl + ")")
 		confirmBaseURL := terminal.InputPrompt("Base URL (ie: https://{tenant}.api.identitynow.com): (" + baseUrl + ")")
 

@@ -1,5 +1,5 @@
 # Where should we write the GIF?
-Output assets/img/vhs/configure/configure-pat.gif
+Output assets/img/vhs/configure/configure-environment.gif
 
 # Set up a 1200x600 terminal with 46px font.
 Set FontSize 16
@@ -10,88 +10,44 @@ Hide
 
 Sleep 2s
 
-Type "sail env example --erase"
-
-Enter
-
-Sleep 2s 
-
-Enter
-
-Sleep 2s 
-
-Type "clear"
-
-Enter
-
-Sleep 1s
-
 Show
 
-# Start ...
+Type "sail env create devrel"
 
-# Pause for dramatic effect...
-Sleep 300ms
-
-# Type a command in the terminal.
-Type "sail environment example"
-
-Enter 
-
-Sleep 1500ms
-
-Type "https://example.identitynow.com"
-
-Enter 
-
-Sleep 1s
-
-Type "https://example.api.identitynow.com"
-
-Enter 
-
-# Pause for dramatic effect...
-Sleep 1s
-
-# Type a command in the terminal.
-Type "sail set pat"
-
-Enter 
-
-# Pause for dramatic effect...
-Sleep 1s
-
-# Type a command in the terminal.
-Type "example-client-id"
-
-# Pause for dramatic effect...
-Sleep 1s
-
-# Run the command by pressing enter.
-Enter 
-
-# Pause for dramatic effect...
-Sleep 1s
-
-# Type a command in the terminal.
-Type "example-client-secret"
-
-# Run the command by pressing enter.
-Enter 
-
-# Admire the output for a bit.
-Sleep 4s
-
-Hide
-
-Type "sail env css-255"
-
-Sleep 1s
+Sleep 2s
 
 Enter
 
-Type "sail set auth oauth"
-
-Sleep 1s
+Sleep 2s 
 
 Enter
+
+Sleep 10s 
+
+Enter
+
+Sleep 2s
+
+Enter
+
+Sleep 2s
+
+Type "pat"
+
+Sleep 2s
+
+Enter 
+
+Sleep 2s
+
+Type "67b3e25c-979a-4d92-b28c-a8f72fff2afd"
+
+Enter
+
+Sleep 2s
+
+Type "k2vqptxvum56gw80vueezn5hvvu01yqnhm3pdih8upfa2upa4t5itpju5qahcgdk"
+
+Enter
+
+Sleep 10s
