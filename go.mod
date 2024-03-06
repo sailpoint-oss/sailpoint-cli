@@ -37,7 +37,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.5 // indirect
 )
 
-require github.com/sailpoint-oss/golang-sdk/v2 v2.0.2-0.20240207170818-2c9f6306579a
+require github.com/sailpoint-oss/golang-sdk/v2 v2.0.3
 
 require (
 	github.com/VividCortex/ewma v1.2.0 // indirect
