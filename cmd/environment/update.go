@@ -26,7 +26,7 @@ func newUpdateCommand() *cobra.Command {
 						return err
 					}
 				} else {
-					log.Warn("Environment does not exist to update", "env", environmentName)
+					log.Warn("Environment does not exist to update\nUse `sail env create " + environmentName + "` to create it.")
 					return nil
 				}
 

@@ -21,10 +21,10 @@ sail environment create
 
 ## Switching environments
 
-You can switch between environments by supplying the name of an existing environment you want to switch to.
+You can switch between environments by calling `use` and supplying the name of an existing environment you want to switch to.
 
 ```bash
-sail environment {environment-name}
+sail environment use {environment-name}
 ```  
 
 ## Delete an environment

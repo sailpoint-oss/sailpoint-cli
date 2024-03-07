@@ -29,7 +29,7 @@ func newShowCommand() *cobra.Command {
 						fmt.Println(util.PrettyPrint(environments[environmentName]))
 					}
 				} else {
-					log.Warn("Environment does not exist", "env", environmentName)
+					log.Warn("Environment does not exist\nUse `sail env create " + environmentName + "` to create it.")
 					return nil
 				}
 
