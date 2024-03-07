@@ -151,6 +151,7 @@ func GetExportTemplates() ([]ExportTemplate, error) {
 func GetReportTemplates() ([]ReportTemplate, error) {
 	var reportTemplates []ReportTemplate
 	var templates []ReportTemplate
+	var buildInTemplates []ReportTemplate
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -193,13 +194,13 @@ func GetReportTemplates() ([]ReportTemplate, error) {
 		}
 	}
 
-	err = json.Unmarshal([]byte(builtInReportTemplates), &templates)
+	err = json.Unmarshal([]byte(builtInReportTemplates), &buildInTemplates)
 	if err != nil {
 		color.Red("an error occured while parsing the built in templates")
 		return nil, err
 	}
 
-	reportTemplates = append(reportTemplates, templates...)
+	reportTemplates = append(reportTemplates, buildInTemplates...)
 
 	for i := 0; i < len(reportTemplates); i++ {
 		entry := &reportTemplates[i]
