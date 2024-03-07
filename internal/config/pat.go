@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	keyring "github.com/zalando/go-keyring"
 )
 
@@ -248,4 +249,54 @@ func PATLogin() (PATSet, error) {
 	set = PATSet{AccessToken: tResponse.AccessToken, AccessExpiry: now.Add(time.Second * time.Duration(tResponse.ExpiresIn))}
 
 	return set, nil
+}
+
+func PromptForClientID() (string, error) {
+	const maxAttempts = 3
+	var ClientID string
+	var err error
+
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		// Prompt for the Client ID
+		ClientID, err = terminal.PromptPassword("Personal Access Token Client ID:")
+		if err != nil {
+			return "", err
+		}
+
+		// Check length
+		if len(ClientID) == 36 || len(ClientID) == 32 {
+			log.Info("ClientID", "length", len(ClientID))
+			fmt.Println("Valid Client ID provided.")
+			return ClientID, nil
+		} else {
+			log.Warn("ClientID", "length", len(ClientID))
+			fmt.Printf("Invalid Client ID. Please ensure it is either 32 or 36 characters long. Attempt %d/%d.\n", attempt, maxAttempts)
+		}
+	}
+
+	return "", fmt.Errorf("maximum attempts reached for entering Client ID")
+}
+
+func PromptForClientSecret() (string, error) {
+	const maxAttempts = 3
+	var ClientSecret string
+	var err error
+
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		// Prompt for the Client Secret
+		ClientSecret, err = terminal.PromptPassword("Personal Access Token Client Secret:")
+		if err != nil {
+			return "", err
+		}
+
+		// Check length
+		if len(ClientSecret) == 64 {
+			fmt.Println("Valid Client Secret provided.")
+			return ClientSecret, nil
+		} else {
+			fmt.Printf("Invalid Client Secret. Please ensure it is 64 characters long. Attempt %d/%d.\n", attempt, maxAttempts)
+		}
+	}
+
+	return "", fmt.Errorf("maximum attempts reached for entering Client Secret")
 }
