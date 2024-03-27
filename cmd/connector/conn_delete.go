@@ -6,9 +6,10 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/spf13/cobra"
+
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
-	"github.com/spf13/cobra"
 )
 
 func newConnDeleteCmd(client client.Client) *cobra.Command {
@@ -21,7 +22,7 @@ func newConnDeleteCmd(client client.Client) *cobra.Command {
 			connectorRef := cmd.Flags().Lookup("id").Value.String()
 			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
 
-			q := map[string]string{"type": "hard-delete"}
+			q := map[string]string{}
 			resp, err := client.Delete(cmd.Context(), util.ResourceUrl(endpoint, connectorRef), q)
 			if err != nil {
 				return err
