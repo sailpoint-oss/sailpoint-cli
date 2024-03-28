@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+
 	"github.com/sailpoint-oss/sailpoint-cli/internal/mocks"
 )
 
@@ -15,7 +16,7 @@ func TestDeleteConnCmd(t *testing.T) {
 	defer ctrl.Finish()
 
 	client := mocks.NewMockClient(ctrl)
-	client.EXPECT().Delete(gomock.Any(), "/beta/platform-connectors/test-connector", gomock.Any()).
+	client.EXPECT().Delete(gomock.Any(), "/beta/platform-connectors/test-connector").
 		Return(&http.Response{StatusCode: http.StatusNoContent, Body: io.NopCloser(bytes.NewReader([]byte("{}")))}, nil).
 		Times(1)
 
