@@ -14,7 +14,7 @@ import (
 
 type Client interface {
 	Get(ctx context.Context, url string) (*http.Response, error)
-	Delete(ctx context.Context, url string) (*http.Response, error)
+	Delete(ctx context.Context, url string, params map[string]string) (*http.Response, error)
 	Post(ctx context.Context, url string, contentType string, body io.Reader) (*http.Response, error)
 	Put(ctx context.Context, url string, contentType string, body io.Reader) (*http.Response, error)
 	Patch(ctx context.Context, url string, body io.Reader) (*http.Response, error)
@@ -62,7 +62,7 @@ func (c *SpClient) Get(ctx context.Context, url string) (*http.Response, error) 
 	return resp, nil
 }
 
-func (c *SpClient) Delete(ctx context.Context, url string) (*http.Response, error) {
+func (c *SpClient) Delete(ctx context.Context, url string, params map[string]string) (*http.Response, error) {
 	if err := c.ensureAccessToken(ctx); err != nil {
 		return nil, err
 	}
@@ -76,6 +76,14 @@ func (c *SpClient) Delete(ctx context.Context, url string) (*http.Response, erro
 	if c.cfg.Debug {
 		dbg, _ := httputil.DumpRequest(req, true)
 		fmt.Println(string(dbg))
+	}
+
+	if params != nil {
+		q := req.URL.Query()
+		for k, v := range params {
+			q.Add(k, v)
+		}
+		req.URL.RawQuery = q.Encode()
 	}
 
 	resp, err := c.client.Do(req)

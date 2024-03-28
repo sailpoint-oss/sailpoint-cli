@@ -22,7 +22,8 @@ func newConnDeleteCmd(client client.Client) *cobra.Command {
 			connectorRef := cmd.Flags().Lookup("id").Value.String()
 			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
 
-			resp, err := client.Delete(cmd.Context(), util.ResourceUrl(endpoint, connectorRef))
+			q := map[string]string{}
+			resp, err := client.Delete(cmd.Context(), util.ResourceUrl(endpoint, connectorRef), q)
 			if err != nil {
 				return err
 			}
