@@ -75,6 +75,19 @@ func ParseHelp(help string) Help {
 	return helpObj
 }
 
+
+func getTextBetween(url, start, end string) string {
+    startIndex := strings.Index(url, start)
+    if startIndex == -1 {
+        return ""
+    }
+    endIndex := strings.Index(url[startIndex+len(start):], end)
+    if endIndex == -1 {
+        return ""
+    }
+    return url[startIndex+len(start) : startIndex+len(start)+endIndex]
+}
+
 func CreateOrUpdateEnvironment(environmentName string, update bool) error {
 	environments := config.GetEnvironments()
 
@@ -93,10 +106,10 @@ func CreateOrUpdateEnvironment(environmentName string, update bool) error {
 
 		tenant := ""
 
-		if update && environmentName != "" {
+		if update && environmentName == "" {
 			tenant = terminal.InputPrompt("Tenant Name (ie: https://{tenant}.identitynow.com): (" + config.GetActiveEnvironment() + ")")
 		} else if update {
-			tenant = terminal.InputPrompt("Tenant Name (ie: https://{tenant}.identitynow.com): (" + viper.GetString("environments."+environmentName+".tenanturl") + ")")
+			tenant = terminal.InputPrompt("Tenant Name (ie: https://{tenant}.identitynow.com): (" + getTextBetween(viper.GetString("environments."+environmentName+".tenanturl"), "//", ".") + ")")
 		} else {
 			tenant = terminal.InputPrompt("Tenant Name (ie: https://{tenant}.identitynow.com): (" + environmentName + ")")
 		}
@@ -141,6 +154,13 @@ func CreateOrUpdateEnvironment(environmentName string, update bool) error {
 				return err
 			}
 
+			fmt.Print("\n\nEnvironment Name:" + environmentName + "\n\n")
+			if environmentName != "" {
+				config.SetActiveEnvironment(environmentName)
+			} else {
+				config.SetActiveEnvironment(tenant)
+			}
+
 			err = config.SetPatClientSecret(ClientSecret)
 			if err != nil {
 				return err
@@ -149,12 +169,6 @@ func CreateOrUpdateEnvironment(environmentName string, update bool) error {
 			err = config.ResetCachePAT()
 			if err != nil {
 				return err
-			}
-
-			if environmentName != "" {
-				config.SetActiveEnvironment(environmentName)
-			} else {
-				config.SetActiveEnvironment(tenant)
 			}
 
 			config.SetTenantUrl(tenantUrl)

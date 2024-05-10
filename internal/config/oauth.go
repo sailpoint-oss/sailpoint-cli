@@ -43,12 +43,20 @@ type TokenSet struct {
 	RefreshExpiry time.Time
 }
 
-func DeleteOAuthToken() error {
-	err := keyring.Delete("environments.auth.accesstoken", GetActiveEnvironment())
-	if err != nil {
-		return err
+func DeleteOAuthToken(env string) error {
+	if env != "" {
+		err := keyring.Delete("environments.oauth.accesstoken", env)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else {
+		err := keyring.Delete("environments.oauth.accesstoken", GetActiveEnvironment())
+		if err != nil {
+			return err
+		}
+		return nil
 	}
-	return nil
 }
 
 func GetOAuthToken() (string, error) {
@@ -67,12 +75,20 @@ func SetOAuthToken(token string) error {
 	return nil
 }
 
-func DeleteOAuthTokenExpiry() error {
-	err := keyring.Delete("environments.oauth.expiry", GetActiveEnvironment())
-	if err != nil {
-		return err
+func DeleteOAuthTokenExpiry(env string) error {
+	if env != "" {
+		err := keyring.Delete("environments.oauth.expiry", env)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else {
+		err := keyring.Delete("environments.oauth.expiry", GetActiveEnvironment())
+		if err != nil {
+			return err
+		}
+		return nil
 	}
-	return nil
 }
 
 func GetOAuthTokenExpiry() (time.Time, error) {
@@ -98,12 +114,20 @@ func SetOAuthTokenExpiry(expiry time.Time) error {
 	return nil
 }
 
-func DeleteRefreshToken() error {
-	err := keyring.Delete("environments.oauth.refreshtoken", GetActiveEnvironment())
-	if err != nil {
-		return err
+func DeleteRefreshToken(env string) error {
+	if env != "" {
+		err := keyring.Delete("environments.oauth.refreshtoken", env)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else {
+		err := keyring.Delete("environments.oauth.refreshtoken", GetActiveEnvironment())
+		if err != nil {
+			return err
+		}
+		return nil
 	}
-	return nil
 }
 
 func GetRefreshToken() (string, error) {
@@ -127,15 +151,20 @@ func SetRefreshToken(token string) error {
 
 }
 
-func DeleteRefreshTokenExpiry() error {
-
-	err := keyring.Delete("environments.oauth.refreshexpiry", GetActiveEnvironment())
-	if err != nil {
-		return err
+func DeleteRefreshTokenExpiry(env string) error {
+	if env != "" {
+		err := keyring.Delete("environments.oauth.refreshexpiry", env)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else {
+		err := keyring.Delete("environments.oauth.refreshexpiry", GetActiveEnvironment())
+		if err != nil {
+			return err
+		}
+		return nil
 	}
-
-	return nil
-
 }
 
 func GetOAuthRefreshExpiry() (time.Time, error) {
@@ -182,22 +211,22 @@ const (
 )
 
 func ResetCacheOAuth() error {
-	err := DeleteOAuthToken()
+	err := DeleteOAuthToken("")
 	if err != nil {
 		return err
 	}
 
-	err = DeleteOAuthTokenExpiry()
+	err = DeleteOAuthTokenExpiry("")
 	if err != nil {
 		return err
 	}
 
-	err = DeleteRefreshToken()
+	err = DeleteRefreshToken("")
 	if err != nil {
 		return err
 	}
 
-	err = DeleteRefreshTokenExpiry()
+	err = DeleteRefreshTokenExpiry("")
 	if err != nil {
 		return err
 	}
