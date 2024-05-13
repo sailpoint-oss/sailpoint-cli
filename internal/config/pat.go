@@ -38,7 +38,7 @@ func ResetCachePAT() error {
 	token, err := GetPatToken()
 	if token != "" && err == nil {
 
-		err = DeletePatToken()
+		err = DeletePatToken("")
 		if err != nil {
 			return err
 		}
@@ -46,7 +46,7 @@ func ResetCachePAT() error {
 
 	expiry, err := GetPatTokenExpiry()
 	if !expiry.IsZero() && err == nil {
-		err = DeletePatTokenExpiry()
+		err = DeletePatTokenExpiry("")
 		if err != nil {
 			return err
 		}
@@ -71,12 +71,20 @@ func CachePAT(set PATSet) error {
 	return nil
 }
 
-func DeletePatToken() error {
-	err := keyring.Delete("environments.pat.accesstoken", GetActiveEnvironment())
-	if err != nil {
-		return err
+func DeletePatToken(env string) error {
+	if env != "" {
+		err := keyring.Delete("environments.pat.accesstoken", env)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else {
+		err := keyring.Delete("environments.pat.accesstoken", GetActiveEnvironment())
+		if err != nil {
+			return err
+		}
+		return nil
 	}
-	return nil
 }
 
 func GetPatToken() (string, error) {
@@ -95,12 +103,20 @@ func SetPatToken(token string) error {
 	return nil
 }
 
-func DeletePatTokenExpiry() error {
-	err := keyring.Delete("environments.pat.expiry", GetActiveEnvironment())
-	if err != nil {
-		return err
+func DeletePatTokenExpiry(env string) error {
+	if env != "" {
+		err := keyring.Delete("environments.pat.expiry", env)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else {
+		err := keyring.Delete("environments.pat.expiry", GetActiveEnvironment())
+		if err != nil {
+			return err
+		}
+		return nil
 	}
-	return nil
 }
 
 func GetPatTokenExpiry() (time.Time, error) {
@@ -147,6 +163,22 @@ func GetPatClientID() (string, error) {
 	}
 }
 
+func DeletePatClientID(env string) error {
+	if env != "" {
+		err := keyring.Delete("environments.pat.clientid", env)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else {
+		err := keyring.Delete("environments.pat.clientid", GetActiveEnvironment())
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+}
+
 func GetClientSecret(env string) (string, error) {
 	value, err := keyring.Get("environments.pat.clientsecret", env)
 	if err != nil {
@@ -154,6 +186,22 @@ func GetClientSecret(env string) (string, error) {
 		return value, err
 	}
 	return value, nil
+}
+
+func DeletePatClientSecret(env string) error {
+	if env != "" {
+		err := keyring.Delete("environments.pat.clientsecret", env)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else {
+		err := keyring.Delete("environments.pat.clientsecret", GetActiveEnvironment())
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 }
 
 func GetPatClientSecret() (string, error) {

@@ -28,6 +28,15 @@ func newDeleteCommand() *cobra.Command {
 						delete(environments, environmentName)
 						viper.Set("environments", environments)
 
+						config.DeleteOAuthToken(environmentName)
+						config.DeleteOAuthTokenExpiry(environmentName)
+						config.DeleteRefreshToken(environmentName)
+						config.DeleteRefreshTokenExpiry(environmentName)
+						config.DeletePatToken(environmentName)
+						config.DeletePatTokenExpiry(environmentName)
+						config.DeletePatClientID(environmentName)
+						config.DeletePatClientSecret(environmentName)
+
 						if len(environments) == 0 {
 							config.SetActiveEnvironment("")
 						} else {
@@ -37,12 +46,6 @@ func newDeleteCommand() *cobra.Command {
 							}
 						}
 
-						config.DeleteOAuthToken()
-						config.DeleteOAuthTokenExpiry()
-						config.DeleteRefreshToken()
-						config.DeleteRefreshTokenExpiry()
-						config.DeletePatToken()
-						config.DeletePatTokenExpiry()
 						log.Info("Environment successfully deleted", "environment", environmentName)
 					}
 				} else {
@@ -62,6 +65,15 @@ func newDeleteCommand() *cobra.Command {
 						delete(environments, env)
 						viper.Set("environments", environments)
 
+						config.DeleteOAuthToken("")
+						config.DeleteOAuthTokenExpiry("")
+						config.DeleteRefreshToken("")
+						config.DeleteRefreshTokenExpiry("")
+						config.DeletePatToken("")
+						config.DeletePatTokenExpiry("")
+						config.DeletePatClientID("")
+						config.DeletePatClientSecret("")
+
 						if len(environments) == 0 {
 							config.SetActiveEnvironment("")
 						} else {
@@ -70,14 +82,6 @@ func newDeleteCommand() *cobra.Command {
 								break
 							}
 						}
-
-						config.DeleteOAuthToken()
-						config.DeleteOAuthTokenExpiry()
-						config.DeleteRefreshToken()
-						config.DeleteRefreshTokenExpiry()
-						config.DeletePatToken()
-						config.DeletePatTokenExpiry()
-
 					}
 				} else {
 					log.Warn("No environments configured")
