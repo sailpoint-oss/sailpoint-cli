@@ -154,7 +154,6 @@ func CreateOrUpdateEnvironment(environmentName string, update bool) error {
 				return err
 			}
 
-			fmt.Print("\n\nEnvironment Name:" + environmentName + "\n\n")
 			if environmentName != "" {
 				config.SetActiveEnvironment(environmentName)
 			} else {
