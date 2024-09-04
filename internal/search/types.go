@@ -86,7 +86,7 @@ type AccountActivity struct {
 		AttributeRequests []struct {
 			Op    string `json:"op,omitempty"`
 			Name  string `json:"name,omitempty"`
-			Value string `json:"value,omitempty"`
+			Value interface{} `json:"value,omitempty"`
 		} `json:"attributeRequests,omitempty"`
 	} `json:"originalRequests,omitempty"`
 	ExpansionItems []interface{} `json:"expansionItems,omitempty"`
