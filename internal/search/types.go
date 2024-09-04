@@ -152,27 +152,15 @@ type Event struct {
 	Target struct {
 		Name string `json:"name"`
 	} `json:"target"`
-	Stack          string `json:"stack"`
-	TrackingNumber string `json:"trackingNumber"`
-	IPAddress      string `json:"ipAddress"`
-	Details        string `json:"details"`
-	Attributes     struct {
-		CloudAppName       *string `json:"cloudAppName,omitempty"`
-		ProvisioningResult *string `json:"provisioningResult,omitempty"`
-		AppId              *string `json:"appId,omitempty"`
-		AccountUuid        *string `json:"accountUuid,omitempty"`
-		Operation          *string `json:"operation,omitempty"`
-		SourceId           *string `json:"sourceId,omitempty"`
-		SourceName         *string `json:"sourceName,omitempty"`
-		AccountName        *string `json:"accountName,omitempty"`
-		Interface          *string `json:"interface,omitempty"`
-		AttributeName      *string `json:"attributeName,omitempty"`
-		AttributeValue     *string `json:"attributeValue,omitempty"`
-	} `json:"attributes"`
-	Objects       []string `json:"objects"`
-	Operation     string   `json:"operation"`
-	Status        string   `json:"status"`
-	TechnicalName string   `json:"technicalName"`
+	Stack          string                 `json:"stack"`
+	TrackingNumber string                 `json:"trackingNumber"`
+	IPAddress      string                 `json:"ipAddress"`
+	Details        string                 `json:"details"`
+	Attributes     map[string]interface{} `json:"attributes"`
+	Objects        []string               `json:"objects"`
+	Operation      string                 `json:"operation"`
+	Status         string                 `json:"status"`
+	TechnicalName  string                 `json:"technicalName"`
 }
 
 type Identity struct {
