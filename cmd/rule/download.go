@@ -27,7 +27,7 @@ type Rule struct {
 	XMLName     xml.Name `xml:"Rule"`
 	Name        string   `xml:"name,attr"`
 	Type        string   `xml:"type,attr"`
-	Description string   `xml:"Description"`
+	Description string   `xml:"Description,omitempty"`
 	Signature   *Signature
 	Source      string `xml:"Source"`
 }
@@ -53,7 +53,7 @@ type Argument struct {
 	XMLName     xml.Name `xml:"Argument"`
 	Name        string   `xml:"name,attr"`
 	Type        string   `xml:"type,attr,omitempty"`
-	Description string   `xml:"Description"`
+	Description string   `xml:"Description,omitempty"`
 }
 
 var cloudRuleTypes = []string{"AttributeGenerator", "AttributeGeneratorFromTemplate", "BeforeProvisioning", "BuildMap", "Correlation", "IdentityAttribute", "ManagerCorrelation"}
@@ -145,7 +145,17 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 						}
 
 						//Make Rule XML Object
-						rule := &Rule{Name: v.Object["name"].(string), Type: RuleType, Description: v.Object["description"].(string), Source: "<![CDATA[\n" + v.Object["sourceCode"].(map[string]interface{})["script"].(string) + "\n]]>"}
+						rule := &Rule{}
+						rule.Name = v.Object["name"].(string)
+						rule.Type = RuleType
+						
+						if v.Object["description"] != nil {
+							rule.Description = v.Object["description"].(string)
+						} else {
+							rule.Description = ""
+						}
+
+						rule.Source = "<![CDATA[\n" + v.Object["sourceCode"].(map[string]interface{})["script"].(string) + "\n]]>"
 
 						var ruleSignature = &Signature{}
 
@@ -154,7 +164,22 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 
 							ruleSignature.Inputs = &Inputs{Argument: []Argument{}}
 							for _, v := range v.Object["signature"].(map[string]interface{})["input"].([]interface{}) {
-								argument := Argument{Name: v.(map[string]interface{})["name"].(string), Type: v.(map[string]interface{})["type"].(string), Description: v.(map[string]interface{})["description"].(string)}
+								argument := Argument{}
+
+								argument.Name = v.(map[string]interface{})["name"].(string)
+
+								if v.(map[string]interface{})["type"] != nil {
+									argument.Type = v.(map[string]interface{})["type"].(string)
+								} else {
+									argument.Type = ""
+								}
+
+								if v.(map[string]interface{})["description"] != nil {
+									argument.Description = v.(map[string]interface{})["description"].(string)
+								} else {
+									argument.Description = ""
+								}
+
 								ruleSignature.Inputs.Argument = append(ruleSignature.Inputs.Argument, argument)
 							}
 
@@ -166,13 +191,45 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 
 							if _, ok := v.Object["signature"].(map[string]interface{})["output"].([]interface{}); ok {
 								for _, v := range v.Object["signature"].(map[string]interface{})["output"].([]interface{}) {
-									argument := Argument{Name: v.(map[string]interface{})["name"].(string), Type: v.(map[string]interface{})["type"].(string), Description: v.(map[string]interface{})["description"].(string)}
+									
+									argument := Argument{}
+
+									argument.Name = v.(map[string]interface{})["name"].(string)
+									
+									if v.(map[string]interface{})["type"] != nil {
+										argument.Type = v.(map[string]interface{})["type"].(string)
+									} else {
+										argument.Type = ""
+									}
+
+									if v.(map[string]interface{})["description"] != nil {
+										argument.Description = v.(map[string]interface{})["description"].(string)
+									} else {
+										argument.Description = ""
+									}
+
 									ruleSignature.Returns.Argument = append(ruleSignature.Returns.Argument, argument)
 								}
 
 							} else {
 								output := v.Object["signature"].(map[string]interface{})["output"].(map[string]interface{})
-								argument := Argument{Name: output["name"].(string), Type: output["type"].(string), Description: output["description"].(string)}
+
+								argument := Argument{}
+
+								argument.Name = output["name"].(string)
+
+								if output["type"] != nil {
+									argument.Type = output["type"].(string)
+								} else {
+									argument.Type = ""
+								}
+
+								if output["description"] != nil {
+									argument.Description = output["description"].(string)
+								} else {
+									argument.Description = ""
+								}
+								
 								ruleSignature.Returns.Argument = append(ruleSignature.Returns.Argument, argument)
 							}
 						}
