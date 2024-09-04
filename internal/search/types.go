@@ -152,17 +152,15 @@ type Event struct {
 	Target struct {
 		Name string `json:"name"`
 	} `json:"target"`
-	Stack          string `json:"stack"`
-	TrackingNumber string `json:"trackingNumber"`
-	IPAddress      string `json:"ipAddress"`
-	Details        string `json:"details"`
-	Attributes     struct {
-		SourceName string `json:"sourceName"`
-	} `json:"attributes"`
-	Objects       []string `json:"objects"`
-	Operation     string   `json:"operation"`
-	Status        string   `json:"status"`
-	TechnicalName string   `json:"technicalName"`
+	Stack          string                 `json:"stack"`
+	TrackingNumber string                 `json:"trackingNumber"`
+	IPAddress      string                 `json:"ipAddress"`
+	Details        string                 `json:"details"`
+	Attributes     map[string]interface{} `json:"attributes"`
+	Objects        []string               `json:"objects"`
+	Operation      string                 `json:"operation"`
+	Status         string                 `json:"status"`
+	TechnicalName  string                 `json:"technicalName"`
 }
 
 type Identity struct {
