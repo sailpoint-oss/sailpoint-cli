@@ -16,7 +16,9 @@ describe('connector unit tests', () => {
     it('should execute stdTestConnectionHandler', async () => {
         await (await connector())._exec(
             StandardCommand.StdTestConnection,
-            {},
+            {reloadConfig() {
+                return Promise.resolve()
+            },},
             undefined,
             new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk).toStrictEqual(new RawResponse ({}, ResponseType.Output)))
         )
