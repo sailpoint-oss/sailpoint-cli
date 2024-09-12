@@ -15,7 +15,9 @@ describe('connector customizer unit tests', () => {
         }
         let updatedInput = await customizer._exec(
             customizer.handlerKey(CustomizerType.Before, StandardCommand.StdAccountRead),
-            {},
+            {reloadConfig() {
+                return Promise.resolve()
+            },},
             input
         )
 
