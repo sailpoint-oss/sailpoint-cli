@@ -4,6 +4,14 @@ import { CustomizerType, StandardCommand } from '@sailpoint/connector-sdk'
 const mockConfig: any = {
     token: 'xxx123'
 }
+
+const mockContext = {
+    reloadConfig: async () => {
+        // Mock implementation of reloadConfig
+        return Promise.resolve();
+    },
+};
+
 process.env.CONNECTOR_CONFIG = Buffer.from(JSON.stringify(mockConfig)).toString('base64')
 
 describe('connector customizer unit tests', () => {
@@ -15,9 +23,7 @@ describe('connector customizer unit tests', () => {
         }
         let updatedInput = await customizer._exec(
             customizer.handlerKey(CustomizerType.Before, StandardCommand.StdAccountRead),
-            {reloadConfig() {
-                return Promise.resolve()
-            },},
+            mockContext,
             input
         )
 
