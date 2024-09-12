@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"sort"
+	"strings"
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
@@ -95,8 +96,9 @@ func newConnListCmd(client client.Client) *cobra.Command {
 					tagNames = append(tagNames, t.TagName)
 					versions = append(versions, fmt.Sprintf("%d", t.ActiveVersion))
 				}
-				tagsString := fmt.Sprintf("%s", tagNames)
-				versionsString := fmt.Sprintf("%s", versions)
+				// Format the tags and versions as comma-separated lists
+				tagsString := strings.Join(tagNames, ", ")
+				versionsString := strings.Join(versions, ", ")
 
 				// Add the row to the table
 				row := []string{
