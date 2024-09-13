@@ -20,7 +20,7 @@ func PrintJob(x interface{}) {
 	case sailpointbetasdk.SpConfigExportJob:
 		fmt.Printf("Job Type: %s\nJob ID: %s\nStatus: %s\nExpired: %s\nCreated: %s\nModified: %s\n", job.Type, job.JobId, job.Status, job.GetExpiration(), job.GetCreated(), job.GetModified())
 	case sailpointbetasdk.SpConfigExportJobStatus:
-		fmt.Printf("Job Type: %s\nJob ID: %s\nStatus: %s\nExpired: %s\nCreated: %s\nModified: %s\nCompleted: %s\n", job.Type, job.JobId, job.Status, job.GetExpiration(), job.GetCreated(), job.GetModified(), job.GetCompleted())
+		fmt.Printf("Job Type: %s\nJob ID: %s\nDescription: %s\nStatus: %s\nExpired: %s\nCreated: %s\nModified: %s\nCompleted: %s\n", job.Type, job.JobId, *job.Description, job.Status, job.GetExpiration(), job.GetCreated(), job.GetModified(), job.GetCompleted())
 	case sailpointbetasdk.SpConfigImportJobStatus:
 		fmt.Printf("Job Type: %s\nJob ID: %s\nStatus: %s\nExpired: %s\nCreated: %s\nModified: %s\nCompleted: %s\n", job.Type, job.JobId, job.Status, job.GetExpiration(), job.GetCreated(), job.GetModified(), job.GetCompleted())
 	}

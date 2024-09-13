@@ -16,7 +16,7 @@ require (
 	github.com/mrz1836/go-sanitize v1.3.1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pkg/sftp v1.13.6
-	github.com/sailpoint-oss/golang-sdk/v2 v2.0.8
+	github.com/sailpoint-oss/golang-sdk/v2 v2.1.10
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
@@ -88,5 +88,6 @@ require (
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
+	gopkg.in/validator.v2 v2.0.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
