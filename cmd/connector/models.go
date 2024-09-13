@@ -17,6 +17,19 @@ func (c connector) columns() []string {
 
 var connectorColumns = []string{"ID", "Alias"}
 
+type connectorList struct {
+	ID            string `json:"id"`
+	Alias         string `json:"alias"`
+	TagName       string `json:"tagName"`
+	ActiveVersion uint32 `json:"activeVersion"`
+}
+
+func (c connectorList) columns() []string {
+	return []string{c.ID, c.Alias, c.TagName, fmt.Sprint(c.ActiveVersion)}
+}
+
+var connectorListColumns = []string{"ID", "Alias", "Tags", "Version"}
+
 type connectorVersion struct {
 	ConnectorID string `json:"connectorId"`
 	Version     int    `json:"version"`

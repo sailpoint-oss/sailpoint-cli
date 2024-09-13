@@ -15,7 +15,9 @@ describe('connector customizer unit tests', () => {
         }
         let updatedInput = await customizer._exec(
             customizer.handlerKey(CustomizerType.Before, StandardCommand.StdAccountRead),
-            {},
+            {reloadConfig() {
+                return Promise.resolve()
+            },},
             input
         )
 
@@ -26,7 +28,9 @@ describe('connector customizer unit tests', () => {
         let customizer = await connectorCustomizer()
         let output = await customizer._exec(
             customizer.handlerKey(CustomizerType.After, StandardCommand.StdAccountRead),
-            {},
+            {reloadConfig() {
+                return Promise.resolve()
+            },},
             {
                 identity: '',
                 attributes: {
