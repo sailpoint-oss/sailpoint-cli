@@ -69,34 +69,34 @@ jobs:
           GORELEASER_CURRENT_TAG: ${{steps.tagName.outputs.tag-name}}
           CERT_PASSWORD: ${{secrets.WINDOWS_CERT_PASSWORD}}
 
-  # msi:
-  #   needs: goreleaser
-  #   runs-on: windows-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-  #     - name: Download sail.exe
-  #       id: download_exe
-  #       shell: bash
-  #       run: |
-  #         gh release download "${GITHUB_REF#refs/tags/}" -p '*windows_amd64*.zip'
-  #         printf "zip=%s\n" *.zip >> $GITHUB_OUTPUT
-  #         unzip -o *.zip && rm -v *.zip
-  #       env:
-  #         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-  #     - name: Prepare PATH
-  #       id: setupmsbuild
-  #       uses: microsoft/setup-msbuild@v1.3.1
-  #     - name: Build MSI
-  #       id: buildmsi
-  #       shell: bash
-  #       env:
-  #         ZIP_FILE: ${{ steps.download_exe.outputs.zip }}
-  #         MSBUILD_PATH: ${{ steps.setupmsbuild.outputs.msbuildPath }}
-  #       run: |
-  #         name="$(basename "$ZIP_FILE" ".zip")"
-  #         version="$(echo -e ${GITHUB_REF#refs/tags/} | sed s/-.*$//)"
-  #         "${MSBUILD_PATH}\MSBuild.exe" ./build/windows/sail.wixproj -p:SourceDir="$PWD" -p:OutputPath="$PWD" -p:OutputName="$name" -p:ProductVersion="$version"
+  msi:
+    needs: goreleaser
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Download sail.exe
+        id: download_exe
+        shell: bash
+        run: |
+          gh release download "${GITHUB_REF#refs/tags/}" -p '*windows_amd64*.zip'
+          printf "zip=%s\n" *.zip >> $GITHUB_OUTPUT
+          unzip -o *.zip && rm -v *.zip
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Prepare PATH
+        id: setupmsbuild
+        uses: microsoft/setup-msbuild@v1.3.1
+      - name: Build MSI
+        id: buildmsi
+        shell: bash
+        env:
+          ZIP_FILE: ${{ steps.download_exe.outputs.zip }}
+          MSBUILD_PATH: ${{ steps.setupmsbuild.outputs.msbuildPath }}
+        run: |
+          name="$(basename "$ZIP_FILE""_unsigned" ".zip")"
+          version="$(echo -e ${GITHUB_REF#refs/tags/} | sed s/-.*$//)"
+          "${MSBUILD_PATH}\MSBuild.exe" ./build/windows/sail.wixproj -p:SourceDir="$PWD" -p:OutputPath="$PWD" -p:OutputName="$name" -p:ProductVersion="$version"
 
   #     - name: Obtain signing cert
   #       id: obtain_cert
@@ -113,15 +113,15 @@ jobs:
   #         EXE_FILE: ${{ steps.buildmsi.outputs.msi }}
   #         CERT_PASSWORD: ${{ secrets.SPOSS_SIGNING_PASS }}
   #       run: .\assets\signtool sign /d "SailPoint CLI" /f $env:CERT_FILE /p $env:CERT_PASSWORD /fd sha256 /tr http://timestamp.digicert.com /v $env:EXE_FILE
-  #     - name: Upload MSI
-  #       shell: bash
-  #       run: |
-  #         tag_name="${GITHUB_REF#refs/tags/}"
-  #         gh release upload "$tag_name" "$MSI_FILE"
-  #         release_url="$(gh api repos/:owner/:repo/releases -q ".[]|select(.tag_name==\"${tag_name}\")|.url")"
-  #         publish_args=( -F draft=false )
-  #         gh api -X PATCH "$release_url" "${publish_args[@]}"
-  #       env:
-  #         MSI_FILE: ${{ steps.buildmsi.outputs.msi }}
-  #         DISCUSSION_CATEGORY: General
-  #         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Upload MSI
+        shell: bash
+        run: |
+          tag_name="${GITHUB_REF#refs/tags/}"
+          gh release upload "$tag_name" "$MSI_FILE"
+          release_url="$(gh api repos/:owner/:repo/releases -q ".[]|select(.tag_name==\"${tag_name}\")|.url")"
+          publish_args=( -F draft=false )
+          gh api -X PATCH "$release_url" "${publish_args[@]}"
+        env:
+          MSI_FILE: ${{ steps.buildmsi.outputs.msi }}
+          DISCUSSION_CATEGORY: General
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
