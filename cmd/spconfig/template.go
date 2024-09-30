@@ -35,7 +35,7 @@ func newTemplateCommand() *cobra.Command {
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			apiClient, err := config.InitAPIClient()
+			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
 				return err
 			}

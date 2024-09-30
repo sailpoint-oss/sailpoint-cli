@@ -62,7 +62,7 @@ func PerformSearch(apiClient sailpoint.APIClient, search sailpointsdk.Search) (S
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
 
-	log.Info("Search complete")
+	log.Debug("Search complete")
 
 	for i := 0; i < len(resp); i++ {
 		entry := resp[i]

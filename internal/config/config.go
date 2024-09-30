@@ -149,7 +149,7 @@ func InitConfig() error {
 	return nil
 }
 
-func InitAPIClient() (*sailpoint.APIClient, error) {
+func InitAPIClient(experimental bool) (*sailpoint.APIClient, error) {
 	var apiClient *sailpoint.APIClient
 
 	err := Validate()
@@ -163,6 +163,11 @@ func InitAPIClient() (*sailpoint.APIClient, error) {
 	}
 
 	configuration := sailpoint.NewCLIConfiguration(sailpoint.ClientConfiguration{Token: token, BaseURL: GetBaseUrl()})
+
+	if experimental {
+		configuration.Experimental = true
+	}
+
 	apiClient = sailpoint.NewAPIClient(configuration)
 	if GetDebug() {
 		logger := log.NewWithOptions(os.Stdout, log.Options{

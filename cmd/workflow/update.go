@@ -33,7 +33,7 @@ func newUpdateCommand() *cobra.Command {
 			var workflowFiles []string
 			var workflowList []beta.Workflow
 
-			apiClient, err := config.InitAPIClient()
+			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
 				return err
 			}

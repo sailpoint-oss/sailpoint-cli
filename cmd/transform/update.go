@@ -55,7 +55,7 @@ func newUpdateCommand() *cobra.Command {
 
 			updateTransform := beta.Transform{Attributes: transform.Attributes, Type: transform.Type, Name: transform.Name}
 
-			apiClient, err := config.InitAPIClient()
+			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
 				return err
 			}

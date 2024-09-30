@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"sort"
 
 	"github.com/charmbracelet/log"
 	"github.com/mrz1836/go-sanitize"
@@ -72,11 +73,30 @@ func GetSanitizedPath(fileName string, extension string) string {
 	return sanitize.PathName(fileName) + "." + extension
 }
 
-func WriteTable(writer io.Writer, headers []string, entries [][]string) {
+func WriteTable(writer io.Writer, headers []string, entries [][]string, sortKey string) {
 	table := tablewriter.NewWriter(writer)
 	table.SetHeader(headers)
+
+	// Find the index of the header that matches the sortKey
+	sortIndex := -1
+	for i, header := range headers {
+		if header == sortKey {
+			sortIndex = i
+			break
+		}
+	}
+
+	// If a valid sortKey is provided, sort the entries by that column
+	if sortIndex != -1 {
+		sort.Slice(entries, func(i, j int) bool {
+			return entries[i][sortIndex] < entries[j][sortIndex]
+		})
+	}
+
+	// Append sorted (or unsorted) entries to the table
 	for _, line := range entries {
 		table.Append(line)
 	}
+
 	table.Render()
 }

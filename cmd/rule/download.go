@@ -79,7 +79,7 @@ func newDownloadCommand() *cobra.Command {
 
 			var options *map[string]beta.ObjectExportImportOptions
 
-			apiClient, err := config.InitAPIClient()
+			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
 				return err
 			}
@@ -148,7 +148,7 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 						rule := &Rule{}
 						rule.Name = v.Object["name"].(string)
 						rule.Type = RuleType
-						
+
 						if v.Object["description"] != nil {
 							rule.Description = v.Object["description"].(string)
 						} else {
@@ -191,11 +191,11 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 
 							if _, ok := v.Object["signature"].(map[string]interface{})["output"].([]interface{}); ok {
 								for _, v := range v.Object["signature"].(map[string]interface{})["output"].([]interface{}) {
-									
+
 									argument := Argument{}
 
 									argument.Name = v.(map[string]interface{})["name"].(string)
-									
+
 									if v.(map[string]interface{})["type"] != nil {
 										argument.Type = v.(map[string]interface{})["type"].(string)
 									} else {
@@ -229,7 +229,7 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 								} else {
 									argument.Description = ""
 								}
-								
+
 								ruleSignature.Returns.Argument = append(ruleSignature.Returns.Argument, argument)
 							}
 						}
