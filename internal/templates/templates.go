@@ -15,6 +15,7 @@ import (
 func GetSearchTemplates() ([]SearchTemplate, error) {
 	var searchTemplates []SearchTemplate
 	var templates []SearchTemplate
+	var builtInTemplates []SearchTemplate
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -49,7 +50,7 @@ func GetSearchTemplates() ([]SearchTemplate, error) {
 
 			err = json.Unmarshal(raw, &templates)
 			if err != nil {
-				log.Error("an error occured while parsing the file: %s", templateFile)
+				log.Error("an error occurred while parsing the file: %s", templateFile)
 				return nil, err
 			}
 
@@ -57,13 +58,13 @@ func GetSearchTemplates() ([]SearchTemplate, error) {
 		}
 	}
 
-	err = json.Unmarshal([]byte(builtInSearchTemplates), &templates)
+	err = json.Unmarshal([]byte(builtInSearchTemplates), &builtInTemplates)
 	if err != nil {
-		color.Red("an error occured while parsing the built in templates")
+		color.Red("an error occurred while parsing the built in templates")
 		return nil, err
 	}
 
-	searchTemplates = append(searchTemplates, templates...)
+	searchTemplates = append(searchTemplates, builtInTemplates...)
 
 	for i := 0; i < len(searchTemplates); i++ {
 		entry := &searchTemplates[i]
@@ -115,7 +116,7 @@ func GetExportTemplates() ([]ExportTemplate, error) {
 
 				err = json.Unmarshal(raw, &templates)
 				if err != nil {
-					log.Debug("an error occured while parsing the file: %s", templateFile)
+					log.Debug("an error occurred while parsing the file: %s", templateFile)
 					return nil, err
 				}
 
@@ -125,7 +126,7 @@ func GetExportTemplates() ([]ExportTemplate, error) {
 
 		err = json.Unmarshal([]byte(builtInExportTemplates), &templates)
 		if err != nil {
-			log.Error("an error occured while parsing the built in templates")
+			log.Error("an error occurred while parsing the built in templates")
 			return nil, err
 		}
 
