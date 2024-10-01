@@ -30,7 +30,7 @@ func newExportCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "export",
-		Short:   "Start an export job in IdentityNow",
+		Short:   "Start an export job in Identity Security Cloud",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"exp"},

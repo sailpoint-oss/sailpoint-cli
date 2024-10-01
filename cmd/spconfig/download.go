@@ -21,7 +21,7 @@ func newDownloadCommand() *cobra.Command {
 	var folderPath string
 	cmd := &cobra.Command{
 		Use:     "download {--import <importID> --export <exportID>}",
-		Short:   "Download the results of import or export jobs from IdentityNow",
+		Short:   "Download the results of import or export jobs from Identity Security Cloud",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"down"},

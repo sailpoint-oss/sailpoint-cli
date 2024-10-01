@@ -8,8 +8,8 @@ import (
 func NewRuleCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "rule",
-		Short:   "Manage rules in IdentityNow",
-		Long:    "\nManage rules in IdentityNow\n\n",
+		Short:   "Manage rules in Identity Security Cloud",
+		Long:    "\nManage rules in Identity Security Cloud\n\n",
 		Example: "sail rule",
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()

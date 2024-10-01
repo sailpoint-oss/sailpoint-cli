@@ -1,9 +1,9 @@
 ==Long==
 # Create
-Create workflows in IdentityNow. 
+Create workflows in Identity Security Cloud. 
 
 ## API References:
- - https://developer.sailpoint.com/idn/api/beta/create-workflow
+ - https://developer.sailpoint.com/docs/api/beta/create-workflow
 
 ====
 

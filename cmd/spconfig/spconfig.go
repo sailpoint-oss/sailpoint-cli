@@ -15,7 +15,7 @@ func NewSPConfigCommand() *cobra.Command {
 	help := util.ParseHelp(spconfigHelp)
 	cmd := &cobra.Command{
 		Use:     "spconfig",
-		Short:   "Perform SPConfig operations in IdentityNow",
+		Short:   "Perform SPConfig operations in Identity Security Cloud",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"spcon"},

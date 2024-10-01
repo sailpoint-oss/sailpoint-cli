@@ -1,7 +1,7 @@
 ==Long==
 # VA
 
-Manage VAs in IdentityNow.
+Manage VAs in Identity Security Cloud.
 
 ====
 

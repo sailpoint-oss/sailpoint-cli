@@ -70,8 +70,8 @@ func newDownloadCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "download",
-		Short:   "Download all rules in IdentityNow",
-		Long:    "\nDownload all rules in IdentityNow\n\n",
+		Short:   "Download all rules in Identity Security Cloud",
+		Long:    "\nDownload all rules in Identity Security Cloud\n\n",
 		Example: "sail rule download",
 		Aliases: []string{"d"},
 		Args:    cobra.NoArgs,
@@ -148,7 +148,7 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 						rule := &Rule{}
 						rule.Name = v.Object["name"].(string)
 						rule.Type = RuleType
-						
+
 						if v.Object["description"] != nil {
 							rule.Description = v.Object["description"].(string)
 						} else {
@@ -191,11 +191,11 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 
 							if _, ok := v.Object["signature"].(map[string]interface{})["output"].([]interface{}); ok {
 								for _, v := range v.Object["signature"].(map[string]interface{})["output"].([]interface{}) {
-									
+
 									argument := Argument{}
 
 									argument.Name = v.(map[string]interface{})["name"].(string)
-									
+
 									if v.(map[string]interface{})["type"] != nil {
 										argument.Type = v.(map[string]interface{})["type"].(string)
 									} else {
@@ -229,7 +229,7 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 								} else {
 									argument.Description = ""
 								}
-								
+
 								ruleSignature.Returns.Argument = append(ruleSignature.Returns.Argument, argument)
 							}
 						}

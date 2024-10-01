@@ -1,7 +1,7 @@
 ==Long==
 # Environment
 
-Configure SailPoint IdentityNow environments for the CLI
+Configure SailPoint Identity Security Cloud environments for the CLI
 ====
 
 ==Example==

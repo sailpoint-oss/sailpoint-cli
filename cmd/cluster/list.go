@@ -20,7 +20,7 @@ func newListCommand() *cobra.Command {
 	help := util.ParseHelp(listHelp)
 	cmd := &cobra.Command{
 		Use:     "list",
-		Short:   "List the clusters configured in IdentityNow",
+		Short:   "List the clusters configured in Identity Security Cloud",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"ls"},

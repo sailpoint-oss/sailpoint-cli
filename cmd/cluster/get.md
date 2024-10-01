@@ -1,10 +1,10 @@
 ==Long==
 # Get 
 
-Get a VA cluster's configuration from IdentityNow.
+Get a VA cluster's configuration from Identity Security Cloud.
 
 ## API References:
- - https://developer.sailpoint.com/idn/api/beta/get-managed-cluster
+ - https://developer.sailpoint.com/docs/api/beta/get-managed-cluster
 
 ====
 

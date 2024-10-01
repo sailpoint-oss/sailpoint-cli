@@ -2,7 +2,7 @@
 
 # Get
 
-Get a VA configuration from IdentityNow.
+Get a VA configuration from Identity Security Cloud.
 
 ====
 

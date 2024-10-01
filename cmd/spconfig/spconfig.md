@@ -1,9 +1,9 @@
 ==Long==
 # SPConfig
-Perform SP-Config operations in IdentityNow.
+Perform SP-Config operations in Identity Security Cloud.
 
 API References:
- - https://developer.sailpoint.com/idn/api/beta/sp-config
+ - https://developer.sailpoint.com/docs/api/beta/sp-config
 ====
 
 ==Example==

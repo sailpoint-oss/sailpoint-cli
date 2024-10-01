@@ -1,6 +1,6 @@
 # Connectors
 
-The `connectors` command is a CLI interface for the SaaS Connectivity Platform.  This CLI is the best way to create and manage SaaS connectors within your IdentityNow tenant.  Please [read our saas connectivity guide](https://developer.sailpoint.com/idn/docs/saas-connectivity) for more information.
+The `connectors` command is a CLI interface for the SaaS Connectivity Platform.  This CLI is the best way to create and manage SaaS connectors within your Identity Security Cloud tenant.  Please [read our saas connectivity guide](https://developer.sailpoint.com/docs/connectivity/saas-connectivity) for more information.
 
 - [Init project](#init-project)
 - [Create connector](#create-connector)
@@ -20,27 +20,27 @@ To initialize a new connector project, use the following command.
 sail conn init [connectorProjectName]
 ```
 
-This command will create a folder in your current working directory with the same name as `connectorProjectName`.  All of the necessary files needed to create a connector will be included in this folder.  See [creating a new project](https://developer.sailpoint.com/idn/docs/saas-connectivity/prerequisites#create-new-project) for more information.
+This command will create a folder in your current working directory with the same name as `connectorProjectName`.  All of the necessary files needed to create a connector will be included in this folder.  See [creating a new project](https://developer.sailpoint.com/docs/connectivity/saas-connectivity/prerequisites#create-new-project) for more information.
 
 ## Create connector
 
-To create a connector entry in your IdentityNow tenant, run the following command.
+To create a connector entry in your Identity Security Cloud tenant, run the following command.
 
 ```shell
 sail conn create [connectorAlias]
 ```
 
-This will register your connector and give it a unique ID.  See [creating a connector in your org](https://developer.sailpoint.com/idn/docs/saas-connectivity/test-build-deploy#create-and-upload-connector-bundle) for more information.
+This will register your connector and give it a unique ID.  See [creating a connector in your org](https://developer.sailpoint.com/docs/connectivity/saas-connectivity/test-build-deploy#create-and-upload-connector-bundle) for more information.
 
 ## Upload connector
 
-To upload a connector to your IdentityNow tenant, package the connector into a zip file by running `npm run pack-zip` in the project directory and then run the following command.
+To upload a connector to your Identity Security Cloud tenant, package the connector into a zip file by running `npm run pack-zip` in the project directory and then run the following command.
 
 ```shell
 sail conn upload -c [connectorID | connectorAlias] -f connector.zip
 ```
 
-The project files must be packaged before uploading.  Please see [creating a connector](https://developer.sailpoint.com/idn/docs/saas-connectivity/test-build-deploy#create-and-upload-connector-bundle) for information on how to package and upload a connector.
+The project files must be packaged before uploading.  Please see [creating a connector](https://developer.sailpoint.com/docs/connectivity/saas-connectivity/test-build-deploy#create-and-upload-connector-bundle) for information on how to package and upload a connector.
 
 ## Invoke command
 
@@ -56,7 +56,7 @@ The entitlement commands require an additional flag (`-t [entitlementType]`).  F
 sail conn invoke entitlement-list -t [entitlementType] -c [connectorID | connectorAlias] -p [config.json] -v [version]
 ```
 
-See [testing your connection in IdentityNow](https://developer.sailpoint.com/idn/docs/saas-connectivity/test-build-deploy#test-your-connector-in-identitynow) for more information on invoking commands.
+See [testing your connection in Identity Security Cloud](https://developer.sailpoint.com/docs/connectivity/saas-connectivity/test-build-deploy/#test-your-connector-in-identity-security-cloud) for more information on invoking commands.
 
 ## List connectors
 
@@ -84,7 +84,7 @@ sail conn delete -c [connectorID]
 
 ## Manage tags
 
-Tags allow you to create multiple instances of your connector that can be used in IdentityNow.  The `latest` tag is created by default and is the primary instance, typically used for production purposes.  Tags are similar to branches in a version control system, like git or CVS.  You can create a tag for actively developing the connector, or for any other purpose you see fit.
+Tags allow you to create multiple instances of your connector that can be used in Identity Security Cloud.  The `latest` tag is created by default and is the primary instance, typically used for production purposes.  Tags are similar to branches in a version control system, like git or CVS.  You can create a tag for actively developing the connector, or for any other purpose you see fit.
 
 A common pattern is to create a `development` tag on a connector from a specific version, like the latest version.
 
@@ -98,7 +98,7 @@ As the connector is developed and the version number increases, update the `deve
 sail conn tags update -c [connectorID | connectorAlias] -n [tagName] -v [version]
 ```
 
-You can test the connector in IdentityNow by selecting the instance of your connector with the `development` tag, which will use whatever version you point to with the update command.
+You can test the connector in Identity Security Cloud by selecting the instance of your connector with the `development` tag, which will use whatever version you point to with the update command.
 
 To see all of the tags of the connector and what version they point to, run the following command.
 
@@ -136,4 +136,4 @@ To get detailed logging statistics on each connector, run the following command.
 sail conn stats
 ```
 
-See our [connector logging docs](https://developer.sailpoint.com/idn/docs/saas-connectivity/in-depth/logging) for more information on logging.
+See our [connector logging docs](https://developer.sailpoint.com/docs/connectivity/saas-connectivity/in-depth/logging) for more information on logging.

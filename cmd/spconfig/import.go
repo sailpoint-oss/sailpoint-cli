@@ -18,8 +18,8 @@ func newImportCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "import",
-		Short:   "Start an import job in IdentityNow",
-		Long:    "\nStart an import job in IdentityNow\n\n",
+		Short:   "Start an import job in Identity Security Cloud",
+		Long:    "\nStart an import job in Identity Security Cloud\n\n",
 		Example: "sail spconfig import",
 		Aliases: []string{"imp"},
 		Args:    cobra.NoArgs,

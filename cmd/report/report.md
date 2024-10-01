@@ -1,10 +1,10 @@
 ==Long==
 # Report
 
-Generate a report from IdentityNow.
+Generate a report from Identity Security Cloud.
 
 ## API References:
- - https://developer.sailpoint.com/idn/api/v3/search
+ - https://developer.sailpoint.com/docs/api/v3/search
   
 ====
 

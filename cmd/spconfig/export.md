@@ -1,6 +1,6 @@
 ==Long==
 # Export
-Start an export job in IdentityNow.
+Start an export job in Identity Security Cloud.
 
 You can include or exclude the following valid types:
  - ACCESS_PROFILE

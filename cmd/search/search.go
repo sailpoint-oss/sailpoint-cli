@@ -8,8 +8,8 @@ import (
 func NewSearchCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "search",
-		Short:   "Perform search operations in IdentityNow, using a specific query or a template",
-		Long:    "\nPerform search operations in IdentityNow, using a specific query or a template\n\n",
+		Short:   "Perform search operations in Identity Security Cloud, using a specific query or a template",
+		Long:    "\nPerform search operations in Identity Security Cloud, using a specific query or a template\n\n",
 		Example: "sail search",
 		Aliases: []string{"se"},
 		Args:    cobra.MaximumNArgs(1),

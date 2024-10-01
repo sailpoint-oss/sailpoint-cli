@@ -24,7 +24,7 @@ func newCreateCommand() *cobra.Command {
 	var directory bool
 	cmd := &cobra.Command{
 		Use:     "create [-f file1 file2 ... | -d workflowDirectory ]",
-		Short:   "Create workflows in IdentityNow",
+		Short:   "Create workflows in Identity Security Cloud",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"cr"},
