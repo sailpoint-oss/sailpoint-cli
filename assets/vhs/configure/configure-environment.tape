@@ -1,5 +1,5 @@
 # Where should we write the GIF?
-Output assets/img/vhs/configure/configure-pat.gif
+Output assets/img/vhs/configure/configure-environment.gif
 
 # Set up a 1200x600 terminal with 46px font.
 Set FontSize 16
@@ -12,7 +12,7 @@ Sleep 2s
 
 Show
 
-Type "sail env use example"
+Type "sail env create example"
 
 Sleep 2s
 
@@ -20,7 +20,19 @@ Enter
 
 Sleep 2s 
 
-Type "sail set pat"
+Enter
+
+Sleep 10s 
+
+Enter
+
+Sleep 2s
+
+Enter
+
+Sleep 2s
+
+Type "pat"
 
 Sleep 2s
 
