@@ -2,7 +2,7 @@
 
 # List
 
-List the VAs and VA clusters in the configured IdentityNow tenant.
+List the VAs and VA clusters in the configured Identity Security Cloud tenant.
 
 ====
 

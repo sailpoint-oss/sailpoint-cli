@@ -16,7 +16,7 @@ func newQueryCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "query",
 		Short:   "Manually search using a specific query and indices",
-		Long:    "\nRun a search query in IdentityNow, using a specific query and indicies\n\n",
+		Long:    "\nRun a search query in Identity Security Cloud, using a specific query and indicies\n\n",
 		Example: "sail search query \"(type:provisioning AND created:[now-90d TO now])\" --indices events",
 		Aliases: []string{"que"},
 		Args:    cobra.ExactArgs(1),

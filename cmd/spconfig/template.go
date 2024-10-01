@@ -28,7 +28,7 @@ func newTemplateCommand() *cobra.Command {
 	var wait bool
 	cmd := &cobra.Command{
 		Use:     "template",
-		Short:   "Begin an SPConfig export task in IdentityNow, using a template",
+		Short:   "Begin an SPConfig export task in Identity Security Cloud, using a template",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"temp"},

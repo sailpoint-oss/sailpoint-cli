@@ -1,6 +1,6 @@
 # Transforms
 
-The `transforms` command makes it easy to create, manage, and test transforms. To learn more about transforms, refer to [Transforms](https://developer.sailpoint.com/idn/docs/transforms).
+The `transforms` command makes it easy to create, manage, and test transforms. To learn more about transforms, refer to [Transforms](https://developer.sailpoint.com/docs/extensibility/transforms).
 
 - [Transforms](#transforms)
   - [List transforms](#list-transforms)
@@ -50,7 +50,7 @@ Run the following command to update a transform from a `json` file. Use the `-f`
 sail transform update -f transform.json
 ```
 
-A common workflow is to download the transforms first, make edits to the transform file, and then use the update command to save those edits in IdentityNow.
+A common workflow is to download the transforms first, make edits to the transform file, and then use the update command to save those edits in Identity Security Cloud.
 
 ## Delete transform
 

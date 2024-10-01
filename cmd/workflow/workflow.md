@@ -2,7 +2,7 @@
 
 # Workflows
 
-Manage workflows in IdentityNow.
+Manage workflows in Identity Security Cloud.
 
 ====
 

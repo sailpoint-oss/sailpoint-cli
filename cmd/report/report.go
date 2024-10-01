@@ -31,7 +31,7 @@ func NewReportCommand() *cobra.Command {
 	var template string
 	cmd := &cobra.Command{
 		Use:     "report",
-		Short:   "Generate a report from a template using IdentityNow search queries",
+		Short:   "Generate a report from a template using Identity Security Cloud search queries",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"rep"},

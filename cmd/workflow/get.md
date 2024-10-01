@@ -2,10 +2,10 @@
 
 # Get
 	
-Get a workflow from IdentityNow by ID. 
+Get a workflow from Identity Security Cloud by ID. 
 
 ## API References
- - https://developer.sailpoint.com/idn/api/beta/get-workflow
+ - https://developer.sailpoint.com/docs/api/beta/get-workflow
 ====
 
 ==Example==

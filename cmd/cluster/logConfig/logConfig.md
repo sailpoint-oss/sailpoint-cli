@@ -5,7 +5,7 @@
 Get or set a VA cluster's log configuration.
 
 ## API Reference:
- - https://developer.sailpoint.com/idn/api/beta/managed-clusters
+ - https://developer.sailpoint.com/docs/api/beta/managed-clusters
 ====
 
 ==Example==

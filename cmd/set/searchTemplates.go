@@ -9,8 +9,8 @@ import (
 func newSearchTemplateCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "searchTemplates",
-		Short:   "Set the custom IdentityNow search templates file path",
-		Long:    "\nSet the custom IdentityNow search templates file path\n\n",
+		Short:   "Set the custom Identity Security Cloud search templates file path",
+		Long:    "\nSet the custom Identity Security Cloud search templates file path\n\n",
 		Example: "sail set search /path/to/search/templates.json",
 		Aliases: []string{"search"},
 		Args:    cobra.ExactArgs(1),
