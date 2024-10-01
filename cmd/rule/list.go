@@ -41,7 +41,7 @@ func newListCommand() *cobra.Command {
 
 			var options *map[string]beta.ObjectExportImportOptions
 
-			apiClient, err := config.InitAPIClient()
+			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
 				return err
 			}
@@ -99,7 +99,7 @@ func newListCommand() *cobra.Command {
 							}
 						}
 
-						output.WriteTable(cmd.OutOrStdout(), []string{"Id", "Name"}, entries)
+						output.WriteTable(cmd.OutOrStdout(), []string{"Id", "Name"}, entries, "Name")
 
 						return nil
 					case "CANCELLED":

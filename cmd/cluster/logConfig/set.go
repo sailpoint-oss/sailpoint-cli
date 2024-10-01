@@ -42,7 +42,7 @@ func newSetCommand() *cobra.Command {
 				return errors.New("invalid durationInMinutes: " + string(durationInMinutes))
 			}
 
-			apiClient, err := config.InitAPIClient()
+			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
 				return err
 			}

@@ -26,7 +26,7 @@ func newListCommand() *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			apiClient, err := config.InitAPIClient()
+			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
 				return err
 			}
@@ -44,7 +44,7 @@ func newListCommand() *cobra.Command {
 				tableList = append(tableList, []string{*entry.Name, *entry.Id})
 			}
 
-			output.WriteTable(cmd.OutOrStdout(), []string{"Name", "ID"}, tableList)
+			output.WriteTable(cmd.OutOrStdout(), []string{"Name", "ID"}, tableList, "Name")
 
 			return nil
 		},

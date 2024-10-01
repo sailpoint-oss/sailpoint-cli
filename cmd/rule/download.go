@@ -79,7 +79,7 @@ func newDownloadCommand() *cobra.Command {
 
 			var options *map[string]beta.ObjectExportImportOptions
 
-			apiClient, err := config.InitAPIClient()
+			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
 				return err
 			}

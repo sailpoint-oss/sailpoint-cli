@@ -30,6 +30,7 @@ func NewTransformCommand() *cobra.Command {
 		newCreateCommand(),
 		newUpdateCommand(),
 		newDeleteCommand(),
+		newPreviewCommand(),
 	)
 
 	return cmd

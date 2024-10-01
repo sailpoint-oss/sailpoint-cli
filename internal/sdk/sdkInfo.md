@@ -1,0 +1,6 @@
+# API Response
+
+## Body:
+```json
+====
+```

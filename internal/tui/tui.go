@@ -13,11 +13,13 @@ var docStyle = lipgloss.NewStyle().Margin(1, 2)
 type ListItem struct {
 	title       string
 	description string
+	id          string
 }
 
 type Choice struct {
 	Title       string
 	Description string
+	Id          string
 }
 
 var choice ListItem
@@ -78,7 +80,7 @@ func PromptList(choices []Choice, Title string) (Choice, error) {
 	items := []list.Item{}
 	for i := 0; i < len(choices); i++ {
 		entry := choices[i]
-		items = append(items, ListItem{title: entry.Title, description: entry.Description})
+		items = append(items, ListItem{title: entry.Title, description: entry.Description, id: entry.Id})
 	}
 
 	m := model{List: list.New(items, list.NewDefaultDelegate(), 0, 0)}
@@ -93,5 +95,5 @@ func PromptList(choices []Choice, Title string) (Choice, error) {
 
 	choice := m.Retrieve()
 
-	return Choice{Title: choice.title, Description: choice.description}, nil
+	return Choice{Title: choice.title, Description: choice.description, Id: choice.id}, nil
 }

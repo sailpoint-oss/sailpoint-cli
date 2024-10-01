@@ -26,7 +26,7 @@ func newListCommand() *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			apiClient, err := config.InitAPIClient()
+			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
 				return err
 			}
@@ -51,7 +51,7 @@ func newListCommand() *cobra.Command {
 				}
 			}
 
-			output.WriteTable(cmd.OutOrStdout(), []string{"Cluster", "IP Address", "ID"}, clients)
+			output.WriteTable(cmd.OutOrStdout(), []string{"Cluster", "IP Address", "ID"}, clients, "Cluster")
 
 			return nil
 		},
