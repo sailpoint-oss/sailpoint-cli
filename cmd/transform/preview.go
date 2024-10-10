@@ -55,7 +55,8 @@ func newPreviewCommand() *cobra.Command {
 				defer file.Close()
 				decoder = json.NewDecoder(bufio.NewReader(file))
 			} else {
-				decoder = json.NewDecoder(bufio.NewReader(os.Stdin))
+				log.Error("You must provide a file to preview")
+				return nil
 			}
 
 			if err := decoder.Decode(&transform); err != nil {
@@ -65,6 +66,8 @@ func newPreviewCommand() *cobra.Command {
 			log.Debug("Filepath", "path", filepath)
 
 			log.Debug("Transform", "transform", transform)
+
+			transform.SetName(transform.GetName() + "-preview")
 
 			if transform.GetName() == "" {
 				return fmt.Errorf("the transform must have a name")
