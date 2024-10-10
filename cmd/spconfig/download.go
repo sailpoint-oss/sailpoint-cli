@@ -35,7 +35,7 @@ func newDownloadCommand() *cobra.Command {
 
 			for _, jobId := range importIDs {
 				log.Info("Checking Import Job", "JobID", jobId)
-				err := spconfig.DownloadImport(*apiClient, jobId, "spconfig-import-"+jobId+".json", folderPath)
+				err := spconfig.DownloadImport(*apiClient, jobId, "spconfig-import-"+jobId, folderPath)
 				if err != nil {
 					return err
 				}
@@ -43,7 +43,7 @@ func newDownloadCommand() *cobra.Command {
 
 			for _, jobId := range exportIDs {
 				log.Info("Checking Export Job", "JobID", jobId)
-				err := spconfig.DownloadExport(*apiClient, jobId, "spconfig-export-"+jobId+".json", folderPath)
+				err := spconfig.DownloadExport(*apiClient, jobId, "spconfig-export-"+jobId, folderPath)
 				if err != nil {
 					return err
 				}
