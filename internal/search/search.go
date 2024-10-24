@@ -120,6 +120,78 @@ func PerformSearch(apiClient sailpoint.APIClient, search sailpointsdk.Search) (S
 	return SearchResults, nil
 }
 
+func PerformSearchWithLimit(apiClient sailpoint.APIClient, search sailpointsdk.Search, limit int32) (SearchResults, error) {
+	var SearchResults SearchResults
+
+	if limit == 0 {
+		limit = 500
+	}
+
+	ctx := context.TODO()
+	resp, r, err := apiClient.V3.SearchAPI.SearchPost(ctx).Search(search).Limit(limit).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+
+	log.Debug("Search complete")
+
+	for i := 0; i < len(resp); i++ {
+		entry := resp[i]
+		switch entry["_type"] {
+		case "accountactivity":
+			var AccountActivity AccountActivity
+			err := mapstructure.Decode(entry, &AccountActivity)
+			if err != nil {
+				return SearchResults, err
+			}
+			SearchResults.AccountActivities = append(SearchResults.AccountActivities, AccountActivity)
+
+		case "accessprofile":
+			var AccessProfile AccessProfile
+			err := mapstructure.Decode(entry, &AccessProfile)
+			if err != nil {
+				return SearchResults, err
+			}
+			SearchResults.AccessProfiles = append(SearchResults.AccessProfiles, AccessProfile)
+
+		case "entitlement":
+			var Entitlement Entitlement
+			err := mapstructure.Decode(entry, &Entitlement)
+			if err != nil {
+				return SearchResults, err
+			}
+			SearchResults.Entitlements = append(SearchResults.Entitlements, Entitlement)
+
+		case "event":
+			var Event Event
+			err := mapstructure.Decode(entry, &Event)
+			if err != nil {
+				return SearchResults, err
+			}
+			SearchResults.Events = append(SearchResults.Events, Event)
+
+		case "identity":
+			var Identity Identity
+			err := mapstructure.Decode(entry, &Identity)
+			if err != nil {
+				return SearchResults, err
+			}
+			SearchResults.Identities = append(SearchResults.Identities, Identity)
+
+		case "role":
+			var Role Role
+			err := mapstructure.Decode(entry, &Role)
+			if err != nil {
+				return SearchResults, err
+			}
+			SearchResults.Roles = append(SearchResults.Roles, Role)
+		}
+	}
+
+	return SearchResults, nil
+}
+
 func IterateIndices(SearchResults SearchResults, searchQuery string, folderPath string, outputTypes []string) error {
 	if len(SearchResults.AccountActivities) > 0 {
 		fileName := "query=" + searchQuery + "&indices=AccountActivities"

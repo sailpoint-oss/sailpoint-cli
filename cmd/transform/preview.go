@@ -122,7 +122,9 @@ func newPreviewCommand() *cobra.Command {
 					return err
 				}
 
-				formattedResponse, err := search.PerformSearch(*apiClient, searchObj)
+				searchObj.QueryResultFilter.Includes = []string{"id", "displayName", "email"}
+
+				formattedResponse, err := search.PerformSearchWithLimit(*apiClient, searchObj, 250)
 				if err != nil {
 					return err
 				}
