@@ -1,13 +1,12 @@
 import { connectorCustomizer } from './index'
-import { CustomizerType, StandardCommand } from '@sailpoint/connector-sdk'
+import { CustomizerType, StandardCommand, AssumeAwsRoleRequest, AssumeAwsRoleResponse } from '@sailpoint/connector-sdk'
 
 const mockConfig: any = {
-    token: 'xxx123'
+    token: 'xxx123',
 }
 process.env.CONNECTOR_CONFIG = Buffer.from(JSON.stringify(mockConfig)).toString('base64')
 
 describe('connector customizer unit tests', () => {
-
     it('should not change input from beforeStdAccountReadHandler', async () => {
         let customizer = await connectorCustomizer()
         let input = {
@@ -15,9 +14,16 @@ describe('connector customizer unit tests', () => {
         }
         let updatedInput = await customizer._exec(
             customizer.handlerKey(CustomizerType.Before, StandardCommand.StdAccountRead),
-            {reloadConfig() {
-                return Promise.resolve()
-            },},
+            {
+                reloadConfig() {
+                    return Promise.resolve()
+                },
+                assumeAwsRole(assumeAwsRoleRequest: AssumeAwsRoleRequest): Promise<AssumeAwsRoleResponse> {
+                    return Promise.resolve(
+                        new AssumeAwsRoleResponse('ccessKeyId', 'secretAccessKey', 'sessionToken', '123')
+                    )
+                },
+            },
             input
         )
 
@@ -28,9 +34,16 @@ describe('connector customizer unit tests', () => {
         let customizer = await connectorCustomizer()
         let output = await customizer._exec(
             customizer.handlerKey(CustomizerType.After, StandardCommand.StdAccountRead),
-            {reloadConfig() {
-                return Promise.resolve()
-            },},
+            {
+                reloadConfig() {
+                    return Promise.resolve()
+                },
+                assumeAwsRole(assumeAwsRoleRequest: AssumeAwsRoleRequest): Promise<AssumeAwsRoleResponse> {
+                    return Promise.resolve(
+                        new AssumeAwsRoleResponse('ccessKeyId', 'secretAccessKey', 'sessionToken', '123')
+                    )
+                },
+            },
             {
                 identity: '',
                 attributes: {
@@ -38,7 +51,7 @@ describe('connector customizer unit tests', () => {
                     firstName: 'john',
                     lastName: 'doe',
                     email: 'john.doe@example.com',
-                }
+                },
             }
         )
 

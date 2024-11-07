@@ -1,5 +1,5 @@
 import { connector } from './index'
-import { Connector, RawResponse, ResponseType, StandardCommand } from '@sailpoint/connector-sdk'
+import { Connector, RawResponse, ResponseType, StandardCommand, AssumeAwsRoleRequest, AssumeAwsRoleResponse } from '@sailpoint/connector-sdk'
 import { PassThrough } from 'stream'
 
 const mockConfig: any = {
@@ -18,7 +18,11 @@ describe('connector unit tests', () => {
             StandardCommand.StdTestConnection,
             {reloadConfig() {
                 return Promise.resolve()
-            },},
+            },
+            assumeAwsRole(assumeAwsRoleRequest: AssumeAwsRoleRequest): Promise<AssumeAwsRoleResponse> {
+                return Promise.resolve(new AssumeAwsRoleResponse('accessKeyId', 'secretAccessKey', 'sessionToken', "123"))
+            }
+        },
             undefined,
             new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk).toStrictEqual(new RawResponse ({}, ResponseType.Output)))
         )
