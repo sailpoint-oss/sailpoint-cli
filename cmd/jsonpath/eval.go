@@ -8,6 +8,7 @@ import (
 	"github.com/bhmj/jsonslice"
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
+	"github.com/tidwall/pretty"
 )
 
 func newEvalCommand() *cobra.Command {
@@ -41,7 +42,14 @@ func newEvalCommand() *cobra.Command {
 				return err
 			}
 
-			fmt.Print(string(result))
+			// Format the JSON
+			formattedJSON := pretty.Pretty([]byte(result))
+
+			// Color the JSON
+			coloredJSON := pretty.Color(formattedJSON, nil)
+
+			// Print formatted and colored JSON
+			fmt.Print(string(coloredJSON))
 
 			return nil
 
