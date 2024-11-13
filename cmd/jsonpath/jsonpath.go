@@ -25,6 +25,10 @@ func NewJSONPathCmd() *cobra.Command {
 		},
 	}
 
+	cmd.AddCommand(
+		newEvalCommand(),
+	)
+
 	// log.Info("Hello World!")
 
 	return cmd
