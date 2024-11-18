@@ -44,7 +44,7 @@ func DownloadExport(apiClient sailpoint.APIClient, jobId string, fileName string
 				if err != nil {
 					return err
 				}
-				log.Info("Saving export data", "filePath", path.Join(folderPath, fileName))
+				log.Info("Saving export data", "filePath", path.Join(folderPath, fileName+".json"))
 				err = output.SaveJSONFile(exportData, fileName, folderPath)
 				if err != nil {
 					return err
@@ -74,11 +74,12 @@ func DownloadImport(apiClient sailpoint.APIClient, jobId string, fileName string
 		} else {
 			switch response.Status {
 			case "COMPLETE":
-				color.Green("Downloading Import Data")
+				log.Info("Job Complete")
 				importData, _, err := apiClient.Beta.SPConfigAPI.GetSpConfigImport(context.TODO(), jobId).Execute()
 				if err != nil {
 					return err
 				}
+				log.Info("Saving import data", "filePath", path.Join(folderPath, fileName+".json"))
 				err = output.SaveJSONFile(importData, fileName, folderPath)
 				if err != nil {
 					return err
