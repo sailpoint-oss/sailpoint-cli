@@ -82,9 +82,11 @@ func newTextareaResults() textarea.Model {
 	t.BlurredStyle.Placeholder = placeholderStyle
 	t.FocusedStyle.CursorLine = cursorLineStyle
 	t.FocusedStyle.Base = focusedBorderStyle
+	t.BlurredStyle.Base = blurredBorderStyle
 	t.FocusedStyle.EndOfBuffer = endOfBufferStyle
 	t.BlurredStyle.EndOfBuffer = endOfBufferStyle
 	t.KeyMap.DeleteWordBackward.SetEnabled(false)
+	t.KeyMap.DeleteCharacterForward.SetEnabled(false)
 	t.KeyMap.LineNext = key.NewBinding(key.WithKeys("down"))
 	t.KeyMap.LinePrevious = key.NewBinding(key.WithKeys("up"))
 	t.Blur()
@@ -118,13 +120,20 @@ func (m editorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.result.Blur()
 			return m, tea.Quit
 		case key.Matches(msg, m.keymap.next):
-			if m.input.Focused() {
-				m.input.Blur()
-				m.textInput.Focus()
-				m.keymap.next.SetHelp("tab", "(switch to jsonpath query)")
-			} else {
+			if m.textInput.Focused() {
 				m.input.Focus()
 				m.textInput.Blur()
+				m.result.Blur()
+				m.keymap.next.SetHelp("tab", "(switch to results)")
+			} else if m.input.Focused() {
+				m.input.Blur()
+				m.textInput.Blur()
+				m.result.Focus()
+				m.keymap.next.SetHelp("tab", "(switch to jsonPath query)")
+			} else if m.result.Focused() {
+				m.input.Blur()
+				m.result.Blur()
+				m.textInput.Focus()
 				m.keymap.next.SetHelp("tab", "(switch to editor)")
 			}
 		case key.Matches(msg, m.keymap.delete):
@@ -138,6 +147,17 @@ func (m editorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	m.sizeInputs()
 
+	if !m.result.Focused() {
+
+		result, err := jsonslice.Get(m.initialInput, m.textInput.Value())
+
+		if err != nil {
+			m.result.SetValue(err.Error())
+		} else {
+			m.result.SetValue(string(result))
+		}
+	}
+
 	var cmd tea.Cmd
 
 	m.textInput, cmd = m.textInput.Update(msg)
@@ -146,15 +166,11 @@ func (m editorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.input, cmd = m.input.Update(msg)
 	cmds = append(cmds, cmd)
 
+	m.result, cmd = m.result.Update(msg)
+	cmds = append(cmds, cmd)
+
 	// Call jsonslice and evaluate path
 
-	result, err := jsonslice.Get(m.initialInput, m.textInput.Value())
-
-	if err != nil {
-		m.result.SetValue(err.Error())
-	} else {
-		m.result.SetValue(string(result))
-	}
 	return m, tea.Batch(cmds...)
 }
 
@@ -199,9 +215,9 @@ func (m editorModel) View() string {
 func newModel(defaultJson []byte) editorModel {
 	ti := textinput.New()
 	ti.Placeholder = "$.requestedItemsStatus[0].id"
+	ti.CharLimit = 1000
 	ti.SetValue("$.requestedItemsStatus[0].id")
 	ti.Focus()
-	ti.CharLimit = 1000
 	ti.Width = 500
 
 	m := editorModel{
