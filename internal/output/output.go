@@ -11,7 +11,6 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/mrz1836/go-sanitize"
 	"github.com/olekukonko/tablewriter"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 )
 
 func SaveJSONFile[T any](formattedResponse T, fileName string, folderPath string) error {
@@ -100,16 +99,4 @@ func WriteTable(writer io.Writer, headers []string, entries [][]string, sortKey 
 	}
 
 	table.Render()
-}
-
-func WriteJson(jsonString []byte) string {
-	var err error
-	var data map[string]interface{}
-
-	err = json.Unmarshal(jsonString, &data)
-	if err != nil {
-		log.Error(err)
-	}
-
-	return util.RenderMarkdown("```json\n" + util.PrettyPrint(data) + "\n```")
 }
