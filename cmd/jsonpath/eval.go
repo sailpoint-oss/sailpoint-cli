@@ -148,8 +148,7 @@ func (m editorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.sizeInputs()
 
 	if !m.result.Focused() {
-
-		result, err := jsonslice.Get(m.initialInput, m.textInput.Value())
+		result, err := jsonslice.Get([]byte(m.input.Value()), m.textInput.Value())
 
 		if err != nil {
 			m.result.SetValue(err.Error())
