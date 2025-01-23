@@ -138,8 +138,8 @@ github.com/sagikazarmark/slog-shim v0.1.0 h1:diDBnUNK9N/354PgrxMywXnAwEr1QZcOr6g
 github.com/sagikazarmark/slog-shim v0.1.0/go.mod h1:SrcSrq8aKtyuqEI1uvTDTK1arOWRIczQRv+GVI1AkeQ=
 github.com/sahilm/fuzzy v0.1.0 h1:FzWGaw2Opqyu+794ZQ9SYifWv2EIXpwP4q8dY1kDAwI=
 github.com/sahilm/fuzzy v0.1.0/go.mod h1:VFvziUEIMCrT6A6tw2RFIXPXXmzXbOsSHF0DOI8ZK9Y=
-github.com/sailpoint-oss/golang-sdk/v2 v2.1.13 h1:tEWRYCdpQc+hVRKKd1bILXr5PwAu5JfJCOkncJLXsmI=
-github.com/sailpoint-oss/golang-sdk/v2 v2.1.13/go.mod h1:hZdRdJzkrEzdiiVqzblaCdYxGM9rKXMC0vhIom+WBpc=
+github.com/sailpoint-oss/golang-sdk/v2 v2.1.18 h1:IFbiXRmYBNYlEv+u7k0hHB1e/f5j+PO657r/D972/uc=
+github.com/sailpoint-oss/golang-sdk/v2 v2.1.18/go.mod h1:hZdRdJzkrEzdiiVqzblaCdYxGM9rKXMC0vhIom+WBpc=
 github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966 h1:JIAuq3EEf9cgbU6AtGPK4CTG3Zf6CKMNqf0MHTggAUA=
 github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966/go.mod h1:sUM3LWHvSMaG192sy56D9F7CNvL7jUJVXoqM1QKLnog=
 github.com/sourcegraph/conc v0.3.0 h1:OQTbbt6P72L20UqAkXXuLOj79LfEanQ+YQFNpLA9ySo=
