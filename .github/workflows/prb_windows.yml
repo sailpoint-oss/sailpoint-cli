@@ -30,8 +30,25 @@ jobs:
         with:
           node-version: 18
 
+      - name: Install gotestfmt
+        run: go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
+          
+      - name: Check env
+        run: env
+
       - name: Test
-        run: go test -v -count=1 ./...
+        shell: bash
+        run: |
+          set -o pipefail
+          go test -json -v -count=1 ./... 2>&1 | tee gotest.log | gotestfmt
+
+      - name: Upload test log
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-log-windows
+          path: gotest.log
+          if-no-files-found: error
 
       - name: Install
         run: go build -o sail.exe
