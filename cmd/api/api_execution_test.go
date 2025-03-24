@@ -4,10 +4,15 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/spf13/cobra"
 )
 
 // Mock client for testing
@@ -51,6 +56,30 @@ func mockResponse(statusCode int, body string) *http.Response {
 		Status:     http.StatusText(statusCode),
 		Body:       io.NopCloser(strings.NewReader(body)),
 	}
+}
+
+// Helper function to create a command with mock client
+func createCommandWithMockClient(cmd *cobra.Command, mockClient *mockClient) *cobra.Command {
+	// Override the RunE function to use our mock client
+	originalRunE := cmd.RunE
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		// Create a mock config
+		cfg := config.CLIConfig{
+			ClientID:     "test-client-id",
+			ClientSecret: "test-client-secret",
+			BaseURL:      "https://test.sailpoint.com",
+			AccessToken:  "test-access-token",
+		}
+
+		// Create a client with our mock
+		spClient := client.NewSpClient(cfg)
+
+		// Set the client in the command context
+		cmd.SetContext(context.WithValue(cmd.Context(), "client", spClient))
+
+		return originalRunE(cmd, args)
+	}
+	return cmd
 }
 
 // TestQueryParameterParsing tests the parsing of query parameters
@@ -201,13 +230,13 @@ func TestPrettyPrintJSON(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			var data interface{}
+			var jsonData interface{}
 			inputBytes := []byte(tc.input)
 
 			// Try to parse as JSON
-			if err := json.Unmarshal(inputBytes, &data); err == nil {
+			if err := json.Unmarshal(inputBytes, &jsonData); err == nil {
 				// If valid JSON, pretty print
-				pretty, err := json.MarshalIndent(data, "", "  ")
+				pretty, err := json.MarshalIndent(jsonData, "", "  ")
 				if err == nil {
 					inputBytes = pretty
 				}
@@ -250,6 +279,371 @@ func TestEndpointNormalization(t *testing.T) {
 
 			if endpoint != tc.expected {
 				t.Errorf("Expected endpoint %s, got %s", tc.expected, endpoint)
+			}
+		})
+	}
+}
+
+// TestGetCommand tests the GET command functionality
+func TestGetCommand(t *testing.T) {
+	testCases := []struct {
+		name           string
+		endpoint       string
+		headers        []string
+		queryParams    []string
+		prettyPrint    bool
+		mockResponse   *http.Response
+		mockError      error
+		expectedOutput string
+		expectedError  bool
+	}{
+		{
+			name:         "Successful GET request with pretty print",
+			endpoint:     "beta/accounts",
+			prettyPrint:  true,
+			mockResponse: mockResponse(200, `{"id":"123","name":"test"}`),
+			expectedOutput: `{
+  "id": "123",
+  "name": "test"
+}`,
+			expectedError: false,
+		},
+		{
+			name:           "GET request with headers",
+			endpoint:       "beta/accounts",
+			headers:        []string{"Accept: application/json"},
+			mockResponse:   mockResponse(200, `{"id":"123"}`),
+			expectedOutput: `{"id":"123"}`,
+			expectedError:  false,
+		},
+		{
+			name:           "GET request with query parameters",
+			endpoint:       "beta/accounts",
+			queryParams:    []string{"limit=10", "offset=0"},
+			mockResponse:   mockResponse(200, `{"id":"123"}`),
+			expectedOutput: `{"id":"123"}`,
+			expectedError:  false,
+		},
+		{
+			name:          "Failed GET request",
+			endpoint:      "beta/accounts",
+			mockError:     fmt.Errorf("network error"),
+			expectedError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Create mock client
+			mockClient := &mockClient{
+				getResponse: tc.mockResponse,
+				getError:    tc.mockError,
+			}
+
+			// Create command with mock client
+			cmd := createCommandWithMockClient(newGetCmd(), mockClient)
+			cmd.SetArgs([]string{tc.endpoint})
+
+			// Set flags
+			for _, header := range tc.headers {
+				cmd.Flags().Set("header", header)
+			}
+			for _, param := range tc.queryParams {
+				cmd.Flags().Set("query", param)
+			}
+			if tc.prettyPrint {
+				cmd.Flags().Set("pretty", "true")
+			}
+
+			// Capture output
+			output := &strings.Builder{}
+			cmd.SetOut(output)
+
+			// Execute command
+			err := cmd.Execute()
+
+			// Check error
+			if tc.expectedError {
+				if err == nil {
+					t.Error("Expected error but got none")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+				return
+			}
+
+			// Check output
+			if output.String() != tc.expectedOutput {
+				t.Errorf("Expected output:\n%s\nGot:\n%s", tc.expectedOutput, output.String())
+			}
+		})
+	}
+}
+
+// TestPostCommand tests the POST command functionality
+func TestPostCommand(t *testing.T) {
+	testCases := []struct {
+		name          string
+		endpoint      string
+		body          string
+		contentType   string
+		headers       []string
+		mockResponse  *http.Response
+		mockError     error
+		expectedError bool
+	}{
+		{
+			name:          "Successful POST request",
+			endpoint:      "beta/accounts",
+			body:          `{"name":"test"}`,
+			contentType:   "application/json",
+			mockResponse:  mockResponse(201, `{"id":"123"}`),
+			expectedError: false,
+		},
+		{
+			name:          "POST request with headers",
+			endpoint:      "beta/accounts",
+			body:          `{"name":"test"}`,
+			headers:       []string{"Accept: application/json"},
+			mockResponse:  mockResponse(201, `{"id":"123"}`),
+			expectedError: false,
+		},
+		{
+			name:          "Failed POST request",
+			endpoint:      "beta/accounts",
+			body:          `{"name":"test"}`,
+			mockError:     fmt.Errorf("network error"),
+			expectedError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Create mock client
+			mockClient := &mockClient{
+				postResponse: tc.mockResponse,
+				postError:    tc.mockError,
+			}
+
+			// Create command with mock client
+			cmd := createCommandWithMockClient(newPostCmd(), mockClient)
+			cmd.SetArgs([]string{tc.endpoint})
+
+			// Set flags
+			cmd.Flags().Set("body", tc.body)
+			if tc.contentType != "" {
+				cmd.Flags().Set("content-type", tc.contentType)
+			}
+			for _, header := range tc.headers {
+				cmd.Flags().Set("header", header)
+			}
+
+			// Execute command
+			err := cmd.Execute()
+
+			// Check error
+			if tc.expectedError {
+				if err == nil {
+					t.Error("Expected error but got none")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+// TestPutCommand tests the PUT command functionality
+func TestPutCommand(t *testing.T) {
+	testCases := []struct {
+		name          string
+		endpoint      string
+		body          string
+		contentType   string
+		headers       []string
+		mockResponse  *http.Response
+		mockError     error
+		expectedError bool
+	}{
+		{
+			name:          "Successful PUT request",
+			endpoint:      "beta/accounts/123",
+			body:          `{"name":"updated"}`,
+			contentType:   "application/json",
+			mockResponse:  mockResponse(200, `{"id":"123","name":"updated"}`),
+			expectedError: false,
+		},
+		{
+			name:          "Failed PUT request",
+			endpoint:      "beta/accounts/123",
+			body:          `{"name":"updated"}`,
+			mockError:     fmt.Errorf("network error"),
+			expectedError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Create mock client
+			mockClient := &mockClient{
+				putResponse: tc.mockResponse,
+				putError:    tc.mockError,
+			}
+
+			// Create command with mock client
+			cmd := createCommandWithMockClient(newPutCmd(), mockClient)
+			cmd.SetArgs([]string{tc.endpoint})
+
+			// Set flags
+			cmd.Flags().Set("body", tc.body)
+			if tc.contentType != "" {
+				cmd.Flags().Set("content-type", tc.contentType)
+			}
+			for _, header := range tc.headers {
+				cmd.Flags().Set("header", header)
+			}
+
+			// Execute command
+			err := cmd.Execute()
+
+			// Check error
+			if tc.expectedError {
+				if err == nil {
+					t.Error("Expected error but got none")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+// TestPatchCommand tests the PATCH command functionality
+func TestPatchCommand(t *testing.T) {
+	testCases := []struct {
+		name          string
+		endpoint      string
+		body          string
+		headers       []string
+		mockResponse  *http.Response
+		mockError     error
+		expectedError bool
+	}{
+		{
+			name:          "Successful PATCH request",
+			endpoint:      "beta/accounts/123",
+			body:          `{"name":"patched"}`,
+			mockResponse:  mockResponse(200, `{"id":"123","name":"patched"}`),
+			expectedError: false,
+		},
+		{
+			name:          "Failed PATCH request",
+			endpoint:      "beta/accounts/123",
+			body:          `{"name":"patched"}`,
+			mockError:     fmt.Errorf("network error"),
+			expectedError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Create mock client
+			mockClient := &mockClient{
+				patchResponse: tc.mockResponse,
+				patchError:    tc.mockError,
+			}
+
+			// Create command with mock client
+			cmd := createCommandWithMockClient(newPatchCmd(), mockClient)
+			cmd.SetArgs([]string{tc.endpoint})
+
+			// Set flags
+			cmd.Flags().Set("body", tc.body)
+			for _, header := range tc.headers {
+				cmd.Flags().Set("header", header)
+			}
+
+			// Execute command
+			err := cmd.Execute()
+
+			// Check error
+			if tc.expectedError {
+				if err == nil {
+					t.Error("Expected error but got none")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+// TestDeleteCommand tests the DELETE command functionality
+func TestDeleteCommand(t *testing.T) {
+	testCases := []struct {
+		name          string
+		endpoint      string
+		headers       []string
+		mockResponse  *http.Response
+		mockError     error
+		expectedError bool
+	}{
+		{
+			name:          "Successful DELETE request",
+			endpoint:      "beta/accounts/123",
+			mockResponse:  mockResponse(204, ""),
+			expectedError: false,
+		},
+		{
+			name:          "Failed DELETE request",
+			endpoint:      "beta/accounts/123",
+			mockError:     fmt.Errorf("network error"),
+			expectedError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Create mock client
+			mockClient := &mockClient{
+				deleteResponse: tc.mockResponse,
+				deleteError:    tc.mockError,
+			}
+
+			// Create command with mock client
+			cmd := createCommandWithMockClient(newDeleteCmd(), mockClient)
+			cmd.SetArgs([]string{tc.endpoint})
+
+			// Set flags
+			for _, header := range tc.headers {
+				cmd.Flags().Set("header", header)
+			}
+
+			// Execute command
+			err := cmd.Execute()
+
+			// Check error
+			if tc.expectedError {
+				if err == nil {
+					t.Error("Expected error but got none")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
 			}
 		})
 	}
