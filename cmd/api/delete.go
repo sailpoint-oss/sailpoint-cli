@@ -16,16 +16,16 @@ import (
 
 func newDeleteCmd() *cobra.Command {
 	var headerFlags []string
-	var queryParams []string
 	var outputFile string
 	var prettyPrint bool
+	var queryParams map[string]string
 
 	cmd := &cobra.Command{
 		Use:     "delete [endpoint]",
 		Short:   "Make a DELETE request to a SailPoint API endpoint",
 		Long:    "\nMake a DELETE request to a SailPoint API endpoint\n\n",
-		Example: "sail api delete /beta/accounts/123 --header 'Accept: application/json'",
-		Aliases: []string{"d", "del"},
+		Example: "sail api delete /beta/accounts/123",
+		Aliases: []string{"d"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := config.InitConfig()
@@ -47,20 +47,11 @@ func newDeleteCmd() *cobra.Command {
 				endpoint = "/" + endpoint
 			}
 
-			// Prepare query parameters
-			paramMap := make(map[string]string)
-			if len(queryParams) > 0 {
-				for _, param := range queryParams {
-					parts := strings.SplitN(param, "=", 2)
-					if len(parts) != 2 {
-						return fmt.Errorf("invalid query parameter format (use key=value): %s", param)
-					}
-					paramMap[parts[0]] = parts[1]
-				}
-			}
-
 			// Prepare headers
 			headers := make(map[string]string)
+			// Always add Accept header for JSON
+			headers["Accept"] = "application/json"
+			// Add any additional headers
 			for _, header := range headerFlags {
 				parts := strings.SplitN(header, ":", 2)
 				if len(parts) != 2 {
@@ -73,7 +64,7 @@ func newDeleteCmd() *cobra.Command {
 			log.Info("Making DELETE request", "endpoint", endpoint)
 
 			// Make the request
-			resp, err := spClient.Delete(ctx, endpoint, paramMap)
+			resp, err := spClient.Delete(ctx, endpoint, queryParams)
 			if err != nil {
 				return fmt.Errorf("request failed: %w", err)
 			}
@@ -86,7 +77,7 @@ func newDeleteCmd() *cobra.Command {
 			}
 
 			// Check if response is JSON and pretty print if requested
-			if prettyPrint && len(responseBody) > 0 {
+			if prettyPrint {
 				var jsonData interface{}
 				if err := json.Unmarshal(responseBody, &jsonData); err == nil {
 					prettyJSON, err := json.MarshalIndent(jsonData, "", "  ")
@@ -97,12 +88,12 @@ func newDeleteCmd() *cobra.Command {
 			}
 
 			// Output to file or stdout
-			if outputFile != "" && len(responseBody) > 0 {
+			if outputFile != "" {
 				if err := writeToFile(outputFile, responseBody); err != nil {
 					return fmt.Errorf("failed to write to file: %w", err)
 				}
 				fmt.Printf("Response saved to %s\n", outputFile)
-			} else if len(responseBody) > 0 {
+			} else {
 				fmt.Println(string(responseBody))
 			}
 
@@ -112,9 +103,9 @@ func newDeleteCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringArrayVarP(&headerFlags, "header", "H", []string{}, "HTTP headers (can be used multiple times, format: 'Key: Value')")
-	cmd.Flags().StringArrayVarP(&queryParams, "query", "q", []string{}, "Query parameters (can be used multiple times, format: 'key=value')")
 	cmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output file to save the response (if not specified, prints to stdout)")
 	cmd.Flags().BoolVarP(&prettyPrint, "pretty", "p", false, "Pretty print JSON response")
+	cmd.Flags().StringToStringVarP(&queryParams, "query", "q", nil, "Query parameters (can be used multiple times, format: 'key=value')")
 
 	return cmd
 }

@@ -27,8 +27,8 @@ func newPutCmd() *cobra.Command {
 		Use:     "put [endpoint]",
 		Short:   "Make a PUT request to a SailPoint API endpoint",
 		Long:    "\nMake a PUT request to a SailPoint API endpoint with a JSON body\n\n",
-		Example: "sail api put /beta/accounts/123 --body '{\"attribute\":\"updated\"}' --header 'Accept: application/json'",
-		Aliases: []string{"pu"},
+		Example: "sail api put /beta/accounts --body '{\"attribute\":\"value\"}'",
+		Aliases: []string{"u"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := config.InitConfig()
@@ -70,6 +70,9 @@ func newPutCmd() *cobra.Command {
 
 			// Prepare headers
 			headers := make(map[string]string)
+			// Always add Accept header for JSON
+			headers["Accept"] = "application/json"
+			// Add any additional headers
 			for _, header := range headerFlags {
 				parts := strings.SplitN(header, ":", 2)
 				if len(parts) != 2 {

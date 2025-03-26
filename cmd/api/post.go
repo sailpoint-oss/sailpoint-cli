@@ -27,7 +27,7 @@ func newPostCmd() *cobra.Command {
 		Use:     "post [endpoint]",
 		Short:   "Make a POST request to a SailPoint API endpoint",
 		Long:    "\nMake a POST request to a SailPoint API endpoint with a JSON body\n\n",
-		Example: "sail api post /beta/accounts --body '{\"attribute\":\"value\"}' --header 'Accept: application/json'",
+		Example: "sail api post /beta/accounts --body '{\"attribute\":\"value\"}'",
 		Aliases: []string{"p"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -70,6 +70,9 @@ func newPostCmd() *cobra.Command {
 
 			// Prepare headers
 			headers := make(map[string]string)
+			// Always add Accept header for JSON
+			headers["Accept"] = "application/json"
+			// Add any additional headers
 			for _, header := range headerFlags {
 				parts := strings.SplitN(header, ":", 2)
 				if len(parts) != 2 {

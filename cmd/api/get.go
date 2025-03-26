@@ -26,7 +26,7 @@ func newGetCmd() *cobra.Command {
 		Use:     "get [endpoint]",
 		Short:   "Make a GET request to a SailPoint API endpoint",
 		Long:    "\nMake a GET request to a SailPoint API endpoint\n\n",
-		Example: "sail api get /beta/accounts --header 'Accept: application/json'",
+		Example: "sail api get /beta/accounts",
 		Aliases: []string{"g"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -71,6 +71,9 @@ func newGetCmd() *cobra.Command {
 
 			// Prepare headers
 			headers := make(map[string]string)
+			// Always add Accept header for JSON
+			headers["Accept"] = "application/json"
+			// Add any additional headers
 			for _, header := range headerFlags {
 				parts := strings.SplitN(header, ":", 2)
 				if len(parts) != 2 {

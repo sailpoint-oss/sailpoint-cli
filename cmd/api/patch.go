@@ -21,12 +21,13 @@ func newPatchCmd() *cobra.Command {
 	var bodyContent string
 	var outputFile string
 	var prettyPrint bool
+	var contentType string
 
 	cmd := &cobra.Command{
 		Use:     "patch [endpoint]",
 		Short:   "Make a PATCH request to a SailPoint API endpoint",
 		Long:    "\nMake a PATCH request to a SailPoint API endpoint with a JSON body\n\n",
-		Example: "sail api patch /beta/accounts/123 --body '{\"attribute\":\"updated\"}' --header 'Accept: application/json'",
+		Example: "sail api patch /beta/accounts --body '{\"attribute\":\"value\"}'",
 		Aliases: []string{"pa"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -63,8 +64,15 @@ func newPatchCmd() *cobra.Command {
 				return fmt.Errorf("either --body or --body-file must be provided")
 			}
 
+			if contentType == "" {
+				contentType = "application/json"
+			}
+
 			// Prepare headers
 			headers := make(map[string]string)
+			// Always add Accept header for JSON
+			headers["Accept"] = "application/json"
+			// Add any additional headers
 			for _, header := range headerFlags {
 				parts := strings.SplitN(header, ":", 2)
 				if len(parts) != 2 {
@@ -120,6 +128,7 @@ func newPatchCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&bodyContent, "body", "b", "", "Request body content as a string")
 	cmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output file to save the response (if not specified, prints to stdout)")
 	cmd.Flags().BoolVarP(&prettyPrint, "pretty", "p", false, "Pretty print JSON response")
+	cmd.Flags().StringVarP(&contentType, "content-type", "c", "application/json", "Content type of the request body")
 
 	return cmd
 }
