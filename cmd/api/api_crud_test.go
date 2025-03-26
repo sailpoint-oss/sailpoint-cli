@@ -108,22 +108,31 @@ func TestNewCRUDCmd(t *testing.T) {
 
 	// Capture the response bytes before logging
 	responseBytes := createBuffer.Bytes()
+	log.Info("Raw response bytes", "response", string(responseBytes))
 
 	// Extract just the JSON part of the response (first line that contains the JSON)
 	lines := bytes.Split(responseBytes, []byte("\n"))
+	log.Info("Split response into lines", "numLines", len(lines))
+
 	var jsonBytes []byte
-	for _, line := range lines {
+	for i, line := range lines {
+		log.Info("Processing line", "lineNum", i, "line", string(line))
 		if bytes.HasPrefix(line, []byte("{")) {
 			jsonBytes = line
+			log.Info("Found JSON line", "json", string(jsonBytes))
 			break
 		}
+	}
+
+	if len(jsonBytes) == 0 {
+		t.Fatal("No JSON line found in response")
 	}
 
 	// Parse the response to get the transform ID
 	var response map[string]interface{}
 	err = json.Unmarshal(jsonBytes, &response)
 	if err != nil {
-		t.Fatalf("Error parsing response: %v", err)
+		t.Fatalf("Error parsing response: %v\nJSON bytes: %s", err, string(jsonBytes))
 	}
 
 	transformID, ok := response["id"].(string)
@@ -144,22 +153,31 @@ func TestNewCRUDCmd(t *testing.T) {
 
 	// Capture the response bytes before logging
 	getResponseBytes := getBuffer.Bytes()
+	log.Info("Raw GET response bytes", "response", string(getResponseBytes))
 
 	// Extract just the JSON part of the response
 	lines = bytes.Split(getResponseBytes, []byte("\n"))
+	log.Info("Split GET response into lines", "numLines", len(lines))
+
 	jsonBytes = nil
-	for _, line := range lines {
+	for i, line := range lines {
+		log.Info("Processing GET line", "lineNum", i, "line", string(line))
 		if bytes.HasPrefix(line, []byte("{")) {
 			jsonBytes = line
+			log.Info("Found JSON line", "json", string(jsonBytes))
 			break
 		}
+	}
+
+	if len(jsonBytes) == 0 {
+		t.Fatal("No JSON line found in GET response")
 	}
 
 	// Verify the retrieved transform matches what we created
 	var getResponse map[string]interface{}
 	err = json.Unmarshal(jsonBytes, &getResponse)
 	if err != nil {
-		t.Fatalf("Error parsing get response: %v", err)
+		t.Fatalf("Error parsing get response: %v\nJSON bytes: %s", err, string(jsonBytes))
 	}
 
 	// Verify the name matches
@@ -203,21 +221,30 @@ func TestNewCRUDCmd(t *testing.T) {
 
 	// Capture the response bytes before logging
 	getResponseBytes = getBuffer.Bytes()
+	log.Info("Raw GET response bytes after update", "response", string(getResponseBytes))
 
 	// Extract just the JSON part of the response
 	lines = bytes.Split(getResponseBytes, []byte("\n"))
+	log.Info("Split GET response into lines after update", "numLines", len(lines))
+
 	jsonBytes = nil
-	for _, line := range lines {
+	for i, line := range lines {
+		log.Info("Processing GET line after update", "lineNum", i, "line", string(line))
 		if bytes.HasPrefix(line, []byte("{")) {
 			jsonBytes = line
+			log.Info("Found JSON line", "json", string(jsonBytes))
 			break
 		}
+	}
+
+	if len(jsonBytes) == 0 {
+		t.Fatal("No JSON line found in GET response after update")
 	}
 
 	// Verify the retrieved transform matches our updates
 	err = json.Unmarshal(jsonBytes, &getResponse)
 	if err != nil {
-		t.Fatalf("Error parsing get response after update: %v", err)
+		t.Fatalf("Error parsing get response after update: %v\nJSON bytes: %s", err, string(jsonBytes))
 	}
 
 	// Verify the name was updated
