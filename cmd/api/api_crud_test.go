@@ -109,9 +109,16 @@ func TestNewCRUDCmd(t *testing.T) {
 	// Capture the response bytes before logging
 	responseBytes := createBuffer.Bytes()
 
+	// Extract just the JSON part of the response (before the Status line)
+	jsonEnd := bytes.LastIndex(responseBytes, []byte("}"))
+	if jsonEnd == -1 {
+		t.Fatal("Could not find end of JSON response")
+	}
+	jsonBytes := responseBytes[:jsonEnd+1]
+
 	// Parse the response to get the transform ID
 	var response map[string]interface{}
-	err = json.Unmarshal(responseBytes, &response)
+	err = json.Unmarshal(jsonBytes, &response)
 	if err != nil {
 		t.Fatalf("Error parsing response: %v", err)
 	}
@@ -135,9 +142,16 @@ func TestNewCRUDCmd(t *testing.T) {
 	// Capture the response bytes before logging
 	getResponseBytes := getBuffer.Bytes()
 
+	// Extract just the JSON part of the response
+	jsonEnd = bytes.LastIndex(getResponseBytes, []byte("}"))
+	if jsonEnd == -1 {
+		t.Fatal("Could not find end of JSON response")
+	}
+	jsonBytes = getResponseBytes[:jsonEnd+1]
+
 	// Verify the retrieved transform matches what we created
 	var getResponse map[string]interface{}
-	err = json.Unmarshal(getResponseBytes, &getResponse)
+	err = json.Unmarshal(jsonBytes, &getResponse)
 	if err != nil {
 		t.Fatalf("Error parsing get response: %v", err)
 	}
@@ -184,8 +198,15 @@ func TestNewCRUDCmd(t *testing.T) {
 	// Capture the response bytes before logging
 	getResponseBytes = getBuffer.Bytes()
 
+	// Extract just the JSON part of the response
+	jsonEnd = bytes.LastIndex(getResponseBytes, []byte("}"))
+	if jsonEnd == -1 {
+		t.Fatal("Could not find end of JSON response")
+	}
+	jsonBytes = getResponseBytes[:jsonEnd+1]
+
 	// Verify the retrieved transform matches our updates
-	err = json.Unmarshal(getResponseBytes, &getResponse)
+	err = json.Unmarshal(jsonBytes, &getResponse)
 	if err != nil {
 		t.Fatalf("Error parsing get response after update: %v", err)
 	}
