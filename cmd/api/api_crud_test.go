@@ -110,11 +110,17 @@ func TestNewCRUDCmd(t *testing.T) {
 	responseBytes := createBuffer.Bytes()
 
 	// Extract just the JSON part of the response (before the Status line)
-	jsonEnd := bytes.LastIndex(responseBytes, []byte("}"))
-	if jsonEnd == -1 {
-		t.Fatal("Could not find end of JSON response")
+	lines := bytes.Split(responseBytes, []byte("\n"))
+	var jsonBytes []byte
+	for _, line := range lines {
+		if bytes.HasPrefix(line, []byte("Status:")) {
+			break
+		}
+		if len(line) > 0 {
+			jsonBytes = append(jsonBytes, line...)
+			jsonBytes = append(jsonBytes, '\n')
+		}
 	}
-	jsonBytes := responseBytes[:jsonEnd+1]
 
 	// Parse the response to get the transform ID
 	var response map[string]interface{}
@@ -143,11 +149,17 @@ func TestNewCRUDCmd(t *testing.T) {
 	getResponseBytes := getBuffer.Bytes()
 
 	// Extract just the JSON part of the response
-	jsonEnd = bytes.LastIndex(getResponseBytes, []byte("}"))
-	if jsonEnd == -1 {
-		t.Fatal("Could not find end of JSON response")
+	lines = bytes.Split(getResponseBytes, []byte("\n"))
+	jsonBytes = nil
+	for _, line := range lines {
+		if bytes.HasPrefix(line, []byte("Status:")) {
+			break
+		}
+		if len(line) > 0 {
+			jsonBytes = append(jsonBytes, line...)
+			jsonBytes = append(jsonBytes, '\n')
+		}
 	}
-	jsonBytes = getResponseBytes[:jsonEnd+1]
 
 	// Verify the retrieved transform matches what we created
 	var getResponse map[string]interface{}
@@ -199,11 +211,17 @@ func TestNewCRUDCmd(t *testing.T) {
 	getResponseBytes = getBuffer.Bytes()
 
 	// Extract just the JSON part of the response
-	jsonEnd = bytes.LastIndex(getResponseBytes, []byte("}"))
-	if jsonEnd == -1 {
-		t.Fatal("Could not find end of JSON response")
+	lines = bytes.Split(getResponseBytes, []byte("\n"))
+	jsonBytes = nil
+	for _, line := range lines {
+		if bytes.HasPrefix(line, []byte("Status:")) {
+			break
+		}
+		if len(line) > 0 {
+			jsonBytes = append(jsonBytes, line...)
+			jsonBytes = append(jsonBytes, '\n')
+		}
 	}
-	jsonBytes = getResponseBytes[:jsonEnd+1]
 
 	// Verify the retrieved transform matches our updates
 	err = json.Unmarshal(jsonBytes, &getResponse)
