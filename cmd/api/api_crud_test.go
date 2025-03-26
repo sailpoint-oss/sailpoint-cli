@@ -215,6 +215,7 @@ func TestNewCRUDCmd(t *testing.T) {
 
 	// Change a value to verify the update
 	updateTransform["name"] = "Updated " + transformName
+	updateTransform["id"] = transformID // Ensure ID is included in update
 
 	err = SaveTransform(updateFile, updateTransform)
 	if err != nil {
@@ -228,9 +229,53 @@ func TestNewCRUDCmd(t *testing.T) {
 	updateCMD.SetArgs([]string{"/v2024/transforms/" + transformID})
 	updateCMD.Flags().Set("body-file", filepath.Join(path, updateFile))
 
+	// Capture stdout for PUT
+	r, w, _ = os.Pipe()
+	os.Stdout = w
+
 	err = updateCMD.Execute()
 	if err != nil {
 		t.Fatalf("TestNewUpdateCmd: Unable to execute the command successfully: %v", err)
+	}
+
+	// Close the writer and read the output
+	w.Close()
+	updateResponseBytes, err := io.ReadAll(r)
+	if err != nil {
+		t.Fatalf("Error reading stdout: %v", err)
+	}
+
+	log.Info("Raw PUT response bytes", "response", string(updateResponseBytes))
+
+	// Extract just the JSON part of the response
+	lines = bytes.Split(updateResponseBytes, []byte("\n"))
+	log.Info("Split PUT response into lines", "numLines", len(lines))
+
+	jsonBytes = nil
+	for i, line := range lines {
+		log.Info("Processing PUT line", "lineNum", i, "line", string(line))
+		if bytes.HasPrefix(line, []byte("{")) {
+			jsonBytes = line
+			log.Info("Found JSON line", "json", string(jsonBytes))
+			break
+		}
+	}
+
+	if len(jsonBytes) == 0 {
+		t.Fatal("No JSON line found in PUT response")
+	}
+
+	// Verify the PUT response
+	var putResponse map[string]interface{}
+	err = json.Unmarshal(jsonBytes, &putResponse)
+	if err != nil {
+		t.Fatalf("Error parsing put response: %v\nJSON bytes: %s", err, string(jsonBytes))
+	}
+
+	// Verify the name was updated in the PUT response
+	putName, ok := putResponse["name"].(string)
+	if !ok || putName != "Updated "+transformName {
+		t.Fatalf("PUT response name '%s' does not match expected updated name 'Updated %s'", putName, transformName)
 	}
 
 	// Verify the update by getting the transform again
