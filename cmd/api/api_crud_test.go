@@ -213,9 +213,12 @@ func TestNewCRUDCmd(t *testing.T) {
 		updateTransform[k] = v
 	}
 
-	// Change a value to verify the update
-	updateTransform["name"] = "Updated " + transformName
-	updateTransform["id"] = transformID // Ensure ID is included in update
+	// Change an attribute value to verify the update
+	attributes, ok := updateTransform["attributes"].(map[string]interface{})
+	if !ok {
+		t.Fatal("Could not get attributes from transform")
+	}
+	attributes["sourceName"] = "Updated Workday"
 
 	err = SaveTransform(updateFile, updateTransform)
 	if err != nil {
@@ -272,10 +275,14 @@ func TestNewCRUDCmd(t *testing.T) {
 		t.Fatalf("Error parsing put response: %v\nJSON bytes: %s", err, string(jsonBytes))
 	}
 
-	// Verify the name was updated in the PUT response
-	putName, ok := putResponse["name"].(string)
-	if !ok || putName != "Updated "+transformName {
-		t.Fatalf("PUT response name '%s' does not match expected updated name 'Updated %s'", putName, transformName)
+	// Verify the sourceName was updated in the PUT response
+	putAttributes, ok := putResponse["attributes"].(map[string]interface{})
+	if !ok {
+		t.Fatal("Could not get attributes from PUT response")
+	}
+	putSourceName, ok := putAttributes["sourceName"].(string)
+	if !ok || putSourceName != "Updated Workday" {
+		t.Fatalf("PUT response sourceName '%s' does not match expected updated sourceName 'Updated Workday'", putSourceName)
 	}
 
 	// Verify the update by getting the transform again
@@ -325,8 +332,8 @@ func TestNewCRUDCmd(t *testing.T) {
 
 	// Verify the name was updated
 	retrievedName, ok = getResponse["name"].(string)
-	if !ok || retrievedName != "Updated "+transformName {
-		t.Fatalf("Retrieved transform name '%s' does not match updated name 'Updated %s'", retrievedName, transformName)
+	if !ok || retrievedName != transformName {
+		t.Fatalf("Retrieved transform name '%s' does not match updated name '%s'", retrievedName, transformName)
 	}
 
 	// Clean up - delete the transform
