@@ -4,6 +4,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -101,13 +102,24 @@ func TestNewCRUDCmd(t *testing.T) {
 	createCMD.SetArgs([]string{"/v2024/transforms"})
 	createCMD.Flags().Set("body-file", filepath.Join(path, createFile))
 
+	// Capture stdout
+	oldStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+	defer func() { os.Stdout = oldStdout }()
+
 	err = createCMD.Execute()
 	if err != nil {
 		t.Fatalf("TestNewCreateCmd: Unable to execute the command successfully: %v", err)
 	}
 
-	// Capture the response bytes before logging
-	responseBytes := createBuffer.Bytes()
+	// Close the writer and read the output
+	w.Close()
+	responseBytes, err := io.ReadAll(r)
+	if err != nil {
+		t.Fatalf("Error reading stdout: %v", err)
+	}
+
 	log.Info("Raw response bytes", "response", string(responseBytes))
 
 	// Extract just the JSON part of the response (first line that contains the JSON)
@@ -146,13 +158,22 @@ func TestNewCRUDCmd(t *testing.T) {
 	getCMD.SetOut(getBuffer)
 	getCMD.SetArgs([]string{"/v2024/transforms/" + transformID})
 
+	// Capture stdout for GET
+	r, w, _ = os.Pipe()
+	os.Stdout = w
+
 	err = getCMD.Execute()
 	if err != nil {
 		t.Fatalf("TestNewGetCmd: Unable to execute the command successfully: %v", err)
 	}
 
-	// Capture the response bytes before logging
-	getResponseBytes := getBuffer.Bytes()
+	// Close the writer and read the output
+	w.Close()
+	getResponseBytes, err := io.ReadAll(r)
+	if err != nil {
+		t.Fatalf("Error reading stdout: %v", err)
+	}
+
 	log.Info("Raw GET response bytes", "response", string(getResponseBytes))
 
 	// Extract just the JSON part of the response
@@ -214,13 +235,23 @@ func TestNewCRUDCmd(t *testing.T) {
 
 	// Verify the update by getting the transform again
 	getBuffer.Reset()
+
+	// Capture stdout for final GET
+	r, w, _ = os.Pipe()
+	os.Stdout = w
+
 	err = getCMD.Execute()
 	if err != nil {
 		t.Fatalf("TestNewGetCmd: Unable to execute the command successfully after update: %v", err)
 	}
 
-	// Capture the response bytes before logging
-	getResponseBytes = getBuffer.Bytes()
+	// Close the writer and read the output
+	w.Close()
+	getResponseBytes, err = io.ReadAll(r)
+	if err != nil {
+		t.Fatalf("Error reading stdout: %v", err)
+	}
+
 	log.Info("Raw GET response bytes after update", "response", string(getResponseBytes))
 
 	// Extract just the JSON part of the response
