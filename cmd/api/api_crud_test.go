@@ -106,9 +106,12 @@ func TestNewCRUDCmd(t *testing.T) {
 		t.Fatalf("TestNewCreateCmd: Unable to execute the command successfully: %v", err)
 	}
 
+	// Capture the response bytes before logging
+	responseBytes := createBuffer.Bytes()
+
 	// Parse the response to get the transform ID
 	var response map[string]interface{}
-	err = json.Unmarshal(createBuffer.Bytes(), &response)
+	err = json.Unmarshal(responseBytes, &response)
 	if err != nil {
 		t.Fatalf("Error parsing response: %v", err)
 	}
@@ -129,9 +132,12 @@ func TestNewCRUDCmd(t *testing.T) {
 		t.Fatalf("TestNewGetCmd: Unable to execute the command successfully: %v", err)
 	}
 
+	// Capture the response bytes before logging
+	getResponseBytes := getBuffer.Bytes()
+
 	// Verify the retrieved transform matches what we created
 	var getResponse map[string]interface{}
-	err = json.Unmarshal(getBuffer.Bytes(), &getResponse)
+	err = json.Unmarshal(getResponseBytes, &getResponse)
 	if err != nil {
 		t.Fatalf("Error parsing get response: %v", err)
 	}
@@ -175,8 +181,11 @@ func TestNewCRUDCmd(t *testing.T) {
 		t.Fatalf("TestNewGetCmd: Unable to execute the command successfully after update: %v", err)
 	}
 
+	// Capture the response bytes before logging
+	getResponseBytes = getBuffer.Bytes()
+
 	// Verify the retrieved transform matches our updates
-	err = json.Unmarshal(getBuffer.Bytes(), &getResponse)
+	err = json.Unmarshal(getResponseBytes, &getResponse)
 	if err != nil {
 		t.Fatalf("Error parsing get response after update: %v", err)
 	}
