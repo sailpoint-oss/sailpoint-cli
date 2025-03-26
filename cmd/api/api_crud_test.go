@@ -109,16 +109,13 @@ func TestNewCRUDCmd(t *testing.T) {
 	// Capture the response bytes before logging
 	responseBytes := createBuffer.Bytes()
 
-	// Extract just the JSON part of the response (before the Status line)
+	// Extract just the JSON part of the response (first line that contains the JSON)
 	lines := bytes.Split(responseBytes, []byte("\n"))
 	var jsonBytes []byte
 	for _, line := range lines {
-		if bytes.HasPrefix(line, []byte("Status:")) {
+		if bytes.HasPrefix(line, []byte("{")) {
+			jsonBytes = line
 			break
-		}
-		if len(line) > 0 {
-			jsonBytes = append(jsonBytes, line...)
-			jsonBytes = append(jsonBytes, '\n')
 		}
 	}
 
@@ -152,12 +149,9 @@ func TestNewCRUDCmd(t *testing.T) {
 	lines = bytes.Split(getResponseBytes, []byte("\n"))
 	jsonBytes = nil
 	for _, line := range lines {
-		if bytes.HasPrefix(line, []byte("Status:")) {
+		if bytes.HasPrefix(line, []byte("{")) {
+			jsonBytes = line
 			break
-		}
-		if len(line) > 0 {
-			jsonBytes = append(jsonBytes, line...)
-			jsonBytes = append(jsonBytes, '\n')
 		}
 	}
 
@@ -214,12 +208,9 @@ func TestNewCRUDCmd(t *testing.T) {
 	lines = bytes.Split(getResponseBytes, []byte("\n"))
 	jsonBytes = nil
 	for _, line := range lines {
-		if bytes.HasPrefix(line, []byte("Status:")) {
+		if bytes.HasPrefix(line, []byte("{")) {
+			jsonBytes = line
 			break
-		}
-		if len(line) > 0 {
-			jsonBytes = append(jsonBytes, line...)
-			jsonBytes = append(jsonBytes, '\n')
 		}
 	}
 
