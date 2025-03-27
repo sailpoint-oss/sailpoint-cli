@@ -2,8 +2,8 @@
 package api
 
 import (
+	"bytes"
 	"io"
-	"os"
 	"strings"
 	"testing"
 )
@@ -33,19 +33,16 @@ func TestListTransformations(t *testing.T) {
 	cmd.Flags().Set("query", "limit=2")
 
 	// Capture stdout
-	oldStdout := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-	defer func() { os.Stdout = oldStdout }()
+	buffer := new(bytes.Buffer)
+	cmd.SetOut(buffer)
 
 	err := cmd.Execute()
 	if err != nil {
 		t.Fatalf("TestNewCreateCmd: Unable to execute the command successfully: %v", err)
 	}
 
-	// Close the writer and read the output
-	w.Close()
-	responseBytes, err := io.ReadAll(r)
+	// Read the output
+	responseBytes, err := io.ReadAll(buffer)
 	if err != nil {
 		t.Fatalf("Error reading stdout: %v", err)
 	}
