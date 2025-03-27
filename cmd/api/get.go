@@ -13,6 +13,7 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/jsonpath"
 	"github.com/spf13/cobra"
 )
 
@@ -21,6 +22,7 @@ func newGetCmd() *cobra.Command {
 	var queryParams []string
 	var outputFile string
 	var prettyPrint bool
+	var jsonPath string
 
 	cmd := &cobra.Command{
 		Use:     "get [endpoint]",
@@ -98,6 +100,15 @@ func newGetCmd() *cobra.Command {
 				return fmt.Errorf("failed to read response: %w", err)
 			}
 
+			// If JSONPath is specified, evaluate it
+			if jsonPath != "" {
+				result, err := jsonpath.EvaluateJSONPath(body, jsonPath)
+				if err != nil {
+					return fmt.Errorf("failed to evaluate JSONPath: %w", err)
+				}
+				body = result
+			}
+
 			// Check if response is JSON and pretty print if requested
 			if prettyPrint {
 				var jsonData interface{}
@@ -116,7 +127,7 @@ func newGetCmd() *cobra.Command {
 				}
 				fmt.Printf("Response saved to %s\n", outputFile)
 			} else {
-				fmt.Println(string(body))
+				cmd.Println(string(body))
 			}
 
 			fmt.Printf("Status: %s\n", resp.Status)
@@ -128,6 +139,7 @@ func newGetCmd() *cobra.Command {
 	cmd.Flags().StringArrayVarP(&queryParams, "query", "q", []string{}, "Query parameters (can be used multiple times, format: 'key=value')")
 	cmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output file to save the response (if not specified, prints to stdout)")
 	cmd.Flags().BoolVarP(&prettyPrint, "pretty", "p", false, "Pretty print JSON response")
+	cmd.Flags().StringVarP(&jsonPath, "jsonpath", "j", "", "JSONPath expression to evaluate on the response")
 
 	return cmd
 }

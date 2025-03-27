@@ -12,6 +12,7 @@ Similar to the GitHub CLI's `api` command, this provides a simple way to hit any
 sail api get /beta/accounts
 sail api get /beta/accounts/123 --header "Accept: application/json" --pretty
 sail api get /beta/identities --query "limit=100" --query "offset=0" --output identities.json
+sail api get /beta/accounts --jsonpath "$.items[*].id"  # Extract all account IDs
 ```
 
 ### POST Request
@@ -46,6 +47,7 @@ All commands support the following options:
 - `--header`, `-H`: Set HTTP headers (can be used multiple times, format: 'Key: Value')
 - `--output`, `-o`: Output file to save the response (if not specified, prints to stdout)
 - `--pretty`, `-p`: Pretty print JSON response
+- `--jsonpath`, `-j`: JSONPath expression to evaluate on the response
 
 ### Body Options (POST, PUT, PATCH)
 
@@ -55,4 +57,29 @@ All commands support the following options:
 
 ### Query Options (GET, DELETE)
 
-- `--query`, `-q`: Query parameters (can be used multiple times, format: 'key=value') 
+- `--query`, `-q`: Query parameters (can be used multiple times, format: 'key=value')
+
+## JSONPath Examples
+
+The `--jsonpath` option allows you to extract specific values from JSON responses using JSONPath expressions:
+
+```bash
+# Extract a single value
+sail api get /beta/accounts/123 --jsonpath "$.name"
+
+# Extract nested values
+sail api get /beta/accounts/123 --jsonpath "$.attributes.email"
+
+# Extract array elements
+sail api get /beta/accounts --jsonpath "$.items[*].id"
+
+# Extract multiple values
+sail api get /beta/accounts/123 --jsonpath "$.name" --jsonpath "$.id"
+```
+
+JSONPath expressions follow the standard JSONPath syntax:
+- `$`: Root object
+- `.`: Child operator
+- `[]`: Array access
+- `[*]`: Array wildcard
+- `..`: Recursive descent 

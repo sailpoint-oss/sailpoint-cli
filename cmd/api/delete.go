@@ -11,6 +11,7 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/jsonpath"
 	"github.com/spf13/cobra"
 )
 
@@ -19,6 +20,7 @@ func newDeleteCmd() *cobra.Command {
 	var outputFile string
 	var prettyPrint bool
 	var queryParams map[string]string
+	var jsonPath string
 
 	cmd := &cobra.Command{
 		Use:     "delete [endpoint]",
@@ -76,6 +78,15 @@ func newDeleteCmd() *cobra.Command {
 				return fmt.Errorf("failed to read response: %w", err)
 			}
 
+			// If JSONPath is specified, evaluate it
+			if jsonPath != "" {
+				result, err := jsonpath.EvaluateJSONPath(responseBody, jsonPath)
+				if err != nil {
+					return fmt.Errorf("failed to evaluate JSONPath: %w", err)
+				}
+				responseBody = result
+			}
+
 			// Check if response is JSON and pretty print if requested
 			if prettyPrint {
 				var jsonData interface{}
@@ -94,7 +105,7 @@ func newDeleteCmd() *cobra.Command {
 				}
 				fmt.Printf("Response saved to %s\n", outputFile)
 			} else {
-				fmt.Println(string(responseBody))
+				cmd.Println(string(responseBody))
 			}
 
 			fmt.Printf("Status: %s\n", resp.Status)
@@ -106,6 +117,7 @@ func newDeleteCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output file to save the response (if not specified, prints to stdout)")
 	cmd.Flags().BoolVarP(&prettyPrint, "pretty", "p", false, "Pretty print JSON response")
 	cmd.Flags().StringToStringVarP(&queryParams, "query", "q", nil, "Query parameters (can be used multiple times, format: 'key=value')")
+	cmd.Flags().StringVarP(&jsonPath, "jsonpath", "j", "", "JSONPath expression to evaluate on the response")
 
 	return cmd
 }
