@@ -80,11 +80,11 @@ func newDeleteCmd() *cobra.Command {
 
 			// If JSONPath is specified, evaluate it
 			if jsonPath != "" {
-				result, err := jsonpath.EvaluateJSONPath(responseBody, jsonPath)
+				result, err := jsonpath.EvaluateJSONPathToString(responseBody, jsonPath)
 				if err != nil {
 					return fmt.Errorf("failed to evaluate JSONPath: %w", err)
 				}
-				responseBody = result
+				responseBody = []byte(result)
 			}
 
 			// Check if response is JSON and pretty print if requested

@@ -102,11 +102,11 @@ func newGetCmd() *cobra.Command {
 
 			// If JSONPath is specified, evaluate it
 			if jsonPath != "" {
-				result, err := jsonpath.EvaluateJSONPath(body, jsonPath)
+				result, err := jsonpath.EvaluateJSONPathToString(body, jsonPath)
 				if err != nil {
 					return fmt.Errorf("failed to evaluate JSONPath: %w", err)
 				}
-				body = result
+				body = []byte(result)
 			}
 
 			// Check if response is JSON and pretty print if requested

@@ -38,11 +38,14 @@ func EvaluateJSONPathToString(jsonData []byte, path string) (string, error) {
 		return "", err
 	}
 
-	// Remove quotes if the result is a string
+	// Convert to string and clean up
 	str := string(result)
+	// Remove quotes if present
 	if strings.HasPrefix(str, "\"") && strings.HasSuffix(str, "\"") {
 		str = str[1 : len(str)-1]
 	}
+	// Remove any newlines
+	str = strings.TrimSpace(str)
 
 	return str, nil
 }
