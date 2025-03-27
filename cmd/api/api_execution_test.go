@@ -38,7 +38,7 @@ func TestListTransformations(t *testing.T) {
 	os.Stdout = w
 	defer func() { os.Stdout = oldStdout }()
 
-	err = cmd.Execute()
+	err := cmd.Execute()
 	if err != nil {
 		t.Fatalf("TestNewCreateCmd: Unable to execute the command successfully: %v", err)
 	}
