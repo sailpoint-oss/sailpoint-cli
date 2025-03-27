@@ -22,13 +22,6 @@ func EvaluateJSONPath(jsonData []byte, path string) ([]byte, error) {
 		return nil, fmt.Errorf("failed to parse JSON: %w", err)
 	}
 
-	// Convert JSONPath syntax to jsonslice syntax
-	// jsonslice uses a simpler syntax where:
-	// - .name becomes name
-	// - .items[0].id becomes items[0].id
-	// - .items[*].id becomes items[*].id
-	path = strings.TrimPrefix(path, ".")
-
 	// Evaluate the JSONPath expression
 	result, err := jsonslice.Get(jsonData, path)
 	if err != nil {
