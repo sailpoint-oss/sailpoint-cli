@@ -2,6 +2,9 @@
 package api
 
 import (
+	"io"
+	"os"
+	"strings"
 	"testing"
 )
 
@@ -54,9 +57,4 @@ func TestListTransformations(t *testing.T) {
 	if transformations != 2 {
 		t.Errorf("Expected 2 transformations in the response, but got: %d", transformations)
 	}
-}
-
-
-
-
 }
