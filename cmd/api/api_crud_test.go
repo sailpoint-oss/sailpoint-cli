@@ -146,12 +146,8 @@ func TestNewCRUDCmd(t *testing.T) {
 		updateTransform[k] = v
 	}
 
-	// Change an attribute value to verify the update
-	attributes, ok := updateTransform["attributes"].(map[string]interface{})
-	if !ok {
-		t.Fatal("Could not get attributes from transform")
-	}
-	attributes["sourceName"] = "Updated Workday"
+	// Change the root level name to verify the update
+	updateTransform["name"] = "Updated " + transformName
 
 	err = SaveTransform(updateFile, updateTransform)
 	if err != nil {
@@ -164,7 +160,7 @@ func TestNewCRUDCmd(t *testing.T) {
 	updateCMD.SetOut(updateBuffer)
 	updateCMD.SetArgs([]string{"/v2024/transforms/" + transformID})
 	updateCMD.Flags().Set("body-file", filepath.Join(path, updateFile))
-	updateCMD.Flags().Set("jsonpath", "$.attributes.sourceName")
+	updateCMD.Flags().Set("jsonpath", "$.name")
 
 	err = updateCMD.Execute()
 	if err != nil {
@@ -176,8 +172,8 @@ func TestNewCRUDCmd(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error reading stdout: %v", err)
 	}
-	putSourceName := string(responseBytes)
-	log.Info("PUT Source Name", "Source Name", putSourceName)
+	putName := string(responseBytes)
+	log.Info("PUT Name", "Name", putName)
 
 	// Verify the update by getting the transform again
 	getBuffer.Reset()
@@ -193,6 +189,10 @@ func TestNewCRUDCmd(t *testing.T) {
 	}
 	retrievedName = string(responseBytes)
 	log.Info("Retrieved Name", "Name", retrievedName)
+
+	if retrievedName != "Updated "+transformName {
+		t.Fatalf("Retrieved transform name '%s' does not match updated name 'Updated %s'", retrievedName, transformName)
+	}
 
 	// Clean up - delete the transform
 	deleteCMD := newDeleteCmd()
