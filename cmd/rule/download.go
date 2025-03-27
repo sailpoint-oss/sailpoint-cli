@@ -2,7 +2,6 @@
 package rule
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"encoding/xml"
@@ -10,6 +9,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/beevik/etree"
 	"github.com/charmbracelet/log"
 	"github.com/fatih/color"
 	sailpoint "github.com/sailpoint-oss/golang-sdk/v2"
@@ -144,110 +144,83 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 							RuleType = v.Object["type"].(string)
 						}
 
-						//Make Rule XML Object
-						rule := &Rule{}
-						rule.Name = v.Object["name"].(string)
-						rule.Type = RuleType
+						// Create XML document
+						doc := etree.NewDocument()
+						doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
+						doc.CreateDirective(SailPointHeader)
 
+						// Create Rule element
+						rule := doc.CreateElement("Rule")
+						rule.CreateAttr("name", v.Object["name"].(string))
+						rule.CreateAttr("type", RuleType)
+
+						// Add Description if it exists
 						if v.Object["description"] != nil {
-							rule.Description = v.Object["description"].(string)
-						} else {
-							rule.Description = ""
+							desc := rule.CreateElement("Description")
+							desc.SetText(v.Object["description"].(string))
 						}
 
-						rule.Source = "<![CDATA[\n" + v.Object["sourceCode"].(map[string]interface{})["script"].(string) + "\n]]>"
-
-						var ruleSignature = &Signature{}
-
-						//Add Signature if it exists
+						// Add Signature if it exists
 						if len(v.Object["signature"].(map[string]interface{})["input"].([]interface{})) > 0 {
+							signature := rule.CreateElement("Signature")
+							signature.CreateAttr("returnType", "String")
 
-							ruleSignature.Inputs = &Inputs{Argument: []Argument{}}
-							for _, v := range v.Object["signature"].(map[string]interface{})["input"].([]interface{}) {
-								argument := Argument{}
-
-								argument.Name = v.(map[string]interface{})["name"].(string)
-
-								if v.(map[string]interface{})["type"] != nil {
-									argument.Type = v.(map[string]interface{})["type"].(string)
-								} else {
-									argument.Type = ""
+							// Add Inputs
+							inputs := signature.CreateElement("Inputs")
+							for _, input := range v.Object["signature"].(map[string]interface{})["input"].([]interface{}) {
+								arg := inputs.CreateElement("Argument")
+								arg.CreateAttr("name", input.(map[string]interface{})["name"].(string))
+								if input.(map[string]interface{})["type"] != nil {
+									arg.CreateAttr("type", input.(map[string]interface{})["type"].(string))
 								}
-
-								if v.(map[string]interface{})["description"] != nil {
-									argument.Description = v.(map[string]interface{})["description"].(string)
-								} else {
-									argument.Description = ""
+								if input.(map[string]interface{})["description"] != nil {
+									desc := arg.CreateElement("Description")
+									desc.SetText(input.(map[string]interface{})["description"].(string))
 								}
-
-								ruleSignature.Inputs.Argument = append(ruleSignature.Inputs.Argument, argument)
 							}
 
-							rule.Signature = ruleSignature
-						}
+							// Add Returns if it exists
+							if v.Object["signature"].(map[string]interface{})["output"] != nil {
+								returns := signature.CreateElement("Returns")
+								output := v.Object["signature"].(map[string]interface{})["output"]
 
-						if v.Object["signature"].(map[string]interface{})["output"] != nil {
-							ruleSignature.Returns = &Returns{Argument: []Argument{}}
-
-							if _, ok := v.Object["signature"].(map[string]interface{})["output"].([]interface{}); ok {
-								for _, v := range v.Object["signature"].(map[string]interface{})["output"].([]interface{}) {
-
-									argument := Argument{}
-
-									argument.Name = v.(map[string]interface{})["name"].(string)
-
-									if v.(map[string]interface{})["type"] != nil {
-										argument.Type = v.(map[string]interface{})["type"].(string)
-									} else {
-										argument.Type = ""
+								if outputs, ok := output.([]interface{}); ok {
+									for _, output := range outputs {
+										arg := returns.CreateElement("Argument")
+										arg.CreateAttr("name", output.(map[string]interface{})["name"].(string))
+										if output.(map[string]interface{})["type"] != nil {
+											arg.CreateAttr("type", output.(map[string]interface{})["type"].(string))
+										}
+										if output.(map[string]interface{})["description"] != nil {
+											desc := arg.CreateElement("Description")
+											desc.SetText(output.(map[string]interface{})["description"].(string))
+										}
 									}
-
-									if v.(map[string]interface{})["description"] != nil {
-										argument.Description = v.(map[string]interface{})["description"].(string)
-									} else {
-										argument.Description = ""
+								} else if outputMap, ok := output.(map[string]interface{}); ok {
+									arg := returns.CreateElement("Argument")
+									arg.CreateAttr("name", outputMap["name"].(string))
+									if outputMap["type"] != nil {
+										arg.CreateAttr("type", outputMap["type"].(string))
 									}
-
-									ruleSignature.Returns.Argument = append(ruleSignature.Returns.Argument, argument)
+									if outputMap["description"] != nil {
+										desc := arg.CreateElement("Description")
+										desc.SetText(outputMap["description"].(string))
+									}
 								}
-
-							} else {
-								output := v.Object["signature"].(map[string]interface{})["output"].(map[string]interface{})
-
-								argument := Argument{}
-
-								argument.Name = output["name"].(string)
-
-								if output["type"] != nil {
-									argument.Type = output["type"].(string)
-								} else {
-									argument.Type = ""
-								}
-
-								if output["description"] != nil {
-									argument.Description = output["description"].(string)
-								} else {
-									argument.Description = ""
-								}
-
-								ruleSignature.Returns.Argument = append(ruleSignature.Returns.Argument, argument)
 							}
 						}
 
-						out, _ := xml.MarshalIndent(rule, "", "  ")
+						// Add Source with CDATA
+						source := rule.CreateElement("Source")
+						source.CreateText(v.Object["sourceCode"].(map[string]interface{})["script"].(string))
 
-						out = []byte(xml.Header + SailPointHeader + string(out))
-
-						out = bytes.Replace(out, []byte("&#xA;"), []byte("\n"), -1)
-						out = bytes.Replace(out, []byte("&#xD;"), []byte("\r"), -1)
-						out = bytes.Replace(out, []byte("&#34;"), []byte("\""), -1)
-						out = bytes.Replace(out, []byte("&amp;"), []byte("&"), -1)
-						out = bytes.Replace(out, []byte("&#x9;"), []byte("\t"), -1)
-						out = bytes.Replace(out, []byte("&lt;"), []byte("<"), -1)
-						out = bytes.Replace(out, []byte("&gt;"), []byte(">"), -1)
-
-						err := output.WriteFile(destination+"/cloud", "Rule - "+rule.Type+" - "+rule.Name+".xml", out)
-
+						// Write to file
+						doc.Indent(2)
+						xmlStr, err := doc.WriteToString()
+						if err != nil {
+							return err
+						}
+						err = output.WriteFile(destination+"/cloud", "Rule - "+RuleType+" - "+v.Object["name"].(string)+".xml", []byte(xmlStr))
 						if err != nil {
 							return err
 						}
@@ -256,19 +229,14 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 					}
 				}
 
-				if err != nil {
-					return err
-				}
 				return nil
 			case "CANCELLED":
 				return fmt.Errorf("export task cancelled")
 			case "FAILED":
 				return fmt.Errorf("export task failed")
 			}
-			break
 		}
 	}
-	return nil
 }
 
 func saveJSONConnectorRules(apiClient *sailpoint.APIClient, destination string) error {

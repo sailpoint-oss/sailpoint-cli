@@ -13,6 +13,8 @@ github.com/aymanbagabas/go-osc52/v2 v2.0.1 h1:HwpRHbFMcZLEVr42D4p7XBqjyuxQH5SMiE
 github.com/aymanbagabas/go-osc52/v2 v2.0.1/go.mod h1:uYgXzlJ7ZpABp8OJ+exZzJJhRNQ2ASbcXHWsFqH8hp8=
 github.com/aymerick/douceur v0.2.0 h1:Mv+mAeH1Q+n9Fr+oyamOlAkUNPWPlA8PPGR0QAaYuPk=
 github.com/aymerick/douceur v0.2.0/go.mod h1:wlT5vV2O3h55X9m7iVYN0TBM0NH/MmbLnd30/FjWUq4=
+github.com/beevik/etree v1.3.0 h1:hQTc+pylzIKDb23yYprodCWWTt+ojFfUZyzU09a/hmU=
+github.com/beevik/etree v1.3.0/go.mod h1:aiPf89g/1k3AShMVAzriilpcE4R/Vuor90y83zVZWFc=
 github.com/bhmj/jsonslice v1.1.3 h1:aVYmtuQ8Gg1L3mAOFq3NMtfip8teUvC+DNArhv7IRDY=
 github.com/bhmj/jsonslice v1.1.3/go.mod h1:O3ZoA0zdEefdbk1dkU5aWPOA36zQhhS/HV6RQFLTlnU=
 github.com/bhmj/xpression v0.9.1 h1:N7bX/nWx9oFi/zsiMTx2ehoRApTDAWdQadq/5o2wMGk=
