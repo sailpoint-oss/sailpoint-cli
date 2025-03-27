@@ -127,7 +127,11 @@ func newGetCmd() *cobra.Command {
 				}
 				fmt.Printf("Response saved to %s\n", outputFile)
 			} else {
-				cmd.Println(string(body))
+				if jsonPath != "" {
+					cmd.Print(string(body))
+				} else {
+					cmd.Println(string(body))
+				}
 			}
 
 			fmt.Printf("Status: %s\n", resp.Status)
