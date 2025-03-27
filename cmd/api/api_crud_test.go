@@ -181,6 +181,7 @@ func TestNewCRUDCmd(t *testing.T) {
 
 	// Verify the update by getting the transform again
 	getBuffer.Reset()
+	getCMD.Flags().Set("jsonpath", "$.attributes.attributeName")
 	err = getCMD.Execute()
 	if err != nil {
 		t.Fatalf("TestNewGetCmd: Unable to execute the command successfully after update: %v", err)
