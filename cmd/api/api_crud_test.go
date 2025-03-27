@@ -192,11 +192,11 @@ func TestNewCRUDCmd(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error reading stdout: %v", err)
 	}
-	retrievedName = string(responseBytes)
-	log.Info("Retrieved Name", "Name", retrievedName)
+	retrievedValue := string(responseBytes)
+	log.Info("Retrieved Value", "Value", retrievedValue)
 
-	if retrievedName != transformName {
-		t.Fatalf("Retrieved transform name '%s' does not match original name '%s'", retrievedName, transformName)
+	if retrievedValue != "UPDATED_DEPARTMENT" {
+		t.Fatalf("Retrieved transform name '%s' does not match original name '%s'", retrievedValue, "UPDATED_DEPARTMENT")
 	}
 
 	// Clean up - delete the transform
