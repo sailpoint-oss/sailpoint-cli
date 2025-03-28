@@ -17,11 +17,12 @@ require (
 	github.com/mrz1836/go-sanitize v1.3.1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pkg/sftp v1.13.6
-	github.com/sailpoint-oss/golang-sdk/v2 v2.1.13
+	github.com/sailpoint-oss/golang-sdk/v2 v2.1.18
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.1
+	github.com/tidwall/pretty v1.2.1
 	github.com/vbauerster/mpb/v8 v8.6.1
 	github.com/zalando/go-keyring v0.2.3
 	golang.org/x/crypto v0.21.0
@@ -80,7 +81,6 @@ require (
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/yuin/goldmark v1.5.6 // indirect
 	github.com/yuin/goldmark-emoji v1.0.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
