@@ -35,6 +35,7 @@ func BuildSearch(searchQuery string, sort []string, indices []string) (sailpoint
 
 	search := sailpointsdk.NewSearch()
 	search.Query = sailpointsdk.NewQuery()
+	search.QueryResultFilter = sailpointsdk.NewQueryResultFilter()
 	search.Query.Query = &searchQuery
 	search.Sort = sort
 	search.Indices = []sailpointsdk.Index{}
