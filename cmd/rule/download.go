@@ -7,6 +7,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/beevik/etree"
@@ -146,8 +147,8 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 
 						// Create XML document
 						doc := etree.NewDocument()
-						doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
-						doc.CreateDirective(SailPointHeader)
+						doc.CreateProcInst("xml", `version='1.0' encoding='UTF-8'`)
+						doc.CreateDirective("DOCTYPE Rule PUBLIC \"sailpoint.dtd\" \"sailpoint.dtd\"")
 
 						// Create Rule element
 						rule := doc.CreateElement("Rule")
@@ -212,7 +213,7 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 
 						// Add Source with CDATA
 						source := rule.CreateElement("Source")
-						source.CreateText(v.Object["sourceCode"].(map[string]interface{})["script"].(string))
+						source.CreateCharData("<![CDATA[\n" + v.Object["sourceCode"].(map[string]interface{})["script"].(string) + "\n]]>")
 
 						// Write to file
 						doc.Indent(2)
@@ -220,6 +221,11 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 						if err != nil {
 							return err
 						}
+						// Replace encoded characters back to their original form
+						xmlStr = strings.ReplaceAll(xmlStr, "&quot;", "\"")
+						xmlStr = strings.ReplaceAll(xmlStr, "&amp;", "&")
+						xmlStr = strings.ReplaceAll(xmlStr, "&lt;", "<")
+						xmlStr = strings.ReplaceAll(xmlStr, "&gt;", ">")
 						err = output.WriteFile(destination+"/cloud", "Rule - "+RuleType+" - "+v.Object["name"].(string)+".xml", []byte(xmlStr))
 						if err != nil {
 							return err
