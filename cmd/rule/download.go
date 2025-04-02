@@ -2,7 +2,6 @@
 package rule
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"encoding/xml"
@@ -27,9 +26,13 @@ type Rule struct {
 	XMLName     xml.Name `xml:"Rule"`
 	Name        string   `xml:"name,attr"`
 	Type        string   `xml:"type,attr"`
-	Description string   `xml:"Description,omitempty"`
-	Signature   *Signature
-	Source      string `xml:"Source"`
+	Description struct {
+		Content string `xml:",innerxml"`
+	}
+	Signature *Signature
+	Source    struct {
+		Content string `xml:",cdata"`
+	} `xml:"Source"`
 }
 
 type Signature struct {
@@ -53,7 +56,9 @@ type Argument struct {
 	XMLName     xml.Name `xml:"Argument"`
 	Name        string   `xml:"name,attr"`
 	Type        string   `xml:"type,attr,omitempty"`
-	Description string   `xml:"Description,omitempty"`
+	Description struct {
+		Content string `xml:",innerxml"`
+	}
 }
 
 var cloudRuleTypes = []string{"AttributeGenerator", "AttributeGeneratorFromTemplate", "BeforeProvisioning", "BuildMap", "Correlation", "IdentityAttribute", "ManagerCorrelation"}
@@ -150,12 +155,12 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 						rule.Type = RuleType
 
 						if v.Object["description"] != nil {
-							rule.Description = v.Object["description"].(string)
+							rule.Description.Content = v.Object["description"].(string)
 						} else {
-							rule.Description = ""
+							rule.Description.Content = ""
 						}
 
-						rule.Source = "<![CDATA[\n" + v.Object["sourceCode"].(map[string]interface{})["script"].(string) + "\n]]>"
+						rule.Source.Content = v.Object["sourceCode"].(map[string]interface{})["script"].(string)
 
 						var ruleSignature = &Signature{}
 
@@ -175,9 +180,9 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 								}
 
 								if v.(map[string]interface{})["description"] != nil {
-									argument.Description = v.(map[string]interface{})["description"].(string)
+									argument.Description.Content = v.(map[string]interface{})["description"].(string)
 								} else {
-									argument.Description = ""
+									argument.Description.Content = ""
 								}
 
 								ruleSignature.Inputs.Argument = append(ruleSignature.Inputs.Argument, argument)
@@ -203,9 +208,9 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 									}
 
 									if v.(map[string]interface{})["description"] != nil {
-										argument.Description = v.(map[string]interface{})["description"].(string)
+										argument.Description.Content = v.(map[string]interface{})["description"].(string)
 									} else {
-										argument.Description = ""
+										argument.Description.Content = ""
 									}
 
 									ruleSignature.Returns.Argument = append(ruleSignature.Returns.Argument, argument)
@@ -225,9 +230,9 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 								}
 
 								if output["description"] != nil {
-									argument.Description = output["description"].(string)
+									argument.Description.Content = output["description"].(string)
 								} else {
-									argument.Description = ""
+									argument.Description.Content = ""
 								}
 
 								ruleSignature.Returns.Argument = append(ruleSignature.Returns.Argument, argument)
@@ -238,15 +243,7 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 
 						out = []byte(xml.Header + SailPointHeader + string(out))
 
-						out = bytes.Replace(out, []byte("&#xA;"), []byte("\n"), -1)
-						out = bytes.Replace(out, []byte("&#xD;"), []byte("\r"), -1)
-						out = bytes.Replace(out, []byte("&#34;"), []byte("\""), -1)
-						out = bytes.Replace(out, []byte("&amp;"), []byte("&"), -1)
-						out = bytes.Replace(out, []byte("&#x9;"), []byte("\t"), -1)
-						out = bytes.Replace(out, []byte("&lt;"), []byte("<"), -1)
-						out = bytes.Replace(out, []byte("&gt;"), []byte(">"), -1)
-
-						err := output.WriteFile(destination+"/cloud", "Rule - "+rule.Type+" - "+rule.Name+".xml", out)
+						err = output.WriteFile(destination+"/cloud", "Rule - "+rule.Type+" - "+rule.Name+".xml", out)
 
 						if err != nil {
 							return err
