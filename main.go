@@ -2,6 +2,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/root"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
@@ -23,9 +25,15 @@ func init() {
 // goes wrong. This will exit the cli container during pipeline build and fail that stage.
 func main() {
 
-	_ = rootCmd.Execute()
+	err := rootCmd.Execute()
 
 	if saveErr := config.SaveConfig(); saveErr != nil {
 		log.Warn("Issue saving config file", "error", saveErr)
+	}
+
+	// When error occurs, we need to make sure we exit the program with an error code. We
+	// don't need to log it here because the sub commands already log it to the console.
+	if err != nil {
+		os.Exit(1)
 	}
 }
