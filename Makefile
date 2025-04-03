@@ -12,6 +12,21 @@ mocks:
 test:
 	go test -v -count=1 ./...
 
+.PHONY: test-report
+test-report:
+	@echo "Running tests..."
+	@go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
+	@mkdir -p test-results
+	@bash -c "go test -json -v -coverprofile=coverage.txt -covermode=atomic ./... 2>&1 | tee test-results/gotest.log | gotestfmt"
+	@echo "Generating HTML coverage report..."
+	@go tool cover -html=coverage.txt -o test-results/coverage.html
+	@echo "Test results and coverage saved in test-results directory"
+
+.PHONY: test-race
+test-race:
+	@echo "Running tests with race detection enabled..."
+	@CGO_ENABLED=1 go test -v -race ./...
+
 .PHONY: install
 install:
 	go build -o /usr/local/bin/sail -buildvcs=false
