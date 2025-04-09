@@ -38,14 +38,19 @@ func EvaluateJSONPathToString(jsonData []byte, path string) (string, error) {
 		return "", err
 	}
 
-	// Convert to string and clean up
-	str := string(result)
-	// Remove quotes if present
-	if strings.HasPrefix(str, "\"") && strings.HasSuffix(str, "\"") {
-		str = str[1 : len(str)-1]
+	// Check if result is a primitive value (string, number, boolean)
+	var data interface{}
+	if err := json.Unmarshal(result, &data); err != nil {
+		return "", fmt.Errorf("failed to parse JSONPath result: %w", err)
 	}
-	// Remove any newlines
-	str = strings.TrimSpace(str)
 
-	return str, nil
+	// If it's a string, clean it up
+	if str, ok := data.(string); ok {
+		// Remove any newlines
+		str = strings.TrimSpace(str)
+		return str, nil
+	}
+
+	// For arrays, objects, or other types, return the JSON as is
+	return string(result), nil
 }

@@ -88,7 +88,7 @@ func newGetCmd() *cobra.Command {
 			log.Info("Making GET request", "endpoint", endpoint)
 
 			// Make the request using the SailPoint client
-			resp, err := spClient.Get(ctx, endpoint)
+			resp, err := spClient.Get(ctx, endpoint, headers)
 			if err != nil {
 				return fmt.Errorf("request failed: %w", err)
 			}
@@ -131,10 +131,10 @@ func newGetCmd() *cobra.Command {
 					cmd.Print(string(body))
 				} else {
 					cmd.Println(string(body))
+					fmt.Printf("Status: %s\n", resp.Status)
 				}
 			}
 
-			fmt.Printf("Status: %s\n", resp.Status)
 			return nil
 		},
 	}

@@ -66,7 +66,7 @@ func newDeleteCmd() *cobra.Command {
 			log.Info("Making DELETE request", "endpoint", endpoint)
 
 			// Make the request
-			resp, err := spClient.Delete(ctx, endpoint, queryParams)
+			resp, err := spClient.Delete(ctx, endpoint, queryParams, headers)
 			if err != nil {
 				return fmt.Errorf("request failed: %w", err)
 			}
@@ -109,10 +109,10 @@ func newDeleteCmd() *cobra.Command {
 					cmd.Print(string(responseBody))
 				} else {
 					cmd.Println(string(responseBody))
+					fmt.Printf("Status: %s\n", resp.Status)
 				}
 			}
 
-			fmt.Printf("Status: %s\n", resp.Status)
 			return nil
 		},
 	}

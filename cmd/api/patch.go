@@ -87,7 +87,7 @@ func newPatchCmd() *cobra.Command {
 			log.Info("Making PATCH request", "endpoint", endpoint)
 
 			// Make the request
-			resp, err := spClient.Patch(ctx, endpoint, body)
+			resp, err := spClient.Patch(ctx, endpoint, body, headers)
 			if err != nil {
 				return fmt.Errorf("request failed: %w", err)
 			}

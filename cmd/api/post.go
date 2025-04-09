@@ -87,7 +87,7 @@ func newPostCmd() *cobra.Command {
 			log.Info("Making POST request", "endpoint", endpoint)
 
 			// Make the request
-			resp, err := spClient.Post(ctx, endpoint, contentType, body)
+			resp, err := spClient.Post(ctx, endpoint, contentType, body, headers)
 			if err != nil {
 				return fmt.Errorf("request failed: %w", err)
 			}
@@ -130,10 +130,10 @@ func newPostCmd() *cobra.Command {
 					cmd.Print(string(responseBody))
 				} else {
 					cmd.Println(string(responseBody))
+					fmt.Printf("Status: %s\n", resp.Status)
 				}
 			}
 
-			fmt.Printf("Status: %s\n", resp.Status)
 			return nil
 		},
 	}
