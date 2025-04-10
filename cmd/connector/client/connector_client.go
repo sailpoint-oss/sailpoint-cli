@@ -44,7 +44,7 @@ func (cc *ConnClient) TestConnectionWithConfig(ctx context.Context, cfg json.Raw
 		return err
 	}
 
-	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw))
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw), nil)
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func (cc *ConnClient) TestConnection(ctx context.Context) (rawResponse []byte, e
 		return nil, err
 	}
 
-	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw))
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func (cc *ConnClient) ChangePassword(ctx context.Context, identity string, uniqu
 		return nil, err
 	}
 
-	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw))
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +230,7 @@ func (cc *ConnClient) AccountList(ctx context.Context, stateful *bool, stateId *
 		return nil, nil, nil, err
 	}
 
-	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw))
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw), nil)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -302,7 +302,7 @@ func (cc *ConnClient) AccountRead(ctx context.Context, id string, uniqueID strin
 		return nil, nil, err
 	}
 
-	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw))
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw), nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -355,7 +355,7 @@ func (cc *ConnClient) AccountCreate(ctx context.Context, identity *string, attri
 		return nil, nil, err
 	}
 
-	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw))
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw), nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -408,7 +408,7 @@ func (cc *ConnClient) AccountDelete(ctx context.Context, id string, uniqueID str
 		return nil, err
 	}
 
-	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw))
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -460,7 +460,7 @@ func (cc *ConnClient) AccountUpdate(ctx context.Context, id string, uniqueID str
 		return nil, nil, err
 	}
 
-	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw))
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw), nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -498,7 +498,7 @@ func (cc *ConnClient) AccountDiscoverSchema(ctx context.Context) (accountSchema 
 		return nil, nil, err
 	}
 
-	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw))
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw), nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -582,7 +582,7 @@ func (cc *ConnClient) EntitlementList(ctx context.Context, t string, stateful *b
 		return nil, nil, nil, err
 	}
 
-	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw))
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw), nil)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -648,7 +648,7 @@ func (cc *ConnClient) EntitlementRead(ctx context.Context, id string, uniqueID s
 		return nil, nil, err
 	}
 
-	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw))
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw), nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -692,7 +692,7 @@ func (cc *ConnClient) SpecRead(ctx context.Context) (connSpec *ConnSpec, err err
 		return nil, err
 	}
 
-	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw))
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -761,7 +761,7 @@ func (cc *ConnClient) Invoke(ctx context.Context, cmdType string, input json.Raw
 		return nil, err
 	}
 
-	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw))
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke"), "application/json", bytes.NewReader(cmdRaw), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -943,7 +943,7 @@ func (cc *ConnClient) SourceDataDiscover(ctx context.Context, queryInput map[str
 		return nil, nil, err
 	}
 
-	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint), "application/json", bytes.NewReader(cmdRaw))
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint), "application/json", bytes.NewReader(cmdRaw), nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -988,7 +988,7 @@ func (cc *ConnClient) SourceDataRead(ctx context.Context, sourceDataKey string, 
 		return nil, nil, err
 	}
 
-	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke-direct"), "application/json", bytes.NewReader(cmdRaw))
+	resp, err := cc.client.Post(ctx, connResourceUrl(cc.endpoint, cc.connectorRef, "invoke-direct"), "application/json", bytes.NewReader(cmdRaw), nil)
 	if err != nil {
 		return nil, nil, err
 	}

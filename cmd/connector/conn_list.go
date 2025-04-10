@@ -25,7 +25,7 @@ func newConnListCmd(client client.Client) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
 
-			resp, err := client.Get(cmd.Context(), endpoint)
+			resp, err := client.Get(cmd.Context(), endpoint, nil)
 			if err != nil {
 				return err
 			}
@@ -66,7 +66,7 @@ func newConnListCmd(client client.Client) *cobra.Command {
 
 				// Build the tags endpoint using the connectorRef
 				tagsEndpoint := util.ResourceUrl(endpoint, connectorRef, "tags")
-				tagsResp, err := client.Get(cmd.Context(), tagsEndpoint)
+				tagsResp, err := client.Get(cmd.Context(), tagsEndpoint, nil)
 				if err != nil {
 					return err
 				}

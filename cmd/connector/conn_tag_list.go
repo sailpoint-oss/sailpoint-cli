@@ -23,7 +23,7 @@ func newConnTagListCmd(client client.Client) *cobra.Command {
 			connectorRef := cmd.Flags().Lookup("id").Value.String()
 			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
 
-			resp, err := client.Get(cmd.Context(), util.ResourceUrl(endpoint, connectorRef, "tags"))
+			resp, err := client.Get(cmd.Context(), util.ResourceUrl(endpoint, connectorRef, "tags"), nil)
 			if err != nil {
 				return err
 			}

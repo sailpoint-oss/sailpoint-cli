@@ -23,7 +23,7 @@ func newConnGetCmd(client client.Client) *cobra.Command {
 			connectorRef := cmd.Flags().Lookup("id").Value.String()
 
 			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
-			resp, err := client.Get(cmd.Context(), util.ResourceUrl(endpoint, connectorRef))
+			resp, err := client.Get(cmd.Context(), util.ResourceUrl(endpoint, connectorRef), nil)
 			if err != nil {
 				return err
 			}

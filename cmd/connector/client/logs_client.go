@@ -120,7 +120,7 @@ func (c *LogsClient) GetLogs(ctx context.Context, logInput LogInput) (*LogEvents
 	if err != nil {
 		return nil, err
 	}
-	resp, err := c.client.Post(ctx, logsResourceUrl(c.endpoint, nil), "application/json", bytes.NewReader(input))
+	resp, err := c.client.Post(ctx, logsResourceUrl(c.endpoint, nil), "application/json", bytes.NewReader(input), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +182,7 @@ func (c *LogsClient) GetStats(ctx context.Context, from time.Time, connectorID s
 	if connectorID != "" {
 		queryFilter = queryFilter + fmt.Sprintf(` and connectorID eq "%v"`, connectorID)
 	}
-	resp, err := c.client.Get(ctx, logsResourceUrl(c.endpoint, &map[string]string{"filters": queryFilter}))
+	resp, err := c.client.Get(ctx, logsResourceUrl(c.endpoint, &map[string]string{"filters": queryFilter}), nil)
 	if err != nil {
 		return nil, err
 	}
