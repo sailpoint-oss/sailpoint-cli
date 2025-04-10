@@ -36,7 +36,7 @@ func newConnTagCreateCmd(client client.Client) *cobra.Command {
 			}
 
 			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
-			resp, err := client.Post(cmd.Context(), util.ResourceUrl(endpoint, connectorRef, "tags"), "application/json", bytes.NewReader(raw))
+			resp, err := client.Post(cmd.Context(), util.ResourceUrl(endpoint, connectorRef, "tags"), "application/json", bytes.NewReader(raw), nil)
 			if err != nil {
 				return err
 			}
