@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
@@ -51,6 +52,11 @@ type ReassignSummary struct {
 	GovernanceGroups []api_v2024.WorkgroupDto
 	Workflows        []api_v2024.Workflow
 }
+
+type errMsg error
+type summaryMsg *ReassignSummary
+type reassignDoneMsg struct{}
+type statusMsg string
 
 func NewReassignCommand() *cobra.Command {
 	var from string
@@ -116,35 +122,33 @@ func NewReassignCommand() *cobra.Command {
 							fmt.Printf("Report saved to %s\n", reportPath)
 						}
 
-						fmt.Printf("Would you like to proceed with reassigning these objects from '%s' to '%s': ", m.reassignResult.From.Name, m.reassignResult.To.Name)
-						var response string
-						_, err = fmt.Scanln(&response)
+						return nil
+					}
+
+					fmt.Printf("Would you like to proceed with reassigning these objects from '%s' to '%s': ", m.reassignResult.From.Name, m.reassignResult.To.Name)
+					var reassignResponse string
+					_, err = fmt.Scanln(&reassignResponse)
+					if err != nil {
+						fmt.Println("Failed to read input:", err)
+						return err
+					}
+
+					response = strings.ToLower(strings.TrimSpace(reassignResponse))
+
+					if response == "y" {
+						m := initialModel(from, to, objectTypes, dryRun)
+						m.reassignResult = finalModel.(model).reassignResult
+						m.reassigning = true
+						prog := tea.NewProgram(m)
+						_, err = prog.Run()
 						if err != nil {
-							fmt.Println("Failed to read input:", err)
 							return err
 						}
 
-						response = strings.ToLower(strings.TrimSpace(response))
-
-						if response == "y" {
-							fmt.Println("Reassigning objects...")
-
-						} else {
-							fmt.Println("Aborted reassignment.")
-						}
-
-						// apiClient, err := config.InitAPIClient(true)
-
-						// if err != nil {
-						// 	return err
-						// }
-
-						// // reassignObjects(apiClient.V2024, *m.reassignResult)
-
-						return nil
 					} else {
 						fmt.Println("Aborted reassignment.")
 					}
+
 				} else {
 
 					// If this was a dry run, just print the summary and allow the user the option to save the report
@@ -299,9 +303,6 @@ func getNameByID(identities []api_v2024.Identity, targetID string) string {
 	return "" // or return "not found" or an error
 }
 
-type errMsg error
-type summaryMsg *ReassignSummary
-
 type model struct {
 	spinner        spinner.Model
 	quitting       bool
@@ -311,6 +312,8 @@ type model struct {
 	dryRun         bool
 	err            error
 	done           bool
+	reassigning    bool
+	statusText     string
 	reassignResult *ReassignSummary
 }
 
@@ -322,10 +325,14 @@ func initialModel(from string, to string, objectTypes string, dryRun bool) model
 }
 
 func (m model) Init() tea.Cmd {
-	return tea.Batch(
-		m.spinner.Tick,
-		fetchReassignSummaryCmd(m.from, m.to, m.objectTypes, m.dryRun), // our custom command
-	)
+	if m.reassigning && m.reassignResult != nil {
+		apiClient, err := config.InitAPIClient(true)
+		if err != nil {
+			return func() tea.Msg { return errMsg(err) }
+		}
+		return tea.Batch(m.spinner.Tick, nextReassignmentStepCmd(apiClient.V2024, *m.reassignResult, 0))
+	}
+	return tea.Batch(m.spinner.Tick, fetchReassignSummaryCmd(m.from, m.to, m.objectTypes, m.dryRun))
 }
 
 func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun bool) tea.Cmd {
@@ -498,16 +505,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		default:
 			return m, nil
 		}
-
 	case errMsg:
 		m.err = msg
-		return m, nil
-
+		return m, tea.Quit
 	case summaryMsg:
 		m.done = true
 		m.reassignResult = msg
 		return m, tea.Quit
-
+	case reassignDoneMsg:
+		m.done = true
+		m.reassigning = false
+		return m, tea.Quit
+	case statusMsg:
+		m.statusText = string(msg)
+		return m, nil
+	case int:
+		// Continue to next reassignment step
+		apiClient, err := config.InitAPIClient(true)
+		if err != nil {
+			return m, func() tea.Msg { return errMsg(err) }
+		}
+		return m, nextReassignmentStepCmd(apiClient.V2024, *m.reassignResult, msg)
 	default:
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
@@ -519,33 +537,194 @@ func (m model) View() string {
 	if m.err != nil {
 		return m.err.Error()
 	}
-
 	if m.done {
 		return ""
 	}
+	var action string
 
-	str := fmt.Sprintf("\n\n   %s Gathering objects to reassign...press q to quit\n\n", m.spinner.View())
+	if m.reassigning {
+		action = m.statusText
+		if action == "" {
+			action = "Reassigning objects"
+		}
+	} else {
+		action = "Gathering objects to reassign"
+	}
+
+	str := fmt.Sprintf("\n\n   %s %s...press q to quit\n\n", m.spinner.View(), action)
 	if m.quitting {
 		return str + "\n"
 	}
 	return str
 }
 
-func reassignObjects(apiClient *api_v2024.APIClient, summary ReassignSummary) error {
-	reassignSources(apiClient, summary.From, summary.To, summary.Sources)
+func nextReassignmentStepCmd(apiClient *api_v2024.APIClient, summary ReassignSummary, index int) tea.Cmd {
+	steps := []struct {
+		name      string
+		shouldRun bool
+		run       func() error
+	}{
+		{"Reassigning sources", len(summary.Sources) > 0, func() error {
+			return reassignTest(apiClient, summary.From, summary.To, summary.Sources)
+		}},
+		{"Reassigning roles", len(summary.Roles) > 0, func() error {
+			return reassignTest(apiClient, summary.From, summary.To, summary.Roles)
+		}},
+		{"Reassigning access profiles", len(summary.AccessProfiles) > 0, func() error {
+			return reassignTest(apiClient, summary.From, summary.To, summary.AccessProfiles)
+		}},
+		{"Reassigning entitlements", len(summary.Entitlements) > 0, func() error {
+			return reassignTest(apiClient, summary.From, summary.To, summary.Entitlements)
+		}},
+		{"Reassigning identity profiles", len(summary.IdentityProfiles) > 0, func() error {
+			return reassignTest(apiClient, summary.From, summary.To, summary.IdentityProfiles)
+		}},
+		{"Reassigning governance groups", len(summary.GovernanceGroups) > 0, func() error {
+			return reassignTest(apiClient, summary.From, summary.To, summary.GovernanceGroups)
+		}},
+		{"Reassigning workflows", len(summary.Workflows) > 0, func() error {
+			return reassignTest(apiClient, summary.From, summary.To, summary.Workflows)
+		}},
+	}
 
+	if index >= len(steps) {
+		return func() tea.Msg { return reassignDoneMsg{} }
+	}
+
+	step := steps[index]
+	if step.shouldRun {
+		return tea.Batch(
+			func() tea.Msg { return statusMsg(step.name) },
+			func() tea.Msg {
+				if err := step.run(); err != nil {
+					return errMsg(err)
+				}
+				return index + 1
+			},
+		)
+	}
+
+	return func() tea.Msg {
+		return index + 1
+	}
+}
+
+func reassignTest[T any](apiClient *api_v2024.APIClient, from Identity, to Identity, sources []T) error {
+	time.Sleep(time.Second * 3)
 	return nil
 }
 
 func reassignSources(apiClient *api_v2024.APIClient, from Identity, to Identity, sources []api_v2024.Source) error {
-	for _, source := range sources {
+	if len(sources) > 0 {
+		for _, source := range sources {
 
-		newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &from.ID}
-		patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner", Value: &newOwnerId}}
-		_, _, err := apiClient.SourcesAPI.UpdateSource(context.TODO(), *source.Id).JsonPatchOperation(patchArray).Execute()
+			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
+			patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
+			_, _, err := apiClient.SourcesAPI.UpdateSource(context.TODO(), *source.Id).JsonPatchOperation(patchArray).Execute()
+
+			if err != nil {
+				log.Debug("Error updating source: ", err)
+			}
+		}
+	}
+	return nil
+}
+
+func reassignRoles(apiClient *api_v2024.APIClient, from Identity, to Identity, roles []api_v2024.Role) error {
+	if len(roles) > 0 {
+		for _, role := range roles {
+			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
+			patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
+			_, _, err := apiClient.RolesAPI.PatchRole(context.TODO(), *role.Id).JsonPatchOperation(patchArray).Execute()
+
+			if err != nil {
+				log.Debug("Error updating role: ", err)
+			}
+		}
+	}
+	return nil
+
+}
+
+func reassignAccessProfiles(apiClient *api_v2024.APIClient, from Identity, to Identity, accessProfiles []api_v2024.AccessProfile) error {
+	if len(accessProfiles) > 0 {
+		for _, accessProfile := range accessProfiles {
+			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
+			patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
+			_, _, err := apiClient.AccessProfilesAPI.PatchAccessProfile(context.TODO(), *accessProfile.Id).JsonPatchOperation(patchArray).Execute()
+
+			if err != nil {
+				log.Debug("Error updating access profile: ", err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func reassignEntitlements(apiClient *api_v2024.APIClient, from Identity, to Identity, entitlements []api_v2024.Entitlement) error {
+	if len(entitlements) > 0 {
+		entitlementIds := make([]string, len(entitlements))
+		for i, item := range entitlements {
+			entitlementIds[i] = *item.Id
+		}
+		patch := api_v2024.EntitlementBulkUpdateRequest{
+			EntitlementIds: entitlementIds,
+			JsonPatch:      []api_v2024.JsonPatchOperation{},
+		}
+
+		_, err := apiClient.EntitlementsAPI.UpdateEntitlementsInBulk(context.TODO()).EntitlementBulkUpdateRequest(patch).Execute()
 
 		if err != nil {
-			log.Debug("Error updating source: ", err)
+			log.Debug("Error updating entitlement: ", err)
+		}
+	}
+
+	return nil
+}
+
+func reassignIdentityProfiles(apiClient *api_v2024.APIClient, from Identity, to Identity, identityProfiles []api_v2024.IdentityProfile) error {
+	if len(identityProfiles) > 0 {
+		for _, identityProfile := range identityProfiles {
+			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
+			patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
+			_, _, err := apiClient.IdentityProfilesAPI.UpdateIdentityProfile(context.TODO(), *identityProfile.Id).JsonPatchOperation(patchArray).Execute()
+
+			if err != nil {
+				log.Debug("Error updating access profile: ", err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func reassignGovernanceGroups(apiClient *api_v2024.APIClient, from Identity, to Identity, governanceGroups []api_v2024.WorkgroupDto) error {
+	if len(governanceGroups) > 0 {
+		for _, governanceGroup := range governanceGroups {
+			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
+			patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
+			_, _, err := apiClient.GovernanceGroupsAPI.PatchWorkgroup(context.TODO(), *governanceGroup.Id).JsonPatchOperation(patchArray).Execute()
+
+			if err != nil {
+				log.Debug("Error updating access profile: ", err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func reassignWorkflows(apiClient *api_v2024.APIClient, from Identity, to Identity, workflows []api_v2024.Workflow) error {
+	if len(workflows) > 0 {
+		for _, workflow := range workflows {
+			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
+			patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
+			_, _, err := apiClient.WorkflowsAPI.PatchWorkflow(context.TODO(), *workflow.Id).JsonPatchOperation(patchArray).Execute()
+
+			if err != nil {
+				log.Debug("Error updating access profile: ", err)
+			}
 		}
 	}
 
