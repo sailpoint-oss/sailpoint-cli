@@ -97,42 +97,8 @@ func NewReassignCommand() *cobra.Command {
 
 				// If this was not a dry run proceed with the reassignment flow
 				if !m.reassignResult.DryRun {
-					fmt.Print("Would you like to save the full report to a file (y/n): ")
-					var response string
-					_, err := fmt.Scanln(&response)
-					if err != nil {
-						fmt.Println("Failed to read input:", err)
-						return err
-					}
 
-					response = strings.ToLower(strings.TrimSpace(response))
-					if response == "y" {
-						fmt.Print("Enter the file name (without extension)(default: reassign_report): ")
-						var fileName string
-						_, err := fmt.Scanln(&fileName)
-
-						if err != nil && err.Error() != "unexpected newline" {
-							fmt.Println("Failed to read input:", err)
-							return nil
-						}
-
-						fileName = strings.TrimSpace(fileName)
-						if fileName == "" {
-							fileName = "reassign_report"
-						}
-						// Save the report to a file
-						reportPath := fmt.Sprintf("%s.json", fileName)
-
-						err = writeReport(*m.reassignResult, reportPath)
-
-						if err != nil {
-							fmt.Println("Failed to write report:", err)
-						} else {
-							fmt.Printf("Report saved to %s\n", reportPath)
-						}
-
-						return nil
-					}
+					promptSaveReport(m.reassignResult)
 
 					fmt.Printf("Would you like to proceed with reassigning these objects from '%s' to '%s': ", m.reassignResult.From.Name, m.reassignResult.To.Name)
 					var reassignResponse string
@@ -142,7 +108,7 @@ func NewReassignCommand() *cobra.Command {
 						return err
 					}
 
-					response = strings.ToLower(strings.TrimSpace(reassignResponse))
+					response := strings.ToLower(strings.TrimSpace(reassignResponse))
 
 					if response == "y" {
 						m := initialModel(from, to, objectTypes, dryRun)
@@ -159,46 +125,7 @@ func NewReassignCommand() *cobra.Command {
 					}
 
 				} else {
-
-					// If this was a dry run, just print the summary and allow the user the option to save the report
-					fmt.Print("Would you like to save the full report to a file (y/n): ")
-					var response string
-					_, err := fmt.Scanln(&response)
-					if err != nil {
-						fmt.Println("Failed to read input:", err)
-						return err
-					}
-
-					response = strings.ToLower(strings.TrimSpace(response))
-					if response == "y" {
-						fmt.Print("Enter the file name (without extension)(default: reassign_report): ")
-						var fileName string
-						_, err := fmt.Scanln(&fileName)
-
-						if err != nil && err.Error() != "unexpected newline" {
-							fmt.Println("Failed to read input:", err)
-							return nil
-						}
-
-						fileName = strings.TrimSpace(fileName)
-						if fileName == "" {
-							fileName = "reassign_report"
-						}
-						// Save the report to a file
-						reportPath := fmt.Sprintf("%s.json", fileName)
-
-						err = writeReport(*m.reassignResult, reportPath)
-
-						if err != nil {
-							fmt.Println("Failed to write report:", err)
-						} else {
-							fmt.Printf("Report saved to %s\n", reportPath)
-						}
-
-						return nil
-					} else {
-						fmt.Println("Aborted reassignment.")
-					}
+					promptSaveReport(m.reassignResult)
 				}
 			}
 
@@ -215,6 +142,30 @@ func NewReassignCommand() *cobra.Command {
 
 	return cmd
 
+}
+
+func promptSaveReport(summary *ReassignSummary) error {
+	fmt.Print("Would you like to save the full report to a file (y/n): ")
+	var response string
+	_, err := fmt.Scanln(&response)
+	if err != nil {
+		return fmt.Errorf("failed to read input: %w", err)
+	}
+	response = strings.ToLower(strings.TrimSpace(response))
+	if response != "y" {
+		return nil
+	}
+
+	fmt.Print("Enter the file name (without extension)(default: reassign_report): ")
+	var fileName string
+	_, err = fmt.Scanln(&fileName)
+	if err != nil && err.Error() != "unexpected newline" {
+		return fmt.Errorf("failed to read input: %w", err)
+	}
+	if strings.TrimSpace(fileName) == "" {
+		fileName = "reassign_report"
+	}
+	return writeReport(*summary, fmt.Sprintf("%s.json", fileName))
 }
 
 func writeReport(summary ReassignSummary, path string) error {
@@ -235,6 +186,9 @@ func writeReport(summary ReassignSummary, path string) error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Print("Report saved to ", path, "\n")
+
 	return nil
 }
 
@@ -382,7 +336,7 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 		if objectTypes != "" {
 			err := validateObjectTypes(objectTypes)
 			if err != nil {
-				log.Error(err)
+				return errMsg(err)
 			}
 
 			objectsToReassign = strings.Split(objectTypes, ",")
@@ -744,7 +698,7 @@ func nextReassignmentStepCmd(apiClient *api_v2024.APIClient, summary ReassignSum
 			return reassignTest(apiClient, summary.From, summary.To, summary.GovernanceGroups)
 		}},
 		{"Reassigning workflows", len(summary.Workflows) > 0, func() error {
-			return reassignTest(apiClient, summary.From, summary.To, summary.Workflows)
+			return reassignWorkflows(apiClient, summary.From, summary.To, summary.Workflows)
 		}},
 	}
 
@@ -784,7 +738,7 @@ func reassignSources(apiClient *api_v2024.APIClient, from Identity, to Identity,
 			_, _, err := apiClient.SourcesAPI.UpdateSource(context.TODO(), *source.Id).JsonPatchOperation(patchArray).Execute()
 
 			if err != nil {
-				log.Debug("Error updating source: ", err)
+				log.Debug("Error updating source owner: ", err)
 			}
 		}
 	}
@@ -799,7 +753,7 @@ func reassignRoles(apiClient *api_v2024.APIClient, from Identity, to Identity, r
 			_, _, err := apiClient.RolesAPI.PatchRole(context.TODO(), *role.Id).JsonPatchOperation(patchArray).Execute()
 
 			if err != nil {
-				log.Debug("Error updating role: ", err)
+				log.Debug("Error updating role owner: ", err)
 			}
 		}
 	}
@@ -815,7 +769,7 @@ func reassignAccessProfiles(apiClient *api_v2024.APIClient, from Identity, to Id
 			_, _, err := apiClient.AccessProfilesAPI.PatchAccessProfile(context.TODO(), *accessProfile.Id).JsonPatchOperation(patchArray).Execute()
 
 			if err != nil {
-				log.Debug("Error updating access profile: ", err)
+				log.Debug("Error updating access profile owner: ", err)
 			}
 		}
 	}
@@ -837,7 +791,7 @@ func reassignEntitlements(apiClient *api_v2024.APIClient, from Identity, to Iden
 		_, err := apiClient.EntitlementsAPI.UpdateEntitlementsInBulk(context.TODO()).EntitlementBulkUpdateRequest(patch).Execute()
 
 		if err != nil {
-			log.Debug("Error updating entitlement: ", err)
+			log.Debug("Error updating entitlement owner: ", err)
 		}
 	}
 
@@ -852,7 +806,7 @@ func reassignIdentityProfiles(apiClient *api_v2024.APIClient, from Identity, to 
 			_, _, err := apiClient.IdentityProfilesAPI.UpdateIdentityProfile(context.TODO(), *identityProfile.Id).JsonPatchOperation(patchArray).Execute()
 
 			if err != nil {
-				log.Debug("Error updating access profile: ", err)
+				log.Debug("Error updating identity profile owner: ", err)
 			}
 		}
 	}
@@ -868,7 +822,7 @@ func reassignGovernanceGroups(apiClient *api_v2024.APIClient, from Identity, to 
 			_, _, err := apiClient.GovernanceGroupsAPI.PatchWorkgroup(context.TODO(), *governanceGroup.Id).JsonPatchOperation(patchArray).Execute()
 
 			if err != nil {
-				log.Debug("Error updating access profile: ", err)
+				log.Debug("Error updating governance group owner: ", err)
 			}
 		}
 	}
@@ -879,12 +833,19 @@ func reassignGovernanceGroups(apiClient *api_v2024.APIClient, from Identity, to 
 func reassignWorkflows(apiClient *api_v2024.APIClient, from Identity, to Identity, workflows []api_v2024.Workflow) error {
 	if len(workflows) > 0 {
 		for _, workflow := range workflows {
-			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
-			patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
+
+			patchObject := map[string]interface{}{
+				"id":   to.ID,
+				"type": "IDENTITY",
+			}
+
+			newOwner := api_v2024.UpdateMultiHostSourcesRequestInnerValue{MapmapOfStringAny: &patchObject}
+			patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner", Value: &newOwner}}
 			_, _, err := apiClient.WorkflowsAPI.PatchWorkflow(context.TODO(), *workflow.Id).JsonPatchOperation(patchArray).Execute()
 
 			if err != nil {
-				log.Debug("Error updating access profile: ", err)
+				fmt.Print("Error updating workflow owner: ", err)
+				log.Debug("Error updating workflow owner: ", err)
 			}
 		}
 	}
