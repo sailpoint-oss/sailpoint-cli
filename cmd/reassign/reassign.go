@@ -57,6 +57,16 @@ type ReassignSummary struct {
 	Workflows        []api_v2024.Workflow
 }
 
+func (r ReassignSummary) IsEmpty() bool {
+	return len(r.Sources) == 0 &&
+		len(r.Roles) == 0 &&
+		len(r.AccessProfiles) == 0 &&
+		len(r.Entitlements) == 0 &&
+		len(r.IdentityProfiles) == 0 &&
+		len(r.GovernanceGroups) == 0 &&
+		len(r.Workflows) == 0
+}
+
 type errMsg error
 type summaryMsg *ReassignSummary
 type reassignDoneMsg struct{}
@@ -94,6 +104,11 @@ func NewReassignCommand() *cobra.Command {
 			if m, ok := finalModel.(model); ok && m.reassignResult != nil {
 				p.Quit()
 				printSummary(*m.reassignResult)
+
+				if m.reassignResult.IsEmpty() {
+					fmt.Println("No objects to reassign.")
+					return nil
+				}
 
 				// If this was not a dry run proceed with the reassignment flow
 				if !m.reassignResult.DryRun {
@@ -692,10 +707,10 @@ func nextReassignmentStepCmd(apiClient *api_v2024.APIClient, summary ReassignSum
 			return reassignTest(apiClient, summary.From, summary.To, summary.Entitlements)
 		}},
 		{"Reassigning identity profiles", len(summary.IdentityProfiles) > 0, func() error {
-			return reassignTest(apiClient, summary.From, summary.To, summary.IdentityProfiles)
+			return reassignIdentityProfiles(apiClient, summary.From, summary.To, summary.IdentityProfiles)
 		}},
 		{"Reassigning governance groups", len(summary.GovernanceGroups) > 0, func() error {
-			return reassignTest(apiClient, summary.From, summary.To, summary.GovernanceGroups)
+			return reassignGovernanceGroups(apiClient, summary.From, summary.To, summary.GovernanceGroups)
 		}},
 		{"Reassigning workflows", len(summary.Workflows) > 0, func() error {
 			return reassignWorkflows(apiClient, summary.From, summary.To, summary.Workflows)
