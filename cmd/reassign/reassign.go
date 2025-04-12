@@ -88,7 +88,7 @@ func NewReassignCommand() *cobra.Command {
 		Args:    cobra.OnlyValidArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			p := tea.NewProgram(initialModel(from, to, objectTypes, dryRun))
+			p := tea.NewProgram(initialModel(from, to, objectTypes, dryRun, force))
 			finalModel, err := p.Run()
 			if err != nil {
 				fmt.Println("Error:", err)
@@ -102,44 +102,56 @@ func NewReassignCommand() *cobra.Command {
 
 			if m, ok := finalModel.(model); ok && m.reassignResult != nil {
 				p.Quit()
-				printSummary(*m.reassignResult)
 
 				if m.reassignResult.IsEmpty() {
 					fmt.Println("No objects to reassign.")
 					return nil
 				}
 
-				// If this was not a dry run proceed with the reassignment flow
-				if !m.reassignResult.DryRun {
+				if !m.force {
+					printSummary(*m.reassignResult)
 
-					promptSaveReport(m.reassignResult)
+					// If this was not a dry run proceed with the reassignment flow
+					if !m.reassignResult.DryRun {
 
-					fmt.Printf("Would you like to proceed with reassigning these objects from '%s' to '%s': ", m.reassignResult.From.Name, m.reassignResult.To.Name)
-					var reassignResponse string
-					_, err = fmt.Scanln(&reassignResponse)
-					if err != nil {
-						fmt.Println("Failed to read input:", err)
-						return err
-					}
+						promptSaveReport(m.reassignResult)
 
-					response := strings.ToLower(strings.TrimSpace(reassignResponse))
-
-					if response == "y" {
-						m := initialModel(from, to, objectTypes, dryRun)
-						m.reassignResult = finalModel.(model).reassignResult
-						m.reassigning = true
-						prog := tea.NewProgram(m)
-						_, err = prog.Run()
+						fmt.Printf("Would you like to proceed with reassigning these objects from '%s' to '%s': ", m.reassignResult.From.Name, m.reassignResult.To.Name)
+						var reassignResponse string
+						_, err = fmt.Scanln(&reassignResponse)
 						if err != nil {
+							fmt.Println("Failed to read input:", err)
 							return err
 						}
 
-					} else {
-						fmt.Println("Aborted reassignment.")
-					}
+						response := strings.ToLower(strings.TrimSpace(reassignResponse))
 
+						if response == "y" {
+							m := initialModel(from, to, objectTypes, dryRun, force)
+							m.reassignResult = finalModel.(model).reassignResult
+							m.reassigning = true
+							prog := tea.NewProgram(m)
+							_, err = prog.Run()
+							if err != nil {
+								return err
+							}
+
+						} else {
+							fmt.Println("Aborted reassignment.")
+						}
+
+					} else {
+						promptSaveReport(m.reassignResult)
+					}
 				} else {
-					promptSaveReport(m.reassignResult)
+					m := initialModel(from, to, objectTypes, dryRun, force)
+					m.reassignResult = finalModel.(model).reassignResult
+					m.reassigning = true
+					prog := tea.NewProgram(m)
+					_, err = prog.Run()
+					if err != nil {
+						return err
+					}
 				}
 			}
 
@@ -149,9 +161,8 @@ func NewReassignCommand() *cobra.Command {
 
 	cmd.Flags().StringVarP(&from, "from", "f", "", "The identity to reassign from")
 	cmd.Flags().StringVarP(&to, "to", "t", "", "The identity to reassign to")
-	cmd.Flags().BoolVarP(&force, "force", "F", false, "Bypass confirmation prompt")
+	cmd.Flags().BoolVarP(&force, "force", "F", false, "Bypass confirmation prompts")
 	cmd.Flags().StringVarP(&objectTypes, "object-types", "o", "", "Comma-separated list of object types to reassign, defaults to all")
-	cmd.Flags().StringVarP(&objectId, "object-id", "i", "", "The object id to reassign")
 	cmd.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "Show the objects that would be reassigned without actually reassigning them")
 
 	return cmd
@@ -287,6 +298,7 @@ type model struct {
 	to             string
 	objectTypes    string
 	dryRun         bool
+	force          bool
 	err            error
 	done           bool
 	reassigning    bool
@@ -294,11 +306,11 @@ type model struct {
 	reassignResult *ReassignSummary
 }
 
-func initialModel(from string, to string, objectTypes string, dryRun bool) model {
+func initialModel(from string, to string, objectTypes string, dryRun bool, force bool) model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
-	return model{spinner: s, from: from, to: to, objectTypes: objectTypes, dryRun: dryRun}
+	return model{spinner: s, from: from, to: to, objectTypes: objectTypes, dryRun: dryRun, force: force}
 }
 
 func (m model) Init() tea.Cmd {
@@ -309,10 +321,10 @@ func (m model) Init() tea.Cmd {
 		}
 		return tea.Batch(m.spinner.Tick, nextReassignmentStepCmd(apiClient.V2024, *m.reassignResult, 0))
 	}
-	return tea.Batch(m.spinner.Tick, fetchReassignSummaryCmd(m.from, m.to, m.objectTypes, m.dryRun))
+	return tea.Batch(m.spinner.Tick, fetchReassignSummaryCmd(m.from, m.to, m.objectTypes, m.dryRun, m.force))
 }
 
-func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun bool) tea.Cmd {
+func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun bool, force bool) tea.Cmd {
 	return func() tea.Msg {
 		// your logic here (init API, gather data, etc)
 		// return errMsg(err) on error or summaryMsg(result)
@@ -333,6 +345,10 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 
 		if err != nil {
 			return errMsg(err)
+		}
+
+		if dryRun && force {
+			return errMsg(errors.New("cannot use --dry-run and --force together"))
 		}
 
 		if from != "" && to != "" {
