@@ -88,6 +88,79 @@ func NewReassignCommand() *cobra.Command {
 		Args:    cobra.OnlyValidArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
+			if from == "" || to == "" {
+				return errors.New("both --from and --to flags are required when using --object-id")
+			}
+
+			if dryRun && force {
+				log.Error("cannot use --dry-run and --force together")
+				os.Exit(1)
+			}
+
+			if from == to {
+				log.Error("from and to Identities cannot be the same")
+				os.Exit(1)
+			}
+
+			if objectId != "" {
+				if from == "" || to == "" {
+					return errors.New("both --from and --to flags are required when using --object-id")
+				}
+
+				summary, err := determineObjectTypeAndCreateReassignment(objectId, from, to, dryRun)
+
+				if err != nil {
+					log.Error("error determining object type:", "error", err)
+					os.Exit(1)
+				}
+
+				if !force {
+					printSummary(summary)
+
+					if !summary.DryRun {
+						promptSaveReport(&summary)
+
+						fmt.Printf("Would you like to proceed with reassigning this object from '%s' to '%s': ", summary.From.Name, summary.To.Name)
+						var reassignResponse string
+						_, err = fmt.Scanln(&reassignResponse)
+						if err != nil {
+							fmt.Println("Failed to read input:", err)
+							return err
+						}
+
+						response := strings.ToLower(strings.TrimSpace(reassignResponse))
+
+						if response == "y" {
+							m := initialModel(from, to, objectTypes, dryRun, force)
+							m.reassignResult = &summary
+							m.reassigning = true
+							prog := tea.NewProgram(m)
+							_, err = prog.Run()
+							if err != nil {
+								return err
+							}
+
+						} else {
+							fmt.Println("Aborted reassignment.")
+						}
+					} else {
+						promptSaveReport(&summary)
+					}
+				} else {
+					m := initialModel(from, to, objectTypes, dryRun, force)
+					m.reassignResult = &summary
+					m.reassigning = true
+					prog := tea.NewProgram(m)
+					_, err = prog.Run()
+					if err != nil {
+						return err
+					}
+				}
+
+				return nil
+				//Determine the object type from the objectId
+			}
+
 			p := tea.NewProgram(initialModel(from, to, objectTypes, dryRun, force))
 			finalModel, err := p.Run()
 			if err != nil {
@@ -163,10 +236,175 @@ func NewReassignCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&to, "to", "t", "", "The identity to reassign to")
 	cmd.Flags().BoolVarP(&force, "force", "F", false, "Bypass confirmation prompts")
 	cmd.Flags().StringVarP(&objectTypes, "object-types", "o", "", "Comma-separated list of object types to reassign, defaults to all")
+	cmd.Flags().StringVarP(&objectId, "object-id", "i", "", "The object id to reassign")
 	cmd.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "Show the objects that would be reassigned without actually reassigning them")
 
 	return cmd
 
+}
+
+func determineObjectTypeAndCreateReassignment(objectId string, from string, to string, dryRun bool) (ReassignSummary, error) {
+	var summary ReassignSummary
+	var reassignIdentities []api_v2024.Identity
+	var objectsToReassign []string
+
+	apiClient, err := config.InitAPIClient(true)
+
+	if err != nil {
+		return summary, err
+	}
+
+	if from != "" && to != "" {
+		filters := fmt.Sprintf("id in (\"%s\",\"%s\")", from, to)
+		identities, _, err := apiClient.V2024.IdentitiesAPI.ListIdentities(context.TODO()).Filters(filters).Execute()
+		if err != nil {
+			return summary, err
+		}
+		if len(identities) != 2 {
+			return summary, errors.New("unable to find identities with the provided IDs")
+		}
+		reassignIdentities = identities
+	}
+
+	var fromIdentity = Identity{
+		ID:   from,
+		Name: getNameByID(reassignIdentities, from),
+	}
+	var toIdentity = Identity{
+		ID:   to,
+		Name: getNameByID(reassignIdentities, to),
+	}
+
+	summary = NewReassignSummary(fromIdentity, toIdentity, objectsToReassign, dryRun)
+
+	// Check if the objectId is a source
+	source, resp, err := apiClient.V2024.SourcesAPI.GetSource(context.TODO(), objectId).Execute()
+	if err != nil {
+		if resp.StatusCode != http.StatusNotFound && resp.StatusCode != http.StatusBadRequest {
+			log.Debug("Error getting access profile:", "error", err)
+		}
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			if source.Owner.Id != nil && *source.Owner.Id != from {
+				return summary, errors.New("the source is not owned by the specified identity")
+			}
+
+			summary.Sources = append(summary.Sources, *source)
+			summary.ObjectTypes = []string{"source"}
+			summary.ObjectCounts["source"] = 1
+			return summary, err
+		}
+	}
+
+	// Check if the objectId is a role
+	role, resp, err := apiClient.V2024.RolesAPI.GetRole(context.TODO(), objectId).Execute()
+	if err != nil {
+		if resp.StatusCode != http.StatusNotFound && resp.StatusCode != http.StatusBadRequest {
+			log.Debug("Error getting access profile:", "error", err)
+		}
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			if role.Owner.Id != nil && *role.Owner.Id != from {
+				return summary, errors.New("the role is not owned by the specified identity")
+			}
+			summary.Roles = append(summary.Roles, *role)
+			summary.ObjectTypes = []string{"role"}
+			summary.ObjectCounts["role"] = 1
+			return summary, err
+		}
+	}
+
+	// Check if the objectId is an access profile
+	accessProfile, resp, err := apiClient.V2024.AccessProfilesAPI.GetAccessProfile(context.TODO(), objectId).Execute()
+	if err != nil {
+		if resp.StatusCode != http.StatusNotFound && resp.StatusCode != http.StatusBadRequest {
+			log.Debug("Error getting access profile:", "error", err)
+		}
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			if accessProfile.Owner.Id != nil && *accessProfile.Owner.Id != from {
+				return summary, errors.New("the access profile is not owned by the specified identity")
+			}
+
+			summary.AccessProfiles = append(summary.AccessProfiles, *accessProfile)
+			summary.ObjectTypes = []string{"access-profile"}
+			summary.ObjectCounts["access-profile"] = 1
+			return summary, err
+		}
+	}
+
+	entitlement, resp, err := apiClient.V2024.EntitlementsAPI.GetEntitlement(context.TODO(), objectId).Execute()
+	if err != nil {
+		if resp.StatusCode != http.StatusNotFound && resp.StatusCode != http.StatusBadRequest {
+			log.Debug("Error getting entitlement:", "error", err)
+		}
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			if entitlement.Owner.Get().Id != nil && *entitlement.Owner.Get().Id != from {
+				return summary, errors.New("the entitlement is not owned by the specified identity")
+			}
+			summary.Entitlements = append(summary.Entitlements, *entitlement)
+			summary.ObjectTypes = []string{"entitlement"}
+			summary.ObjectCounts["entitlement"] = 1
+			return summary, err
+		}
+	}
+
+	identityProfile, resp, err := apiClient.V2024.IdentityProfilesAPI.GetIdentityProfile(context.TODO(), objectId).Execute()
+	if err != nil {
+		if resp.StatusCode != http.StatusNotFound && resp.StatusCode != http.StatusBadRequest {
+			log.Debug("Error getting identity profile:", "error", err)
+		}
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			if identityProfile.Owner.Get().Id != nil && *identityProfile.Owner.Get().Id != from {
+				return summary, errors.New("the identity profile is not owned by the specified identity")
+			}
+
+			summary.IdentityProfiles = append(summary.IdentityProfiles, *identityProfile)
+			summary.ObjectTypes = []string{"identity-profile"}
+			summary.ObjectCounts["identity-profile"] = 1
+			return summary, err
+		}
+	}
+
+	governanceGroup, resp, err := apiClient.V2024.GovernanceGroupsAPI.GetWorkgroup(context.TODO(), objectId).Execute()
+	if err != nil {
+		if resp.StatusCode != http.StatusNotFound && resp.StatusCode != http.StatusBadRequest {
+			log.Debug("Error getting governance group:", "error", err)
+		}
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			if governanceGroup.Owner.Id != nil && *governanceGroup.Owner.Id != from {
+				return summary, errors.New("the governance group is not owned by the specified identity")
+			}
+
+			summary.GovernanceGroups = append(summary.GovernanceGroups, *governanceGroup)
+			summary.ObjectTypes = []string{"governance-group"}
+			summary.ObjectCounts["governance-group"] = 1
+			return summary, err
+		}
+	}
+
+	workflow, resp, err := apiClient.V2024.WorkflowsAPI.GetWorkflow(context.TODO(), objectId).Execute()
+	if err != nil {
+		if resp.StatusCode != http.StatusNotFound && resp.StatusCode != http.StatusBadRequest {
+			log.Debug("Error getting workflow:", "error", err)
+		}
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			if workflow.Owner.Id != nil && *workflow.Owner.Id != from {
+				return summary, errors.New("the workflow is not owned by the specified identity")
+			}
+
+			summary.Workflows = append(summary.Workflows, *workflow)
+			summary.ObjectTypes = []string{"workflow"}
+			summary.ObjectCounts["workflow"] = 1
+			return summary, err
+		}
+	}
+
+	return summary, errors.New("object not found")
 }
 
 func promptSaveReport(summary *ReassignSummary) error {
@@ -346,11 +584,6 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 		if err != nil {
 			return errMsg(err)
 		}
-
-		if dryRun && force {
-			return errMsg(errors.New("cannot use --dry-run and --force together"))
-		}
-
 		if from != "" && to != "" {
 			filters := fmt.Sprintf("id in (\"%s\",\"%s\")", from, to)
 			identities, _, err := apiClient.V2024.IdentitiesAPI.ListIdentities(context.TODO()).Filters(filters).Execute()
