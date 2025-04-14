@@ -664,7 +664,8 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 
 			count := resp.Header.Get("X-Total-Count")
 
-			totalSources, err := strconv.Atoi(count)
+			totalSources, err := strconv.ParseInt(count, 10, 32)
+
 			if err != nil {
 				return errMsg(err)
 			}
@@ -701,7 +702,7 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 
 			count := resp.Header.Get("X-Total-Count")
 
-			totalRoles, err := strconv.Atoi(count)
+			totalRoles, err := strconv.ParseInt(count, 10, 32)
 			if err != nil {
 				return errMsg(err)
 			}
@@ -738,7 +739,7 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 
 			count := resp.Header.Get("X-Total-Count")
 
-			totalAccessProfiles, err := strconv.Atoi(count)
+			totalAccessProfiles, err := strconv.ParseInt(count, 10, 32)
 			if err != nil {
 				return errMsg(err)
 			}
@@ -774,7 +775,7 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 
 			count := resp.Header.Get("X-Total-Count")
 
-			totalEntitlements, err := strconv.Atoi(count)
+			totalEntitlements, err := strconv.ParseInt(count, 10, 32)
 			if err != nil {
 				return errMsg(err)
 			}
@@ -809,7 +810,7 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 
 			count := resp.Header.Get("X-Total-Count")
 
-			totalIdentityProfiles, err := strconv.Atoi(count)
+			totalIdentityProfiles, err := strconv.ParseInt(count, 10, 32)
 			if err != nil {
 				return errMsg(err)
 			}
@@ -853,7 +854,7 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 
 			count := resp.Header.Get("X-Total-Count")
 
-			totalGovernanceGroups, err := strconv.Atoi(count)
+			totalGovernanceGroups, err := strconv.ParseInt(count, 10, 32)
 			if err != nil {
 				return errMsg(err)
 			}
