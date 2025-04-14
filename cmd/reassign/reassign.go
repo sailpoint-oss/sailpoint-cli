@@ -6,6 +6,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -54,6 +55,7 @@ type ReassignSummary struct {
 	IdentityProfiles []api_v2024.IdentityProfile
 	GovernanceGroups []api_v2024.WorkgroupDto
 	Workflows        []api_v2024.Workflow
+	Errors           map[string][]string
 }
 
 func (r ReassignSummary) IsEmpty() bool {
@@ -141,7 +143,7 @@ func NewReassignCommand() *cobra.Command {
 							}
 
 						} else {
-							fmt.Println("Aborted reassignment.")
+							fmt.Println("Cancelled reassignment.")
 						}
 					} else {
 						promptSaveReport(&summary)
@@ -209,8 +211,15 @@ func NewReassignCommand() *cobra.Command {
 								return err
 							}
 
+							if m.reassignResult.Errors != nil {
+								err := writeErrorReport(*m.reassignResult, "error_report.json")
+								if err != nil {
+									return err
+								}
+							}
+
 						} else {
-							fmt.Println("Aborted reassignment.")
+							fmt.Println("Cancelled reassignment.")
 						}
 
 					} else {
@@ -455,6 +464,30 @@ func writeReport(summary ReassignSummary, path string) error {
 	return nil
 }
 
+func writeErrorReport(summary ReassignSummary, path string) error {
+
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	_, err = file.WriteString(util.PrettyPrint(summary.Errors))
+	if err != nil {
+		return err
+	}
+
+	err = file.Sync()
+	if err != nil {
+		return err
+	}
+
+	fmt.Print("There were errors that occured during reassignment, error report saved to ", path, "\n")
+
+	return nil
+}
+
 func isValidType(value string) bool {
 	for _, t := range supportedObjectTypes {
 		if value == t {
@@ -517,6 +550,7 @@ func NewReassignSummary(fromIdentity Identity, toIdentity Identity, supportedObj
 		DryRun:       dryRun,
 		ObjectTypes:  supportedObjectTypes,
 		ObjectCounts: make(map[string]int),
+		Errors:       make(map[string][]string),
 	}
 }
 
@@ -943,25 +977,25 @@ func nextReassignmentStepCmd(apiClient *api_v2024.APIClient, summary ReassignSum
 		run       func() error
 	}{
 		{"Reassigning sources", len(summary.Sources) > 0, func() error {
-			return reassignSources(apiClient, summary.From, summary.To, summary.Sources)
+			return reassignSources(apiClient, summary.From, summary.To, summary.Sources, &summary)
 		}},
 		{"Reassigning roles", len(summary.Roles) > 0, func() error {
-			return reassignRoles(apiClient, summary.From, summary.To, summary.Roles)
+			return reassignRoles(apiClient, summary.From, summary.To, summary.Roles, &summary)
 		}},
 		{"Reassigning access profiles", len(summary.AccessProfiles) > 0, func() error {
-			return reassignAccessProfiles(apiClient, summary.From, summary.To, summary.AccessProfiles)
+			return reassignAccessProfiles(apiClient, summary.From, summary.To, summary.AccessProfiles, &summary)
 		}},
 		{"Reassigning entitlements", len(summary.Entitlements) > 0, func() error {
-			return reassignEntitlements(apiClient, summary.From, summary.To, summary.Entitlements)
+			return reassignEntitlements(apiClient, summary.From, summary.To, summary.Entitlements, &summary)
 		}},
 		{"Reassigning identity profiles", len(summary.IdentityProfiles) > 0, func() error {
-			return reassignIdentityProfiles(apiClient, summary.From, summary.To, summary.IdentityProfiles)
+			return reassignIdentityProfiles(apiClient, summary.From, summary.To, summary.IdentityProfiles, &summary)
 		}},
 		{"Reassigning governance groups", len(summary.GovernanceGroups) > 0, func() error {
-			return reassignGovernanceGroups(apiClient, summary.From, summary.To, summary.GovernanceGroups)
+			return reassignGovernanceGroups(apiClient, summary.From, summary.To, summary.GovernanceGroups, &summary)
 		}},
 		{"Reassigning workflows", len(summary.Workflows) > 0, func() error {
-			return reassignWorkflows(apiClient, summary.From, summary.To, summary.Workflows)
+			return reassignWorkflows(apiClient, summary.From, summary.To, summary.Workflows, &summary)
 		}},
 	}
 
@@ -987,31 +1021,41 @@ func nextReassignmentStepCmd(apiClient *api_v2024.APIClient, summary ReassignSum
 	}
 }
 
-func reassignSources(apiClient *api_v2024.APIClient, from Identity, to Identity, sources []api_v2024.Source) error {
+func getErrorDetails(err error, resp *http.Response) string {
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+		if body, readErr := io.ReadAll(resp.Body); readErr == nil {
+			return string(body)
+		}
+	}
+	return err.Error()
+}
+
+func reassignSources(apiClient *api_v2024.APIClient, from Identity, to Identity, sources []api_v2024.Source, summary *ReassignSummary) error {
 	if len(sources) > 0 {
 		for _, source := range sources {
 
 			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
 			patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
-			_, _, err := apiClient.SourcesAPI.UpdateSource(context.TODO(), *source.Id).JsonPatchOperation(patchArray).Execute()
+			_, resp, err := apiClient.SourcesAPI.UpdateSource(context.TODO(), *source.Id).JsonPatchOperation(patchArray).Execute()
 
 			if err != nil {
-				fmt.Print("Error updating role owner: ", err)
+				summary.Errors["source"] = append(summary.Errors["source"], "Error updating source owner for source id ("+*source.Id+"):"+getErrorDetails(err, resp))
 			}
 		}
 	}
 	return nil
 }
 
-func reassignRoles(apiClient *api_v2024.APIClient, from Identity, to Identity, roles []api_v2024.Role) error {
+func reassignRoles(apiClient *api_v2024.APIClient, from Identity, to Identity, roles []api_v2024.Role, summary *ReassignSummary) error {
 	if len(roles) > 0 {
 		for _, role := range roles {
 			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
 			patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
-			_, _, err := apiClient.RolesAPI.PatchRole(context.TODO(), *role.Id).JsonPatchOperation(patchArray).Execute()
+			_, resp, err := apiClient.RolesAPI.PatchRole(context.TODO(), *role.Id).JsonPatchOperation(patchArray).Execute()
 
 			if err != nil {
-				fmt.Print("Error updating role owner: ", err)
+				summary.Errors["role"] = append(summary.Errors["role"], "Error updating role owner for role id ("+*role.Id+"):"+getErrorDetails(err, resp))
 			}
 		}
 	}
@@ -1019,7 +1063,7 @@ func reassignRoles(apiClient *api_v2024.APIClient, from Identity, to Identity, r
 
 }
 
-func reassignAccessProfiles(apiClient *api_v2024.APIClient, from Identity, to Identity, accessProfiles []api_v2024.AccessProfile) error {
+func reassignAccessProfiles(apiClient *api_v2024.APIClient, from Identity, to Identity, accessProfiles []api_v2024.AccessProfile, summary *ReassignSummary) error {
 	if len(accessProfiles) > 0 {
 		for _, accessProfile := range accessProfiles {
 			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
@@ -1027,8 +1071,7 @@ func reassignAccessProfiles(apiClient *api_v2024.APIClient, from Identity, to Id
 			_, _, err := apiClient.AccessProfilesAPI.PatchAccessProfile(context.TODO(), *accessProfile.Id).JsonPatchOperation(patchArray).Execute()
 
 			if err != nil {
-				fmt.Print("Error updating access profile owner: ", err)
-
+				summary.Errors["access-profile"] = append(summary.Errors["access-profile"], "Error updating access profile owner for access profile id ("+*accessProfile.Id+"):"+getErrorDetails(err, nil))
 			}
 		}
 	}
@@ -1036,7 +1079,7 @@ func reassignAccessProfiles(apiClient *api_v2024.APIClient, from Identity, to Id
 	return nil
 }
 
-func reassignEntitlements(apiClient *api_v2024.APIClient, from Identity, to Identity, entitlements []api_v2024.Entitlement) error {
+func reassignEntitlements(apiClient *api_v2024.APIClient, from Identity, to Identity, entitlements []api_v2024.Entitlement, summary *ReassignSummary) error {
 	if len(entitlements) > 0 {
 		for _, entitlement := range entitlements {
 
@@ -1046,7 +1089,7 @@ func reassignEntitlements(apiClient *api_v2024.APIClient, from Identity, to Iden
 			_, _, err := apiClient.EntitlementsAPI.PatchEntitlement(context.TODO(), *entitlement.Id).JsonPatchOperation(patchArray).Execute()
 
 			if err != nil {
-				fmt.Print("Error updating entitlement owner: ", err)
+				summary.Errors["entitlement"] = append(summary.Errors["entitlement"], "Error updating entitlement owner for entitlement id ("+*entitlement.Id+"):"+getErrorDetails(err, nil))
 			}
 		}
 	}
@@ -1054,7 +1097,7 @@ func reassignEntitlements(apiClient *api_v2024.APIClient, from Identity, to Iden
 	return nil
 }
 
-func reassignIdentityProfiles(apiClient *api_v2024.APIClient, from Identity, to Identity, identityProfiles []api_v2024.IdentityProfile) error {
+func reassignIdentityProfiles(apiClient *api_v2024.APIClient, from Identity, to Identity, identityProfiles []api_v2024.IdentityProfile, summary *ReassignSummary) error {
 	if len(identityProfiles) > 0 {
 		for _, identityProfile := range identityProfiles {
 			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
@@ -1062,7 +1105,7 @@ func reassignIdentityProfiles(apiClient *api_v2024.APIClient, from Identity, to 
 			_, _, err := apiClient.IdentityProfilesAPI.UpdateIdentityProfile(context.TODO(), *identityProfile.Id).JsonPatchOperation(patchArray).Execute()
 
 			if err != nil {
-				log.Debug("Error updating identity profile owner: ", err)
+				summary.Errors["identity-profile"] = append(summary.Errors["identity-profile"], "Error updating identity profile owner for identity profile id ("+*identityProfile.Id+"):"+getErrorDetails(err, nil))
 			}
 		}
 	}
@@ -1070,7 +1113,7 @@ func reassignIdentityProfiles(apiClient *api_v2024.APIClient, from Identity, to 
 	return nil
 }
 
-func reassignGovernanceGroups(apiClient *api_v2024.APIClient, from Identity, to Identity, governanceGroups []api_v2024.WorkgroupDto) error {
+func reassignGovernanceGroups(apiClient *api_v2024.APIClient, from Identity, to Identity, governanceGroups []api_v2024.WorkgroupDto, summary *ReassignSummary) error {
 	if len(governanceGroups) > 0 {
 		for _, governanceGroup := range governanceGroups {
 			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
@@ -1078,7 +1121,7 @@ func reassignGovernanceGroups(apiClient *api_v2024.APIClient, from Identity, to 
 			_, _, err := apiClient.GovernanceGroupsAPI.PatchWorkgroup(context.TODO(), *governanceGroup.Id).JsonPatchOperation(patchArray).Execute()
 
 			if err != nil {
-				fmt.Print("Error updating governance group owner: ", err)
+				summary.Errors["governance-group"] = append(summary.Errors["governance-group"], "Error updating governance group owner for governance group id ("+*governanceGroup.Id+"):"+getErrorDetails(err, nil))
 			}
 		}
 	}
@@ -1086,7 +1129,7 @@ func reassignGovernanceGroups(apiClient *api_v2024.APIClient, from Identity, to 
 	return nil
 }
 
-func reassignWorkflows(apiClient *api_v2024.APIClient, from Identity, to Identity, workflows []api_v2024.Workflow) error {
+func reassignWorkflows(apiClient *api_v2024.APIClient, from Identity, to Identity, workflows []api_v2024.Workflow, summary *ReassignSummary) error {
 	if len(workflows) > 0 {
 		for _, workflow := range workflows {
 
@@ -1100,7 +1143,7 @@ func reassignWorkflows(apiClient *api_v2024.APIClient, from Identity, to Identit
 			_, _, err := apiClient.WorkflowsAPI.PatchWorkflow(context.TODO(), *workflow.Id).JsonPatchOperation(patchArray).Execute()
 
 			if err != nil {
-				fmt.Print("Error updating workflow owner: ", err)
+				summary.Errors["workflow"] = append(summary.Errors["workflow"], "Error updating workflow owner for workflow id ("+*workflow.Id+"):"+getErrorDetails(err, nil))
 			}
 		}
 	}
