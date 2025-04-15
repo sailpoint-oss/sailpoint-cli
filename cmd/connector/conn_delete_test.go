@@ -16,7 +16,7 @@ func TestDeleteConnCmd(t *testing.T) {
 
 	client := mocks.NewMockClient(ctrl)
 	client.EXPECT().
-		Delete(gomock.Any(), "/beta/platform-connectors/test-connector", map[string]string{}, map[string]string{}).
+		Delete(gomock.Any(), "/beta/platform-connectors/test-connector", gomock.Any(), gomock.Any()).
 		Return(&http.Response{StatusCode: http.StatusNoContent, Body: io.NopCloser(bytes.NewReader([]byte("")))}, nil).
 		Times(1)
 

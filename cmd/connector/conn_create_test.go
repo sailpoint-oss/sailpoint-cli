@@ -21,7 +21,7 @@ func TestNewConnCreateCmd(t *testing.T) {
 		Post(gomock.Any(), gomock.Any(), "application/json", gomock.Any(), nil).
 		Return(&http.Response{
 			StatusCode: http.StatusCreated,
-			Body:       io.NopCloser(bytes.NewReader([]byte(`{"id": "test-connector"}`))),
+			Body:       io.NopCloser(bytes.NewReader([]byte(`{"id": "test-connector", "status": "success"}`))),
 		}, nil).
 		Times(1)
 
