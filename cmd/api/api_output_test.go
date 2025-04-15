@@ -37,8 +37,8 @@ func TestGetOutputFormat(t *testing.T) {
 		{
 			name:           "Full_output_with_status",
 			args:           []string{"get", "/v2024/transforms/123"},
-			expectedOutput: "Status: 404 Not Found",
-			expectError:    true,
+			expectedOutput: `{"detailCode":"404 Not found"`,
+			expectError:    false,
 		},
 		{
 			name:           "File_output",
@@ -96,8 +96,8 @@ func TestPostOutputFormat(t *testing.T) {
 		{
 			name:           "Full_output_with_status",
 			args:           []string{"post", "/v2024/transforms", "--body", `{"name":"Test Transform","type":"dateFormat"}`},
-			expectedOutput: "Status: 400 Bad Request",
-			expectError:    true,
+			expectedOutput: `{"detailCode":"400.1.0 Required data missing or empty"`,
+			expectError:    false,
 		},
 		{
 			name:           "File_output",
@@ -155,8 +155,8 @@ func TestPutOutputFormat(t *testing.T) {
 		{
 			name:           "Full_output_with_status",
 			args:           []string{"put", "/v2024/transforms/123", "--body", `{"name":"Updated Transform","type":"dateFormat"}`},
-			expectedOutput: "Status: 404 Not Found",
-			expectError:    true,
+			expectedOutput: `{"detailCode":"404 Not found"`,
+			expectError:    false,
 		},
 		{
 			name:           "File_output",
@@ -214,8 +214,8 @@ func TestDeleteOutputFormat(t *testing.T) {
 		{
 			name:           "Full_output_with_status",
 			args:           []string{"delete", "/v2024/transforms/123"},
-			expectedOutput: "Status: 404 Not Found",
-			expectError:    true,
+			expectedOutput: `{"detailCode":"404 Not found"`,
+			expectError:    false,
 		},
 		{
 			name:           "File_output",
