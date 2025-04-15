@@ -8,6 +8,7 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/connector"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/environment"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/jsonpath"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/reassign"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/report"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/rule"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/sanitize"
@@ -67,6 +68,7 @@ func NewRootCommand() *cobra.Command {
 		va.NewVACommand(t),
 		workflow.NewWorkflowCommand(),
 		sanitize.NewSanitizeCommand(),
+		reassign.NewReassignCommand(),
 	)
 
 	root.PersistentFlags().StringVarP(&env, "env", "", "", "Environment to use for SailPoint CLI commands")

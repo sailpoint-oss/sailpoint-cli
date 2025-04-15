@@ -155,7 +155,7 @@ func newPreviewCommand() *cobra.Command {
 				},
 			}
 
-			identityPreview, resp, err = apiClient.V2024.IdentityProfilesAPI.ShowIdentityPreview(context.TODO()).IdentityPreviewRequest(request).Execute()
+			identityPreview, resp, err = apiClient.V2024.IdentityProfilesAPI.GenerateIdentityPreview(context.TODO()).IdentityPreviewRequest(request).Execute()
 
 			if err != nil {
 				//fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)

@@ -10,7 +10,9 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/mrz1836/go-sanitize"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/search"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/spf13/viper"
 )
 
@@ -75,17 +77,16 @@ func ParseHelp(help string) Help {
 	return helpObj
 }
 
-
 func getTextBetween(url, start, end string) string {
-    startIndex := strings.Index(url, start)
-    if startIndex == -1 {
-        return ""
-    }
-    endIndex := strings.Index(url[startIndex+len(start):], end)
-    if endIndex == -1 {
-        return ""
-    }
-    return url[startIndex+len(start) : startIndex+len(start)+endIndex]
+	startIndex := strings.Index(url, start)
+	if startIndex == -1 {
+		return ""
+	}
+	endIndex := strings.Index(url[startIndex+len(start):], end)
+	if endIndex == -1 {
+		return ""
+	}
+	return url[startIndex+len(start) : startIndex+len(start)+endIndex]
 }
 
 func CreateOrUpdateEnvironment(environmentName string, update bool) error {
@@ -198,4 +199,20 @@ func CreateOrUpdateEnvironment(environmentName string, update bool) error {
 		}
 	}
 	return nil
+}
+
+func SelectIdentity[T search.Identity](identities []search.Identity) (string, error) {
+	var prompts []tui.Choice
+	for i := 0; i < len(identities); i++ {
+		temp := identities[i]
+
+		prompts = append(prompts, tui.Choice{Title: temp.DisplayName, Description: temp.Email, Id: temp.ID})
+	}
+
+	intermediate, err := tui.PromptList(prompts, "Select an Identity to preview the transform")
+	if err != nil {
+		return "", err
+	}
+	return intermediate.Id, nil
+
 }
