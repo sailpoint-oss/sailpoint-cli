@@ -1,1 +1,0 @@
-{"detailCode":"400.1.0 Required data missing or empty","trackingId":"a5242c01466f4b61bf4df8a8bf0f2e3d","messages":[{"locale":"und","localeOrigin":"REQUEST","text":"Required field \"attributes\" was missing or empty."},{"locale":"en-US","localeOrigin":"DEFAULT","text":"Required field \"attributes\" was missing or empty."}],"causes":[]}
