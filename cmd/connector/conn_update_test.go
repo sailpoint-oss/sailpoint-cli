@@ -17,10 +17,6 @@ func TestNewConnUpdateCmd_missingRequiredFlags(t *testing.T) {
 	defer ctrl.Finish()
 
 	client := mocks.NewMockClient(ctrl)
-	client.EXPECT().
-		Put(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("{}")))}, nil).
-		Times(0)
 
 	cmd := newConnUpdateCmd(client)
 
@@ -40,9 +36,11 @@ func TestNewConnUpdateCmd(t *testing.T) {
 
 	client := mocks.NewMockClient(ctrl)
 	client.EXPECT().
-		Put(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("{}")))}, nil).
-		Times(1)
+		Put(gomock.Any(), gomock.Any(), "application/json", gomock.Any(), nil).
+		Return(&http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(bytes.NewReader([]byte(`{"id": "123"}`))),
+		}, nil)
 
 	cmd := newConnUpdateCmd(client)
 

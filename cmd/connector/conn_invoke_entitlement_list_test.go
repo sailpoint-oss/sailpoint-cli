@@ -38,7 +38,7 @@ func TestEntitlementListWithType(t *testing.T) {
 
 	client := mocks.NewMockClient(ctrl)
 	client.EXPECT().
-		Post(gomock.Any(), gomock.Any(), "application/json", bytes.NewReader([]byte(i))).
+		Post(gomock.Any(), gomock.Any(), "application/json", bytes.NewReader([]byte(i)), nil).
 		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("{}")))}, nil)
 
 	cmd := newConnInvokeEntitlementListCmd(client)

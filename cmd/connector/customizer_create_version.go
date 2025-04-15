@@ -45,7 +45,8 @@ func newCustomizerCreateVersionCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			resp, err := client.Post(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint, id, "versions"), "application/zip", f)
+			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
+			resp, err := client.Post(cmd.Context(), util.ResourceUrl(endpoint, id, "versions"), "application/zip", f, nil)
 			if err != nil {
 				return err
 			}

@@ -21,8 +21,9 @@ func newCustomizerGetCmd(client client.Client) *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			id := cmd.Flags().Lookup("id").Value.String()
+			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
 
-			resp, err := client.Get(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint, id))
+			resp, err := client.Get(cmd.Context(), util.ResourceUrl(endpoint, id), nil)
 			if err != nil {
 				return err
 			}

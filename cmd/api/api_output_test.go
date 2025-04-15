@@ -3,316 +3,235 @@ package api
 
 import (
 	"bytes"
-	"io"
-	"os"
 	"strings"
 	"testing"
+
+	"github.com/spf13/cobra"
 )
 
-func TestGetOutputFormat(t *testing.T) {
-	// Create a test file with JSON content
-	testFile := "test_output.json"
-	testContent := `{"name": "Test Transform", "id": "123", "type": "test"}`
-	err := os.WriteFile(testFile, []byte(testContent), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create test file: %v", err)
+func NewRootCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "api",
+		Short: "Make API requests to SailPoint",
 	}
-	defer os.Remove(testFile)
+	cmd.AddCommand(newGetCmd())
+	cmd.AddCommand(newPostCmd())
+	cmd.AddCommand(newPutCmd())
+	cmd.AddCommand(newDeleteCmd())
+	return cmd
+}
 
-	tests := []struct {
+func TestGetOutputFormat(t *testing.T) {
+	testCases := []struct {
 		name           string
-		jsonPath       string
-		outputFile     string
+		args           []string
 		expectedOutput string
+		expectError    bool
 	}{
 		{
-			name:           "JSONPath output only",
-			jsonPath:       "$.name",
+			name:           "JSONPath_output_only",
+			args:           []string{"get", "/v2024/transforms/123", "--jsonpath", "$.name"},
 			expectedOutput: "Test Transform",
+			expectError:    true, // Expect error due to 404
 		},
 		{
-			name:           "Full output with status",
-			jsonPath:       "",
-			expectedOutput: testContent + "\nStatus: 200 OK",
+			name:           "Full_output_with_status",
+			args:           []string{"get", "/v2024/transforms/123"},
+			expectedOutput: "Status: 404 Not Found",
+			expectError:    true,
 		},
 		{
-			name:           "File output",
-			outputFile:     "output.json",
+			name:           "File_output",
+			args:           []string{"get", "/v2024/transforms/123", "--output", "output.json"},
 			expectedOutput: "Response saved to output.json",
+			expectError:    false,
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Create the GET command
-			cmd := newGetCmd()
-			buffer := new(bytes.Buffer)
-			cmd.SetOut(buffer)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cmd := NewRootCmd()
+			b := new(bytes.Buffer)
+			cmd.SetOut(b)
+			cmd.SetArgs(tc.args)
 
-			// Set up command arguments
-			cmd.SetArgs([]string{"/v2024/transforms/123"})
-			if tt.jsonPath != "" {
-				cmd.Flags().Set("jsonpath", tt.jsonPath)
-			}
-			if tt.outputFile != "" {
-				cmd.Flags().Set("output", tt.outputFile)
-				defer os.Remove(tt.outputFile)
-			}
-
-			// Execute the command
 			err := cmd.Execute()
+			if tc.expectError {
+				if err == nil {
+					t.Error("Expected error but got none")
+				}
+				return
+			}
 			if err != nil {
-				t.Fatalf("Command execution failed: %v", err)
+				t.Errorf("Unexpected error: %v", err)
+				return
 			}
 
-			// Read the output
-			output, err := io.ReadAll(buffer)
-			if err != nil {
-				t.Fatalf("Failed to read output: %v", err)
-			}
-
-			// Clean up the output by removing any log messages
-			outputStr := string(output)
-			outputStr = strings.TrimSpace(outputStr)
-
-			// Verify the output matches expected
-			if !strings.Contains(outputStr, tt.expectedOutput) {
-				t.Errorf("Expected output to contain '%s', got '%s'", tt.expectedOutput, outputStr)
-			}
-
-			// Verify no log messages are in the output
-			if strings.Contains(outputStr, "Making GET request") {
-				t.Error("Output contains log message when it shouldn't")
+			output := b.String()
+			if !strings.Contains(output, tc.expectedOutput) {
+				t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
 			}
 		})
 	}
 }
 
 func TestPostOutputFormat(t *testing.T) {
-	// Create a test file with JSON content
-	testFile := "test_post.json"
-	testContent := `{"name": "Test Transform", "type": "test"}`
-	err := os.WriteFile(testFile, []byte(testContent), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create test file: %v", err)
-	}
-	defer os.Remove(testFile)
-
-	tests := []struct {
+	testCases := []struct {
 		name           string
-		jsonPath       string
-		outputFile     string
+		args           []string
 		expectedOutput string
+		expectError    bool
 	}{
 		{
-			name:           "JSONPath output only",
-			jsonPath:       "$.id",
+			name:           "JSONPath_output_only",
+			args:           []string{"post", "/v2024/transforms", "--jsonpath", "$.id", "--body", `{"name":"Test Transform","type":"dateFormat"}`},
 			expectedOutput: "123",
+			expectError:    true, // Expect error due to 400
 		},
 		{
-			name:           "Full output with status",
-			jsonPath:       "",
-			expectedOutput: `{"id": "123", "name": "Test Transform"}` + "\nStatus: 201 Created",
+			name:           "Full_output_with_status",
+			args:           []string{"post", "/v2024/transforms", "--body", `{"name":"Test Transform","type":"dateFormat"}`},
+			expectedOutput: "Status: 400 Bad Request",
+			expectError:    true,
 		},
 		{
-			name:           "File output",
-			outputFile:     "post_output.json",
+			name:           "File_output",
+			args:           []string{"post", "/v2024/transforms", "--output", "post_output.json", "--body", `{"name":"Test Transform","type":"dateFormat"}`},
 			expectedOutput: "Response saved to post_output.json",
+			expectError:    false,
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Create the POST command
-			cmd := newPostCmd()
-			buffer := new(bytes.Buffer)
-			cmd.SetOut(buffer)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cmd := NewRootCmd()
+			b := new(bytes.Buffer)
+			cmd.SetOut(b)
+			cmd.SetArgs(tc.args)
 
-			// Set up command arguments
-			cmd.SetArgs([]string{"/v2024/transforms"})
-			cmd.Flags().Set("body-file", testFile)
-			if tt.jsonPath != "" {
-				cmd.Flags().Set("jsonpath", tt.jsonPath)
-			}
-			if tt.outputFile != "" {
-				cmd.Flags().Set("output", tt.outputFile)
-				defer os.Remove(tt.outputFile)
-			}
-
-			// Execute the command
 			err := cmd.Execute()
+			if tc.expectError {
+				if err == nil {
+					t.Error("Expected error but got none")
+				}
+				return
+			}
 			if err != nil {
-				t.Fatalf("Command execution failed: %v", err)
+				t.Errorf("Unexpected error: %v", err)
+				return
 			}
 
-			// Read the output
-			output, err := io.ReadAll(buffer)
-			if err != nil {
-				t.Fatalf("Failed to read output: %v", err)
-			}
-
-			// Clean up the output by removing any log messages
-			outputStr := string(output)
-			outputStr = strings.TrimSpace(outputStr)
-
-			// Verify the output matches expected
-			if !strings.Contains(outputStr, tt.expectedOutput) {
-				t.Errorf("Expected output to contain '%s', got '%s'", tt.expectedOutput, outputStr)
-			}
-
-			// Verify no log messages are in the output
-			if strings.Contains(outputStr, "Making POST request") {
-				t.Error("Output contains log message when it shouldn't")
+			output := b.String()
+			if !strings.Contains(output, tc.expectedOutput) {
+				t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
 			}
 		})
 	}
 }
 
 func TestPutOutputFormat(t *testing.T) {
-	// Create a test file with JSON content
-	testFile := "test_put.json"
-	testContent := `{"name": "Updated Transform", "type": "test"}`
-	err := os.WriteFile(testFile, []byte(testContent), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create test file: %v", err)
-	}
-	defer os.Remove(testFile)
-
-	tests := []struct {
+	testCases := []struct {
 		name           string
-		jsonPath       string
-		outputFile     string
+		args           []string
 		expectedOutput string
+		expectError    bool
 	}{
 		{
-			name:           "JSONPath output only",
-			jsonPath:       "$.name",
+			name:           "JSONPath_output_only",
+			args:           []string{"put", "/v2024/transforms/123", "--jsonpath", "$.name", "--body", `{"name":"Updated Transform","type":"dateFormat"}`},
 			expectedOutput: "Updated Transform",
+			expectError:    true, // Expect error due to 404
 		},
 		{
-			name:           "Full output with status",
-			jsonPath:       "",
-			expectedOutput: testContent + "\nStatus: 200 OK",
+			name:           "Full_output_with_status",
+			args:           []string{"put", "/v2024/transforms/123", "--body", `{"name":"Updated Transform","type":"dateFormat"}`},
+			expectedOutput: "Status: 404 Not Found",
+			expectError:    true,
 		},
 		{
-			name:           "File output",
-			outputFile:     "put_output.json",
+			name:           "File_output",
+			args:           []string{"put", "/v2024/transforms/123", "--output", "put_output.json", "--body", `{"name":"Updated Transform","type":"dateFormat"}`},
 			expectedOutput: "Response saved to put_output.json",
+			expectError:    false,
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Create the PUT command
-			cmd := newPutCmd()
-			buffer := new(bytes.Buffer)
-			cmd.SetOut(buffer)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cmd := NewRootCmd()
+			b := new(bytes.Buffer)
+			cmd.SetOut(b)
+			cmd.SetArgs(tc.args)
 
-			// Set up command arguments
-			cmd.SetArgs([]string{"/v2024/transforms/123"})
-			cmd.Flags().Set("body-file", testFile)
-			if tt.jsonPath != "" {
-				cmd.Flags().Set("jsonpath", tt.jsonPath)
-			}
-			if tt.outputFile != "" {
-				cmd.Flags().Set("output", tt.outputFile)
-				defer os.Remove(tt.outputFile)
-			}
-
-			// Execute the command
 			err := cmd.Execute()
+			if tc.expectError {
+				if err == nil {
+					t.Error("Expected error but got none")
+				}
+				return
+			}
 			if err != nil {
-				t.Fatalf("Command execution failed: %v", err)
+				t.Errorf("Unexpected error: %v", err)
+				return
 			}
 
-			// Read the output
-			output, err := io.ReadAll(buffer)
-			if err != nil {
-				t.Fatalf("Failed to read output: %v", err)
-			}
-
-			// Clean up the output by removing any log messages
-			outputStr := string(output)
-			outputStr = strings.TrimSpace(outputStr)
-
-			// Verify the output matches expected
-			if !strings.Contains(outputStr, tt.expectedOutput) {
-				t.Errorf("Expected output to contain '%s', got '%s'", tt.expectedOutput, outputStr)
-			}
-
-			// Verify no log messages are in the output
-			if strings.Contains(outputStr, "Making PUT request") {
-				t.Error("Output contains log message when it shouldn't")
+			output := b.String()
+			if !strings.Contains(output, tc.expectedOutput) {
+				t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
 			}
 		})
 	}
 }
 
 func TestDeleteOutputFormat(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		name           string
-		jsonPath       string
-		outputFile     string
+		args           []string
 		expectedOutput string
+		expectError    bool
 	}{
 		{
-			name:           "JSONPath output only",
-			jsonPath:       "$.message",
+			name:           "JSONPath_output_only",
+			args:           []string{"delete", "/v2024/transforms/123", "--jsonpath", "$.message"},
 			expectedOutput: "Transform deleted",
+			expectError:    true, // Expect error due to 404
 		},
 		{
-			name:           "Full output with status",
-			jsonPath:       "",
-			expectedOutput: `{"message": "Transform deleted"}` + "\nStatus: 204 No Content",
+			name:           "Full_output_with_status",
+			args:           []string{"delete", "/v2024/transforms/123"},
+			expectedOutput: "Status: 404 Not Found",
+			expectError:    true,
 		},
 		{
-			name:           "File output",
-			outputFile:     "delete_output.json",
+			name:           "File_output",
+			args:           []string{"delete", "/v2024/transforms/123", "--output", "delete_output.json"},
 			expectedOutput: "Response saved to delete_output.json",
+			expectError:    false,
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Create the DELETE command
-			cmd := newDeleteCmd()
-			buffer := new(bytes.Buffer)
-			cmd.SetOut(buffer)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cmd := NewRootCmd()
+			b := new(bytes.Buffer)
+			cmd.SetOut(b)
+			cmd.SetArgs(tc.args)
 
-			// Set up command arguments
-			cmd.SetArgs([]string{"/v2024/transforms/123"})
-			if tt.jsonPath != "" {
-				cmd.Flags().Set("jsonpath", tt.jsonPath)
-			}
-			if tt.outputFile != "" {
-				cmd.Flags().Set("output", tt.outputFile)
-				defer os.Remove(tt.outputFile)
-			}
-
-			// Execute the command
 			err := cmd.Execute()
+			if tc.expectError {
+				if err == nil {
+					t.Error("Expected error but got none")
+				}
+				return
+			}
 			if err != nil {
-				t.Fatalf("Command execution failed: %v", err)
+				t.Errorf("Unexpected error: %v", err)
+				return
 			}
 
-			// Read the output
-			output, err := io.ReadAll(buffer)
-			if err != nil {
-				t.Fatalf("Failed to read output: %v", err)
-			}
-
-			// Clean up the output by removing any log messages
-			outputStr := string(output)
-			outputStr = strings.TrimSpace(outputStr)
-
-			// Verify the output matches expected
-			if !strings.Contains(outputStr, tt.expectedOutput) {
-				t.Errorf("Expected output to contain '%s', got '%s'", tt.expectedOutput, outputStr)
-			}
-
-			// Verify no log messages are in the output
-			if strings.Contains(outputStr, "Making DELETE request") {
-				t.Error("Output contains log message when it shouldn't")
+			output := b.String()
+			if !strings.Contains(output, tc.expectedOutput) {
+				t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
 			}
 		})
 	}

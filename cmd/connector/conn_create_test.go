@@ -18,8 +18,11 @@ func TestNewConnCreateCmd(t *testing.T) {
 
 	client := mocks.NewMockClient(ctrl)
 	client.EXPECT().
-		Post(gomock.Any(), gomock.Any(), "application/json", gomock.Any()).
-		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("{}")))}, nil).
+		Post(gomock.Any(), gomock.Any(), "application/json", gomock.Any(), nil).
+		Return(&http.Response{
+			StatusCode: http.StatusCreated,
+			Body:       io.NopCloser(bytes.NewReader([]byte(`{"id": "test-connector"}`))),
+		}, nil).
 		Times(1)
 
 	cmd := newConnCreateCmd(client)
