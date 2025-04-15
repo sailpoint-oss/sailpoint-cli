@@ -3,6 +3,7 @@ package root
 import (
 	_ "embed"
 
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/api"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/cluster"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/connector"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/environment"
@@ -52,6 +53,7 @@ func NewRootCommand() *cobra.Command {
 	t := &terminal.Term{}
 
 	root.AddCommand(
+		api.NewAPICommand(),
 		cluster.NewClusterCommand(),
 		connector.NewConnCmd(t),
 		environment.NewEnvironmentCommand(),

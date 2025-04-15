@@ -18,8 +18,11 @@ func TestNewConnListCmd(t *testing.T) {
 
 	client := mocks.NewMockClient(ctrl)
 	client.EXPECT().
-		Get(gomock.Any(), gomock.Any()).
-		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("[]")))}, nil).
+		Get(gomock.Any(), gomock.Any(), nil).
+		Return(&http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(bytes.NewReader([]byte("[]"))),
+		}, nil).
 		Times(1)
 
 	cmd := newConnListCmd(client)

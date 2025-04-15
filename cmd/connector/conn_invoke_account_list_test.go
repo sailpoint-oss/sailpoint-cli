@@ -23,7 +23,7 @@ func TestAccountListWithoutInput(t *testing.T) {
 
 	client := mocks.NewMockClient(ctrl)
 	client.EXPECT().
-		Post(gomock.Any(), gomock.Any(), "application/json", bytes.NewReader([]byte(i))).
+		Post(gomock.Any(), gomock.Any(), "application/json", bytes.NewReader([]byte(i)), nil).
 		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("{}")))}, nil)
 
 	cmd := newConnInvokeAccountListCmd(client)
@@ -47,7 +47,7 @@ func TestAccountListWithState(t *testing.T) {
 
 	client := mocks.NewMockClient(ctrl)
 	client.EXPECT().
-		Post(gomock.Any(), gomock.Any(), "application/json", bytes.NewReader([]byte(i))).
+		Post(gomock.Any(), gomock.Any(), "application/json", bytes.NewReader([]byte(i)), nil).
 		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("{}")))}, nil)
 
 	cmd := newConnInvokeAccountListCmd(client)
@@ -81,7 +81,7 @@ func TestAccountListWithSchema(t *testing.T) {
 
 	client := mocks.NewMockClient(ctrl)
 	client.EXPECT().
-		Post(gomock.Any(), gomock.Any(), "application/json", bytes.NewReader([]byte(i))).
+		Post(gomock.Any(), gomock.Any(), "application/json", bytes.NewReader([]byte(i)), nil).
 		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("{}")))}, nil)
 
 	cmd := newConnInvokeAccountListCmd(client)
