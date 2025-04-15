@@ -23,7 +23,7 @@ func newConnVersionsCmd(client client.Client) *cobra.Command {
 			connectorRef := cmd.Flags().Lookup("id").Value.String()
 
 			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
-			resp, err := client.Get(cmd.Context(), util.ResourceUrl(endpoint, connectorRef, "versions"))
+			resp, err := client.Get(cmd.Context(), util.ResourceUrl(endpoint, connectorRef, "versions"), nil)
 			if err != nil {
 				return err
 			}

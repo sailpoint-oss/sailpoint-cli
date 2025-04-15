@@ -18,7 +18,7 @@ func TestNewConnCreateVersionCmd_missingRequiredFlags(t *testing.T) {
 
 	client := mocks.NewMockClient(ctrl)
 	client.EXPECT().
-		Post(gomock.Any(), gomock.Any(), "application/zip", gomock.Any()).
+		Post(gomock.Any(), gomock.Any(), "application/zip", gomock.Any(), nil).
 		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("{}")))}, nil).
 		Times(0)
 
@@ -36,7 +36,7 @@ func TestNewConnCreateVersionCmd_invalidZip(t *testing.T) {
 
 	client := mocks.NewMockClient(ctrl)
 	client.EXPECT().
-		Post(gomock.Any(), gomock.Any(), "application/zip", gomock.Any()).
+		Post(gomock.Any(), gomock.Any(), "application/zip", gomock.Any(), nil).
 		Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("{}")))}, nil).
 		Times(0)
 

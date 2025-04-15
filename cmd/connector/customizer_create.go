@@ -26,7 +26,8 @@ func newCustomizerCreateCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			resp, err := client.Post(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint), "application/json", bytes.NewReader(raw))
+			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
+			resp, err := client.Post(cmd.Context(), util.ResourceUrl(endpoint, "customizers"), "application/json", bytes.NewReader(raw), nil)
 			if err != nil {
 				return err
 			}

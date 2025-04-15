@@ -22,6 +22,7 @@ func newCustomizerUnlinkCmd(client client.Client) *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			instanceID := cmd.Flags().Lookup("instance-id").Value.String()
+			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
 
 			raw, err := json.Marshal([]interface{}{map[string]interface{}{
 				"op":   "remove",
@@ -31,7 +32,7 @@ func newCustomizerUnlinkCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			resp, err := client.Patch(cmd.Context(), util.ResourceUrl(connectorInstancesEndpoint, instanceID), bytes.NewReader(raw))
+			resp, err := client.Patch(cmd.Context(), util.ResourceUrl(endpoint, instanceID, "unlink"), bytes.NewReader(raw), nil)
 			if err != nil {
 				return err
 			}
@@ -61,6 +62,8 @@ func newCustomizerUnlinkCmd(client client.Client) *cobra.Command {
 
 	cmd.Flags().StringP("instance-id", "i", "", "Connector instance ID")
 	_ = cmd.MarkFlagRequired("instance-id")
+	cmd.Flags().StringP("conn-endpoint", "e", "", "Connector endpoint")
+	_ = cmd.MarkFlagRequired("conn-endpoint")
 
 	return cmd
 }
