@@ -211,7 +211,7 @@ func NewReassignCommand() *cobra.Command {
 								return err
 							}
 
-							if m.reassignResult.Errors != nil {
+							if len(m.reassignResult.Errors) > 0 {
 								err := writeErrorReport(*m.reassignResult, "error_report.json")
 								if err != nil {
 									return err
@@ -233,6 +233,13 @@ func NewReassignCommand() *cobra.Command {
 					_, err = prog.Run()
 					if err != nil {
 						return err
+					}
+
+					if len(m.reassignResult.Errors) > 0 {
+						err := writeErrorReport(*m.reassignResult, "error_report.json")
+						if err != nil {
+							return err
+						}
 					}
 				}
 			}
