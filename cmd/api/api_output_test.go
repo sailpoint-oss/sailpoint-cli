@@ -26,25 +26,16 @@ func TestGetOutputFormat(t *testing.T) {
 		name           string
 		args           []string
 		expectedOutput string
-		expectError    bool
 	}{
 		{
 			name:           "JSONPath_output_only",
 			args:           []string{"get", "/v2024/transforms/123", "--jsonpath", "$.name"},
 			expectedOutput: "Test Transform",
-			expectError:    false,
 		},
 		{
-			name:           "Full_output_with_status",
+			name:           "Full_output",
 			args:           []string{"get", "/v2024/transforms/123"},
 			expectedOutput: `{"detailCode":"404 Not found"`,
-			expectError:    false,
-		},
-		{
-			name:           "File_output",
-			args:           []string{"get", "/v2024/transforms/123", "--output", "/dev/null"},
-			expectedOutput: "Response saved to /dev/null",
-			expectError:    false,
 		},
 	}
 
@@ -57,22 +48,12 @@ func TestGetOutputFormat(t *testing.T) {
 			cmd.SetArgs(tc.args)
 
 			err := cmd.Execute()
-			output := b.String()
-
-			if tc.expectError {
-				if err == nil {
-					t.Error("Expected error but got none")
-				}
-				if !strings.Contains(output, tc.expectedOutput) {
-					t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
-				}
-				return
-			}
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 				return
 			}
 
+			output := b.String()
 			if !strings.Contains(output, tc.expectedOutput) {
 				t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
 			}
@@ -85,25 +66,16 @@ func TestPostOutputFormat(t *testing.T) {
 		name           string
 		args           []string
 		expectedOutput string
-		expectError    bool
 	}{
 		{
 			name:           "JSONPath_output_only",
 			args:           []string{"post", "/v2024/transforms", "--jsonpath", "$.id", "--body", `{"name":"Test Transform","type":"dateFormat"}`},
 			expectedOutput: "123",
-			expectError:    false,
 		},
 		{
-			name:           "Full_output_with_status",
+			name:           "Full_output",
 			args:           []string{"post", "/v2024/transforms", "--body", `{"name":"Test Transform","type":"dateFormat"}`},
 			expectedOutput: `{"detailCode":"400.1.0 Required data missing or empty"`,
-			expectError:    false,
-		},
-		{
-			name:           "File_output",
-			args:           []string{"post", "/v2024/transforms", "--output", "/dev/null", "--body", `{"name":"Test Transform","type":"dateFormat"}`},
-			expectedOutput: "Response saved to /dev/null",
-			expectError:    false,
 		},
 	}
 
@@ -116,22 +88,12 @@ func TestPostOutputFormat(t *testing.T) {
 			cmd.SetArgs(tc.args)
 
 			err := cmd.Execute()
-			output := b.String()
-
-			if tc.expectError {
-				if err == nil {
-					t.Error("Expected error but got none")
-				}
-				if !strings.Contains(output, tc.expectedOutput) {
-					t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
-				}
-				return
-			}
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 				return
 			}
 
+			output := b.String()
 			if !strings.Contains(output, tc.expectedOutput) {
 				t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
 			}
@@ -144,25 +106,16 @@ func TestPutOutputFormat(t *testing.T) {
 		name           string
 		args           []string
 		expectedOutput string
-		expectError    bool
 	}{
 		{
 			name:           "JSONPath_output_only",
 			args:           []string{"put", "/v2024/transforms/123", "--jsonpath", "$.name", "--body", `{"name":"Updated Transform","type":"dateFormat"}`},
 			expectedOutput: "Updated Transform",
-			expectError:    false,
 		},
 		{
-			name:           "Full_output_with_status",
+			name:           "Full_output",
 			args:           []string{"put", "/v2024/transforms/123", "--body", `{"name":"Updated Transform","type":"dateFormat"}`},
 			expectedOutput: `{"detailCode":"404 Not found"`,
-			expectError:    false,
-		},
-		{
-			name:           "File_output",
-			args:           []string{"put", "/v2024/transforms/123", "--output", "/dev/null", "--body", `{"name":"Updated Transform","type":"dateFormat"}`},
-			expectedOutput: "Response saved to /dev/null",
-			expectError:    false,
 		},
 	}
 
@@ -175,22 +128,12 @@ func TestPutOutputFormat(t *testing.T) {
 			cmd.SetArgs(tc.args)
 
 			err := cmd.Execute()
-			output := b.String()
-
-			if tc.expectError {
-				if err == nil {
-					t.Error("Expected error but got none")
-				}
-				if !strings.Contains(output, tc.expectedOutput) {
-					t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
-				}
-				return
-			}
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 				return
 			}
 
+			output := b.String()
 			if !strings.Contains(output, tc.expectedOutput) {
 				t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
 			}
@@ -203,25 +146,16 @@ func TestDeleteOutputFormat(t *testing.T) {
 		name           string
 		args           []string
 		expectedOutput string
-		expectError    bool
 	}{
 		{
 			name:           "JSONPath_output_only",
 			args:           []string{"delete", "/v2024/transforms/123", "--jsonpath", "$.message"},
 			expectedOutput: "Transform deleted",
-			expectError:    false,
 		},
 		{
-			name:           "Full_output_with_status",
+			name:           "Full_output",
 			args:           []string{"delete", "/v2024/transforms/123"},
 			expectedOutput: `{"detailCode":"404 Not found"`,
-			expectError:    false,
-		},
-		{
-			name:           "File_output",
-			args:           []string{"delete", "/v2024/transforms/123", "--output", "/dev/null"},
-			expectedOutput: "Response saved to /dev/null",
-			expectError:    false,
 		},
 	}
 
@@ -234,22 +168,12 @@ func TestDeleteOutputFormat(t *testing.T) {
 			cmd.SetArgs(tc.args)
 
 			err := cmd.Execute()
-			output := b.String()
-
-			if tc.expectError {
-				if err == nil {
-					t.Error("Expected error but got none")
-				}
-				if !strings.Contains(output, tc.expectedOutput) {
-					t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
-				}
-				return
-			}
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 				return
 			}
 
+			output := b.String()
 			if !strings.Contains(output, tc.expectedOutput) {
 				t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
 			}

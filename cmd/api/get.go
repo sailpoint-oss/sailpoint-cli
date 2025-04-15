@@ -20,7 +20,6 @@ import (
 func newGetCmd() *cobra.Command {
 	var headerFlags []string
 	var queryParams []string
-	var outputFile string
 	var prettyPrint bool
 	var jsonPath string
 
@@ -120,19 +119,11 @@ func newGetCmd() *cobra.Command {
 				}
 			}
 
-			// Output to file or stdout
-			if outputFile != "" {
-				if err := writeToFile(outputFile, body); err != nil {
-					return fmt.Errorf("failed to write to file: %w", err)
-				}
-				fmt.Printf("Response saved to %s\n", outputFile)
+			if jsonPath != "" {
+				cmd.Print(string(body))
 			} else {
-				if jsonPath != "" {
-					cmd.Print(string(body))
-				} else {
-					cmd.Println(string(body))
-					fmt.Printf("Status: %s\n", resp.Status)
-				}
+				cmd.Println(string(body))
+				fmt.Printf("Status: %s\n", resp.Status)
 			}
 
 			return nil
@@ -141,7 +132,6 @@ func newGetCmd() *cobra.Command {
 
 	cmd.Flags().StringArrayVarP(&headerFlags, "header", "H", []string{}, "HTTP headers (can be used multiple times, format: 'Key: Value')")
 	cmd.Flags().StringArrayVarP(&queryParams, "query", "q", []string{}, "Query parameters (can be used multiple times, format: 'key=value')")
-	cmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output file to save the response (if not specified, prints to stdout)")
 	cmd.Flags().BoolVarP(&prettyPrint, "pretty", "p", false, "Pretty print JSON response")
 	cmd.Flags().StringVarP(&jsonPath, "jsonpath", "j", "", "JSONPath expression to evaluate on the response")
 

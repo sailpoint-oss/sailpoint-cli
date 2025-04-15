@@ -20,7 +20,6 @@ func newPostCmd() *cobra.Command {
 	var headerFlags []string
 	var bodyFile string
 	var bodyContent string
-	var outputFile string
 	var prettyPrint bool
 	var contentType string
 	var jsonPath string
@@ -119,19 +118,11 @@ func newPostCmd() *cobra.Command {
 				}
 			}
 
-			// Output to file or stdout
-			if outputFile != "" {
-				if err := writeToFile(outputFile, responseBody); err != nil {
-					return fmt.Errorf("failed to write to file: %w", err)
-				}
-				fmt.Printf("Response saved to %s\n", outputFile)
+			if jsonPath != "" {
+				cmd.Print(string(responseBody))
 			} else {
-				if jsonPath != "" {
-					cmd.Print(string(responseBody))
-				} else {
-					cmd.Println(string(responseBody))
-					fmt.Printf("Status: %s\n", resp.Status)
-				}
+				cmd.Println(string(responseBody))
+				fmt.Printf("Status: %s\n", resp.Status)
 			}
 
 			return nil
@@ -141,7 +132,6 @@ func newPostCmd() *cobra.Command {
 	cmd.Flags().StringArrayVarP(&headerFlags, "header", "H", []string{}, "HTTP headers (can be used multiple times, format: 'Key: Value')")
 	cmd.Flags().StringVarP(&bodyFile, "body-file", "f", "", "File containing the request body")
 	cmd.Flags().StringVarP(&bodyContent, "body", "b", "", "Request body content as a string")
-	cmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output file to save the response (if not specified, prints to stdout)")
 	cmd.Flags().BoolVarP(&prettyPrint, "pretty", "p", false, "Pretty print JSON response")
 	cmd.Flags().StringVarP(&contentType, "content-type", "c", "application/json", "Content type of the request body")
 	cmd.Flags().StringVarP(&jsonPath, "jsonpath", "j", "", "JSONPath expression to evaluate on the response")
