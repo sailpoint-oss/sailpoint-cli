@@ -53,12 +53,18 @@ func TestGetOutputFormat(t *testing.T) {
 			cmd := NewRootCmd()
 			b := new(bytes.Buffer)
 			cmd.SetOut(b)
+			cmd.SetErr(b)
 			cmd.SetArgs(tc.args)
 
 			err := cmd.Execute()
+			output := b.String()
+
 			if tc.expectError {
 				if err == nil {
 					t.Error("Expected error but got none")
+				}
+				if !strings.Contains(output, tc.expectedOutput) {
+					t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
 				}
 				return
 			}
@@ -67,7 +73,6 @@ func TestGetOutputFormat(t *testing.T) {
 				return
 			}
 
-			output := b.String()
 			if !strings.Contains(output, tc.expectedOutput) {
 				t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
 			}
@@ -107,12 +112,18 @@ func TestPostOutputFormat(t *testing.T) {
 			cmd := NewRootCmd()
 			b := new(bytes.Buffer)
 			cmd.SetOut(b)
+			cmd.SetErr(b)
 			cmd.SetArgs(tc.args)
 
 			err := cmd.Execute()
+			output := b.String()
+
 			if tc.expectError {
 				if err == nil {
 					t.Error("Expected error but got none")
+				}
+				if !strings.Contains(output, tc.expectedOutput) {
+					t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
 				}
 				return
 			}
@@ -121,7 +132,6 @@ func TestPostOutputFormat(t *testing.T) {
 				return
 			}
 
-			output := b.String()
 			if !strings.Contains(output, tc.expectedOutput) {
 				t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
 			}
@@ -161,12 +171,18 @@ func TestPutOutputFormat(t *testing.T) {
 			cmd := NewRootCmd()
 			b := new(bytes.Buffer)
 			cmd.SetOut(b)
+			cmd.SetErr(b)
 			cmd.SetArgs(tc.args)
 
 			err := cmd.Execute()
+			output := b.String()
+
 			if tc.expectError {
 				if err == nil {
 					t.Error("Expected error but got none")
+				}
+				if !strings.Contains(output, tc.expectedOutput) {
+					t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
 				}
 				return
 			}
@@ -175,7 +191,6 @@ func TestPutOutputFormat(t *testing.T) {
 				return
 			}
 
-			output := b.String()
 			if !strings.Contains(output, tc.expectedOutput) {
 				t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
 			}
@@ -215,12 +230,18 @@ func TestDeleteOutputFormat(t *testing.T) {
 			cmd := NewRootCmd()
 			b := new(bytes.Buffer)
 			cmd.SetOut(b)
+			cmd.SetErr(b)
 			cmd.SetArgs(tc.args)
 
 			err := cmd.Execute()
+			output := b.String()
+
 			if tc.expectError {
 				if err == nil {
 					t.Error("Expected error but got none")
+				}
+				if !strings.Contains(output, tc.expectedOutput) {
+					t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
 				}
 				return
 			}
@@ -229,7 +250,6 @@ func TestDeleteOutputFormat(t *testing.T) {
 				return
 			}
 
-			output := b.String()
 			if !strings.Contains(output, tc.expectedOutput) {
 				t.Errorf("Expected output to contain '%s', got '%s'", tc.expectedOutput, output)
 			}
