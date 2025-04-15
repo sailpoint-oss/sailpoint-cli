@@ -32,7 +32,7 @@ func TestGetOutputFormat(t *testing.T) {
 			name:           "JSONPath_output_only",
 			args:           []string{"get", "/v2024/transforms/123", "--jsonpath", "$.name"},
 			expectedOutput: "Test Transform",
-			expectError:    true, // Expect error due to 404
+			expectError:    false,
 		},
 		{
 			name:           "Full_output_with_status",
@@ -42,8 +42,8 @@ func TestGetOutputFormat(t *testing.T) {
 		},
 		{
 			name:           "File_output",
-			args:           []string{"get", "/v2024/transforms/123", "--output", "output.json"},
-			expectedOutput: "Response saved to output.json",
+			args:           []string{"get", "/v2024/transforms/123", "--output", "/dev/null"},
+			expectedOutput: "Response saved to /dev/null",
 			expectError:    false,
 		},
 	}
@@ -86,7 +86,7 @@ func TestPostOutputFormat(t *testing.T) {
 			name:           "JSONPath_output_only",
 			args:           []string{"post", "/v2024/transforms", "--jsonpath", "$.id", "--body", `{"name":"Test Transform","type":"dateFormat"}`},
 			expectedOutput: "123",
-			expectError:    true, // Expect error due to 400
+			expectError:    false,
 		},
 		{
 			name:           "Full_output_with_status",
@@ -96,8 +96,8 @@ func TestPostOutputFormat(t *testing.T) {
 		},
 		{
 			name:           "File_output",
-			args:           []string{"post", "/v2024/transforms", "--output", "post_output.json", "--body", `{"name":"Test Transform","type":"dateFormat"}`},
-			expectedOutput: "Response saved to post_output.json",
+			args:           []string{"post", "/v2024/transforms", "--output", "/dev/null", "--body", `{"name":"Test Transform","type":"dateFormat"}`},
+			expectedOutput: "Response saved to /dev/null",
 			expectError:    false,
 		},
 	}
@@ -140,7 +140,7 @@ func TestPutOutputFormat(t *testing.T) {
 			name:           "JSONPath_output_only",
 			args:           []string{"put", "/v2024/transforms/123", "--jsonpath", "$.name", "--body", `{"name":"Updated Transform","type":"dateFormat"}`},
 			expectedOutput: "Updated Transform",
-			expectError:    true, // Expect error due to 404
+			expectError:    false,
 		},
 		{
 			name:           "Full_output_with_status",
@@ -150,8 +150,8 @@ func TestPutOutputFormat(t *testing.T) {
 		},
 		{
 			name:           "File_output",
-			args:           []string{"put", "/v2024/transforms/123", "--output", "put_output.json", "--body", `{"name":"Updated Transform","type":"dateFormat"}`},
-			expectedOutput: "Response saved to put_output.json",
+			args:           []string{"put", "/v2024/transforms/123", "--output", "/dev/null", "--body", `{"name":"Updated Transform","type":"dateFormat"}`},
+			expectedOutput: "Response saved to /dev/null",
 			expectError:    false,
 		},
 	}
@@ -194,7 +194,7 @@ func TestDeleteOutputFormat(t *testing.T) {
 			name:           "JSONPath_output_only",
 			args:           []string{"delete", "/v2024/transforms/123", "--jsonpath", "$.message"},
 			expectedOutput: "Transform deleted",
-			expectError:    true, // Expect error due to 404
+			expectError:    false,
 		},
 		{
 			name:           "Full_output_with_status",
@@ -204,8 +204,8 @@ func TestDeleteOutputFormat(t *testing.T) {
 		},
 		{
 			name:           "File_output",
-			args:           []string{"delete", "/v2024/transforms/123", "--output", "delete_output.json"},
-			expectedOutput: "Response saved to delete_output.json",
+			args:           []string{"delete", "/v2024/transforms/123", "--output", "/dev/null"},
+			expectedOutput: "Response saved to /dev/null",
 			expectError:    false,
 		},
 	}
