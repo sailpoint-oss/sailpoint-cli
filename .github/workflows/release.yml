@@ -14,7 +14,7 @@ env:
 
 jobs:
   goreleaser:
-    runs-on: developer_site_runner
+    runs-on: macos-latest-large
     steps:
       - name: Checkout
         uses: actions/checkout@v3
