@@ -14,7 +14,7 @@ env:
 
 jobs:
   goreleaser:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest-large
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -38,7 +38,7 @@ jobs:
           echo "tag-name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Install osslsigncode
-        run: sudo apt-get install -y osslsigncode
+        run: brew install osslsigncode
 
       - name: Obtain signing cert
         run: |
