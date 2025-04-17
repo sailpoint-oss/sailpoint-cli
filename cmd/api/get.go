@@ -120,7 +120,7 @@ func newGetCmd() *cobra.Command {
 			}
 
 			if jsonPath != "" {
-				cmd.Print(string(body))
+				cmd.Println(string(body))
 			} else {
 				cmd.Println(string(body))
 				fmt.Printf("Status: %s\n", resp.Status)

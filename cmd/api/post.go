@@ -119,7 +119,7 @@ func newPostCmd() *cobra.Command {
 			}
 
 			if jsonPath != "" {
-				cmd.Print(string(responseBody))
+				cmd.Println(string(responseBody))
 			} else {
 				cmd.Println(string(responseBody))
 				fmt.Printf("Status: %s\n", resp.Status)
