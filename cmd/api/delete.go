@@ -98,7 +98,7 @@ func newDeleteCmd() *cobra.Command {
 			}
 
 			if jsonPath != "" {
-				cmd.Print(string(responseBody))
+				fmt.Fprint(cmd.OutOrStdout(), string(responseBody))
 			} else {
 				cmd.Println(string(responseBody))
 				fmt.Printf("Status: %s\n", resp.Status)
