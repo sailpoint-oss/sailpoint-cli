@@ -18,12 +18,6 @@ You can reassign ownership for the following supported object types:
 
 ==Example==
 
-Use this command to interactively choose the identities and object types you wish to reassign.
-
-```bash
-sail reassign
-```
-
 Reassign all objects from one identity to another
 
 ```bash

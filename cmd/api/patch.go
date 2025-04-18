@@ -66,12 +66,14 @@ func newPatchCmd() *cobra.Command {
 				return fmt.Errorf("either --body or --body-file must be provided")
 			}
 
-			if contentType == "" {
-				contentType = "application/json"
-			}
-
 			// Prepare headers
 			headers := make(map[string]string)
+
+			if contentType == "" {
+				contentType = "application/json-patch+json"
+			}
+
+			headers["Content-Type"] = contentType
 			// Always add Accept header for JSON
 			headers["Accept"] = "application/json"
 			// Add any additional headers
@@ -126,10 +128,10 @@ func newPatchCmd() *cobra.Command {
 				}
 				fmt.Printf("Response saved to %s\n", outputFile)
 			} else {
-				cmd.Println(string(responseBody))
+				fmt.Fprint(cmd.OutOrStdout(), string(responseBody))
 			}
 
-			fmt.Printf("Status: %s\n", resp.Status)
+			fmt.Printf("\nStatus: %s\n", resp.Status)
 			return nil
 		},
 	}
@@ -139,7 +141,7 @@ func newPatchCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&bodyContent, "body", "b", "", "Request body content as a string")
 	cmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output file to save the response (if not specified, prints to stdout)")
 	cmd.Flags().BoolVarP(&prettyPrint, "pretty", "p", false, "Pretty print JSON response")
-	cmd.Flags().StringVarP(&contentType, "content-type", "c", "application/json", "Content type of the request body")
+	cmd.Flags().StringVarP(&contentType, "content-type", "c", "", "Content type of the request body")
 	cmd.Flags().StringVarP(&jsonPath, "jsonpath", "j", "", "JSONPath expression to evaluate on the response")
 
 	return cmd
