@@ -30,8 +30,7 @@ func newCustomizerUpdateCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
-			resp, err := client.Put(cmd.Context(), util.ResourceUrl(endpoint, id), "application/json", bytes.NewReader(raw), nil)
+			resp, err := client.Put(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint, id), "application/json", bytes.NewReader(raw), nil)
 			if err != nil {
 				return err
 			}
@@ -64,9 +63,6 @@ func newCustomizerUpdateCmd(client client.Client) *cobra.Command {
 
 	cmd.Flags().StringP("name", "n", "", "name of the connector customizer")
 	_ = cmd.MarkFlagRequired("name")
-
-	cmd.Flags().StringP("conn-endpoint", "e", "", "Connector endpoint")
-	_ = cmd.MarkFlagRequired("conn-endpoint")
 
 	return cmd
 }

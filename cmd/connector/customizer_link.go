@@ -33,8 +33,7 @@ func newCustomizerLinkCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			endpoint := cmd.Flags().Lookup("conn-endpoint").Value.String()
-			resp, err := client.Patch(cmd.Context(), util.ResourceUrl(endpoint, instanceID, "link"), bytes.NewReader(raw), nil)
+			resp, err := client.Patch(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint, instanceID, "link"), bytes.NewReader(raw), nil)
 			if err != nil {
 				return err
 			}
@@ -67,9 +66,6 @@ func newCustomizerLinkCmd(client client.Client) *cobra.Command {
 
 	cmd.Flags().StringP("instance-id", "i", "", "Connector instance ID")
 	_ = cmd.MarkFlagRequired("instance-id")
-
-	cmd.Flags().StringP("conn-endpoint", "e", "", "Connector endpoint")
-	_ = cmd.MarkFlagRequired("conn-endpoint")
 
 	return cmd
 }
