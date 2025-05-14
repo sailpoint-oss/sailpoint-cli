@@ -12,34 +12,34 @@ before:
     - go mod tidy
 
 builds:
-  - <<: &build_defaults
-      binary: bin/sail
-      main: ./
-    id: macos
-    goos: [darwin]
-    goarch: [amd64, arm64]
-
-  - <<: *build_defaults
-    id: linux
-    goos: [linux]
-    goarch: [386, arm, amd64, arm64]
+  - id: windows
+    goos: [windows]
+    goarch: ['386', amd64, arm64]
     env:
       - CGO_ENABLED=0
-
-  - <<: *build_defaults
-    id: windows
-    goos: [windows]
-    goarch: [386, amd64, arm64]
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
     hooks:
       post:
         - cmd: ./assets/sign-windows-executable.sh '{{ .Path }}'
           output: true
 
+  - id: linux
+    goos: [linux]
+    goarch: ['386', arm, amd64, arm64]
+    env:
+      - CGO_ENABLED=0
+
+  - id: macos
+    binary: bin/sail
+    main: ./
+    goos: [darwin]
+    goarch: [amd64, arm64]
+
 archives:
   - id: nix
     ids: [macos, linux]
-    <<: &archive_defaults
-      name_template: >-
+    name_template: >-
         {{- .ProjectName }}_
         {{- title .Os }}_
         {{- if eq .Arch "amd64" }}x86_64
@@ -50,21 +50,13 @@ archives:
     formats: tar.gz
     files:
       - LICENSE
+
   - id: windows
     ids: [windows]
-    <<: *archive_defaults
-    wrap_in_directory: false
     formats: zip
+    wrap_in_directory: false
     files:
       - LICENSE
-
-# dockers:
-#   - image_templates:
-#       - sailpoint/sailpoint-cli:{{.Tag}}
-#     use: buildx
-#     dockerfile: Dockerfile
-#     build_flag_templates:
-#       - "--platform=linux/amd64"
 
 brews:
   - name: sailpoint-cli
