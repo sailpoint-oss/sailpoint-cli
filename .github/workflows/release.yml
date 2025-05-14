@@ -17,7 +17,7 @@ jobs:
     runs-on: macos-latest-large
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -28,9 +28,9 @@ jobs:
       #     password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.23
+          go-version: 1.24.1
 
       - name: Set Tag Name
         id: tagName
@@ -62,8 +62,8 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
-          version: "latest"
-          args: release
+          version: "2.8.2"
+          args: release --clean --verbose
         env:
           GITHUB_TOKEN: ${{secrets.PUBLISHER_TOKEN}}
           GORELEASER_CURRENT_TAG: ${{steps.tagName.outputs.tag-name}}
