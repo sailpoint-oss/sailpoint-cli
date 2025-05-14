@@ -63,7 +63,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           version: "2.8.2"
-          args: release --clean --verbose
+          args: release --clean --verbose --timeout 60m
         env:
           GITHUB_TOKEN: ${{secrets.PUBLISHER_TOKEN}}
           GORELEASER_CURRENT_TAG: ${{steps.tagName.outputs.tag-name}}
