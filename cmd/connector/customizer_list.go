@@ -20,8 +20,7 @@ func newCustomizerListCmd(client client.Client) *cobra.Command {
 		Example: "sail conn customizers list",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-
-			resp, err := client.Get(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint))
+			resp, err := client.Get(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint), nil)
 			if err != nil {
 				return err
 			}

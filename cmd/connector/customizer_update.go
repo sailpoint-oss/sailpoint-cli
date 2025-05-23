@@ -30,7 +30,7 @@ func newCustomizerUpdateCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			resp, err := client.Put(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint, id), "application/json", bytes.NewReader(raw))
+			resp, err := client.Put(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint, id), "application/json", bytes.NewReader(raw), nil)
 			if err != nil {
 				return err
 			}

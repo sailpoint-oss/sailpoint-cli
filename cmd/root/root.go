@@ -3,10 +3,12 @@ package root
 import (
 	_ "embed"
 
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/api"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/cluster"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/connector"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/environment"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/jsonpath"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/reassign"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/report"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/rule"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/sanitize"
@@ -23,7 +25,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var version = "2.1.9"
+var version = "2.2.4"
 
 //go:embed root.md
 var rootHelp string
@@ -51,6 +53,7 @@ func NewRootCommand() *cobra.Command {
 	t := &terminal.Term{}
 
 	root.AddCommand(
+		api.NewAPICommand(),
 		cluster.NewClusterCommand(),
 		connector.NewConnCmd(t),
 		environment.NewEnvironmentCommand(),
@@ -65,6 +68,7 @@ func NewRootCommand() *cobra.Command {
 		va.NewVACommand(t),
 		workflow.NewWorkflowCommand(),
 		sanitize.NewSanitizeCommand(),
+		reassign.NewReassignCommand(),
 	)
 
 	root.PersistentFlags().StringVarP(&env, "env", "", "", "Environment to use for SailPoint CLI commands")

@@ -29,6 +29,7 @@ func newCustomizerCreateVersionCmd(client client.Client) *cobra.Command {
 			if err != nil {
 				return err
 			}
+			defer f.Close()
 
 			info, err := f.Stat()
 			if err != nil {
@@ -45,7 +46,7 @@ func newCustomizerCreateVersionCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			resp, err := client.Post(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint, id, "versions"), "application/zip", f)
+			resp, err := client.Post(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint, id, "versions"), "application/zip", f, nil)
 			if err != nil {
 				return err
 			}

@@ -138,7 +138,7 @@ func getSourceFromFile(filePath string) ([]Source, error) {
 }
 
 func validateConnectors(ctx context.Context, apiClient client.Client, source Source, endpoint string, readLimit int64) (*ValidationResults, error) {
-	resp, err := apiClient.Get(ctx, endpoint)
+	resp, err := apiClient.Get(ctx, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}

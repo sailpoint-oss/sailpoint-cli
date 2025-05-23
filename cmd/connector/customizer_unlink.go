@@ -31,7 +31,7 @@ func newCustomizerUnlinkCmd(client client.Client) *cobra.Command {
 				return err
 			}
 
-			resp, err := client.Patch(cmd.Context(), util.ResourceUrl(connectorInstancesEndpoint, instanceID), bytes.NewReader(raw))
+			resp, err := client.Patch(cmd.Context(), util.ResourceUrl(connectorInstancesEndpoint, instanceID, "unlink"), bytes.NewReader(raw), nil)
 			if err != nil {
 				return err
 			}

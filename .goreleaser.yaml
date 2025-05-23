@@ -1,5 +1,7 @@
 project_name: sail
 
+version: 2
+
 release:
   prerelease: auto
   draft: true # we only publish after the Windows MSI gets uploaded
@@ -10,62 +12,58 @@ before:
     - go mod tidy
 
 builds:
-  - <<: &build_defaults
-      binary: bin/sail
-      main: ./
-    id: macos
-    goos: [darwin]
-    goarch: [amd64, arm64]
-
-  - <<: *build_defaults
-    id: linux
-    goos: [linux]
-    goarch: [386, arm, amd64, arm64]
+  - id: windows
+    goos: [windows]
+    goarch: ['386', amd64, arm64]
     env:
       - CGO_ENABLED=0
-
-  - <<: *build_defaults
-    id: windows
-    goos: [windows]
-    goarch: [386, amd64, arm64]
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
     hooks:
       post:
         - cmd: ./assets/sign-windows-executable.sh '{{ .Path }}'
           output: true
 
+  - id: linux
+    goos: [linux]
+    goarch: ['386', arm, amd64, arm64]
+    env:
+      - CGO_ENABLED=0
+
+  - id: macos
+    binary: bin/sail
+    main: ./
+    goos: [darwin]
+    goarch: [amd64, arm64]
+
 archives:
   - id: nix
-    builds: [macos, linux]
-    <<: &archive_defaults
-      name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    ids: [macos, linux]
+    name_template: >-
+        {{- .ProjectName }}_
+        {{- title .Os }}_
+        {{- if eq .Arch "amd64" }}x86_64
+        {{- else if eq .Arch "386" }}i386
+        {{- else }}{{ .Arch }}{{ end }}
+        {{- if .Arm }}v{{ .Arm }}{{ end -}}
     wrap_in_directory: true
-    replacements:
-      darwin: macOS
-    format: tar.gz
-    files:
-      - LICENSE
-  - id: windows
-    builds: [windows]
-    <<: *archive_defaults
-    wrap_in_directory: false
-    format: zip
+    formats: tar.gz
     files:
       - LICENSE
 
-# dockers:
-#   - image_templates:
-#       - sailpoint/sailpoint-cli:{{.Tag}}
-#     use: buildx
-#     dockerfile: Dockerfile
-#     build_flag_templates:
-#       - "--platform=linux/amd64"
+  - id: windows
+    ids: [windows]
+    formats: zip
+    wrap_in_directory: false
+    files:
+      - LICENSE
 
 brews:
   - name: sailpoint-cli
     homepage: "https://github.com/sailpoint-oss/sailpoint-cli"
-    tap:
-      owner: sailpoint-oss
+    repository:
       name: homebrew-tap
+      owner: sailpoint-oss
     commit_author:
       name: developer-relations-sp
       email: devrel-service@sailpoint.com

@@ -22,7 +22,7 @@ func newCustomizerGetCmd(client client.Client) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			id := cmd.Flags().Lookup("id").Value.String()
 
-			resp, err := client.Get(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint, id))
+			resp, err := client.Get(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint, id), nil)
 			if err != nil {
 				return err
 			}

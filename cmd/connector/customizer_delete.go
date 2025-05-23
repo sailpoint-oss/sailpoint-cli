@@ -20,8 +20,7 @@ func newCustomizerDeleteCmd(client client.Client) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			id := cmd.Flags().Lookup("id").Value.String()
 
-			q := map[string]string{"type": "hard-delete"}
-			resp, err := client.Delete(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint, id), q)
+			resp, err := client.Delete(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint, id), nil, nil)
 			if err != nil {
 				return err
 			}

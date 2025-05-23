@@ -23,7 +23,7 @@ func newListCommand() *cobra.Command {
 
 	var description = string("Export of all rules")
 	var objectOptions string
-	var includeTypes = []string{"RULE"}
+	var includeTypes = []string{"RULE", "CONNECTOR_RULE"}
 	var excludeTypes []string
 
 	var cloud bool

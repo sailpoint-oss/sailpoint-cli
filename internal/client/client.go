@@ -13,11 +13,11 @@ import (
 )
 
 type Client interface {
-	Get(ctx context.Context, url string) (*http.Response, error)
-	Delete(ctx context.Context, url string, params map[string]string) (*http.Response, error)
-	Post(ctx context.Context, url string, contentType string, body io.Reader) (*http.Response, error)
-	Put(ctx context.Context, url string, contentType string, body io.Reader) (*http.Response, error)
-	Patch(ctx context.Context, url string, body io.Reader) (*http.Response, error)
+	Get(ctx context.Context, url string, headers map[string]string) (*http.Response, error)
+	Delete(ctx context.Context, url string, params map[string]string, headers map[string]string) (*http.Response, error)
+	Post(ctx context.Context, url string, contentType string, body io.Reader, headers map[string]string) (*http.Response, error)
+	Put(ctx context.Context, url string, contentType string, body io.Reader, headers map[string]string) (*http.Response, error)
+	Patch(ctx context.Context, url string, body io.Reader, headers map[string]string) (*http.Response, error)
 }
 
 // SpClient provides access to SP APIs.
@@ -34,7 +34,7 @@ func NewSpClient(cfg config.CLIConfig) Client {
 	}
 }
 
-func (c *SpClient) Get(ctx context.Context, url string) (*http.Response, error) {
+func (c *SpClient) Get(ctx context.Context, url string, headers map[string]string) (*http.Response, error) {
 	if err := c.ensureAccessToken(ctx); err != nil {
 		return nil, err
 	}
@@ -44,6 +44,11 @@ func (c *SpClient) Get(ctx context.Context, url string) (*http.Response, error) 
 		return nil, err
 	}
 	req.Header.Add("Authorization", "Bearer "+c.accessToken)
+
+	// Add any additional headers
+	for k, v := range headers {
+		req.Header.Add(k, v)
+	}
 
 	if c.cfg.Debug {
 		dbg, _ := httputil.DumpRequest(req, true)
@@ -62,7 +67,7 @@ func (c *SpClient) Get(ctx context.Context, url string) (*http.Response, error) 
 	return resp, nil
 }
 
-func (c *SpClient) Delete(ctx context.Context, url string, params map[string]string) (*http.Response, error) {
+func (c *SpClient) Delete(ctx context.Context, url string, params map[string]string, headers map[string]string) (*http.Response, error) {
 	if err := c.ensureAccessToken(ctx); err != nil {
 		return nil, err
 	}
@@ -72,6 +77,11 @@ func (c *SpClient) Delete(ctx context.Context, url string, params map[string]str
 		return nil, err
 	}
 	req.Header.Add("Authorization", "Bearer "+c.accessToken)
+
+	// Add any additional headers
+	for k, v := range headers {
+		req.Header.Add(k, v)
+	}
 
 	if c.cfg.Debug {
 		dbg, _ := httputil.DumpRequest(req, true)
@@ -98,7 +108,7 @@ func (c *SpClient) Delete(ctx context.Context, url string, params map[string]str
 	return resp, nil
 }
 
-func (c *SpClient) Post(ctx context.Context, url string, contentType string, body io.Reader) (*http.Response, error) {
+func (c *SpClient) Post(ctx context.Context, url string, contentType string, body io.Reader, headers map[string]string) (*http.Response, error) {
 	if err := c.ensureAccessToken(ctx); err != nil {
 		return nil, err
 	}
@@ -111,6 +121,11 @@ func (c *SpClient) Post(ctx context.Context, url string, contentType string, bod
 	req.Header.Add("Content-Type", contentType)
 	req.Header.Add("Authorization", "Bearer "+c.accessToken)
 
+	// Add any additional headers
+	for k, v := range headers {
+		req.Header.Add(k, v)
+	}
+
 	if c.cfg.Debug {
 		dbg, _ := httputil.DumpRequest(req, true)
 		fmt.Println(string(dbg))
@@ -127,7 +142,7 @@ func (c *SpClient) Post(ctx context.Context, url string, contentType string, bod
 	return resp, nil
 }
 
-func (c *SpClient) Put(ctx context.Context, url string, contentType string, body io.Reader) (*http.Response, error) {
+func (c *SpClient) Put(ctx context.Context, url string, contentType string, body io.Reader, headers map[string]string) (*http.Response, error) {
 	if err := c.ensureAccessToken(ctx); err != nil {
 		return nil, err
 	}
@@ -139,6 +154,11 @@ func (c *SpClient) Put(ctx context.Context, url string, contentType string, body
 	req.Header.Add("Content-Type", contentType)
 	req.Header.Add("Authorization", "Bearer "+c.accessToken)
 
+	// Add any additional headers
+	for k, v := range headers {
+		req.Header.Add(k, v)
+	}
+
 	if c.cfg.Debug {
 		dbg, _ := httputil.DumpRequest(req, true)
 		fmt.Println(string(dbg))
@@ -157,7 +177,7 @@ func (c *SpClient) Put(ctx context.Context, url string, contentType string, body
 	return resp, nil
 }
 
-func (c *SpClient) Patch(ctx context.Context, url string, body io.Reader) (*http.Response, error) {
+func (c *SpClient) Patch(ctx context.Context, url string, body io.Reader, headers map[string]string) (*http.Response, error) {
 	if err := c.ensureAccessToken(ctx); err != nil {
 		return nil, err
 	}
@@ -167,6 +187,11 @@ func (c *SpClient) Patch(ctx context.Context, url string, body io.Reader) (*http
 		return nil, err
 	}
 	req.Header.Add("Authorization", "Bearer "+c.accessToken)
+
+	// Add any additional headers
+	for k, v := range headers {
+		req.Header.Add(k, v)
+	}
 
 	if c.cfg.Debug {
 		dbg, _ := httputil.DumpRequest(req, true)

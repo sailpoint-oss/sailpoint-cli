@@ -8,16 +8,17 @@ on:
   push:
     tags:
       - "*"
-
+permissions:
+  contents: write
 env:
   REF: ${{ github.event.inputs.tag || github.event.inputs.version }}
 
 jobs:
   goreleaser:
-    runs-on: ubuntu-latest
+    runs-on: macos-13
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -28,9 +29,9 @@ jobs:
       #     password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.21
+          go-version: 1.24.1
 
       - name: Set Tag Name
         id: tagName
@@ -38,7 +39,7 @@ jobs:
           echo "tag-name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Install osslsigncode
-        run: sudo apt-get install -y osslsigncode
+        run: brew install osslsigncode
 
       - name: Obtain signing cert
         run: |
@@ -60,10 +61,10 @@ jobs:
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v4
+        uses: goreleaser/goreleaser-action@v6
         with:
-          version: "~1.13.1"
-          args: release
+          version: "2.8.2"
+          args: release --clean --verbose --timeout 60m
         env:
           GITHUB_TOKEN: ${{secrets.PUBLISHER_TOKEN}}
           GORELEASER_CURRENT_TAG: ${{steps.tagName.outputs.tag-name}}
