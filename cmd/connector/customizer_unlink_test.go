@@ -17,9 +17,9 @@ import (
 func TestNewCustomizerUnlinkCmd_missingFlag(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockClient := mocks.NewMockClient(ctrl)
 
-	// Patch must not be called
+	mockClient := mocks.NewMockClient(ctrl)
+	// Patch should not be called when the required flag is missing
 	mockClient.
 		EXPECT().
 		Patch(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
@@ -29,20 +29,20 @@ func TestNewCustomizerUnlinkCmd_missingFlag(t *testing.T) {
 	cmd.SetArgs([]string{}) // no -i
 
 	if err := cmd.Execute(); err == nil {
-		t.Error("expected error when required flag is missing")
+		t.Error("expected error when -i is missing")
 	}
 }
 
 func TestNewCustomizerUnlinkCmd_httpError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockClient := mocks.NewMockClient(ctrl)
 
+	mockClient := mocks.NewMockClient(ctrl)
 	mockClient.
 		EXPECT().
 		Patch(
 			gomock.Any(),
-			gomock.Eq(util.ResourceUrl(connectorInstancesEndpoint, "inst-1", "unlink")),
+			gomock.Eq(util.ResourceUrl(connectorInstancesEndpoint, "inst-1")),
 			gomock.Any(),
 			gomock.Nil(),
 		).
@@ -59,20 +59,20 @@ func TestNewCustomizerUnlinkCmd_httpError(t *testing.T) {
 
 	err := cmd.Execute()
 	if err == nil || !strings.Contains(err.Error(), "unlink customizer failed") {
-		t.Fatalf("expected HTTP error, got %v", err)
+		t.Fatalf("expected HTTP‐error, got %v", err)
 	}
 }
 
 func TestNewCustomizerUnlinkCmd_jsonError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockClient := mocks.NewMockClient(ctrl)
 
+	mockClient := mocks.NewMockClient(ctrl)
 	mockClient.
 		EXPECT().
 		Patch(
 			gomock.Any(),
-			gomock.Eq(util.ResourceUrl(connectorInstancesEndpoint, "inst-2", "unlink")),
+			gomock.Eq(util.ResourceUrl(connectorInstancesEndpoint, "inst-2")),
 			gomock.Any(),
 			gomock.Nil(),
 		).
@@ -89,24 +89,24 @@ func TestNewCustomizerUnlinkCmd_jsonError(t *testing.T) {
 
 	err := cmd.Execute()
 	if err == nil || !strings.Contains(err.Error(), "invalid character") {
-		t.Fatalf("expected JSON decode error, got %v", err)
+		t.Fatalf("expected JSON‐decode error, got %v", err)
 	}
 }
 
 func TestNewCustomizerUnlinkCmd_success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockClient := mocks.NewMockClient(ctrl)
 
 	// prepare a fake instance response
-	inst := instance{ID: "inst-3", Name: "FooInst"}
+	inst := instance{ID: "inst-3", Name: "UnlinkedInst"}
 	raw, _ := json.Marshal(inst)
 
+	mockClient := mocks.NewMockClient(ctrl)
 	mockClient.
 		EXPECT().
 		Patch(
 			gomock.Any(),
-			gomock.Eq(util.ResourceUrl(connectorInstancesEndpoint, "inst-3", "unlink")),
+			gomock.Eq(util.ResourceUrl(connectorInstancesEndpoint, "inst-3")),
 			gomock.Any(),
 			gomock.Nil(),
 		).
@@ -123,19 +123,18 @@ func TestNewCustomizerUnlinkCmd_success(t *testing.T) {
 	cmd.SetArgs([]string{"-i", "inst-3"})
 
 	if err := cmd.Execute(); err != nil {
-		t.Fatalf("unexpected Execute error: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
 	out := outBuf.String()
-	// ID must appear
+	// The table should contain the ID
 	if !strings.Contains(out, inst.ID) {
-		t.Errorf("output missing instance ID, got:\n%s", out)
+		t.Errorf("output missing ID %q, got:\n%s", inst.ID, out)
 	}
-	// uppercase headers
+	// And uppercase headers
 	for _, col := range instanceColumns {
-		uc := strings.ToUpper(col)
-		if !strings.Contains(out, uc) {
-			t.Errorf("output missing header %q, got:\n%s", uc, out)
+		if !strings.Contains(out, strings.ToUpper(col)) {
+			t.Errorf("output missing header %q, got:\n%s", strings.ToUpper(col), out)
 		}
 	}
 }

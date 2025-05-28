@@ -1,4 +1,4 @@
-// cmd/connector/link_test.go
+// cmd/connector/customizer_link_test.go
 package connector
 
 import (
@@ -17,30 +17,31 @@ import (
 func TestNewCustomizerLinkCmd_missingFlags(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-
 	mockClient := mocks.NewMockClient(ctrl)
+
 	// Patch should never be called if flags missing
 	mockClient.EXPECT().
 		Patch(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Times(0)
 
 	cmd := newCustomizerLinkCmd(mockClient)
-	cmd.SetArgs([]string{})
+	cmd.SetArgs([]string{}) // no -c or -i
 	if err := cmd.Execute(); err == nil {
-		t.Error("expected error when -c and/or -i missing")
+		t.Error("expected error when flags are missing")
 	}
 }
 
 func TestNewCustomizerLinkCmd_httpError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-
 	mockClient := mocks.NewMockClient(ctrl)
+
+	// stub 400 response, expecting URL without "/link"
 	mockClient.
 		EXPECT().
 		Patch(
 			gomock.Any(),
-			gomock.Eq(util.ResourceUrl(connectorInstancesEndpoint, "inst-1", "link")),
+			gomock.Eq(util.ResourceUrl(connectorInstancesEndpoint, "inst-1")),
 			gomock.Any(),
 			gomock.Nil(),
 		).
@@ -55,22 +56,22 @@ func TestNewCustomizerLinkCmd_httpError(t *testing.T) {
 	cmd.SetErr(&bytes.Buffer{})
 	cmd.SetArgs([]string{"-c", "cust-1", "-i", "inst-1"})
 
-	err := cmd.Execute()
-	if err == nil || !strings.Contains(err.Error(), "link customizer failed") {
-		t.Fatalf("expected HTTP error, got %v", err)
+	if err := cmd.Execute(); err == nil || !strings.Contains(err.Error(), "link customizer failed") {
+		t.Fatalf("expected HTTP-error, got %v", err)
 	}
 }
 
 func TestNewCustomizerLinkCmd_jsonError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-
 	mockClient := mocks.NewMockClient(ctrl)
+
+	// stub 200 but invalid JSON
 	mockClient.
 		EXPECT().
 		Patch(
 			gomock.Any(),
-			gomock.Eq(util.ResourceUrl(connectorInstancesEndpoint, "inst-2", "link")),
+			gomock.Eq(util.ResourceUrl(connectorInstancesEndpoint, "inst-2")),
 			gomock.Any(),
 			gomock.Nil(),
 		).
@@ -85,8 +86,7 @@ func TestNewCustomizerLinkCmd_jsonError(t *testing.T) {
 	cmd.SetErr(&bytes.Buffer{})
 	cmd.SetArgs([]string{"-c", "cust-1", "-i", "inst-2"})
 
-	err := cmd.Execute()
-	if err == nil || !strings.Contains(err.Error(), "invalid character") {
+	if err := cmd.Execute(); err == nil || !strings.Contains(err.Error(), "invalid character") {
 		t.Fatalf("expected JSON decode error, got %v", err)
 	}
 }
@@ -94,17 +94,18 @@ func TestNewCustomizerLinkCmd_jsonError(t *testing.T) {
 func TestNewCustomizerLinkCmd_success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+	mockClient := mocks.NewMockClient(ctrl)
 
-	// simulate a successful response with a valid instance
+	// prepare a fake instance
 	inst := instance{ID: "inst-3", Name: "LinkedInst"}
 	raw, _ := json.Marshal(inst)
 
-	mockClient := mocks.NewMockClient(ctrl)
+	// expecting URL without "/link"
 	mockClient.
 		EXPECT().
 		Patch(
 			gomock.Any(),
-			gomock.Eq(util.ResourceUrl(connectorInstancesEndpoint, "inst-3", "link")),
+			gomock.Eq(util.ResourceUrl(connectorInstancesEndpoint, "inst-3")),
 			gomock.Any(),
 			gomock.Nil(),
 		).
