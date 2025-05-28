@@ -29,6 +29,7 @@ func newCustomizerCreateVersionCmd(client client.Client) *cobra.Command {
 			if err != nil {
 				return err
 			}
+			defer f.Close()
 
 			info, err := f.Stat()
 			if err != nil {
