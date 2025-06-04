@@ -1,21 +1,21 @@
 package config
 
 import (
-	"context"
-	"crypto/tls"
+	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
-
 	"net/http"
-	"net/url"
-	"sync"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/log"
+	"github.com/kr/pretty"
 	"github.com/skratchdot/open-golang/open"
 	keyring "github.com/zalando/go-keyring"
-	"golang.org/x/oauth2"
 	"gopkg.in/square/go-jose.v2/jwt"
 )
 
@@ -196,18 +196,11 @@ func SetOAuthRefreshExpiry(expiry time.Time) error {
 }
 
 var (
-	callbackErr error
-	conf        *oauth2.Config
-	ctx         context.Context
-	server      *http.Server
-	tokenSet    TokenSet
+	tokenSet TokenSet
 )
 
 const (
-	ClientID     = "sailpoint-cli"
-	RedirectPort = "3000"
-	RedirectPath = "/callback"
-	RedirectURL  = "http://localhost:" + RedirectPort + RedirectPath
+	ClientID = "sailpoint-cli"
 )
 
 func ResetCacheOAuth() error {
@@ -260,113 +253,168 @@ func CacheOAuth(set TokenSet) error {
 	return nil
 }
 
-func CallbackHandler(w http.ResponseWriter, r *http.Request) {
-	queryParts, _ := url.ParseQuery(r.URL.RawQuery)
+func decryptTokenInfo(encryptedToken string, encryptionKey string) (string, error) {
+	// Split the IV and encrypted data
+	parts := strings.Split(encryptedToken, ":")
+	if len(parts) != 2 {
+		return "", fmt.Errorf("invalid encrypted token format")
+	}
 
-	// Use the authorization code that is pushed to the redirect URL
-	code := queryParts["code"][0]
-
-	// Exchange will do the handshake to retrieve the initial access token.
-	tok, err := conf.Exchange(ctx, code)
+	// Convert hex-encoded IV and encrypted data to bytes
+	iv, err := hex.DecodeString(parts[0])
 	if err != nil {
-		log.Error(err)
-		callbackErr = err
+		return "", fmt.Errorf("failed to decode IV: %v", err)
 	}
 
-	clientTok := tok
-	clientTok.RefreshToken = ""
-
-	// The HTTP Client returned by conf.Client will refresh the token as necessary.
-	client := conf.Client(ctx, clientTok)
-
-	baseUrl := GetBaseUrl()
-
-	resp, err := client.Get(baseUrl + "/beta/tenant-data/hosting-data")
+	encryptedData, err := hex.DecodeString(parts[1])
 	if err != nil {
-		callbackErr = err
-	} else {
-		log.Info("Authentication successful")
-		defer func(Body io.ReadCloser) {
-			_ = Body.Close()
-		}(resp.Body)
+		return "", fmt.Errorf("failed to decode encrypted data: %v", err)
 	}
 
-	var accessToken map[string]interface{}
-	accToken, err := jwt.ParseSigned(tok.AccessToken)
+	// Convert hex-encoded encryption key to bytes
+	key, err := hex.DecodeString(encryptionKey)
 	if err != nil {
-		log.Error(err)
-		callbackErr = err
+		return "", fmt.Errorf("failed to decode encryption key: %v", err)
 	}
-	accToken.UnsafeClaimsWithoutVerification(&accessToken)
 
-	var refreshToken map[string]interface{}
-	refToken, err := jwt.ParseSigned(tok.Extra("refresh_token").(string))
+	// Create AES cipher block
+	block, err := aes.NewCipher(key)
 	if err != nil {
-		log.Error(err)
-		callbackErr = err
+		return "", fmt.Errorf("failed to create cipher block: %v", err)
 	}
-	refToken.UnsafeClaimsWithoutVerification(&refreshToken)
 
-	tokenSet = TokenSet{AccessToken: tok.AccessToken, AccessExpiry: time.Unix(int64(accessToken["exp"].(float64)), 0), RefreshToken: tok.Extra("refresh_token").(string), RefreshExpiry: time.Unix(int64(refreshToken["exp"].(float64)), 0)}
+	// Create CBC mode
+	mode := cipher.NewCBCDecrypter(block, iv)
 
-	// show succes page
-	fmt.Fprint(w, OAuthSuccessPage)
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	// Decrypt the data
+	plaintext := make([]byte, len(encryptedData))
+	mode.CryptBlocks(plaintext, encryptedData)
 
-	defer cancel()
-	if err := server.Shutdown(ctx); err != nil {
-		callbackErr = err
+	// Remove PKCS7 padding
+	paddingLen := int(plaintext[len(plaintext)-1])
+	if paddingLen > aes.BlockSize || paddingLen == 0 {
+		return "", fmt.Errorf("invalid padding size")
 	}
+	plaintext = plaintext[:len(plaintext)-paddingLen]
+
+	return string(plaintext), nil
 }
 
 func OAuthLogin() (TokenSet, error) {
-	ctx = context.Background()
+	var set TokenSet
 
-	conf = &oauth2.Config{
-		ClientID:     ClientID,
-		ClientSecret: "",
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  GetAuthorizeUrl(),
-			TokenURL: GetTokenUrl(),
-		},
-		RedirectURL: RedirectURL,
+	// Step 1: Request UUID, encryption key, and Auth URL from Auth-Lambda
+	authLambdaURL := "https://nug87yusrg.execute-api.us-east-1.amazonaws.com/Prod/sailapps/uuid"
+
+	body := bytes.NewBuffer([]byte(`{"apiBaseURL": "` + GetBaseUrl() + `"}`))
+
+	resp, err := http.Post(authLambdaURL, "application/json", body)
+	if err != nil {
+		return set, fmt.Errorf("failed to get auth URL from lambda: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return set, fmt.Errorf("auth lambda returned non-200 status: %d", resp.StatusCode)
 	}
 
-	selfSignedCertificateTransport := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	var authResponse struct {
+		ID            string `json:"id"`
+		EncryptionKey string `json:"encryptionKey"`
+		AuthURL       string `json:"authURL"`
+		BaseURL       string `json:"baseURL"`
 	}
-	sslClient := &http.Client{Transport: selfSignedCertificateTransport}
-	ctx = context.WithValue(ctx, oauth2.HTTPClient, sslClient)
 
-	// Redirect user to login page
-	url := conf.AuthCodeURL("")
+	if err := json.NewDecoder(resp.Body).Decode(&authResponse); err != nil {
+		return set, fmt.Errorf("failed to decode auth lambda response: %v", err)
+	}
 
+	pretty.Print(authResponse)
+
+	// Update the base URL for this session
+	if authResponse.BaseURL != "" {
+		SetBaseUrl(authResponse.BaseURL)
+	}
+
+	// Step 2: Present Auth URL to user
 	log.Info("Attempting to open browser for authentication")
-
-	err := open.Run(url)
+	err = open.Run(authResponse.AuthURL)
 	if err != nil {
 		log.Warn("Cannot open automatically, Please manually open OAuth login page below")
-		fmt.Println(url)
+		fmt.Println(authResponse.AuthURL)
 	}
 
-	http.HandleFunc(RedirectPath, CallbackHandler)
-	server = &http.Server{Addr: fmt.Sprintf(":%v", RedirectPort), Handler: nil}
+	// Step 3: Poll Auth-Lambda for token using UUID
+	ticker := time.NewTicker(2 * time.Second)
+	defer ticker.Stop()
 
-	var wg sync.WaitGroup
-	wg.Add(1)
+	timeout := time.After(5 * time.Minute)
+	for {
+		select {
+		case <-timeout:
+			return set, fmt.Errorf("authentication timed out after 5 minutes")
+		case <-ticker.C:
+			// Query Auth-Lambda for token using UUID
+			tokenResp, err := http.Get(fmt.Sprintf("%s/%s", authLambdaURL, authResponse.ID))
+			if err != nil {
+				continue
+			}
+			defer tokenResp.Body.Close()
 
-	go func() {
-		defer wg.Done()
-		server.ListenAndServe()
-	}()
+			if tokenResp.StatusCode == http.StatusOK {
+				var tokenResponse struct {
+					BaseURL   string `json:"baseURL"`
+					ID        string `json:"id"`
+					TokenInfo string `json:"tokenInfo"`
+				}
 
-	wg.Wait()
+				if err := json.NewDecoder(tokenResp.Body).Decode(&tokenResponse); err != nil {
+					return set, fmt.Errorf("failed to decode token response: %v", err)
+				}
 
-	if callbackErr != nil {
-		return tokenSet, callbackErr
+				// Update base URL if provided in token response
+				if tokenResponse.BaseURL != "" {
+					SetBaseUrl(tokenResponse.BaseURL)
+				}
+
+				// Decrypt the token info using the encryption key
+				decryptedTokenInfo, err := decryptTokenInfo(tokenResponse.TokenInfo, authResponse.EncryptionKey)
+				if err != nil {
+					return set, fmt.Errorf("failed to decrypt token info: %v", err)
+				}
+
+				// Parse the decrypted token info into RefreshResponse
+				var response RefreshResponse
+				if err := json.Unmarshal([]byte(decryptedTokenInfo), &response); err != nil {
+					return set, fmt.Errorf("failed to parse decrypted token info: %v", err)
+				}
+
+				// Parse tokens to get expiry
+				var accessTokenClaims map[string]interface{}
+				accToken, err := jwt.ParseSigned(response.AccessToken)
+				if err != nil {
+					return set, fmt.Errorf("failed to parse access token: %v", err)
+				}
+				accToken.UnsafeClaimsWithoutVerification(&accessTokenClaims)
+
+				var refreshTokenClaims map[string]interface{}
+				refToken, err := jwt.ParseSigned(response.RefreshToken)
+				if err != nil {
+					return set, fmt.Errorf("failed to parse refresh token: %v", err)
+				}
+				refToken.UnsafeClaimsWithoutVerification(&refreshTokenClaims)
+
+				set = TokenSet{
+					AccessToken:   response.AccessToken,
+					AccessExpiry:  time.Unix(int64(accessTokenClaims["exp"].(float64)), 0),
+					RefreshToken:  response.RefreshToken,
+					RefreshExpiry: time.Unix(int64(refreshTokenClaims["exp"].(float64)), 0),
+				}
+
+				return set, nil
+			}
+		}
 	}
-
-	return tokenSet, nil
 }
 
 func RefreshOAuth() (TokenSet, error) {
