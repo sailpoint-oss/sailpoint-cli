@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The version to release
+  push:
+    tags:
+      - "*"
+permissions:
+  contents: write
+env:
+  REF: ${{ github.event.inputs.tag || github.event.inputs.version }}
+
+jobs:
+  msi:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Download sail.exe
+        id: download_exe
+        shell: bash
+        run: |
+          gh release download "${{ inputs.version }}" -p '*windows_amd64*.zip'
+          printf "zip=%s\n" *.zip >> $GITHUB_OUTPUT
+          unzip -o *.zip && rm -v *.zip
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Prepare PATH
+        id: setupmsbuild
+        uses: microsoft/setup-msbuild@v1.3.1
+        
+      - name: Build MSI
+        id: buildmsi
+        shell: bash
+        env:
+          ZIP_FILE: ${{ steps.download_exe.outputs.zip }}
+          MSBUILD_PATH: ${{ steps.setupmsbuild.outputs.msbuildPath }}
+        run: |
+          name="$(basename "$ZIP_FILE""_unsigned" ".zip")"
+          version="$(echo -e ${GITHUB_REF#refs/tags/} | sed s/-.*$//)"
+          "${MSBUILD_PATH}\MSBuild.exe" ./build/windows/sail.wixproj -p:SourceDir="$PWD" -p:OutputPath="$PWD" -p:OutputName="$name" -p:ProductVersion="$version"
+
+      - name: Upload Internal HTML File
+        uses: actions/upload-artifact@v4
+        with:
+          name: sailpoint.msi
+          path: ${{ steps.buildmsi.outputs.msi }}
+    
