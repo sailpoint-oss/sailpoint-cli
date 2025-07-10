@@ -7,7 +7,7 @@ transform_files
 search_results
 spconfig-exports
 reports
-workflows
+/workflows
 
 # CLI binary
 sailpoint-cli
