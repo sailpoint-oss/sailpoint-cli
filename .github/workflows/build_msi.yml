@@ -1,4 +1,4 @@
-name: Release
+name: Build MSI
 
 on:
   workflow_dispatch:
@@ -31,7 +31,7 @@ jobs:
       - name: Prepare PATH
         id: setupmsbuild
         uses: microsoft/setup-msbuild@v1.3.1
-        
+
       - name: Build MSI
         id: buildmsi
         shell: bash
@@ -40,7 +40,7 @@ jobs:
           MSBUILD_PATH: ${{ steps.setupmsbuild.outputs.msbuildPath }}
         run: |
           name="$(basename "$ZIP_FILE""_unsigned" ".zip")"
-          version="$(echo -e ${GITHUB_REF#refs/tags/} | sed s/-.*$//)"
+          version="${{ inputs.version }}"
           "${MSBUILD_PATH}\MSBuild.exe" ./build/windows/sail.wixproj -p:SourceDir="$PWD" -p:OutputPath="$PWD" -p:OutputName="$name" -p:ProductVersion="$version"
 
       - name: Upload Internal HTML File
