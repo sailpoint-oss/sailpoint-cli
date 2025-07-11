@@ -25,7 +25,7 @@ jobs:
         run: |
           gh release download "${{ inputs.version }}" -p '*windows_amd64*.zip'
           printf "zip=%s\n" *.zip >> $GITHUB_OUTPUT
-          unzip -o *.zip && rm -v *.zip
+          unzip -j -o *.zip && rm -v *.zip
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: Prepare PATH
