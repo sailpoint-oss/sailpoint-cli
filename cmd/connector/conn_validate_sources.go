@@ -186,7 +186,7 @@ func validateConnectors(ctx context.Context, apiClient client.Client, source Sou
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Result", "Errors", "Warnings", "Skipped"})
+	table.Header([]any{"ID", "Result", "Errors", "Warnings", "Skipped"}...)
 	for _, res := range results {
 		var result = aurora.Green("PASS")
 		if len(res.Errors) > 0 {

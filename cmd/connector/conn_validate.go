@@ -29,7 +29,7 @@ func newConnValidateCmd(apiClient client.Client) *cobra.Command {
 			list, _ := strconv.ParseBool(cmd.Flags().Lookup("list").Value.String())
 			if list {
 				table := tablewriter.NewWriter(os.Stdout)
-				table.SetHeader([]string{"ID", "Description"})
+				table.Header([]any{"ID", "Description"}...)
 				for _, c := range connvalidate.Checks {
 					table.Append([]string{
 						c.ID,
@@ -64,7 +64,7 @@ func newConnValidateCmd(apiClient client.Client) *cobra.Command {
 				return err
 			}
 			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader([]string{"ID", "Result", "Errors", "Warnings", "Skipped"})
+			table.Header([]any{"ID", "Result", "Errors", "Warnings", "Skipped"}...)
 			hasFailedCheck := false
 			for _, res := range results {
 				var result = aurora.Green("PASS")

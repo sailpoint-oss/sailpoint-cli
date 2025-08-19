@@ -64,7 +64,7 @@ func getTenantStats(spClient client.Client, cmd *cobra.Command) error {
 	}
 	for _, c := range tenantStats.ConnectorStats {
 		table := tablewriter.NewWriter(cmd.OutOrStdout())
-		table.SetHeader(statColumns)
+		table.Header(toAny(statColumns)...)
 		connAlias := ""
 		if c.ConnectorAlias != "" {
 			connAlias = fmt.Sprintf("(%v)", c.ConnectorAlias)

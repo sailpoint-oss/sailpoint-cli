@@ -66,7 +66,7 @@ func newCustomizerCreateVersionCmd(client client.Client) *cobra.Command {
 			}
 
 			table := tablewriter.NewWriter(cmd.OutOrStdout())
-			table.SetHeader(customizerVersionColumns)
+			table.Header(toAny(customizerVersionColumns)...)
 			table.Append(cv.columns())
 			table.Render()
 

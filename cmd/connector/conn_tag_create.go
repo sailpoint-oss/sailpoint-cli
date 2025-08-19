@@ -61,7 +61,7 @@ func newConnTagCreateCmd(client client.Client) *cobra.Command {
 			}
 
 			table := tablewriter.NewWriter(cmd.OutOrStdout())
-			table.SetHeader(tagColumns)
+			table.Header(toAny(tagColumns)...)
 			table.Append(t.columns())
 			table.Render()
 

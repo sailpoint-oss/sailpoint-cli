@@ -48,7 +48,7 @@ func newConnVersionsCmd(client client.Client) *cobra.Command {
 			}
 
 			table := tablewriter.NewWriter(cmd.OutOrStdout())
-			table.SetHeader(connectorVersionColumns)
+			table.Header(toAny(connectorVersionColumns)...)
 			for _, v := range vs {
 				table.Append(v.columns())
 			}

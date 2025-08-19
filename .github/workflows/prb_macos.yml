@@ -39,6 +39,9 @@ jobs:
       - name: Test
         run: |
           set -o pipefail
+          # First, try to build all packages to catch compilation errors early
+          go build ./... || exit 1
+          # Then run tests with gotestfmt
           go test -json -v -count=1 ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
 
       - name: Upload test log

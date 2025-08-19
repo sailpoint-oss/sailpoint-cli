@@ -48,7 +48,7 @@ func newConnTagListCmd(client client.Client) *cobra.Command {
 			}
 
 			table := tablewriter.NewWriter(cmd.OutOrStdout())
-			table.SetHeader(tagColumns)
+			table.Header(toAny(tagColumns)...)
 			for _, t := range tags {
 				table.Append(t.columns())
 			}

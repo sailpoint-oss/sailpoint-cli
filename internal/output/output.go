@@ -75,7 +75,12 @@ func GetSanitizedPath(fileName string, extension string) string {
 
 func WriteTable(writer io.Writer, headers []string, entries [][]string, sortKey string) {
 	table := tablewriter.NewWriter(writer)
-	table.SetHeader(headers)
+	// Convert []string to []any for the Header method
+	headerAny := make([]any, len(headers))
+	for i, h := range headers {
+		headerAny[i] = h
+	}
+	table.Header(headerAny...)
 
 	// Find the index of the header that matches the sortKey
 	sortIndex := -1

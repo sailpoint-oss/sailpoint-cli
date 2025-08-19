@@ -50,7 +50,7 @@ func newCustomizerUpdateCmd(client client.Client) *cobra.Command {
 			}
 
 			table := tablewriter.NewWriter(cmd.OutOrStdout())
-			table.SetHeader(customizerColumns)
+			table.Header(toAny(customizerColumns)...)
 			table.Append(cus.columns())
 			table.Render()
 

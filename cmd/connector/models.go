@@ -105,3 +105,12 @@ func (c customizerVersion) columns() []string {
 }
 
 var customizerVersionColumns = []string{"Customizer ID", "Image ID", "Version"}
+
+// toAny converts a []string to []any for use with tablewriter.Header
+func toAny(slice []string) []any {
+	result := make([]any, len(slice))
+	for i, v := range slice {
+		result[i] = v
+	}
+	return result
+}

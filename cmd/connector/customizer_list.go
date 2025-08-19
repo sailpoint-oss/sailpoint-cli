@@ -40,7 +40,7 @@ func newCustomizerListCmd(client client.Client) *cobra.Command {
 			}
 
 			table := tablewriter.NewWriter(cmd.OutOrStdout())
-			table.SetHeader(customizerColumns)
+			table.Header(toAny(customizerColumns)...)
 			for _, c := range customizers {
 				table.Append(c.columns())
 			}
