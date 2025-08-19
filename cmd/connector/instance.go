@@ -13,7 +13,7 @@ func newConnInstancesCmd(client client.Client) *cobra.Command {
 		Use:   "instances",
 		Short: "Manage connector instances",
 		Run: func(cmd *cobra.Command, args []string) {
-			_, _ = fmt.Fprintf(cmd.OutOrStdout(), cmd.UsageString())
+			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
 		},
 	}
 

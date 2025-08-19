@@ -31,7 +31,7 @@ func newConnInvokeCmd(client client.Client, term terminal.Terminal) *cobra.Comma
 		Use:   "invoke",
 		Short: "Invoke Command on a connector",
 		Run: func(cmd *cobra.Command, args []string) {
-			_, _ = fmt.Fprintf(cmd.OutOrStdout(), cmd.UsageString())
+			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
 		},
 	}
 
