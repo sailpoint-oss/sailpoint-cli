@@ -40,7 +40,7 @@ func newInstanceListCmd(client client.Client) *cobra.Command {
 			}
 
 			table := tablewriter.NewWriter(cmd.OutOrStdout())
-			table.SetHeader(instanceColumns)
+			table.Header(toAny(instanceColumns)...)
 			for _, c := range instances {
 				table.Append(c.columns())
 			}

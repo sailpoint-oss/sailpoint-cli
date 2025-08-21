@@ -51,7 +51,7 @@ func newCustomizerUnlinkCmd(client client.Client) *cobra.Command {
 			}
 
 			table := tablewriter.NewWriter(cmd.OutOrStdout())
-			table.SetHeader(instanceColumns)
+			table.Header(toAny(instanceColumns)...)
 			table.Append(i.columns())
 			table.Render()
 

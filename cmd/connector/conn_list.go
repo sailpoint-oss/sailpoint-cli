@@ -55,7 +55,7 @@ func newConnListCmd(client client.Client) *cobra.Command {
 			})
 
 			table := tablewriter.NewWriter(cmd.OutOrStdout())
-			table.SetHeader(connectorListColumns)
+			table.Header(toAny(connectorListColumns)...)
 
 			// Process each connector and populate the table
 			for _, conn := range conns {

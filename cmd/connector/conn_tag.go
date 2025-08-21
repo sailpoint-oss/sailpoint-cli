@@ -13,7 +13,7 @@ func newConnTagCmd(client client.Client) *cobra.Command {
 		Use:   "tags",
 		Short: "Manage tags",
 		Run: func(cmd *cobra.Command, args []string) {
-			_, _ = fmt.Fprintf(cmd.OutOrStdout(), cmd.UsageString())
+			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
 		},
 	}
 

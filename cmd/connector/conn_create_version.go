@@ -72,7 +72,7 @@ func newConnCreateVersionCmd(client client.Client) *cobra.Command {
 			}
 
 			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader(connectorVersionColumns)
+			table.Header(toAny(connectorVersionColumns)...)
 			table.Append(v.columns())
 			table.Render()
 
@@ -147,7 +147,7 @@ func updateTagWithVersion(cmd *cobra.Command, client client.Client, endpoint str
 	}
 
 	table := tablewriter.NewWriter(cmd.OutOrStdout())
-	table.SetHeader(tagColumns)
+	table.Header(toAny(tagColumns)...)
 	table.Append(t.columns())
 	table.Render()
 	return nil
@@ -185,7 +185,7 @@ func createTagWithVersion(cmd *cobra.Command, client client.Client, endpoint str
 	}
 
 	table := tablewriter.NewWriter(cmd.OutOrStdout())
-	table.SetHeader(tagColumns)
+	table.Header(toAny(tagColumns)...)
 	table.Append(t.columns())
 	table.Render()
 

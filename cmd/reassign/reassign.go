@@ -320,7 +320,7 @@ func determineObjectTypeAndCreateReassignment(objectId string, from string, to s
 		}
 	} else {
 		if resp.StatusCode == http.StatusOK {
-			if role.Owner.Id != nil && *role.Owner.Id != from {
+			if role.Owner.Get().Id != nil && *role.Owner.Get().Id != from {
 				return summary, errors.New("the role is not owned by the specified identity")
 			}
 			summary.Roles = append(summary.Roles, *role)
@@ -338,7 +338,7 @@ func determineObjectTypeAndCreateReassignment(objectId string, from string, to s
 		}
 	} else {
 		if resp.StatusCode == http.StatusOK {
-			if accessProfile.Owner.Id != nil && *accessProfile.Owner.Id != from {
+			if accessProfile.Owner.Get().Id != nil && *accessProfile.Owner.Get().Id != from {
 				return summary, errors.New("the access profile is not owned by the specified identity")
 			}
 

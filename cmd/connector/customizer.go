@@ -13,7 +13,7 @@ func newConnCustomizersCmd(client client.Client) *cobra.Command {
 		Use:   "customizers",
 		Short: "Manage connector customizers",
 		Run: func(cmd *cobra.Command, args []string) {
-			_, _ = fmt.Fprintf(cmd.OutOrStdout(), cmd.UsageString())
+			_, _ = fmt.Fprint(cmd.OutOrStdout(), cmd.UsageString())
 		},
 	}
 

@@ -63,7 +63,7 @@ func newConnCreateCmd(client client.Client) *cobra.Command {
 			}
 
 			table := tablewriter.NewWriter(cmd.OutOrStdout())
-			table.SetHeader(connectorColumns)
+			table.Header(toAny(connectorColumns)...)
 			table.Append(conn.columns())
 			table.Render()
 
