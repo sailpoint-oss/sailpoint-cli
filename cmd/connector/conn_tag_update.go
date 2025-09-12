@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"strconv"
 
@@ -30,7 +31,9 @@ func newConnTagUpdateCmd(client client.Client) *cobra.Command {
 			if err != nil {
 				return err
 			}
-
+			if version < 0 || version > int(math.MaxUint32) {
+				return fmt.Errorf("active version must be between 0 and %d", math.MaxUint32)
+			}
 			raw, err := json.Marshal(TagUpdate{ActiveVersion: uint32(version)})
 			if err != nil {
 				return err
