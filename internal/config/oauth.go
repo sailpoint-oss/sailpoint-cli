@@ -4,16 +4,19 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
-	"encoding/hex"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/charmbracelet/log"
-	"github.com/kr/pretty"
 	"github.com/skratchdot/open-golang/open"
 	keyring "github.com/zalando/go-keyring"
 	"gopkg.in/square/go-jose.v2/jwt"
@@ -41,6 +44,50 @@ type TokenSet struct {
 	AccessExpiry  time.Time
 	RefreshToken  string
 	RefreshExpiry time.Time
+}
+
+// AuthRequest represents the request body for initiating OAuth authentication
+type AuthRequest struct {
+	Tenant     string `json:"tenant,omitempty"`
+	APIBaseURL string `json:"apiBaseURL,omitempty"`
+	PublicKey  string `json:"publicKey"`
+}
+
+// AuthResponse represents the response from the authentication initiation endpoint
+type AuthResponse struct {
+	AuthURL string `json:"authURL"`
+	ID      string `json:"id"`
+	BaseURL string `json:"baseURL"`
+	TTL     int64  `json:"ttl"`
+}
+
+// OAuthTokenResponse represents the response containing the encrypted token from OAuth flow
+type OAuthTokenResponse struct {
+	ID        string `json:"id"`
+	BaseURL   string `json:"baseURL"`
+	TokenInfo string `json:"tokenInfo"`
+}
+
+// EncryptedTokenData represents the structure of the encrypted token JSON
+type EncryptedTokenData struct {
+	Version   string `json:"version"`
+	Algorithm struct {
+		Symmetric  string `json:"symmetric"`
+		Asymmetric string `json:"asymmetric"`
+	} `json:"algorithm"`
+	Data struct {
+		Ciphertext   string `json:"ciphertext"`
+		EncryptedKey string `json:"encryptedKey"`
+		IV           string `json:"iv"`
+		AuthTag      string `json:"authTag"`
+	} `json:"data"`
+}
+
+// RefreshRequest represents the request body for refreshing OAuth tokens
+type RefreshRequest struct {
+	RefreshToken string `json:"refreshToken"`
+	APIBaseURL   string `json:"apiBaseURL,omitempty"`
+	Tenant       string `json:"tenant,omitempty"`
 }
 
 func DeleteOAuthToken(env string) error {
@@ -200,7 +247,11 @@ var (
 )
 
 const (
-	ClientID = "sailpoint-cli"
+	ClientID             = "sailpoint-cli"
+	AuthLambdaBaseURL    = "https://nug87yusrg.execute-api.us-east-1.amazonaws.com/Prod/sailapps"
+	AuthLambdaAuthURL    = AuthLambdaBaseURL + "/auth"
+	AuthLambdaTokenURL   = AuthLambdaBaseURL + "/auth/token"
+	AuthLambdaRefreshURL = AuthLambdaBaseURL + "/auth/refresh"
 )
 
 func ResetCacheOAuth() error {
@@ -253,49 +304,75 @@ func CacheOAuth(set TokenSet) error {
 	return nil
 }
 
-func decryptTokenInfo(encryptedToken string, encryptionKey string) (string, error) {
-	// Split the IV and encrypted data
-	parts := strings.Split(encryptedToken, ":")
-	if len(parts) != 2 {
-		return "", fmt.Errorf("invalid encrypted token format")
+// generateKeyPair creates a new 2048-bit RSA key pair for OAuth authentication
+// Returns the private key, the public key as base64-encoded PEM, and any error
+func generateKeyPair() (*rsa.PrivateKey, string, error) {
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to generate RSA key pair: %v", err)
 	}
 
-	// Convert hex-encoded IV and encrypted data to bytes
-	iv, err := hex.DecodeString(parts[0])
+	publicKeyBytes, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to marshal public key: %v", err)
+	}
+
+	publicKeyPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: publicKeyBytes,
+	})
+
+	publicKeyBase64 := base64.StdEncoding.EncodeToString(publicKeyPEM)
+	return privateKey, publicKeyBase64, nil
+}
+
+// decryptHybridToken decrypts a token encrypted with hybrid RSA-OAEP + AES-256-GCM encryption
+func decryptHybridToken(encryptedData *EncryptedTokenData, privateKey *rsa.PrivateKey) (string, error) {
+	// 1. Decode base64 components
+	encryptedKey, err := base64.StdEncoding.DecodeString(encryptedData.Data.EncryptedKey)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode encrypted key: %v", err)
+	}
+
+	ciphertext, err := base64.StdEncoding.DecodeString(encryptedData.Data.Ciphertext)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode ciphertext: %v", err)
+	}
+
+	iv, err := base64.StdEncoding.DecodeString(encryptedData.Data.IV)
 	if err != nil {
 		return "", fmt.Errorf("failed to decode IV: %v", err)
 	}
 
-	encryptedData, err := hex.DecodeString(parts[1])
+	authTag, err := base64.StdEncoding.DecodeString(encryptedData.Data.AuthTag)
 	if err != nil {
-		return "", fmt.Errorf("failed to decode encrypted data: %v", err)
+		return "", fmt.Errorf("failed to decode auth tag: %v", err)
 	}
 
-	// Convert hex-encoded encryption key to bytes
-	key, err := hex.DecodeString(encryptionKey)
+	// 2. Decrypt AES key using RSA-OAEP-SHA256
+	aesKey, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, privateKey, encryptedKey, nil)
 	if err != nil {
-		return "", fmt.Errorf("failed to decode encryption key: %v", err)
+		return "", fmt.Errorf("RSA decryption failed: %v", err)
 	}
 
-	// Create AES cipher block
-	block, err := aes.NewCipher(key)
+	// 3. Decrypt token using AES-256-GCM
+	block, err := aes.NewCipher(aesKey)
 	if err != nil {
-		return "", fmt.Errorf("failed to create cipher block: %v", err)
+		return "", fmt.Errorf("failed to create AES cipher: %v", err)
 	}
 
-	// Create CBC mode
-	mode := cipher.NewCBCDecrypter(block, iv)
-
-	// Decrypt the data
-	plaintext := make([]byte, len(encryptedData))
-	mode.CryptBlocks(plaintext, encryptedData)
-
-	// Remove PKCS7 padding
-	paddingLen := int(plaintext[len(plaintext)-1])
-	if paddingLen > aes.BlockSize || paddingLen == 0 {
-		return "", fmt.Errorf("invalid padding size")
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", fmt.Errorf("failed to create GCM: %v", err)
 	}
-	plaintext = plaintext[:len(plaintext)-paddingLen]
+
+	// Append auth tag to ciphertext (GCM expects it this way)
+	ciphertextWithTag := append(ciphertext, authTag...)
+
+	plaintext, err := gcm.Open(nil, iv, ciphertextWithTag, nil)
+	if err != nil {
+		return "", fmt.Errorf("AES-GCM decryption failed: %v", err)
+	}
 
 	return string(plaintext), nil
 }
@@ -303,40 +380,48 @@ func decryptTokenInfo(encryptedToken string, encryptionKey string) (string, erro
 func OAuthLogin() (TokenSet, error) {
 	var set TokenSet
 
-	// Step 1: Request UUID, encryption key, and Auth URL from Auth-Lambda
-	authLambdaURL := "https://nug87yusrg.execute-api.us-east-1.amazonaws.com/Prod/sailapps/uuid"
-
-	body := bytes.NewBuffer([]byte(`{"apiBaseURL": "` + GetBaseUrl() + `"}`))
-
-	resp, err := http.Post(authLambdaURL, "application/json", body)
+	// Step 1: Generate RSA key pair for this authentication session
+	privateKey, publicKeyBase64, err := generateKeyPair()
 	if err != nil {
-		return set, fmt.Errorf("failed to get auth URL from lambda: %v", err)
+		return set, fmt.Errorf("failed to generate key pair: %v", err)
+	}
+	log.Debug("Generated RSA key pair for OAuth authentication")
+
+	// Step 2: Initiate authentication flow with the public key
+	authRequest := AuthRequest{
+		APIBaseURL: GetBaseUrl(),
+		PublicKey:  publicKeyBase64,
+	}
+
+	requestBody, err := json.Marshal(authRequest)
+	if err != nil {
+		return set, fmt.Errorf("failed to marshal auth request: %v", err)
+	}
+
+	resp, err := http.Post(AuthLambdaAuthURL, "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+		return set, fmt.Errorf("failed to initiate auth with lambda: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return set, fmt.Errorf("auth lambda returned non-200 status: %d", resp.StatusCode)
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return set, fmt.Errorf("auth lambda returned non-200 status: %d, body: %s", resp.StatusCode, string(bodyBytes))
 	}
 
-	var authResponse struct {
-		ID            string `json:"id"`
-		EncryptionKey string `json:"encryptionKey"`
-		AuthURL       string `json:"authURL"`
-		BaseURL       string `json:"baseURL"`
-	}
-
+	var authResponse AuthResponse
 	if err := json.NewDecoder(resp.Body).Decode(&authResponse); err != nil {
 		return set, fmt.Errorf("failed to decode auth lambda response: %v", err)
 	}
 
-	pretty.Print(authResponse)
+	log.Debug("Auth response received", "id", authResponse.ID, "baseURL", authResponse.BaseURL)
 
 	// Update the base URL for this session
 	if authResponse.BaseURL != "" {
 		SetBaseUrl(authResponse.BaseURL)
 	}
 
-	// Step 2: Present Auth URL to user
+	// Step 3: Present Auth URL to user
 	log.Info("Attempting to open browser for authentication")
 	err = open.Run(authResponse.AuthURL)
 	if err != nil {
@@ -344,7 +429,7 @@ func OAuthLogin() (TokenSet, error) {
 		fmt.Println(authResponse.AuthURL)
 	}
 
-	// Step 3: Poll Auth-Lambda for token using UUID
+	// Step 4: Poll Auth-Lambda for encrypted token using UUID
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 
@@ -355,30 +440,33 @@ func OAuthLogin() (TokenSet, error) {
 			return set, fmt.Errorf("authentication timed out after 5 minutes")
 		case <-ticker.C:
 			// Query Auth-Lambda for token using UUID
-			tokenResp, err := http.Get(fmt.Sprintf("%s/%s", authLambdaURL, authResponse.ID))
+			tokenResp, err := http.Get(fmt.Sprintf("%s/%s", AuthLambdaTokenURL, authResponse.ID))
 			if err != nil {
+				log.Debug("Error polling for token", "error", err)
 				continue
 			}
-			defer tokenResp.Body.Close()
 
 			if tokenResp.StatusCode == http.StatusOK {
-				var tokenResponse struct {
-					BaseURL   string `json:"baseURL"`
-					ID        string `json:"id"`
-					TokenInfo string `json:"tokenInfo"`
-				}
-
+				var tokenResponse OAuthTokenResponse
 				if err := json.NewDecoder(tokenResp.Body).Decode(&tokenResponse); err != nil {
+					tokenResp.Body.Close()
 					return set, fmt.Errorf("failed to decode token response: %v", err)
 				}
+				tokenResp.Body.Close()
 
 				// Update base URL if provided in token response
 				if tokenResponse.BaseURL != "" {
 					SetBaseUrl(tokenResponse.BaseURL)
 				}
 
-				// Decrypt the token info using the encryption key
-				decryptedTokenInfo, err := decryptTokenInfo(tokenResponse.TokenInfo, authResponse.EncryptionKey)
+				// Parse the encrypted token data
+				var encryptedTokenData EncryptedTokenData
+				if err := json.Unmarshal([]byte(tokenResponse.TokenInfo), &encryptedTokenData); err != nil {
+					return set, fmt.Errorf("failed to parse encrypted token data: %v", err)
+				}
+
+				// Decrypt the token using our private key
+				decryptedTokenInfo, err := decryptHybridToken(&encryptedTokenData, privateKey)
 				if err != nil {
 					return set, fmt.Errorf("failed to decrypt token info: %v", err)
 				}
@@ -411,8 +499,10 @@ func OAuthLogin() (TokenSet, error) {
 					RefreshExpiry: time.Unix(int64(refreshTokenClaims["exp"].(float64)), 0),
 				}
 
+				log.Info("OAuth authentication successful")
 				return set, nil
 			}
+			tokenResp.Body.Close()
 		}
 	}
 }
@@ -426,11 +516,29 @@ func RefreshOAuth() (TokenSet, error) {
 		return set, err
 	}
 
-	resp, err := http.Post(GetTokenUrl()+"?grant_type=refresh_token&client_id="+ClientID+"&refresh_token="+tempRefreshToken, "application/json", nil)
-	if err != nil {
-		return set, err
+	// Prepare the refresh request body
+	refreshRequest := RefreshRequest{
+		RefreshToken: tempRefreshToken,
+		APIBaseURL:   GetBaseUrl(),
+		Tenant:       GetTenantUrl(),
 	}
-	//We Read the response body on the line below.
+
+	requestBody, err := json.Marshal(refreshRequest)
+	if err != nil {
+		return set, fmt.Errorf("failed to marshal refresh request: %v", err)
+	}
+
+	resp, err := http.Post(AuthLambdaRefreshURL, "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+		return set, fmt.Errorf("failed to refresh token: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return set, fmt.Errorf("token refresh failed with status %d: %s", resp.StatusCode, string(bodyBytes))
+	}
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return set, err
@@ -439,6 +547,14 @@ func RefreshOAuth() (TokenSet, error) {
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return set, err
+	}
+
+	if response.AccessToken == "" {
+		return set, fmt.Errorf("no access token in refresh response")
+	}
+
+	if response.RefreshToken == "" {
+		return set, fmt.Errorf("no refresh token in refresh response")
 	}
 
 	var accessToken map[string]interface{}
@@ -455,7 +571,13 @@ func RefreshOAuth() (TokenSet, error) {
 	}
 	refToken.UnsafeClaimsWithoutVerification(&refreshToken)
 
-	set = TokenSet{AccessToken: response.AccessToken, AccessExpiry: time.Unix(int64(accessToken["exp"].(float64)), 0), RefreshToken: response.RefreshToken, RefreshExpiry: time.Unix(int64(refreshToken["exp"].(float64)), 0)}
+	set = TokenSet{
+		AccessToken:   response.AccessToken,
+		AccessExpiry:  time.Unix(int64(accessToken["exp"].(float64)), 0),
+		RefreshToken:  response.RefreshToken,
+		RefreshExpiry: time.Unix(int64(refreshToken["exp"].(float64)), 0),
+	}
 
+	log.Debug("OAuth token refresh successful")
 	return set, nil
 }
