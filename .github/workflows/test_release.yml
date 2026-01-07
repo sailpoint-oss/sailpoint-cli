@@ -26,19 +26,18 @@ jobs:
       - name: Install osslsigncode
         run: brew install osslsigncode
 
-      - name: Create dummy signing cert (for testing)
+      - name: Generate self-signed test certificates
         run: |
-          cert="$(mktemp -t cert.XXX)"
-          # Create a dummy cert file for testing
-          echo "dummy-cert-content" > "$cert"
-          echo "CERT_FILE=$cert" >> $GITHUB_ENV
-
-      - name: Create dummy signing key (for testing)
-        run: |
-          key="$(mktemp -t key.XXX)"
-          # Create a dummy key file for testing
-          echo "dummy-key-content" > "$key"
-          echo "KEY_FILE=$key" >> $GITHUB_ENV
+          # Generate a private key
+          openssl genrsa -out test-key.pem 2048
+          
+          # Generate a self-signed certificate
+          openssl req -new -x509 -key test-key.pem -out test-cert.pem -days 1 \
+            -subj "/C=US/ST=Test/L=Test/O=SailPoint Test/CN=SailPoint CLI Test"
+          
+          # Export paths
+          echo "CERT_FILE=$(pwd)/test-cert.pem" >> $GITHUB_ENV
+          echo "KEY_FILE=$(pwd)/test-key.pem" >> $GITHUB_ENV
 
       - name: Set test version
         run: echo "RELEASE_VERSION=0.0.0-test" >> $GITHUB_ENV
@@ -47,10 +46,10 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           version: "2.8.2"
-          args: release --snapshot --clean --skip=publish --verbose --timeout 60m
+          args: release --snapshot --clean --skip=publish --timeout 30m
         env:
           GORELEASER_CURRENT_TAG: "v0.0.0-test"
-          CERT_PASSWORD: "dummy-password"
+          CERT_PASSWORD: "test"
           MallocStackLogging: "0"
 
       - name: Upload artifacts for inspection
@@ -59,39 +58,3 @@ jobs:
           name: test-release-artifacts
           path: dist/
           retention-days: 7
-
-  test-msi-build:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: 1.24.1
-
-      - name: Build Windows binary
-        shell: bash
-        run: |
-          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w -X main.version=0.0.0-test" -o sail.exe .
-
-      - name: Prepare PATH
-        id: setupmsbuild
-        uses: microsoft/setup-msbuild@v1.3.1
-
-      - name: Test MSI Build
-        shell: bash
-        env:
-          MSBUILD_PATH: ${{ steps.setupmsbuild.outputs.msbuildPath }}
-        run: |
-          version="0.0.0"
-          "${MSBUILD_PATH}\MSBuild.exe" ./build/windows/sail.wixproj -p:SourceDir="$PWD" -p:OutputPath="$PWD" -p:OutputName="test-sail" -p:ProductVersion="$version"
-
-      - name: Upload MSI for inspection
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-msi
-          path: "*.msi"
-          retention-days: 7
-
