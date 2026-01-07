@@ -69,6 +69,7 @@ jobs:
           GITHUB_TOKEN: ${{secrets.PUBLISHER_TOKEN}}
           GORELEASER_CURRENT_TAG: ${{steps.tagName.outputs.tag-name}}
           CERT_PASSWORD: ${{secrets.WINDOWS_CERT_PASSWORD}}
+          MallocStackLogging: "0"
 
   msi:
     needs: goreleaser
