@@ -23,8 +23,17 @@ if [ ! -f "$KEY_FILE" ]; then
   exit 1
 fi
 
-osslsigncode sign -n "SailPoint CLI" -t http://timestamp.digicert.com \
-  -certs "$CERT_FILE" -key "$KEY_FILE" \
-  -in "$EXE" -out "$EXE"~
+# Determine if we should use timestamping (skip in test mode)
+if [ "$TEST_MODE" = "true" ]; then
+  echo "Signing without timestamp (test mode)" >&2
+  osslsigncode sign -n "SailPoint CLI" \
+    -certs "$CERT_FILE" -key "$KEY_FILE" \
+    -in "$EXE" -out "$EXE"~
+else
+  echo "Signing with timestamp" >&2
+  osslsigncode sign -n "SailPoint CLI" -t http://timestamp.digicert.com \
+    -certs "$CERT_FILE" -key "$KEY_FILE" \
+    -in "$EXE" -out "$EXE"~
+fi
 
 mv "$EXE"~ "$EXE"
