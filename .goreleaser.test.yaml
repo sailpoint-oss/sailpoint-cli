@@ -32,16 +32,17 @@ builds:
     ldflags:
       - -s -w -X main.version={{ .Version }}
 
-  # Commenting out macOS for initial testing
-  # - id: macos
-  #   binary: bin/sail
-  #   main: ./
-  #   goos: [darwin]
-  #   goarch: [amd64, arm64]
+  - id: macos
+    binary: bin/sail
+    main: ./
+    goos: [darwin]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
 
 archives:
   - id: nix
-    ids: [linux]  # Removed macos for testing
+    ids: [macos, linux]
     name_template: >-
         {{- .ProjectName }}_
         {{- title .Os }}_
