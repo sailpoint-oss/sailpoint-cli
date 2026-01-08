@@ -59,7 +59,6 @@ jobs:
         env:
           GORELEASER_CURRENT_TAG: "v0.0.0-test"
           CERT_PASSWORD: "test"
-          TEST_MODE: "true"
 
       - name: Upload artifacts for inspection
         uses: actions/upload-artifact@v4
