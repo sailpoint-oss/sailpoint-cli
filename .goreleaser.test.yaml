@@ -1,0 +1,84 @@
+project_name: sail
+
+version: 2
+
+release:
+  prerelease: auto
+  draft: true
+  name_template: "SailPoint CLI {{.Version}}"
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: windows
+    goos: [windows]
+    goarch: ['386', amd64, arm64]  # All Windows architectures
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+    hooks:
+      post:
+        - cmd: ./assets/sign-windows-executable.sh '{{ .Path }}'
+          output: true
+
+  - id: linux
+    goos: [linux]
+    goarch: ['386', arm, amd64, arm64]  # All common Linux architectures
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+
+  - id: macos
+    binary: bin/sail
+    main: ./
+    goos: [darwin]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+
+archives:
+  - id: nix
+    ids: [macos, linux]
+    name_template: >-
+        {{- .ProjectName }}_
+        {{- title .Os }}_
+        {{- if eq .Arch "amd64" }}x86_64
+        {{- else if eq .Arch "386" }}i386
+        {{- else }}{{ .Arch }}{{ end }}
+        {{- if .Arm }}v{{ .Arm }}{{ end -}}
+    wrap_in_directory: true
+    formats: tar.gz
+    files:
+      - LICENSE
+
+  - id: windows
+    ids: [windows]
+    formats: zip
+    wrap_in_directory: false
+    files:
+      - LICENSE
+
+brews:
+  - name: sailpoint-cli
+    homepage: "https://github.com/sailpoint-oss/sailpoint-cli"
+    repository:
+      name: homebrew-tap
+      owner: sailpoint-oss
+    commit_author:
+      name: developer-relations-sp
+      email: devrel-service@sailpoint.com
+
+nfpms:
+  - license: MIT
+    maintainer: SailPoint
+    homepage: https://github.com/sailpoint-oss/sailpoint-cli
+    bindir: /usr
+    description: The SailPoint Command Line Interface.
+    formats:
+      - deb
+      - rpm
+

@@ -1,0 +1,69 @@
+name: PR Release Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.24.1
+          cache: true
+
+      - name: Download Go dependencies
+        run: |
+          echo "Downloading Go modules..."
+          go mod download
+          echo "Go modules downloaded successfully"
+
+      - name: Install osslsigncode
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y osslsigncode
+
+      - name: Generate self-signed test certificates
+        run: |
+          # Generate a private key
+          openssl genrsa -out test-key.pem 2048
+          
+          # Generate a self-signed certificate
+          openssl req -new -x509 -key test-key.pem -out test-cert.pem -days 1 \
+            -subj "/C=US/ST=Test/L=Test/O=SailPoint Test/CN=SailPoint CLI Test"
+          
+          # Export paths
+          echo "CERT_FILE=$(pwd)/test-cert.pem" >> $GITHUB_ENV
+          echo "KEY_FILE=$(pwd)/test-key.pem" >> $GITHUB_ENV
+
+      - name: Set test version
+        run: echo "RELEASE_VERSION=0.0.0-test" >> $GITHUB_ENV
+
+      - name: Run GoReleaser in Snapshot Mode
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: "2.8.2"
+          args: release --snapshot --clean --skip=publish --timeout 30m --config .goreleaser.test.yaml --parallelism 4
+        env:
+          GORELEASER_CURRENT_TAG: "v0.0.0-test"
+          CERT_PASSWORD: "test"
+
+      - name: Upload artifacts for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-release-artifacts
+          path: dist/
+          retention-days: 7
+

@@ -15,7 +15,7 @@ env:
 
 jobs:
   goreleaser:
-    runs-on: macOS-15
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,6 +32,13 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: 1.24.1
+          cache: true
+
+      - name: Download Go dependencies
+        run: |
+          echo "Downloading Go modules..."
+          go mod download
+          echo "Go modules downloaded successfully"
 
       - name: Set Tag Name
         id: tagName
@@ -39,7 +46,9 @@ jobs:
           echo "tag-name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Install osslsigncode
-        run: brew install osslsigncode
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y osslsigncode
 
       - name: Obtain signing cert
         run: |
@@ -64,7 +73,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           version: "2.8.2"
-          args: release --clean --verbose --timeout 60m
+          args: release --clean --verbose --timeout 60m --parallelism 4
         env:
           GITHUB_TOKEN: ${{secrets.PUBLISHER_TOKEN}}
           GORELEASER_CURRENT_TAG: ${{steps.tagName.outputs.tag-name}}
