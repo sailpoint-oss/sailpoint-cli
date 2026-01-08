@@ -1,4 +1,4 @@
-name: Test Release
+name: PR Release Validation
 
 on:
   pull_request:
@@ -66,3 +66,4 @@ jobs:
           name: test-release-artifacts
           path: dist/
           retention-days: 7
+
