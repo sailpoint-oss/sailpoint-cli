@@ -3,6 +3,12 @@ set -e
 
 EXE="$1"
 
+echo "=== Windows Code Signing Script Started ===" >&2
+echo "EXE: $EXE" >&2
+echo "CERT_FILE: $CERT_FILE" >&2
+echo "KEY_FILE: $KEY_FILE" >&2
+echo "TEST_MODE: $TEST_MODE" >&2
+
 if [ -z "$CERT_FILE" ]; then
   echo "skipping Windows code-signing; CERT_FILE not set" >&2
   exit 0
@@ -29,11 +35,14 @@ if [ "$TEST_MODE" = "true" ]; then
   osslsigncode sign -n "SailPoint CLI" \
     -certs "$CERT_FILE" -key "$KEY_FILE" \
     -in "$EXE" -out "$EXE"~
+  echo "Signing completed successfully" >&2
 else
   echo "Signing with timestamp" >&2
   osslsigncode sign -n "SailPoint CLI" -t http://timestamp.digicert.com \
     -certs "$CERT_FILE" -key "$KEY_FILE" \
     -in "$EXE" -out "$EXE"~
+  echo "Signing with timestamp completed successfully" >&2
 fi
 
 mv "$EXE"~ "$EXE"
+echo "=== Windows Code Signing Script Completed ===" >&2
