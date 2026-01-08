@@ -52,76 +52,19 @@ jobs:
       - name: Set test version
         run: echo "RELEASE_VERSION=0.0.0-test" >> $GITHUB_ENV
 
-      - name: Verify environment
-        run: |
-          echo "=== Environment Check ==="
-          which osslsigncode
-          osslsigncode --version || echo "osslsigncode version check failed"
-          ls -la test-*.pem
-          echo "CERT_FILE=$CERT_FILE"
-          echo "KEY_FILE=$KEY_FILE"
-          go version
-          echo "=== System Resources ==="
-          free -h
-          df -h
-          echo "=== Starting GoReleaser ==="
-
-      - name: Install GoReleaser
-        run: |
-          wget -q https://github.com/goreleaser/goreleaser/releases/download/v2.8.2/goreleaser_Linux_x86_64.tar.gz
-          tar -xzf goreleaser_Linux_x86_64.tar.gz
-          sudo mv goreleaser /usr/local/bin/
-          goreleaser --version
-
       - name: Run GoReleaser in Snapshot Mode
-        continue-on-error: true
-        id: goreleaser
-        run: |
-          set +e  # Don't exit on error
-          
-          # Monitor resources in background
-          (while true; do
-            echo "=== $(date) - Memory usage ==="
-            free -h | grep Mem
-            sleep 30
-          done) &
-          MONITOR_PID=$!
-          
-          goreleaser release --snapshot --clean --skip=publish --timeout 45m --config .goreleaser.test.yaml --parallelism 2 --verbose
-          EXIT_CODE=$?
-          
-          # Stop monitoring
-          kill $MONITOR_PID 2>/dev/null || true
-          
-          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
-          exit $EXIT_CODE
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: "2.8.2"
+          args: release --snapshot --clean --skip=publish --timeout 45m --config .goreleaser.test.yaml --parallelism 2
         env:
           GORELEASER_CURRENT_TAG: "v0.0.0-test"
           CERT_PASSWORD: "test"
 
-      - name: Check GoReleaser result
-        if: always()
-        run: |
-          echo "GoReleaser exit code: ${{ steps.goreleaser.outputs.exit_code }}"
-          echo "Step outcome: ${{ steps.goreleaser.outcome }}"
-          if [ -d dist ]; then
-            echo "=== Dist directory contents ==="
-            ls -lR dist/ || true
-          else
-            echo "No dist directory found"
-          fi
-          
-          # Show last 100 lines of any build logs if they exist
-          if [ -d dist ]; then
-            find dist -name "*.log" -exec echo "=== {} ===" \; -exec tail -50 {} \; || true
-          fi
-
       - name: Upload artifacts for inspection
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-release-artifacts
           path: dist/
           retention-days: 7
-          if-no-files-found: warn
 
