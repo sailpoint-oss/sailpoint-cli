@@ -63,13 +63,20 @@ jobs:
           go version
           echo "=== Starting GoReleaser ==="
 
+      - name: Install GoReleaser
+        run: |
+          wget -q https://github.com/goreleaser/goreleaser/releases/download/v2.8.2/goreleaser_Linux_x86_64.tar.gz
+          tar -xzf goreleaser_Linux_x86_64.tar.gz
+          sudo mv goreleaser /usr/local/bin/
+          goreleaser --version
+
       - name: Run GoReleaser in Snapshot Mode
         continue-on-error: true
         id: goreleaser
-        uses: goreleaser/goreleaser-action@v6
-        with:
-          version: "2.8.2"
-          args: release --snapshot --clean --skip=publish --timeout 45m --config .goreleaser.test.yaml --parallelism 4 --verbose
+        run: |
+          set +e  # Don't exit on error
+          goreleaser release --snapshot --clean --skip=publish --timeout 45m --config .goreleaser.test.yaml --parallelism 4 --verbose
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
         env:
           GORELEASER_CURRENT_TAG: "v0.0.0-test"
           CERT_PASSWORD: "test"
@@ -77,12 +84,18 @@ jobs:
       - name: Check GoReleaser result
         if: always()
         run: |
-          echo "GoReleaser exit code: ${{ steps.goreleaser.outcome }}"
+          echo "GoReleaser exit code: ${{ steps.goreleaser.outputs.exit_code }}"
+          echo "Step outcome: ${{ steps.goreleaser.outcome }}"
           if [ -d dist ]; then
             echo "=== Dist directory contents ==="
             ls -lR dist/ || true
           else
             echo "No dist directory found"
+          fi
+          
+          # Show last 100 lines of any build logs if they exist
+          if [ -d dist ]; then
+            find dist -name "*.log" -exec echo "=== {} ===" \; -exec tail -50 {} \; || true
           fi
 
       - name: Upload artifacts for inspection
