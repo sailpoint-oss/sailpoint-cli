@@ -27,11 +27,11 @@ func newConnTagUpdateCmd(client client.Client) *cobra.Command {
 			tagName := cmd.Flags().Lookup("name").Value.String()
 			versionStr := cmd.Flags().Lookup("version").Value.String()
 
-		version, err := strconv.ParseUint(versionStr, 10, 32)
-		if err != nil {
-			return fmt.Errorf("active version must be a valid number between 0 and %d", uint32(math.MaxUint32))
-		}
-		raw, err := json.Marshal(TagUpdate{ActiveVersion: uint32(version)})
+			version, err := strconv.ParseUint(versionStr, 10, 32)
+			if err != nil {
+				return fmt.Errorf("active version must be a valid number between 0 and %d", uint32(math.MaxUint32))
+			}
+			raw, err := json.Marshal(TagUpdate{ActiveVersion: uint32(version)})
 			if err != nil {
 				return err
 			}

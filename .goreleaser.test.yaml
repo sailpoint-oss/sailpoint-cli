@@ -14,7 +14,7 @@ before:
 builds:
   - id: windows
     goos: [windows]
-    goarch: ['386', amd64]  # Build for 32-bit and 64-bit Windows (skip ARM64)
+    goarch: ['386', amd64, arm64]  # All Windows architectures
     env:
       - CGO_ENABLED=0
     ldflags:
