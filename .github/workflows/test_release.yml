@@ -22,6 +22,13 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: 1.24.1
+          cache: true
+
+      - name: Download Go dependencies
+        run: |
+          echo "Downloading Go modules..."
+          go mod download
+          echo "Go modules downloaded successfully"
 
       - name: Install osslsigncode
         run: |
@@ -48,7 +55,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           version: "2.8.2"
-          args: release --snapshot --clean --skip=publish --timeout 30m --config .goreleaser.test.yaml
+          args: release --snapshot --clean --skip=publish --timeout 30m --config .goreleaser.test.yaml --debug --parallelism 1
         env:
           GORELEASER_CURRENT_TAG: "v0.0.0-test"
           CERT_PASSWORD: "test"

@@ -32,15 +32,25 @@ fi
 # Determine if we should use timestamping (skip in test mode)
 if [ "$TEST_MODE" = "true" ]; then
   echo "Signing without timestamp (test mode)" >&2
-  osslsigncode sign -n "SailPoint CLI" \
+  timeout 120 osslsigncode sign -n "SailPoint CLI" \
     -certs "$CERT_FILE" -key "$KEY_FILE" \
-    -in "$EXE" -out "$EXE"~
+    -in "$EXE" -out "$EXE"~ 2>&1 | tee /dev/stderr
+  
+  if [ $? -eq 124 ]; then
+    echo "ERROR: Signing timed out after 120 seconds" >&2
+    exit 1
+  fi
   echo "Signing completed successfully" >&2
 else
   echo "Signing with timestamp" >&2
-  osslsigncode sign -n "SailPoint CLI" -t http://timestamp.digicert.com \
+  timeout 180 osslsigncode sign -n "SailPoint CLI" -t http://timestamp.digicert.com \
     -certs "$CERT_FILE" -key "$KEY_FILE" \
-    -in "$EXE" -out "$EXE"~
+    -in "$EXE" -out "$EXE"~ 2>&1 | tee /dev/stderr
+  
+  if [ $? -eq 124 ]; then
+    echo "ERROR: Signing with timestamp timed out after 180 seconds" >&2
+    exit 1
+  fi
   echo "Signing with timestamp completed successfully" >&2
 fi
 

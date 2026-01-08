@@ -29,16 +29,19 @@ builds:
     goarch: [amd64]  # Only build for standard x86_64 Linux
     env:
       - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
 
-  - id: macos
-    binary: bin/sail
-    main: ./
-    goos: [darwin]
-    goarch: [amd64, arm64]  # Keep both Intel and Apple Silicon for Mac
+  # Commenting out macOS for initial testing
+  # - id: macos
+  #   binary: bin/sail
+  #   main: ./
+  #   goos: [darwin]
+  #   goarch: [amd64, arm64]
 
 archives:
   - id: nix
-    ids: [macos, linux]
+    ids: [linux]  # Removed macos for testing
     name_template: >-
         {{- .ProjectName }}_
         {{- title .Os }}_
