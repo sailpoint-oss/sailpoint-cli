@@ -8,8 +8,7 @@ release:
   name_template: "SailPoint CLI {{.Version}}"
 
 before:
-  hooks:
-    - go mod tidy
+  hooks: []
 
 builds:
   - id: windows
@@ -29,12 +28,16 @@ builds:
     goarch: ['386', arm, amd64, arm64]
     env:
       - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
 
   - id: macos
     binary: bin/sail
     main: ./
     goos: [darwin]
     goarch: [amd64, arm64]
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
 
 archives:
   - id: nix

@@ -12,6 +12,7 @@ permissions:
 jobs:
   test-goreleaser:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -55,7 +56,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           version: "2.8.2"
-          args: release --snapshot --clean --skip=publish --timeout 30m --config .goreleaser.test.yaml --parallelism 4
+          args: release --snapshot --clean --skip=publish --timeout 45m --config .goreleaser.test.yaml --parallelism 2
         env:
           GORELEASER_CURRENT_TAG: "v0.0.0-test"
           CERT_PASSWORD: "test"
