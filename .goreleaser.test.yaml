@@ -14,7 +14,7 @@ before:
 builds:
   - id: windows
     goos: [windows]
-    goarch: [amd64]  # Only build for standard x86_64 Windows
+    goarch: ['386', amd64]  # Build for 32-bit and 64-bit Windows (skip ARM64)
     env:
       - CGO_ENABLED=0
     ldflags:
@@ -26,7 +26,7 @@ builds:
 
   - id: linux
     goos: [linux]
-    goarch: [amd64]  # Only build for standard x86_64 Linux
+    goarch: ['386', arm, amd64, arm64]  # All common Linux architectures
     env:
       - CGO_ENABLED=0
     ldflags:
