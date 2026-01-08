@@ -87,7 +87,7 @@ jobs:
           done) &
           MONITOR_PID=$!
           
-          goreleaser release --snapshot --clean --skip=publish --timeout 45m --config .goreleaser.test.yaml --parallelism 1 --verbose
+          goreleaser release --snapshot --clean --skip=publish --timeout 45m --config .goreleaser.test.yaml --parallelism 2 --verbose
           EXIT_CODE=$?
           
           # Stop monitoring
