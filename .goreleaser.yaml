@@ -75,7 +75,7 @@ nfpms:
   - license: MIT
     maintainer: SailPoint
     homepage: https://github.com/sailpoint-oss/sailpoint-cli
-    bindir: /usr
+    bindir: /usr/bin/
     description: The SailPoint Command Line Interface.
     formats:
       - deb
