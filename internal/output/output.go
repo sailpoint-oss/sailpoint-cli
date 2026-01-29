@@ -43,7 +43,8 @@ func WriteFile(folderPath string, filePath string, data []byte) error {
 		}
 	}
 
-	file, err := os.OpenFile(path.Join(folderPath, filePath), os.O_CREATE|os.O_RDWR, 0777)
+	// O_TRUNC ensures existing file content is removed before writing
+	file, err := os.OpenFile(path.Join(folderPath, filePath), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0777)
 	if err != nil {
 		return err
 	}
