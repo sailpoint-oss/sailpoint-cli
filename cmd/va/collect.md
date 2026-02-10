@@ -3,7 +3,7 @@
 
 Collect files from a remote VA.
 
-Files are collected over SFTP. Passwords are provided via the --password (-p) flag or they will be prompted for at runtime. Server addresses can be DNS names or IP addresses, and they're provided as arguments, separated by spaces.
+This command connects directly to the VA over SSH (port 22) and transfers files over SFTP. You must have network connectivity to the VA. It authenticates as the sailpoint user using the VA password. Passwords are provided via the --password (-p) flag or they will be prompted for at runtime. Server addresses can be DNS names or IP addresses, and they're provided as arguments, separated by spaces.
 
 Log Files:
 ```bash

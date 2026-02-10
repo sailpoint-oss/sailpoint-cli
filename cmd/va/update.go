@@ -1,13 +1,18 @@
 package va
 
 import (
+	_ "embed"
 	"fmt"
 
 	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/va"
 	"github.com/spf13/cobra"
 )
+
+//go:embed update.md
+var updateHelp string
 
 func updateAndRebootVA(endpoint, password string) {
 	log.Info("Attempting to update", "VA", endpoint)
@@ -29,12 +34,13 @@ func updateAndRebootVA(endpoint, password string) {
 }
 
 func newUpdateCommand(term terminal.Terminal) *cobra.Command {
+	help := util.ParseHelp(updateHelp)
 	var credentials []string
 	cmd := &cobra.Command{
 		Use:     "update",
 		Short:   "Perform update operations on a SailPoint virtual appliance",
-		Long:    "\nPerform update operations on a SailPoint virtual appliance\n\n",
-		Example: "sail va update 10.10.10.10 10.10.10.11 -c S@ilp0int -c S@ilp0int",
+		Long:    help.Long,
+		Example: help.Example,
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			for i, endpoint := range args {
