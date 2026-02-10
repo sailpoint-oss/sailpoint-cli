@@ -48,17 +48,8 @@ func promptYesNo() bool {
 }
 
 // newSSHClientConfig returns an ssh.ClientConfig with host key verification via ~/.ssh/known_hosts
-// and interactive first-time host acceptance. If SAIL_VA_INSECURE_SKIP_HOST_KEY is set, skips verification and logs a warning.
+// and interactive first-time host acceptance.
 func newSSHClientConfig(password string) (*ssh.ClientConfig, error) {
-	if v := os.Getenv("SAIL_VA_INSECURE_SKIP_HOST_KEY"); v == "1" || strings.EqualFold(v, "true") {
-		log.Warn("SSH host key verification is disabled by SAIL_VA_INSECURE_SKIP_HOST_KEY")
-		return &ssh.ClientConfig{
-			User:            "sailpoint",
-			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-			Auth:            []ssh.AuthMethod{ssh.Password(password)},
-		}, nil
-	}
-
 	userHome, err := os.UserHomeDir()
 	if err != nil {
 		return nil, fmt.Errorf("could not determine user home directory: %w", err)
