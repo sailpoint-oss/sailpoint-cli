@@ -2,41 +2,35 @@
 package sdk
 
 import (
-	"embed"
+	"fmt"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/initialize"
 	"github.com/spf13/cobra"
 )
 
-//go:embed python/*
-var pyTemplateContents embed.FS
-
-const pyTemplateDirName = "python"
+const (
+	pyTemplateRepoOwner = "sailpoint-oss"
+	pyTemplateRepoName  = "python-sdk-template"
+)
 
 func newPythonCommand() *cobra.Command {
-
 	cmd := &cobra.Command{
 		Use:     "python",
 		Short:   "Initialize a new python SDK project",
-		Long:    "\nInitialize a new typescript SDK project\n\n",
+		Long:    "\nInitialize a new Python SDK project by fetching the template from GitHub.\n\n",
 		Example: "sail sdk init python\nsail sdk init py example-project",
 		Aliases: []string{"py"},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var projName string
-			var err error
-
+			projName := "python-template"
 			if len(args) > 0 {
 				projName = args[0]
-			} else {
-				projName = "python-template"
 			}
-
-			err = initialize.InitializeProject(pyTemplateContents, pyTemplateDirName, projName)
+			err := initialize.FetchAndInitProject(pyTemplateRepoOwner, pyTemplateRepoName, "", projName)
 			if err != nil {
 				return err
 			}
-
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Run `cd %s && pip install -r requirements.txt` to install dependencies.\n", projName)
 			return nil
 		},
 	}

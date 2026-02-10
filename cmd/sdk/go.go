@@ -2,41 +2,35 @@
 package sdk
 
 import (
-	"embed"
+	"fmt"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/initialize"
 	"github.com/spf13/cobra"
 )
 
-//go:embed golang/*
-var goTemplateContents embed.FS
-
-const goTemplateDirName = "golang"
+const (
+	goTemplateRepoOwner = "sailpoint-oss"
+	goTemplateRepoName  = "golang-sdk-template"
+)
 
 func newGolangCommand() *cobra.Command {
-
 	cmd := &cobra.Command{
 		Use:     "golang",
 		Short:   "Initialize a new GO SDK project",
-		Long:    "\nInitialize a new GO SDK project\n\n",
+		Long:    "\nInitialize a new GO SDK project by fetching the template from GitHub.\n\n",
 		Example: "sail sdk init golang\nsail sdk init go example-project",
 		Aliases: []string{"go"},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var projName string
-			var err error
-
+			projName := "go-template"
 			if len(args) > 0 {
 				projName = args[0]
-			} else {
-				projName = "go-template"
 			}
-
-			err = initialize.InitializeProject(goTemplateContents, goTemplateDirName, projName)
+			err := initialize.FetchAndInitProject(goTemplateRepoOwner, goTemplateRepoName, "", projName)
 			if err != nil {
 				return err
 			}
-
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Run `cd %s && go mod tidy` to download dependencies.\n", projName)
 			return nil
 		},
 	}
