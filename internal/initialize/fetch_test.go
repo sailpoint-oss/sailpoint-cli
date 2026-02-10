@@ -151,6 +151,58 @@ func TestExtractAndInitProject_EmptyProjectName(t *testing.T) {
 	}
 }
 
+// buildTarballWithZipSlip returns a tarball that contains a path traversal entry (Zip Slip).
+func buildTarballWithZipSlip() []byte {
+	var buf bytes.Buffer
+	gw := gzip.NewWriter(&buf)
+	tw := tar.NewWriter(gw)
+	root := goTarballRoot + "/"
+	_ = tw.WriteHeader(&tar.Header{Name: root, Typeflag: tar.TypeDir, Mode: 0755})
+	// Malicious entry: path escapes the project root.
+	evilName := goTarballRoot + "/../evil.txt"
+	evilBody := []byte("must not be written")
+	_ = tw.WriteHeader(&tar.Header{Name: evilName, Typeflag: tar.TypeReg, Size: int64(len(evilBody)), Mode: 0644})
+	_, _ = tw.Write(evilBody)
+	_ = tw.Close()
+	_ = gw.Close()
+	return buf.Bytes()
+}
+
+func TestExtractAndInitProject_RejectsZipSlip(t *testing.T) {
+	origWd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd: %v", err)
+	}
+	defer func() { _ = os.Chdir(origWd) }()
+	workdir := t.TempDir()
+	if err := os.Chdir(workdir); err != nil {
+		t.Fatalf("chdir: %v", err)
+	}
+
+	projName := "zip-slip-target"
+	err = ExtractAndInitProject(bytes.NewReader(buildTarballWithZipSlip()), projName)
+	if err == nil {
+		t.Fatal("expected error for archive containing path traversal (Zip Slip)")
+	}
+	if !strings.Contains(err.Error(), "unsafe path") {
+		t.Errorf("error should mention unsafe path, got: %v", err)
+	}
+
+	// Ensure no file was written outside the project (e.g. evil.txt in workdir).
+	projectPath := filepath.Join(workdir, projName)
+	evilPath := filepath.Join(workdir, "evil.txt")
+	if _, err := os.Stat(evilPath); err == nil {
+		t.Fatalf("Zip Slip must not create file outside project: %s was created", evilPath)
+	}
+	// Project dir may or may not exist depending on when we rejected; if it exists it must not contain evil.txt from parent.
+	if _, err := os.Stat(projectPath); err == nil {
+		evilInProj := filepath.Join(projectPath, "evil.txt")
+		if _, err := os.Stat(evilInProj); err == nil {
+			t.Errorf("evil.txt must not appear inside project when entry was ../evil.txt")
+		}
+	}
+}
+
 func TestExtractAndInitProject_Go_Builds(t *testing.T) {
 	origWd, err := os.Getwd()
 	if err != nil {

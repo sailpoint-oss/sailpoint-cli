@@ -90,12 +90,24 @@ func ExtractAndInitProject(tarball io.Reader, projName string) error {
 		if relPath == "" {
 			continue
 		}
+		// Reject path traversal (".." components) and absolute paths in archive entry names.
+		if filepath.IsAbs(relPath) {
+			return fmt.Errorf("unsafe path in archive entry %q", hdr.Name)
+		}
+		for _, part := range strings.Split(relPath, string(filepath.Separator)) {
+			if part == ".." {
+				return fmt.Errorf("unsafe path in archive entry %q", hdr.Name)
+			}
+		}
 
 		destPath := filepath.Join(projRoot, relPath)
 		destPath = filepath.Clean(destPath)
-		// Prevent Zip Slip / directory traversal: ensure destPath stays within projRoot.
-		projRootWithSep := projRoot + string(os.PathSeparator)
-		if destPath != projRoot && !strings.HasPrefix(destPath+string(os.PathSeparator), projRootWithSep) {
+		// Prevent Zip Slip: ensure resolved path stays under projRoot (filepath.Rel is the standard check).
+		relToRoot, relErr := filepath.Rel(projRoot, destPath)
+		if relErr != nil {
+			return fmt.Errorf("unsafe path in archive entry %q: %w", hdr.Name, relErr)
+		}
+		if relToRoot == ".." || strings.HasPrefix(relToRoot, ".."+string(os.PathSeparator)) {
 			return fmt.Errorf("unsafe path in archive entry %q", hdr.Name)
 		}
 
