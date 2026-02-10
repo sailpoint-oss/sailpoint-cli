@@ -33,12 +33,10 @@ func FetchAndInitProject(repoOwner, repoName, branch, projName string) error {
 	if branch == "" {
 		branch = defaultBranch
 	}
-
 	if f, err := os.Stat(projName); err == nil && f.IsDir() && f.Name() == projName {
 		return fmt.Errorf("error: project '%s' already exists", projName)
 	}
 
-	// GitHub archive URL: no auth needed for public repos
 	url := fmt.Sprintf("https://github.com/%s/%s/archive/refs/heads/%s.tar.gz", repoOwner, repoName, branch)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -48,16 +46,32 @@ func FetchAndInitProject(repoOwner, repoName, branch, projName string) error {
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to fetch template: HTTP %d", resp.StatusCode)
 	}
+	return ExtractAndInitProject(resp.Body, projName)
+}
 
-	gzr, err := gzip.NewReader(resp.Body)
+// ExtractAndInitProject extracts a gzipped tar archive from tarball into projName
+// (stripping the archive root directory) and applies template substitutions.
+// Used by FetchAndInitProject and by tests with testdata tarballs.
+func ExtractAndInitProject(tarball io.Reader, projName string) error {
+	if projName == "" {
+		return errors.New("project name cannot be empty")
+	}
+	if f, err := os.Stat(projName); err == nil && f.IsDir() && f.Name() == projName {
+		return fmt.Errorf("error: project '%s' already exists", projName)
+	}
+
+	projRoot, err := filepath.Abs(projName)
+	if err != nil {
+		return fmt.Errorf("failed to resolve project path: %w", err)
+	}
+
+	gzr, err := gzip.NewReader(tarball)
 	if err != nil {
 		return fmt.Errorf("failed to read gzip: %w", err)
 	}
 	defer gzr.Close()
 
 	tr := tar.NewReader(gzr)
-	var rootPrefix string // e.g. "golang-sdk-template-main"
-
 	for {
 		hdr, err := tr.Next()
 		if err == io.EOF {
@@ -70,17 +84,20 @@ func FetchAndInitProject(repoOwner, repoName, branch, projName string) error {
 		name := filepath.FromSlash(hdr.Name)
 		parts := strings.SplitN(name, string(filepath.Separator), 2)
 		if len(parts) < 2 {
-			continue // skip root directory entry
-		}
-		if rootPrefix == "" {
-			rootPrefix = parts[0]
+			continue
 		}
 		relPath := parts[1]
 		if relPath == "" {
 			continue
 		}
 
-		destPath := filepath.Join(projName, relPath)
+		destPath := filepath.Join(projRoot, relPath)
+		destPath = filepath.Clean(destPath)
+		// Prevent Zip Slip / directory traversal: ensure destPath stays within projRoot.
+		projRootWithSep := projRoot + string(os.PathSeparator)
+		if destPath != projRoot && !strings.HasPrefix(destPath+string(os.PathSeparator), projRootWithSep) {
+			return fmt.Errorf("unsafe path in archive entry %q", hdr.Name)
+		}
 
 		switch hdr.Typeflag {
 		case tar.TypeDir:
@@ -103,11 +120,9 @@ func FetchAndInitProject(repoOwner, repoName, branch, projName string) error {
 		}
 	}
 
-	// Apply template substitutions to package.json and connector-spec.json
 	if err := applyTemplatesInDir(projName, projName); err != nil {
 		return err
 	}
-
 	printDir(projName, 0)
 	return nil
 }
