@@ -25,7 +25,7 @@ func newConnTagCreateCmd(client client.Client) *cobra.Command {
 			tagName := cmd.Flags().Lookup("name").Value.String()
 			versionStr := cmd.Flags().Lookup("version").Value.String()
 
-			version, err := strconv.Atoi(versionStr)
+			version, err := strconv.ParseUint(versionStr, 10, 32)
 			if err != nil {
 				return err
 			}
