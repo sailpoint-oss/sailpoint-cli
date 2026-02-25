@@ -5,6 +5,7 @@ import (
 
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/api"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/cluster"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/compliance"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/connector"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/environment"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/jsonpath"
@@ -55,6 +56,7 @@ func NewRootCommand() *cobra.Command {
 	root.AddCommand(
 		api.NewAPICommand(),
 		cluster.NewClusterCommand(),
+		compliance.NewComplianceCommand(),
 		connector.NewConnCmd(t),
 		environment.NewEnvironmentCommand(),
 		jsonpath.NewJSONPathCmd(),
