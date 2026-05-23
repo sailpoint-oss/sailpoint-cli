@@ -21,6 +21,10 @@ describe('connector unit tests', () => {
             },
             assumeAwsRole(assumeAwsRoleRequest: AssumeAwsRoleRequest): Promise<AssumeAwsRoleResponse> {
                 return Promise.resolve(new AssumeAwsRoleResponse('accessKeyId', 'secretAccessKey', 'sessionToken', "123"))
+            },
+
+             getOAuth2AccessToken() {
+                return Promise.resolve({} as any)
             }
         },
             undefined,
