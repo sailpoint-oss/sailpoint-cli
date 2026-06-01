@@ -301,7 +301,7 @@ func determineObjectTypeAndCreateReassignment(objectId string, from string, to s
 		}
 	} else {
 		if resp.StatusCode == http.StatusOK {
-			if source.Owner.Id != nil && *source.Owner.Id != from {
+			if source.Owner.Get().Id != nil && *source.Owner.Get().Id != from {
 				return summary, errors.New("the source is not owned by the specified identity")
 			}
 

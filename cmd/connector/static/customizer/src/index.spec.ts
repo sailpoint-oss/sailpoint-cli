@@ -1,5 +1,5 @@
 import { connectorCustomizer } from './index'
-import { CustomizerType, StandardCommand, AssumeAwsRoleRequest, AssumeAwsRoleResponse } from '@sailpoint/connector-sdk'
+import { CustomizerType, StandardCommand, AssumeAwsRoleRequest, AssumeAwsRoleResponse, OAuth2AccessTokenRequest, OAuth2AccessTokenResponse } from '@sailpoint/connector-sdk'
 
 const mockConfig: any = {
     token: 'xxx123',
@@ -23,6 +23,9 @@ describe('connector customizer unit tests', () => {
                         new AssumeAwsRoleResponse('ccessKeyId', 'secretAccessKey', 'sessionToken', '123')
                     )
                 },
+                getOAuth2AccessToken(request: OAuth2AccessTokenRequest): Promise<OAuth2AccessTokenResponse> {
+                    return Promise.resolve({})
+                },
             },
             input
         )
@@ -42,6 +45,9 @@ describe('connector customizer unit tests', () => {
                     return Promise.resolve(
                         new AssumeAwsRoleResponse('ccessKeyId', 'secretAccessKey', 'sessionToken', '123')
                     )
+                },
+                getOAuth2AccessToken(request: OAuth2AccessTokenRequest): Promise<OAuth2AccessTokenResponse> {
+                    return Promise.resolve({})
                 },
             },
             {
