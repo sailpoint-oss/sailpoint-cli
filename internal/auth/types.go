@@ -50,10 +50,11 @@ type AuthRequest struct {
 
 // AuthResponse represents the response from the authentication initiation endpoint.
 type AuthResponse struct {
-	AuthURL string `json:"authURL"`
-	ID      string `json:"id"`
-	BaseURL string `json:"baseURL"`
-	TTL     int64  `json:"ttl"`
+	AuthURL      string `json:"authURL"`
+	ID           string `json:"id"`
+	BaseURL      string `json:"baseURL"`
+	PickupSecret string `json:"pickupSecret"`
+	TTL          int64  `json:"ttl"`
 }
 
 // OAuthTokenResponse represents the response containing the encrypted token.

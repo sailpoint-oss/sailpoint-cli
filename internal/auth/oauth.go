@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/log"
@@ -34,6 +35,27 @@ const (
 	AuthLambdaTokenURL   = AuthLambdaBaseURL + "/auth/token"
 	AuthLambdaRefreshURL = AuthLambdaBaseURL + "/auth/refresh"
 )
+
+func confirmationCodeFromID(id string) string {
+	id = strings.TrimSpace(id)
+	if len(id) < 8 {
+		return strings.ToUpper(id)
+	}
+
+	suffix := id[len(id)-8:]
+	return strings.ToUpper(suffix[:4] + "-" + suffix[4:])
+}
+
+func newOAuthTokenRequest(tokenURL, id, pickupSecret string) (*http.Request, error) {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", tokenURL, id), nil)
+	if err != nil {
+		return nil, err
+	}
+	if pickupSecret != "" {
+		req.Header.Set("Authorization", "Bearer "+pickupSecret)
+	}
+	return req, nil
+}
 
 // GetOAuthToken retrieves the cached OAuth access token from the keyring.
 func GetOAuthToken(env string) (string, error) {
@@ -152,7 +174,12 @@ func OAuthLogin(baseURL string) (TokenSet, error) {
 		case <-timeout:
 			return set, fmt.Errorf("authentication timed out after 5 minutes")
 		case <-ticker.C:
-			tokenResp, err := http.Get(fmt.Sprintf("%s/%s", AuthLambdaTokenURL, authResponse.ID))
+			tokenReq, err := newOAuthTokenRequest(AuthLambdaTokenURL, authResponse.ID, authResponse.PickupSecret)
+			if err != nil {
+				return set, fmt.Errorf("failed to create token polling request: %v", err)
+			}
+
+			tokenResp, err := http.DefaultClient.Do(tokenReq)
 			if err != nil {
 				log.Debug("Error polling for token", "error", err)
 				continue
@@ -207,6 +234,12 @@ func OAuthLogin(baseURL string) (TokenSet, error) {
 				log.Info("OAuth authentication successful")
 				return set, nil
 			}
+			bodyBytes, _ := io.ReadAll(tokenResp.Body)
+			if tokenResp.StatusCode == http.StatusUnauthorized {
+				tokenResp.Body.Close()
+				return set, fmt.Errorf("token polling unauthorized: %s", string(bodyBytes))
+			}
+			log.Debug("Token not ready", "status", tokenResp.StatusCode, "body", string(bodyBytes))
 			tokenResp.Body.Close()
 		}
 	}
