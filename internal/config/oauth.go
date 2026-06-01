@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/log"
@@ -59,6 +60,16 @@ type AuthResponse struct {
 	ID      string `json:"id"`
 	BaseURL string `json:"baseURL"`
 	TTL     int64  `json:"ttl"`
+}
+
+func confirmationCodeFromID(id string) string {
+	id = strings.TrimSpace(id)
+	if len(id) < 8 {
+		return strings.ToUpper(id)
+	}
+
+	suffix := id[len(id)-8:]
+	return strings.ToUpper(suffix[:4] + "-" + suffix[4:])
 }
 
 // OAuthTokenResponse represents the response containing the encrypted token from OAuth flow
@@ -415,6 +426,9 @@ func OAuthLogin() (TokenSet, error) {
 	}
 
 	log.Debug("Auth response received", "id", authResponse.ID, "baseURL", authResponse.BaseURL)
+	if confirmationCode := confirmationCodeFromID(authResponse.ID); confirmationCode != "" {
+		fmt.Printf("SailApps confirmation code: %s\n", confirmationCode)
+	}
 
 	// Update the base URL for this session
 	if authResponse.BaseURL != "" {
