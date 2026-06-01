@@ -106,7 +106,11 @@ func GetEnvironments() map[string]interface{} {
 }
 
 func GetActiveEnvironment() string {
-	return strings.ToLower(viper.GetString("activeenvironment"))
+	env := strings.ToLower(viper.GetString("activeenvironment"))
+	if env == "" {
+		return "default"
+	}
+	return env
 }
 
 func SetActiveEnvironment(activeEnv string) {
@@ -116,12 +120,19 @@ func SetActiveEnvironment(activeEnv string) {
 // GetAuthType returns the auth type for the active environment.
 // Falls back to the global authtype for backward compatibility with old configs.
 func GetAuthType() string {
+	if authType := os.Getenv("SAIL_AUTHTYPE"); authType != "" {
+		return strings.ToLower(authType)
+	}
+
 	env := GetActiveEnvironment()
 	perEnv := viper.GetString("environments." + env + ".authtype")
 	if perEnv != "" {
 		return strings.ToLower(perEnv)
 	}
-	return strings.ToLower(viper.GetString("authtype"))
+	if authType := viper.GetString("authtype"); authType != "" {
+		return strings.ToLower(authType)
+	}
+	return "pat"
 }
 
 // SetAuthType sets the auth type for the active environment.
@@ -132,11 +143,18 @@ func SetAuthType(authType string) {
 
 // GetEnvAuthType returns the auth type for a specific environment.
 func GetEnvAuthType(env string) string {
+	if authType := os.Getenv("SAIL_AUTHTYPE"); authType != "" {
+		return strings.ToLower(authType)
+	}
+
 	perEnv := viper.GetString("environments." + env + ".authtype")
 	if perEnv != "" {
 		return strings.ToLower(perEnv)
 	}
-	return strings.ToLower(viper.GetString("authtype"))
+	if authType := viper.GetString("authtype"); authType != "" {
+		return strings.ToLower(authType)
+	}
+	return "pat"
 }
 
 // SetEnvAuthType sets the auth type for a specific environment.
