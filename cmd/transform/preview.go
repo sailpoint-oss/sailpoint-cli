@@ -34,9 +34,9 @@ func newPreviewCommand() *cobra.Command {
 	var identityPreview *v2024.IdentityPreviewResponse
 	cmd := &cobra.Command{
 		Use:     "preview",
-		Short:   "Preview a transform result in Identity Security Cloud",
-		Long:    "\nPreview a transform result in Identity Security Cloud\n\n",
-		Example: "sail transform preview | sail transform pre",
+		Short:   "Preview a transform result",
+		Long:    "\nPreview the result of a transform against an identity\nin Identity Security Cloud. The transform is temporarily\ncreated, evaluated, and then removed.\n",
+		Example: "  sail transform preview\n  sail transform preview -f /path/to/transform.json",
 		Aliases: []string{"pre"},
 		Args:    cobra.OnlyValidArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

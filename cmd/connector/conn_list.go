@@ -18,8 +18,8 @@ import (
 func newConnListCmd(client client.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:     "list",
-		Short:   "List Connectors",
-		Long:    "List Connectors For Tenant",
+		Short:   "List all connectors",
+		Long:    "List all connectors for the current tenant",
 		Aliases: []string{"ls"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

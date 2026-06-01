@@ -18,7 +18,7 @@ func newCustomizerLinkCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "link",
 		Short:   "Link connector customizer to connector instance",
-		Example: "sail conn customizers link -c 1234 -i 5678",
+		Example: "  sail conn customizers link -c <customizer-id> -i <instance-id>",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			customizerID := cmd.Flags().Lookup("id").Value.String()

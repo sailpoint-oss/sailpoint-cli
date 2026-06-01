@@ -22,6 +22,8 @@ func newGetCmd() *cobra.Command {
 	var queryParams []string
 	var prettyPrint bool
 	var jsonPath string
+	var pages int
+	var fetchAll bool
 
 	cmd := &cobra.Command{
 		Use:     "get [endpoint]",
@@ -31,18 +33,11 @@ func newGetCmd() *cobra.Command {
 		Aliases: []string{"g"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := config.InitConfig()
-			if err != nil {
-				return err
-			}
-
-			// Get the SailPoint client configuration
 			cfg, err := config.GetConfig()
 			if err != nil {
 				return err
 			}
 
-			// Create a client
 			spClient := client.NewSpClient(cfg)
 
 			endpoint := args[0]
@@ -50,31 +45,9 @@ func newGetCmd() *cobra.Command {
 				endpoint = "/" + endpoint
 			}
 
-			// Add query parameters if any
-			if len(queryParams) > 0 {
-				parsedURL, err := url.Parse(endpoint)
-				if err != nil {
-					return fmt.Errorf("invalid endpoint URL: %w", err)
-				}
-
-				query := parsedURL.Query()
-				for _, param := range queryParams {
-					parts := strings.SplitN(param, "=", 2)
-					if len(parts) != 2 {
-						return fmt.Errorf("invalid query parameter format (use key=value): %s", param)
-					}
-					query.Add(parts[0], parts[1])
-				}
-
-				parsedURL.RawQuery = query.Encode()
-				endpoint = parsedURL.String()
-			}
-
 			// Prepare headers
 			headers := make(map[string]string)
-			// Always add Accept header for JSON
 			headers["Accept"] = "application/json"
-			// Add any additional headers
 			for _, header := range headerFlags {
 				parts := strings.SplitN(header, ":", 2)
 				if len(parts) != 2 {
@@ -84,19 +57,68 @@ func newGetCmd() *cobra.Command {
 			}
 
 			ctx := context.Background()
-			log.Info("Making GET request", "endpoint", endpoint)
 
-			// Make the request using the SailPoint client
-			resp, err := spClient.Get(ctx, endpoint, headers)
-			if err != nil {
-				return fmt.Errorf("request failed: %w", err)
-			}
-			defer resp.Body.Close()
+			var body []byte
+			var status string
 
-			// Read response body
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return fmt.Errorf("failed to read response: %w", err)
+			if pages > 0 || fetchAll {
+				userLimit, userOffset, hasLimit, hasOffset := parseQueryParams(queryParams)
+
+				pageCfg := PaginationConfig{
+					Pages:  pages,
+					All:    fetchAll,
+					Limit:  defaultPageSize,
+					Offset: 0,
+				}
+				if hasLimit {
+					pageCfg.Limit = userLimit
+				}
+				if hasOffset {
+					pageCfg.Offset = userOffset
+				}
+
+				body, status, err = paginatedGet(ctx, spClient, endpoint, headers, queryParams, pageCfg)
+				if err != nil {
+					if len(body) > 0 {
+						log.Warn("Pagination incomplete", "error", err)
+					} else {
+						return err
+					}
+				}
+			} else {
+				// Single request (existing behavior)
+				if len(queryParams) > 0 {
+					parsedURL, err := url.Parse(endpoint)
+					if err != nil {
+						return fmt.Errorf("invalid endpoint URL: %w", err)
+					}
+
+					query := parsedURL.Query()
+					for _, param := range queryParams {
+						parts := strings.SplitN(param, "=", 2)
+						if len(parts) != 2 {
+							return fmt.Errorf("invalid query parameter format (use key=value): %s", param)
+						}
+						query.Add(parts[0], parts[1])
+					}
+
+					parsedURL.RawQuery = query.Encode()
+					endpoint = parsedURL.String()
+				}
+
+				log.Debug("Making GET request", "endpoint", endpoint)
+
+				resp, err := spClient.Get(ctx, endpoint, headers)
+				if err != nil {
+					return fmt.Errorf("request failed: %w", err)
+				}
+				defer resp.Body.Close()
+
+				body, err = io.ReadAll(resp.Body)
+				if err != nil {
+					return fmt.Errorf("failed to read response: %w", err)
+				}
+				status = resp.Status
 			}
 
 			// If JSONPath is specified, evaluate it
@@ -123,7 +145,7 @@ func newGetCmd() *cobra.Command {
 				fmt.Fprint(cmd.OutOrStdout(), string(body))
 			} else {
 				cmd.Println(string(body))
-				fmt.Printf("Status: %s\n", resp.Status)
+				fmt.Printf("Status: %s\n", status)
 			}
 
 			return nil
@@ -134,6 +156,9 @@ func newGetCmd() *cobra.Command {
 	cmd.Flags().StringArrayVarP(&queryParams, "query", "q", []string{}, "Query parameters (can be used multiple times, format: 'key=value')")
 	cmd.Flags().BoolVarP(&prettyPrint, "pretty", "p", false, "Pretty print JSON response")
 	cmd.Flags().StringVarP(&jsonPath, "jsonpath", "j", "", "JSONPath expression to evaluate on the response")
+	cmd.Flags().IntVarP(&pages, "pages", "n", 0, "Number of pages to fetch (250 items per page by default)")
+	cmd.Flags().BoolVarP(&fetchAll, "all", "a", false, "Fetch all results by paginating automatically")
+	cmd.MarkFlagsMutuallyExclusive("pages", "all")
 
 	return cmd
 }

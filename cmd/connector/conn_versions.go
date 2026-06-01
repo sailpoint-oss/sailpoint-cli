@@ -16,8 +16,8 @@ import (
 func newConnVersionsCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "versions",
-		Short: "Get Connector Versions",
-		Long:  "Get Connector Versions",
+		Short: "List connector versions",
+		Long:  "List all versions of a connector",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			connectorRef := cmd.Flags().Lookup("id").Value.String()

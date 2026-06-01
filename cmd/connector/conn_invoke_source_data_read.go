@@ -14,7 +14,7 @@ func newConnInvokeSourceDataReadCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "source-data-read [sourceDataKey] [--query <value>]",
 		Short:   "Invoke a std:source-data:read command",
-		Example: `sail connectors invoke source-data-read john.doe --query '{"query": "jane doe", "excludeItems": ["jane","doe"], "limit": 10}'`,
+		Example: `  sail connectors invoke source-data-read john.doe --query '{"query": "jane doe", "limit": 10}'`,
 		Args:    cobra.RangeArgs(1, 1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()

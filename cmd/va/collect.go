@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/va"
 	"github.com/spf13/cobra"
@@ -17,7 +17,7 @@ import (
 //go:embed collect.md
 var collectHelp string
 
-func newCollectCommand(term terminal.Terminal) *cobra.Command {
+func newCollectCommand() *cobra.Command {
 	help := util.ParseHelp(collectHelp)
 	var credentials []string
 	var output string
@@ -67,7 +67,7 @@ func newCollectCommand(term terminal.Terminal) *cobra.Command {
 				}
 
 				if password == "" {
-					password, err = term.PromptPassword("Please enter the password for " + endpoint)
+					password, err = tui.Password("Enter password for " + endpoint)
 					if err != nil {
 						return err
 					}

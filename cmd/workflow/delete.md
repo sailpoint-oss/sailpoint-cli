@@ -2,7 +2,7 @@
 # Delete
 Delete a workflow in Identity Security Cloud. You can delete multiple workflows at once, and you can delete a set of workflows specified in a file. 
 
-## API References:
+## API Reference
  - https://developer.sailpoint.com/docs/api/beta/delete-workflow
 ====
 

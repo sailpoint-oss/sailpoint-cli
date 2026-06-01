@@ -12,9 +12,9 @@ import (
 func newDeleteCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "delete",
-		Short:   "Delete an Identity Security Cloud transform",
-		Long:    "\nDelete an Identity Security Cloud transform\n\n",
-		Example: "sail transform delete 03d5187b-ab96-402c-b5a1-40b74285d77a",
+		Short:   "Delete one or more transforms",
+		Long:    "\nDelete one or more transforms from Identity Security Cloud by ID.\nMultiple transform IDs can be provided as arguments.\n",
+		Example: "  sail transform delete 03d5187b-ab96-402c-b5a1-40b74285d77a",
 		Aliases: []string{"d"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 

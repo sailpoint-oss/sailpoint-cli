@@ -15,8 +15,8 @@ import (
 func newConnDeleteCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "delete",
-		Short: "Delete Connector",
-		Long:  "Delete Connector",
+		Short: "Delete a connector",
+		Long:  "Delete a connector by ID or alias",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			connectorRef := cmd.Flags().Lookup("id").Value.String()

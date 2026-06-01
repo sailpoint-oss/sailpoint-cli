@@ -4,7 +4,7 @@ package environment
 import (
 	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
@@ -37,9 +37,11 @@ func newUpdateCommand() *cobra.Command {
 
 				if env != "" && env != " " {
 					log.Warn("You are about to Update the active Environment", "env", env)
-					res := terminal.InputPrompt("Press Enter to continue")
-					if res == "" {
-
+					confirmed, err := tui.Confirm("Update active environment " + env + "?")
+					if err != nil {
+						return err
+					}
+					if confirmed {
 						err := util.CreateOrUpdateEnvironment(env, true)
 						if err != nil {
 							return err

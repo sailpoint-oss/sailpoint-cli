@@ -14,7 +14,7 @@ func newConnInvokeChangePasswordCmd(spClient client.Client, term terminal.Termin
 	cmd := &cobra.Command{
 		Use:     "change-password",
 		Short:   "Invoke a change-password command",
-		Example: `sail connectors invoke change-password john.doe`,
+		Example: `  sail connectors invoke change-password john.doe`,
 		Args:    cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()

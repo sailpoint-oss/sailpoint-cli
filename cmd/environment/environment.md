@@ -1,7 +1,20 @@
 ==Long==
-# Environment
+# Environment (Deprecated)
 
-Configure SailPoint Identity Security Cloud environments for the CLI
+> **Deprecated:** Use `sail env` instead.
+
+Configure SailPoint Identity Security Cloud environments for the CLI.
+
+**Migration guide:**
+
+| Old command | New command |
+|---|---|
+| `sail environment create` | `sail env create` |
+| `sail environment list` | `sail env list` |
+| `sail environment show` | `sail env show` |
+| `sail environment update` | `sail env update` |
+| `sail environment delete` | `sail env delete` |
+| `sail environment use` | `sail env use` |
 ====
 
 ==Example==
@@ -49,7 +62,7 @@ You can update an environment by calling `update` and supplying the name of an e
 sail environment update {environment-name}
 ```
 
-If no environment is provided this command will delete the active environment.
+If no environment is provided this command will update the active environment.
 
 ```bash
 sail environment update

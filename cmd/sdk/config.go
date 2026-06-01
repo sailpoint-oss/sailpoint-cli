@@ -4,6 +4,7 @@ package sdk
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path"
 
@@ -18,17 +19,17 @@ type Config struct {
 	BaseURL      string
 }
 
-func (c Config) printEnv() {
-	fmt.Println("BASE_URL=" + c.BaseURL)
-	fmt.Println("CLIENT_ID=" + c.ClientId)
-	fmt.Println("CLIENT_SECRET=" + c.ClientSecret)
+func (c Config) printEnv(w io.Writer) {
+	fmt.Fprintln(w, "BASE_URL="+c.BaseURL)
+	fmt.Fprintln(w, "CLIENT_ID="+c.ClientId)
+	fmt.Fprintln(w, "CLIENT_SECRET="+c.ClientSecret)
 }
 
 func newConfigCommand() *cobra.Command {
 	var env bool
 	cmd := &cobra.Command{
 		Use:     "config",
-		Short:   "Initialize a configuration json file for an SDK project",
+		Short:   "Initialize a configuration JSON file for an SDK project",
 		Long:    "\nInitialize a configuration json file for an SDK project\n\nRunning with no arguments will use the currently active environment\n",
 		Example: "sail sdk init config\nsail sdk init config <environment name>",
 		Aliases: []string{"conf"},
@@ -55,7 +56,7 @@ func newConfigCommand() *cobra.Command {
 			SDKConfig := Config{ClientId: clientID, ClientSecret: clientSecret, BaseURL: config.GetEnvBaseUrl(envName)}
 
 			if env {
-				SDKConfig.printEnv()
+				SDKConfig.printEnv(cmd.OutOrStdout())
 			} else {
 				workingDir, err := os.Getwd()
 				if err != nil {

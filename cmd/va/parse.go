@@ -101,7 +101,8 @@ func saveCanalLine(bytes []byte, dir string) {
 				}
 				f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 				if err != nil {
-					panic(err)
+					log.Error("failed to open log file", "file", filename, "error", err)
+					return
 				}
 				cache[filename] = f
 			}
@@ -109,7 +110,8 @@ func saveCanalLine(bytes []byte, dir string) {
 			fileWriter := bufio.NewWriter(f)
 			_, writeErr := fileWriter.WriteString(string(bytes))
 			if writeErr != nil {
-				panic(writeErr)
+				log.Error("failed to write to log file", "file", filename, "error", writeErr)
+				return
 			}
 			fileWriter.Flush()
 		}

@@ -12,7 +12,7 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/spconfig"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/templates"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
@@ -28,7 +28,7 @@ func newTemplateCommand() *cobra.Command {
 	var wait bool
 	cmd := &cobra.Command{
 		Use:     "template",
-		Short:   "Begin an SPConfig export task in Identity Security Cloud, using a template",
+		Short:   "Start an SPConfig export using a template",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"temp"},
@@ -71,7 +71,10 @@ func newTemplateCommand() *cobra.Command {
 			if varCount > 0 {
 				for i := 0; i < varCount; i++ {
 					varEntry := selectedTemplate.Variables[i]
-					resp := terminal.InputPrompt("Input " + varEntry.Prompt + ":")
+					resp, err := tui.Input(varEntry.Prompt, "")
+					if err != nil {
+						return err
+					}
 					selectedTemplate.Raw = []byte(strings.ReplaceAll(string(selectedTemplate.Raw), "{{"+varEntry.Name+"}}", resp))
 				}
 				err := json.Unmarshal(selectedTemplate.Raw, &selectedTemplate.ExportBody)

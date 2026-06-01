@@ -4,7 +4,6 @@ package va
 import (
 	_ "embed"
 
-	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
@@ -12,7 +11,7 @@ import (
 //go:embed va.md
 var vaHelp string
 
-func NewVACommand(term terminal.Terminal) *cobra.Command {
+func NewVACommand() *cobra.Command {
 	help := util.ParseHelp(vaHelp)
 	cmd := &cobra.Command{
 		Use:     "va",
@@ -25,11 +24,10 @@ func NewVACommand(term terminal.Terminal) *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newCollectCommand(term),
-		// newTroubleshootCommand(),
+		newCollectCommand(),
 		newGetCommand(),
 		newParseCommand(),
-		newUpdateCommand(term),
+		newUpdateCommand(),
 		newListCommand(),
 	)
 

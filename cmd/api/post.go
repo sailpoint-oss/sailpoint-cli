@@ -32,12 +32,6 @@ func newPostCmd() *cobra.Command {
 		Aliases: []string{"p"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := config.InitConfig()
-			if err != nil {
-				return err
-			}
-
-			// Get the SailPoint client configuration
 			cfg, err := config.GetConfig()
 			if err != nil {
 				return err
@@ -83,7 +77,7 @@ func newPostCmd() *cobra.Command {
 			}
 
 			ctx := context.Background()
-			log.Info("Making POST request", "endpoint", endpoint)
+			log.Debug("Making POST request", "endpoint", endpoint)
 
 			// Make the request
 			resp, err := spClient.Post(ctx, endpoint, contentType, body, headers)

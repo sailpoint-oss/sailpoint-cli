@@ -3,7 +3,7 @@
 
 Manage Identity Security Cloud VA clusters.
 
-## API Reference:
+## API Reference
  - https://developer.sailpoint.com/docs/api/beta/managed-clusters
 ====
 

@@ -14,7 +14,7 @@ func newConnInvokeSourceDataDiscoverCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "source-data-discover [--query <value>]",
 		Short:   "Invoke a std:source-data:discover command",
-		Example: `sail connectors invoke source-data-discover --query '{"query": "", "limit": 10}'`,
+		Example: `  sail connectors invoke source-data-discover --query '{"query": "", "limit": 10}'`,
 		Args:    cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()

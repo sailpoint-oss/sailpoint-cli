@@ -15,7 +15,7 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/templates"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
@@ -31,18 +31,12 @@ func NewReportCommand() *cobra.Command {
 	var template string
 	cmd := &cobra.Command{
 		Use:     "report",
-		Short:   "Generate a report from a template using Identity Security Cloud search queries",
+		Short:   "Generate a report from a template",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"rep"},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-
-			err := config.InitConfig()
-			if err != nil {
-				return err
-			}
-
 			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
 				return err
@@ -79,7 +73,10 @@ func NewReportCommand() *cobra.Command {
 			if len(selectedTemplate.Variables) > 0 {
 				for _, varEntry := range selectedTemplate.Variables {
 
-					resp := terminal.InputPrompt("Input " + varEntry.Prompt + ":")
+					resp, err := tui.Input(varEntry.Prompt, "")
+					if err != nil {
+						return err
+					}
 					selectedTemplate.Raw = []byte(strings.ReplaceAll(string(selectedTemplate.Raw), "{{"+varEntry.Name+"}}", resp))
 				}
 				err := json.Unmarshal(selectedTemplate.Raw, &selectedTemplate.Queries)

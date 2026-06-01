@@ -12,7 +12,7 @@ func newConnInvokeAccountListCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "account-list",
 		Short:   "Invoke a std:account:list command",
-		Example: `sail connectors invoke account-list`,
+		Example: `  sail connectors invoke account-list`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			cc, err := connClient(cmd, client)

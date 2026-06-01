@@ -29,12 +29,6 @@ func newDeleteCmd() *cobra.Command {
 		Aliases: []string{"d"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := config.InitConfig()
-			if err != nil {
-				return err
-			}
-
-			// Get the SailPoint client configuration
 			cfg, err := config.GetConfig()
 			if err != nil {
 				return err
@@ -62,7 +56,7 @@ func newDeleteCmd() *cobra.Command {
 			}
 
 			ctx := context.Background()
-			log.Info("Making DELETE request", "endpoint", endpoint)
+			log.Debug("Making DELETE request", "endpoint", endpoint)
 
 			// Make the request
 			resp, err := spClient.Delete(ctx, endpoint, queryParams, headers)

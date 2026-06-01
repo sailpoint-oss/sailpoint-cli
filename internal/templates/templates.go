@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/charmbracelet/log"
-	"github.com/fatih/color"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 )
@@ -50,7 +49,7 @@ func GetSearchTemplates() ([]SearchTemplate, error) {
 
 			err = json.Unmarshal(raw, &templates)
 			if err != nil {
-				log.Error("an error occurred while parsing the file: %s", templateFile)
+				log.Error("failed to parse template file", "file", templateFile)
 				return nil, err
 			}
 
@@ -60,7 +59,7 @@ func GetSearchTemplates() ([]SearchTemplate, error) {
 
 	err = json.Unmarshal([]byte(builtInSearchTemplates), &builtInTemplates)
 	if err != nil {
-		color.Red("an error occurred while parsing the built in templates")
+		log.Error("failed to parse built-in search templates")
 		return nil, err
 	}
 
@@ -105,7 +104,7 @@ func GetExportTemplates() ([]ExportTemplate, error) {
 			file, err := os.OpenFile(templateFile, os.O_RDWR, 0777)
 			if err != nil {
 
-				log.Debug("error opening file %s", templateFile)
+				log.Debug("error opening file", "file", templateFile)
 
 			} else {
 
@@ -116,7 +115,7 @@ func GetExportTemplates() ([]ExportTemplate, error) {
 
 				err = json.Unmarshal(raw, &templates)
 				if err != nil {
-					log.Debug("an error occurred while parsing the file: %s", templateFile)
+					log.Error("failed to parse template file", "file", templateFile)
 					return nil, err
 				}
 
@@ -126,7 +125,7 @@ func GetExportTemplates() ([]ExportTemplate, error) {
 
 		err = json.Unmarshal([]byte(builtInExportTemplates), &templates)
 		if err != nil {
-			log.Error("an error occurred while parsing the built in templates")
+			log.Error("failed to parse built-in export templates")
 			return nil, err
 		}
 
@@ -176,7 +175,7 @@ func GetReportTemplates() ([]ReportTemplate, error) {
 		file, err := os.OpenFile(templateFile, os.O_RDWR, 0777)
 		if err != nil {
 
-			log.Debug("error opening file %s", templateFile)
+			log.Debug("error opening file", "file", templateFile)
 
 		} else {
 
@@ -187,7 +186,7 @@ func GetReportTemplates() ([]ReportTemplate, error) {
 
 			err = json.Unmarshal(raw, &templates)
 			if err != nil {
-				log.Error("an error occured while parsing the file: %s", templateFile)
+				log.Error("failed to parse template file", "file", templateFile)
 				return nil, err
 			}
 
@@ -197,7 +196,7 @@ func GetReportTemplates() ([]ReportTemplate, error) {
 
 	err = json.Unmarshal([]byte(builtInReportTemplates), &buildInTemplates)
 	if err != nil {
-		color.Red("an error occured while parsing the built in templates")
+		log.Error("failed to parse built-in report templates")
 		return nil, err
 	}
 

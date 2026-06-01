@@ -19,7 +19,7 @@ func newCustomizerCreateVersionCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "upload",
 		Short:   "Upload connector customizer",
-		Example: "sail conn customizers upload -c 1234 -f path/to/zip/archive.zip",
+		Example: "  sail conn customizers upload -c <customizer-id> -f path/to/zip/archive.zip",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			id := cmd.Flags().Lookup("id").Value.String()

@@ -17,9 +17,9 @@ import (
 func newUpdateCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "update",
-		Short:   "Update a transform in Identity Security Cloud from a file",
-		Long:    "\nUpdate a transform in Identity Security Cloud from a file\n\n",
-		Example: "sail transform update --file ./assets/demo_update.json\nsail transform u -f /path/to/transform.json\nsail transform u < /path/to/transform.json\necho /path/to/transform.json | sail transform u",
+		Short:   "Update a transform from a file",
+		Long:    "\nUpdate an existing transform in Identity Security Cloud from a JSON file.\nThe file can be specified with the --file flag, piped via stdin,\nor redirected from a file.\n",
+		Example: "  sail transform update -f /path/to/transform.json\n  sail transform update < /path/to/transform.json",
 		Aliases: []string{"u"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

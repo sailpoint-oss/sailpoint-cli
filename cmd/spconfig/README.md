@@ -81,39 +81,41 @@ Run the following command to begin an spconfig export job in Identity Security C
 
 ```shell
 sail spconfig export \
-  -includeTypes <types to include> \
-  -excludeTypes <types to exclude> \
-  -description "optional description for the export job"
-```
-
-Use the following command syntax to download the results from multiple import or export jobs
-
-```shell
-sail spconfig download -export <export job id> -export <export job id>
+  --include SOURCE \
+  --include WORKFLOW \
+  --description "optional description for the export job"
 ```
 
 ### Flags
 
-#### Import
+#### Include
 
-Specifies the ids of the import jobs to download
+Specifies the object types to include in the export
 
 ```shell
-sail spconfig download -import <import job id> -import <import job id>
+sail spconfig export --include SOURCE --include WORKFLOW
 ```
 
-#### Export
+#### Exclude
 
-Specifies the ids of the export jobs to download
+Specifies the object types to exclude from the export
 
 ```shell
-sail spconfig download -export <export job id> -export <export job id>
+sail spconfig export --exclude SOURCE --exclude WORKFLOW
+```
+
+#### Wait
+
+Wait for the export job to complete and automatically download the results
+
+```shell
+sail spconfig export --include SOURCE --wait
 ```
 
 #### Folder Path
 
-Specify the folder path to save the search results in
+Specify the folder path to save the export results in
 
 ```shell
-sail spconfig download -export <export job id> -export <export job id> -folderPath ./local/folder/path
+sail spconfig export --include SOURCE --wait -f ./local/folder/path
 ```

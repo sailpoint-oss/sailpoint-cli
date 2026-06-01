@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/log"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/va"
 	"github.com/spf13/cobra"
 )
@@ -33,7 +33,7 @@ func updateAndRebootVA(endpoint, password string) {
 	fmt.Println()
 }
 
-func newUpdateCommand(term terminal.Terminal) *cobra.Command {
+func newUpdateCommand() *cobra.Command {
 	help := util.ParseHelp(updateHelp)
 	var credentials []string
 	cmd := &cobra.Command{
@@ -51,7 +51,11 @@ func newUpdateCommand(term terminal.Terminal) *cobra.Command {
 				}
 
 				if password == "" {
-					password, _ = term.PromptPassword("Enter password for " + endpoint + ":")
+					var err error
+					password, err = tui.Password("Enter password for " + endpoint)
+					if err != nil {
+						return err
+					}
 				}
 
 				updateAndRebootVA(endpoint, password)

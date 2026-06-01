@@ -11,7 +11,6 @@ import (
 	"github.com/mrz1836/go-sanitize"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/search"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/spf13/viper"
 )
@@ -107,12 +106,18 @@ func CreateOrUpdateEnvironment(environmentName string, update bool) error {
 
 		tenant := ""
 
+		var defaultTenant string
 		if update && environmentName == "" {
-			tenant = terminal.InputPrompt("Tenant Name (ie: https://{tenant}.identitynow.com): (" + config.GetActiveEnvironment() + ")")
+			defaultTenant = config.GetActiveEnvironment()
 		} else if update {
-			tenant = terminal.InputPrompt("Tenant Name (ie: https://{tenant}.identitynow.com): (" + getTextBetween(viper.GetString("environments."+environmentName+".tenanturl"), "//", ".") + ")")
+			defaultTenant = getTextBetween(viper.GetString("environments."+environmentName+".tenanturl"), "//", ".")
 		} else {
-			tenant = terminal.InputPrompt("Tenant Name (ie: https://{tenant}.identitynow.com): (" + environmentName + ")")
+			defaultTenant = environmentName
+		}
+		var err error
+		tenant, err = tui.Input("Tenant Name (e.g. acme)", defaultTenant)
+		if err != nil {
+			return err
 		}
 
 		if !update {
@@ -129,18 +134,19 @@ func CreateOrUpdateEnvironment(environmentName string, update bool) error {
 		tenantUrl := "https://" + tenant + ".identitynow.com"
 		baseUrl := "https://" + tenant + ".api.identitynow.com"
 
-		fmt.Print("\nThe following two prompts will allow you to set a custom base and tenant url if the generated URL\ndoes not apply. If the generated URL is correct simply press enter to proceed\n\n")
-		confirmTenantUrl := terminal.InputPrompt("Tenant URL (ie: https://{tenant}.identitynow.com): (" + tenantUrl + ")")
-		confirmBaseURL := terminal.InputPrompt("Base URL (ie: https://{tenant}.api.identitynow.com): (" + baseUrl + ")")
-
-		authType := terminal.InputPrompt("Authentication Type (oauth, pat):")
-
-		if confirmTenantUrl != "" {
-			tenantUrl = confirmTenantUrl
+		fmt.Print("\nIf the generated URLs are correct, press Enter to accept them.\n\n")
+		tenantUrl, err = tui.Input("Tenant URL", tenantUrl)
+		if err != nil {
+			return err
+		}
+		baseUrl, err = tui.Input("Base URL", baseUrl)
+		if err != nil {
+			return err
 		}
 
-		if confirmBaseURL != "" {
-			baseUrl = confirmBaseURL
+		authType, err := tui.Input("Authentication Type (oauth, pat)", "")
+		if err != nil {
+			return err
 		}
 
 		if authType == "pat" {

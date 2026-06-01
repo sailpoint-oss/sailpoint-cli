@@ -33,12 +33,6 @@ func newPatchCmd() *cobra.Command {
 		Aliases: []string{"pa"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := config.InitConfig()
-			if err != nil {
-				return err
-			}
-
-			// Get the SailPoint client configuration
 			cfg, err := config.GetConfig()
 			if err != nil {
 				return err
@@ -86,7 +80,7 @@ func newPatchCmd() *cobra.Command {
 			}
 
 			ctx := context.Background()
-			log.Info("Making PATCH request", "endpoint", endpoint)
+			log.Debug("Making PATCH request", "endpoint", endpoint)
 
 			// Make the request
 			resp, err := spClient.Patch(ctx, endpoint, body, headers)

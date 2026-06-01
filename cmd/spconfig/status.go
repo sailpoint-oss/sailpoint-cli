@@ -14,7 +14,7 @@ func newStatusCommand() *cobra.Command {
 	var importJobs []string
 	cmd := &cobra.Command{
 		Use:     "status",
-		Short:   "Get the status of SPConfig jobs in Identity Security Cloud",
+		Short:   "Get the status of SPConfig jobs",
 		Long:    "\nGet the status of SPConfig jobs in Identity Security Cloud\n\n",
 		Example: "sail spconfig status --export 2b3b68f4-cfe7-43a6-8fb0-a518c6218111",
 		Aliases: []string{"stat"},

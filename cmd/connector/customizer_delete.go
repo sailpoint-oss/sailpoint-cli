@@ -15,7 +15,7 @@ func newCustomizerDeleteCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "delete",
 		Short:   "Delete connector customizer",
-		Example: "sail conn customizers delete -c 1234",
+		Example: "  sail conn customizers delete -c <customizer-id>",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			id := cmd.Flags().Lookup("id").Value.String()

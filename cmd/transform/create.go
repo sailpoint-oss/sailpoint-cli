@@ -20,9 +20,9 @@ func newCreateCommand() *cobra.Command {
 	var filepath string
 	cmd := &cobra.Command{
 		Use:     "create",
-		Short:   "Create an Identity Security Cloud transform from a file",
-		Long:    "\nCreate an Identity Security Cloud transform from a file\n\n",
-		Example: "sail transform c -f /path/to/transform.json\nsail transform c < /path/to/transform.json\necho /path/to/transform.json | sail transform c",
+		Short:   "Create a transform from a file",
+		Long:    "\nCreate a new transform in Identity Security Cloud from a JSON file.\nThe file can be specified with the --file flag, piped via stdin,\nor redirected from a file.\n",
+		Example: "  sail transform create -f /path/to/transform.json\n  sail transform create < /path/to/transform.json",
 		Aliases: []string{"c"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

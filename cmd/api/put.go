@@ -32,12 +32,6 @@ func newPutCmd() *cobra.Command {
 		Aliases: []string{"u"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := config.InitConfig()
-			if err != nil {
-				return err
-			}
-
-			// Get the SailPoint client configuration
 			cfg, err := config.GetConfig()
 			if err != nil {
 				return err
@@ -83,7 +77,7 @@ func newPutCmd() *cobra.Command {
 			}
 
 			ctx := context.Background()
-			log.Info("Making PUT request", "endpoint", endpoint)
+			log.Debug("Making PUT request", "endpoint", endpoint)
 
 			// Make the request
 			resp, err := spClient.Put(ctx, endpoint, contentType, body, headers)

@@ -17,8 +17,8 @@ import (
 func newConnUpdateCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update",
-		Short: "Update Connector",
-		Long:  "Update Connector",
+		Short: "Update a connector",
+		Long:  "Update a connector's alias",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			id := cmd.Flags().Lookup("id").Value.String()

@@ -16,7 +16,7 @@ const (
 func newPythonCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "python",
-		Short:   "Initialize a new python SDK project",
+		Short:   "Initialize a new Python SDK project",
 		Long:    "\nInitialize a new Python SDK project by fetching the template from GitHub.\n\n",
 		Example: "sail sdk init python\nsail sdk init py example-project",
 		Aliases: []string{"py"},

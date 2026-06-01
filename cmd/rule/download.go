@@ -75,9 +75,9 @@ func newDownloadCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "download",
-		Short:   "Download all rules in Identity Security Cloud",
-		Long:    "\nDownload all rules in Identity Security Cloud\n\n",
-		Example: "sail rule download",
+		Short:   "Download all rules",
+		Long:    "\nDownload all rules from Identity Security Cloud and save them locally.\nCloud rules are saved as XML files, connector rules as JSON.\nUse --cloud or --connector flags to filter by rule type.\n",
+		Example: "  sail rule download\n  sail rule download --cloud\n  sail rule download --connector -d rule_files",
 		Aliases: []string{"d"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

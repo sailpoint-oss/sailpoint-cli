@@ -35,7 +35,7 @@ func newConnInitCommand() *cobra.Command {
 		Use:     "init <connector-name>",
 		Short:   "Initialize new connector project",
 		Long:    `init sets up a new TypeScript project with sample connector included for reference.`,
-		Example: "sail connectors init \"My Connector\"",
+		Example: "  sail connectors init \"My Connector\"",
 		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			projName := args[0]

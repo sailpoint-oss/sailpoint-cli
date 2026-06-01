@@ -2,7 +2,7 @@
 # SPConfig
 Perform SP-Config operations in Identity Security Cloud.
 
-API References:
+## API Reference
  - https://developer.sailpoint.com/docs/api/beta/sp-config
 ====
 

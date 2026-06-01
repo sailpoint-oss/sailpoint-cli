@@ -17,7 +17,7 @@ func newEvalCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "eval",
-		Short:   "Evaluate a jsonpath against a json file",
+		Short:   "Evaluate a JSONPath expression against a JSON file",
 		Long:    "\nEvaluate a jsonpath against a json file\n\n",
 		Example: "sail jsonpath eval | sail jsonpath e",
 		Aliases: []string{"e"},

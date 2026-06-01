@@ -19,8 +19,8 @@ import (
 func newConnCreateVersionCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "upload",
-		Short: "Upload Connector",
-		Long:  "Upload Connector",
+		Short: "Upload a connector version",
+		Long:  "Upload a connector zip archive as a new version",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			connectorRef := cmd.Flags().Lookup("id").Value.String()

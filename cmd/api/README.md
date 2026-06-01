@@ -11,7 +11,7 @@ Similar to the GitHub CLI's `api` command, this provides a simple way to hit any
 ```bash
 sail api get /beta/accounts
 sail api get /beta/accounts/123 --header "Accept: application/json" --pretty
-sail api get /beta/identities --query "limit=100" --query "offset=0" --output identities.json
+sail api get /beta/identities --query "limit=100" --query "offset=0"
 sail api get /beta/accounts --jsonpath "$.items[*].id"  # Extract all account IDs
 ```
 
@@ -45,9 +45,12 @@ sail api delete /beta/accounts/123
 All commands support the following options:
 
 - `--header`, `-H`: Set HTTP headers (can be used multiple times, format: 'Key: Value')
-- `--output`, `-o`: Output file to save the response (if not specified, prints to stdout)
 - `--pretty`, `-p`: Pretty print JSON response
 - `--jsonpath`, `-j`: JSONPath expression to evaluate on the response
+
+### Output Option (PATCH only)
+
+- `--output`, `-o`: Output file to save the response (if not specified, prints to stdout)
 
 ### Body Options (POST, PUT, PATCH)
 
@@ -58,6 +61,33 @@ All commands support the following options:
 ### Query Options (GET, DELETE)
 
 - `--query`, `-q`: Query parameters (can be used multiple times, format: 'key=value')
+
+### Pagination Options (GET only)
+
+- `--pages`, `-n`: Number of pages to fetch (250 items per page by default)
+- `--all`, `-a`: Fetch all results by paginating automatically (uses X-Total-Count header)
+
+These flags are mutually exclusive. When using pagination, the results from all pages are merged into a single JSON array.
+
+```bash
+# Fetch 3 pages of accounts (up to 750 results)
+sail api get /v2024/accounts --pages 3
+
+# Fetch all accounts automatically
+sail api get /v2024/accounts --all
+
+# Fetch all accounts with pretty printing
+sail api get /v2024/accounts --all --pretty
+
+# Use a custom page size of 100
+sail api get /v2024/accounts --all --query "limit=100"
+
+# Start from a specific offset
+sail api get /v2024/accounts --pages 5 --query "offset=500"
+
+# Combine with filters
+sail api get /v2024/accounts --query "filters=sourceId eq \"abc\"" --all
+```
 
 ## JSONPath Examples
 

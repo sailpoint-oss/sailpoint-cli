@@ -8,11 +8,12 @@ import (
 
 func NewSetCmd(term terminal.Terminal) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "set",
-		Short:   "Configure settings for the SailPoint CLI",
-		Long:    "\nConfigure settings for the SailPoint CLI\n\n",
-		Example: "sail set",
-		Args:    cobra.MaximumNArgs(1),
+		Use:        "set",
+		Short:      "Configure settings for the SailPoint CLI",
+		Long:       "\nConfigure settings for the SailPoint CLI\n\n",
+		Example:    "sail set",
+		Deprecated: "use 'sail config' for global settings and 'sail env' for environment management",
+		Args:       cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
 		},

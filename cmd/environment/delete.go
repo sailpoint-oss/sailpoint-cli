@@ -4,7 +4,7 @@ package environment
 import (
 	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -23,8 +23,11 @@ func newDeleteCommand() *cobra.Command {
 
 				if environments[environmentName] != nil {
 					log.Warn("You are about to Delete the Environment", "env", environmentName)
-					res := terminal.InputPrompt("Press Enter to continue")
-					if res == "" {
+					confirmed, err := tui.Confirm("Delete environment " + environmentName + "?")
+					if err != nil {
+						return err
+					}
+					if confirmed {
 						delete(environments, environmentName)
 						viper.Set("environments", environments)
 
@@ -60,8 +63,11 @@ func newDeleteCommand() *cobra.Command {
 				if env != "" && env != " " {
 
 					log.Warn("You are about to Delete the active Environment", "env", env)
-					res := terminal.InputPrompt("Press Enter to continue")
-					if res == "" {
+					confirmed, err := tui.Confirm("Delete active environment " + env + "?")
+					if err != nil {
+						return err
+					}
+					if confirmed {
 						delete(environments, env)
 						viper.Set("environments", environments)
 
