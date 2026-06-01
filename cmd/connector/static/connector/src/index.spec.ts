@@ -1,5 +1,5 @@
 import { connector } from './index'
-import { Connector, RawResponse, ResponseType, StandardCommand, AssumeAwsRoleRequest, AssumeAwsRoleResponse } from '@sailpoint/connector-sdk'
+import { Connector, RawResponse, ResponseType, StandardCommand, AssumeAwsRoleRequest, AssumeAwsRoleResponse, OAuth2AccessTokenRequest, OAuth2AccessTokenResponse } from '@sailpoint/connector-sdk'
 import { PassThrough } from 'stream'
 
 const mockConfig: any = {
@@ -21,6 +21,9 @@ describe('connector unit tests', () => {
             },
             assumeAwsRole(assumeAwsRoleRequest: AssumeAwsRoleRequest): Promise<AssumeAwsRoleResponse> {
                 return Promise.resolve(new AssumeAwsRoleResponse('accessKeyId', 'secretAccessKey', 'sessionToken', "123"))
+            },
+            getOAuth2AccessToken(request: OAuth2AccessTokenRequest): Promise<OAuth2AccessTokenResponse> {
+                return Promise.resolve({})
             }
         },
             undefined,
