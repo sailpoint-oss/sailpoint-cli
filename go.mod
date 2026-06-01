@@ -19,7 +19,7 @@ require (
 	github.com/mrz1836/go-sanitize v1.5.2
 	github.com/olekukonko/tablewriter v1.0.9
 	github.com/pkg/sftp v1.13.9
-	github.com/sailpoint-oss/golang-sdk/v2 v2.4.0
+	github.com/sailpoint-oss/golang-sdk/v2 v2.7.88
 	github.com/sailpoint-oss/jsonslice v0.0.0-20241219164002-1091467abd7d
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/spf13/cobra v1.9.1
