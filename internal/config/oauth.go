@@ -56,10 +56,11 @@ type AuthRequest struct {
 
 // AuthResponse represents the response from the authentication initiation endpoint
 type AuthResponse struct {
-	AuthURL string `json:"authURL"`
-	ID      string `json:"id"`
-	BaseURL string `json:"baseURL"`
-	TTL     int64  `json:"ttl"`
+	AuthURL      string `json:"authURL"`
+	ID           string `json:"id"`
+	BaseURL      string `json:"baseURL"`
+	PickupSecret string `json:"pickupSecret"`
+	TTL          int64  `json:"ttl"`
 }
 
 func confirmationCodeFromID(id string) string {
@@ -70,6 +71,17 @@ func confirmationCodeFromID(id string) string {
 
 	suffix := id[len(id)-8:]
 	return strings.ToUpper(suffix[:4] + "-" + suffix[4:])
+}
+
+func newOAuthTokenRequest(tokenURL, id, pickupSecret string) (*http.Request, error) {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", tokenURL, id), nil)
+	if err != nil {
+		return nil, err
+	}
+	if pickupSecret != "" {
+		req.Header.Set("Authorization", "Bearer "+pickupSecret)
+	}
+	return req, nil
 }
 
 // OAuthTokenResponse represents the response containing the encrypted token from OAuth flow
@@ -454,7 +466,12 @@ func OAuthLogin() (TokenSet, error) {
 			return set, fmt.Errorf("authentication timed out after 5 minutes")
 		case <-ticker.C:
 			// Query Auth-Lambda for token using UUID
-			tokenResp, err := http.Get(fmt.Sprintf("%s/%s", AuthLambdaTokenURL, authResponse.ID))
+			tokenReq, err := newOAuthTokenRequest(AuthLambdaTokenURL, authResponse.ID, authResponse.PickupSecret)
+			if err != nil {
+				return set, fmt.Errorf("failed to create token polling request: %v", err)
+			}
+
+			tokenResp, err := http.DefaultClient.Do(tokenReq)
 			if err != nil {
 				log.Debug("Error polling for token", "error", err)
 				continue
@@ -516,6 +533,12 @@ func OAuthLogin() (TokenSet, error) {
 				log.Info("OAuth authentication successful")
 				return set, nil
 			}
+			bodyBytes, _ := io.ReadAll(tokenResp.Body)
+			if tokenResp.StatusCode == http.StatusUnauthorized {
+				tokenResp.Body.Close()
+				return set, fmt.Errorf("token polling unauthorized: %s", string(bodyBytes))
+			}
+			log.Debug("Token not ready", "status", tokenResp.StatusCode, "body", string(bodyBytes))
 			tokenResp.Body.Close()
 		}
 	}
