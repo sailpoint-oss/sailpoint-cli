@@ -5,13 +5,14 @@ on:
     inputs:
       version:
         description: The version to release
+        required: true
   push:
     tags:
       - "*"
 permissions:
   contents: write
 env:
-  REF: ${{ github.event.inputs.tag || github.event.inputs.version }}
+  RELEASE_VERSION: ${{ github.event.inputs.version || github.ref_name }}
 
 jobs:
   goreleaser:
@@ -90,7 +91,7 @@ jobs:
         id: download_exe
         shell: bash
         run: |
-          gh release download "${GITHUB_REF#refs/tags/}" -p '*windows_amd64*.zip'
+          gh release download "$RELEASE_VERSION" -p '*windows_amd64*.zip'
           printf "zip=%s\n" *.zip >> $GITHUB_OUTPUT
           unzip -o *.zip && rm -v *.zip
         env:
@@ -105,9 +106,11 @@ jobs:
           ZIP_FILE: ${{ steps.download_exe.outputs.zip }}
           MSBUILD_PATH: ${{ steps.setupmsbuild.outputs.msbuildPath }}
         run: |
-          name="$(basename "$ZIP_FILE""_unsigned" ".zip")"
-          version="$(echo -e ${GITHUB_REF#refs/tags/} | sed s/-.*$//)"
+          name="$(basename "$ZIP_FILE" ".zip")_unsigned"
+          version="${RELEASE_VERSION#v}"
+          version="${version%%-*}"
           "${MSBUILD_PATH}\MSBuild.exe" ./build/windows/sail.wixproj -p:SourceDir="$PWD" -p:OutputPath="$PWD" -p:OutputName="$name" -p:ProductVersion="$version"
+          printf "msi=%s\n" "$PWD/$name.msi" >> "$GITHUB_OUTPUT"
 
   #     - name: Obtain signing cert
   #       id: obtain_cert
@@ -127,7 +130,7 @@ jobs:
       - name: Upload MSI
         shell: bash
         run: |
-          tag_name="${GITHUB_REF#refs/tags/}"
+          tag_name="$RELEASE_VERSION"
           gh release upload "$tag_name" "$MSI_FILE"
           release_url="$(gh api repos/:owner/:repo/releases -q ".[]|select(.tag_name==\"${tag_name}\")|.url")"
           publish_args=( -F draft=false )

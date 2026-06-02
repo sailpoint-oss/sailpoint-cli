@@ -5,13 +5,14 @@ on:
     inputs:
       version:
         description: The version to release
+        required: true
   push:
     tags:
       - "*"
 permissions:
   contents: write
 env:
-  REF: ${{ github.event.inputs.tag || github.event.inputs.version }}
+  RELEASE_VERSION: ${{ github.event.inputs.version || github.ref_name }}
 
 jobs:
   msi:
@@ -23,7 +24,16 @@ jobs:
         id: download_exe
         shell: bash
         run: |
-          gh release download "${{ inputs.version }}" -p '*windows_amd64*.zip'
+          for attempt in {1..30}; do
+            if gh release download "$RELEASE_VERSION" -p '*windows_amd64*.zip'; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              exit 1
+            fi
+            echo "Release asset for $RELEASE_VERSION is not ready yet; retrying in 30 seconds"
+            sleep 30
+          done
           printf "zip=%s\n" *.zip >> $GITHUB_OUTPUT
           unzip -j -o *.zip && rm -v *.zip
         env:
@@ -39,11 +49,13 @@ jobs:
           ZIP_FILE: ${{ steps.download_exe.outputs.zip }}
           MSBUILD_PATH: ${{ steps.setupmsbuild.outputs.msbuildPath }}
         run: |
-          name="$(basename "$ZIP_FILE""_unsigned" ".zip")"
-          version="${{ inputs.version }}"
+          name="$(basename "$ZIP_FILE" ".zip")_unsigned"
+          version="${RELEASE_VERSION#v}"
+          version="${version%%-*}"
           "${MSBUILD_PATH}\MSBuild.exe" ./build/windows/sail.wixproj -p:SourceDir="$PWD" -p:OutputPath="$PWD" -p:OutputName="$name" -p:ProductVersion="$version"
+          printf "msi=%s\n" "$PWD/$name.msi" >> "$GITHUB_OUTPUT"
 
-      - name: Upload Internal HTML File
+      - name: Upload MSI Artifact
         uses: actions/upload-artifact@v4
         with:
           name: sailpoint.msi
