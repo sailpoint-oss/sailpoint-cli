@@ -110,7 +110,8 @@ jobs:
           version="${RELEASE_VERSION#v}"
           version="${version%%-*}"
           "${MSBUILD_PATH}\MSBuild.exe" ./build/windows/sail.wixproj -p:SourceDir="$PWD" -p:OutputPath="$PWD" -p:OutputName="$name" -p:ProductVersion="$version"
-          printf "msi=%s\n" "$PWD/$name.msi" >> "$GITHUB_OUTPUT"
+          test -f "$name.msi"
+          printf "msi=%s\n" "$name.msi" >> "$GITHUB_OUTPUT"
 
   #     - name: Obtain signing cert
   #       id: obtain_cert
