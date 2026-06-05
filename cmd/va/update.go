@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/log"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/va"
 	"github.com/spf13/cobra"
 )
