@@ -1,7 +1,6 @@
 package env
 
 import (
-	"os"
 	"sort"
 
 	"github.com/charmbracelet/log"
@@ -11,6 +10,13 @@ import (
 )
 
 func newListCommand() *cobra.Command {
+	type environmentRow struct {
+		Active    bool   `json:"active" yaml:"active"`
+		Name      string `json:"name" yaml:"name"`
+		TenantURL string `json:"tenantUrl" yaml:"tenantUrl"`
+		AuthType  string `json:"authType" yaml:"authType"`
+	}
+
 	return &cobra.Command{
 		Use:     "list",
 		Short:   "List all configured environments",
@@ -30,6 +36,7 @@ func newListCommand() *cobra.Command {
 
 			headers := []string{"", "Name", "Tenant URL", "Auth Type"}
 			var rows [][]string
+			var structuredRows []environmentRow
 
 			// Sort env names for stable output
 			names := make([]string, 0, len(environments))
@@ -49,10 +56,15 @@ func newListCommand() *cobra.Command {
 					authType = "pat"
 				}
 				rows = append(rows, []string{active, name, tenantURL, authType})
+				structuredRows = append(structuredRows, environmentRow{
+					Active:    name == activeEnv,
+					Name:      name,
+					TenantURL: tenantURL,
+					AuthType:  authType,
+				})
 			}
 
-			output.WriteTable(os.Stdout, headers, rows, "")
-			return nil
+			return output.WriteTableOrStructured(cmd.OutOrStdout(), headers, rows, "", structuredRows)
 		},
 	}
 }

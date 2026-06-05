@@ -1,6 +1,9 @@
 package env
 
 import (
+	"sort"
+
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -29,4 +32,14 @@ func NewEnvCommand() *cobra.Command {
 	)
 
 	return cmd
+}
+
+func completeEnvironmentNames(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
+	environments := config.GetEnvironments()
+	names := make([]string, 0, len(environments))
+	for name := range environments {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names, cobra.ShellCompDirectiveNoFileComp
 }

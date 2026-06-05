@@ -6,6 +6,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/auth"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/clierror"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/spf13/cobra"
@@ -36,7 +37,7 @@ func createOrUpdateEnv(args []string, update bool) error {
 
 	if !update && envName != "" && environments[envName] != nil {
 		fmt.Printf("Environment '%s' already exists. Use 'sail env update %s' to update it.\n", envName, envName)
-		return nil
+		return clierror.Usage("environment already exists: " + envName)
 	}
 
 	if update {
@@ -67,7 +68,7 @@ func createOrUpdateEnv(args []string, update bool) error {
 	// Check for existing env when creating
 	if !update && environments[tenant] != nil && envName == "" {
 		fmt.Printf("Environment '%s' already exists. Use 'sail env update %s' to update it.\n", tenant, tenant)
-		return nil
+		return clierror.Usage("environment already exists: " + tenant)
 	}
 
 	// Determine the environment name to use in config

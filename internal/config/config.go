@@ -323,7 +323,7 @@ func InitAPIClient(experimental bool) (*sailpoint.APIClient, error) {
 
 	token, err := GetAuthToken()
 	if err != nil {
-		log.Debug("unable to retrieve accesstoken", "error", err)
+		return apiClient, fmt.Errorf("unable to retrieve access token: %w", err)
 	}
 
 	configuration := sailpoint.NewCLIConfiguration(sailpoint.ClientConfiguration{Token: token, BaseURL: GetBaseUrl()})
@@ -334,7 +334,7 @@ func InitAPIClient(experimental bool) (*sailpoint.APIClient, error) {
 
 	apiClient = sailpoint.NewAPIClient(configuration)
 	if GetDebug() {
-		logger := log.NewWithOptions(os.Stdout, log.Options{
+		logger := log.NewWithOptions(os.Stderr, log.Options{
 			ReportCaller:    true,
 			ReportTimestamp: true,
 			Level:           log.DebugLevel,
@@ -342,10 +342,16 @@ func InitAPIClient(experimental bool) (*sailpoint.APIClient, error) {
 		debugLogger := logger.StandardLog(log.StandardLogOptions{ForceLevel: log.DebugLevel})
 		apiClient.V3.GetConfig().HTTPClient.Logger = debugLogger
 		apiClient.Beta.GetConfig().HTTPClient.Logger = debugLogger
+		apiClient.V2024.GetConfig().HTTPClient.Logger = debugLogger
+		apiClient.V2025.GetConfig().HTTPClient.Logger = debugLogger
+		apiClient.V2026.GetConfig().HTTPClient.Logger = debugLogger
 	} else {
 		var DevNull types.DevNull
 		apiClient.V3.GetConfig().HTTPClient.Logger = DevNull
 		apiClient.Beta.GetConfig().HTTPClient.Logger = DevNull
+		apiClient.V2024.GetConfig().HTTPClient.Logger = DevNull
+		apiClient.V2025.GetConfig().HTTPClient.Logger = DevNull
+		apiClient.V2026.GetConfig().HTTPClient.Logger = DevNull
 	}
 
 	return apiClient, nil

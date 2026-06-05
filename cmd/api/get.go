@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/url"
-	"os"
 	"strings"
 
 	"github.com/charmbracelet/log"
@@ -60,6 +59,7 @@ func newGetCmd() *cobra.Command {
 
 			var body []byte
 			var status string
+			var paginationErr error
 
 			if pages > 0 || fetchAll {
 				userLimit, userOffset, hasLimit, hasOffset := parseQueryParams(queryParams)
@@ -81,6 +81,7 @@ func newGetCmd() *cobra.Command {
 				if err != nil {
 					if len(body) > 0 {
 						log.Warn("Pagination incomplete", "error", err)
+						paginationErr = err
 					} else {
 						return err
 					}
@@ -118,6 +119,9 @@ func newGetCmd() *cobra.Command {
 				if err != nil {
 					return fmt.Errorf("failed to read response: %w", err)
 				}
+				if err := ensureSuccess(resp, body); err != nil {
+					return err
+				}
 				status = resp.Status
 			}
 
@@ -141,14 +145,11 @@ func newGetCmd() *cobra.Command {
 				}
 			}
 
-			if jsonPath != "" {
-				fmt.Fprint(cmd.OutOrStdout(), string(body))
-			} else {
-				cmd.Println(string(body))
-				fmt.Printf("Status: %s\n", status)
+			if err := writeResponse(cmd, body, status, jsonPath); err != nil {
+				return err
 			}
 
-			return nil
+			return paginationErr
 		},
 	}
 
@@ -161,9 +162,4 @@ func newGetCmd() *cobra.Command {
 	cmd.MarkFlagsMutuallyExclusive("pages", "all")
 
 	return cmd
-}
-
-// writeToFile writes data to a file
-func writeToFile(filename string, data []byte) error {
-	return os.WriteFile(filename, data, 0644)
 }

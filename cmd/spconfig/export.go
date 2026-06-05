@@ -70,11 +70,17 @@ func newExportCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "spconfig-exports", "Folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
+	cmd.Flags().StringVarP(&folderPath, "folder-path", "f", "spconfig-exports", "Folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
+	cmd.Flags().StringVar(&folderPath, "folderPath", "spconfig-exports", "Deprecated: use --folder-path")
+	cmd.Flags().MarkDeprecated("folderPath", "use --folder-path")
+	cmd.Flags().MarkHidden("folderPath")
 	cmd.Flags().StringVarP(&description, "description", "", "", "Optional description for the export job")
 	cmd.Flags().StringArrayVarP(&includeTypes, "include", "i", []string{}, "Types to include in export job")
 	cmd.Flags().StringArrayVarP(&excludeTypes, "exclude", "e", []string{}, "Types to exclude in export job")
-	cmd.Flags().StringVarP(&objectOptions, "objectOptions", "o", "", "Options for the object types being exported")
+	cmd.Flags().StringVarP(&objectOptions, "object-options", "o", "", "Options for the object types being exported")
+	cmd.Flags().StringVar(&objectOptions, "objectOptions", "", "Deprecated: use --object-options")
+	cmd.Flags().MarkDeprecated("objectOptions", "use --object-options")
+	cmd.Flags().MarkHidden("objectOptions")
 	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "Wait for the export job to finish, and then download the results")
 
 	return cmd

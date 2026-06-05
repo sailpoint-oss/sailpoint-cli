@@ -27,6 +27,7 @@ func (c Config) printEnv(w io.Writer) {
 
 func newConfigCommand() *cobra.Command {
 	var env bool
+	var unsafePrintSecret bool
 	cmd := &cobra.Command{
 		Use:     "config",
 		Short:   "Initialize a configuration JSON file for an SDK project",
@@ -56,6 +57,10 @@ func newConfigCommand() *cobra.Command {
 			SDKConfig := Config{ClientId: clientID, ClientSecret: clientSecret, BaseURL: config.GetEnvBaseUrl(envName)}
 
 			if env {
+				if !unsafePrintSecret {
+					return fmt.Errorf("--environment prints CLIENT_SECRET and requires --unsafe-print-secret")
+				}
+				log.Warn("Printing SDK config includes CLIENT_SECRET. Do not paste this output into logs or tickets.")
 				SDKConfig.printEnv(cmd.OutOrStdout())
 			} else {
 				workingDir, err := os.Getwd()
@@ -65,7 +70,7 @@ func newConfigCommand() *cobra.Command {
 
 				configPath := path.Join(workingDir, "config.json")
 
-				file, err := os.Create(configPath)
+				file, err := os.OpenFile(configPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 				if err != nil {
 					return err
 				}
@@ -90,6 +95,7 @@ func newConfigCommand() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&env, "environment", "e", false, "Print out the config values in .env format to the terminal rather than to a config file")
+	cmd.Flags().BoolVar(&unsafePrintSecret, "unsafe-print-secret", false, "Allow printing CLIENT_SECRET to stdout")
 
 	return cmd
 }

@@ -43,6 +43,9 @@ func newUpdateCommand() *cobra.Command {
 		Example: help.Example,
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if cmd.Flags().Changed("passwords") {
+				log.Warn("Passing passwords as flags can expose them in shell history and process listings. Omit --passwords to use the secure prompt.")
+			}
 			for i, endpoint := range args {
 				var password string
 
@@ -64,7 +67,8 @@ func newUpdateCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringArrayVarP(&credentials, "Passwords", "p", []string{}, "You can enter the passwords for the servers in the same order that the servers are listed as arguments")
+	cmd.Flags().StringArrayVarP(&credentials, "passwords", "p", []string{}, "Passwords for the servers in the same order that the servers are listed as arguments")
+	cmd.Flags().MarkDeprecated("passwords", "omit the flag to use the secure prompt")
 
 	return cmd
 }

@@ -99,7 +99,10 @@ func newTemplateCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "spconfig-exports", "Folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
+	cmd.Flags().StringVarP(&folderPath, "folder-path", "f", "spconfig-exports", "Folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
+	cmd.Flags().StringVar(&folderPath, "folderPath", "spconfig-exports", "Deprecated: use --folder-path")
+	cmd.Flags().MarkDeprecated("folderPath", "use --folder-path")
+	cmd.Flags().MarkHidden("folderPath")
 	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "Wait for the export job to finish, and then download the results")
 
 	return cmd

@@ -19,6 +19,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/keyring"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/redact"
 	"github.com/skratchdot/open-golang/open"
 	"gopkg.in/square/go-jose.v2/jwt"
 )
@@ -144,7 +145,7 @@ func OAuthLogin(baseURL string) (TokenSet, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
-		return set, fmt.Errorf("auth lambda returned non-200 status: %d, body: %s", resp.StatusCode, string(bodyBytes))
+		return set, fmt.Errorf("auth lambda returned non-200 status: %d, body: %s", resp.StatusCode, redact.Bytes(bodyBytes))
 	}
 
 	var authResponse AuthResponse
@@ -237,9 +238,9 @@ func OAuthLogin(baseURL string) (TokenSet, error) {
 			bodyBytes, _ := io.ReadAll(tokenResp.Body)
 			if tokenResp.StatusCode == http.StatusUnauthorized {
 				tokenResp.Body.Close()
-				return set, fmt.Errorf("token polling unauthorized: %s", string(bodyBytes))
+				return set, fmt.Errorf("token polling unauthorized: %s", redact.Bytes(bodyBytes))
 			}
-			log.Debug("Token not ready", "status", tokenResp.StatusCode, "body", string(bodyBytes))
+			log.Debug("Token not ready", "status", tokenResp.StatusCode, "body", redact.Bytes(bodyBytes))
 			tokenResp.Body.Close()
 		}
 	}
@@ -273,7 +274,7 @@ func RefreshOAuth(env, baseURL, tenantURL string) (TokenSet, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
-		return set, fmt.Errorf("token refresh failed with status %d: %s", resp.StatusCode, string(bodyBytes))
+		return set, fmt.Errorf("token refresh failed with status %d: %s", resp.StatusCode, redact.Bytes(bodyBytes))
 	}
 
 	body, err := io.ReadAll(resp.Body)

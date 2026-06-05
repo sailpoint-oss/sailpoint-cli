@@ -3,10 +3,13 @@ package configure
 import (
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 
 	"github.com/charmbracelet/log"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/clierror"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -25,6 +28,14 @@ var keyMapping = map[string]string{
 	"report-templates-path": "reporttemplatespath",
 }
 
+type globalConfig struct {
+	Debug               bool   `json:"debug" yaml:"debug"`
+	ActiveEnvironment   string `json:"activeEnvironment" yaml:"activeEnvironment"`
+	ExportTemplatesPath string `json:"exportTemplatesPath" yaml:"exportTemplatesPath"`
+	SearchTemplatesPath string `json:"searchTemplatesPath" yaml:"searchTemplatesPath"`
+	ReportTemplatesPath string `json:"reportTemplatesPath" yaml:"reportTemplatesPath"`
+}
+
 func NewConfigureCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "config [key] [value]",
@@ -35,6 +46,17 @@ func NewConfigureCommand() *cobra.Command {
   sail config debug true                        # set debug to true
   sail config export-templates-path /path/to/f  # set a template path`,
 		Args: cobra.MaximumNArgs(2),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) > 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			keys := make([]string, 0, len(keyMapping))
+			for key := range keyMapping {
+				keys = append(keys, key)
+			}
+			sort.Strings(keys)
+			return keys, cobra.ShellCompDirectiveNoFileComp
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			w := cmd.OutOrStdout()
 			switch len(args) {
@@ -53,22 +75,37 @@ func NewConfigureCommand() *cobra.Command {
 }
 
 func listConfig(w io.Writer) error {
+	cfg := globalConfig{
+		Debug:               config.GetDebug(),
+		ActiveEnvironment:   config.GetActiveEnvironment(),
+		ExportTemplatesPath: config.GetCustomExportTemplatePath(),
+		SearchTemplatesPath: config.GetCustomSearchTemplatePath(),
+		ReportTemplatesPath: config.GetCustomReportTemplatePath(),
+	}
+	if output.IsMachineReadable() {
+		return output.WriteStructured(w, cfg)
+	}
+
 	fmt.Fprintln(w, "Global CLI Configuration:")
 	fmt.Fprintln(w)
-	fmt.Fprintf(w, "  %-25s %v\n", "debug", config.GetDebug())
-	fmt.Fprintf(w, "  %-25s %s\n", "active-environment", config.GetActiveEnvironment())
-	fmt.Fprintf(w, "  %-25s %s\n", "export-templates-path", config.GetCustomExportTemplatePath())
-	fmt.Fprintf(w, "  %-25s %s\n", "search-templates-path", config.GetCustomSearchTemplatePath())
-	fmt.Fprintf(w, "  %-25s %s\n", "report-templates-path", config.GetCustomReportTemplatePath())
+	fmt.Fprintf(w, "  %-25s %v\n", "debug", cfg.Debug)
+	fmt.Fprintf(w, "  %-25s %s\n", "active-environment", cfg.ActiveEnvironment)
+	fmt.Fprintf(w, "  %-25s %s\n", "export-templates-path", cfg.ExportTemplatesPath)
+	fmt.Fprintf(w, "  %-25s %s\n", "search-templates-path", cfg.SearchTemplatesPath)
+	fmt.Fprintf(w, "  %-25s %s\n", "report-templates-path", cfg.ReportTemplatesPath)
 	return nil
 }
 
 func getConfig(w io.Writer, key string) error {
 	viperKey, ok := keyMapping[key]
 	if !ok {
-		return unknownKey(key)
+		return unknownKey(w, key)
 	}
-	fmt.Fprintf(w, "%s = %v\n", key, viper.Get(viperKey))
+	value := viper.Get(viperKey)
+	if output.IsMachineReadable() {
+		return output.WriteStructured(w, map[string]any{key: value})
+	}
+	fmt.Fprintf(w, "%s = %v\n", key, value)
 	return nil
 }
 
@@ -99,16 +136,16 @@ func setConfig(key, value string) error {
 		log.Info("Report templates path updated", "path", value)
 
 	default:
-		return unknownKey(key)
+		return clierror.Usage("unknown config key: " + key)
 	}
 
 	return nil
 }
 
-func unknownKey(key string) error {
-	fmt.Printf("Unknown config key: %s\n\nValid keys:\n", key)
+func unknownKey(w io.Writer, key string) error {
+	fmt.Fprintf(w, "Unknown config key: %s\n\nValid keys:\n", key)
 	for k, desc := range validKeys {
-		fmt.Printf("  %-25s %s\n", k, desc)
+		fmt.Fprintf(w, "  %-25s %s\n", k, desc)
 	}
-	return nil
+	return clierror.Usage("unknown config key: " + key)
 }

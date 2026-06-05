@@ -6,7 +6,6 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"os"
 	"path"
 	"strings"
 
@@ -94,8 +93,10 @@ func NewReportCommand() *cobra.Command {
 
 				resp, err := apiClient.V3.SearchAPI.SearchCount(context.TODO()).Search(*searchQuery).Execute()
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-					fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", resp)
+					return fmt.Errorf("failed to count results for report query %d: %w", i+1, err)
+				}
+				if resp == nil || len(resp.Header["X-Total-Count"]) == 0 {
+					return fmt.Errorf("missing X-Total-Count header for report query %d", i+1)
 				}
 				selectedTemplate.Queries[i].ResultCount = resp.Header["X-Total-Count"][0]
 			}
@@ -118,7 +119,10 @@ func NewReportCommand() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&save, "save", "s", false, "save the report to a file")
-	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "reports", "folder path to save the reports in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
+	cmd.Flags().StringVarP(&folderPath, "folder-path", "f", "reports", "Folder path to save reports in")
+	cmd.Flags().StringVar(&folderPath, "folderPath", "reports", "Deprecated: use --folder-path")
+	cmd.Flags().MarkDeprecated("folderPath", "use --folder-path")
+	cmd.Flags().MarkHidden("folderPath")
 
 	return cmd
 

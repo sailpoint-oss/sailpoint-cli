@@ -2,6 +2,10 @@
 package set
 
 import (
+	"bufio"
+	"strings"
+
+	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/spf13/cobra"
@@ -10,6 +14,7 @@ import (
 func newPATCommand(term terminal.Terminal) *cobra.Command {
 	var ClientID string
 	var ClientSecret string
+	var readSecretFromStdin bool
 	var err error
 	cmd := &cobra.Command{
 		Use:   "pat",
@@ -17,6 +22,10 @@ func newPATCommand(term terminal.Terminal) *cobra.Command {
 		Long:  "\nConfigure PAT authentication for the CLI\n\nPrerequisites:\n\nCreate a client ID and client secret\nhttps://developer.sailpoint.com/docs/api/authentication#personal-access-tokens",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
+
+			if cmd.Flags().Changed("ClientSecret") {
+				log.Warn("Passing secrets as flags can expose them in shell history and process listings. Use --client-secret-stdin or the secure prompt instead.")
+			}
 
 			if ClientID == "" {
 
@@ -29,6 +38,16 @@ func newPATCommand(term terminal.Terminal) *cobra.Command {
 			err = config.SetPatClientID(ClientID)
 			if err != nil {
 				return err
+			}
+
+			if readSecretFromStdin {
+				scanner := bufio.NewScanner(cmd.InOrStdin())
+				if scanner.Scan() {
+					ClientSecret = strings.TrimSpace(scanner.Text())
+				}
+				if err := scanner.Err(); err != nil {
+					return err
+				}
 			}
 
 			if ClientSecret == "" {
@@ -52,8 +71,12 @@ func newPATCommand(term terminal.Terminal) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&ClientID, "ClientID", "i", "", "The client id to use for PAT authentication")
-	cmd.Flags().StringVarP(&ClientSecret, "ClientSecret", "s", "", "The client secret to use for PAT authentication")
+	cmd.Flags().StringVar(&ClientID, "client-id", "", "The client ID to use for PAT authentication")
+	cmd.Flags().BoolVar(&readSecretFromStdin, "client-secret-stdin", false, "Read the client secret from stdin")
+	cmd.Flags().StringVarP(&ClientID, "ClientID", "i", "", "Deprecated: use --client-id")
+	cmd.Flags().StringVarP(&ClientSecret, "ClientSecret", "s", "", "Deprecated: use --client-secret-stdin or the secure prompt")
+	cmd.Flags().MarkDeprecated("ClientID", "use --client-id")
+	cmd.Flags().MarkDeprecated("ClientSecret", "use --client-secret-stdin or the secure prompt")
 
 	return cmd
 }

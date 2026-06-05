@@ -6,12 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"path"
 
+	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/redact"
 )
 
 const maskedPassword = "******"
@@ -786,13 +787,13 @@ func newResponseError(resp *http.Response) error {
 	var errorPayload interface{}
 	err := json.Unmarshal(body, &errorPayload)
 	if err != nil {
-		return fmt.Errorf("non-200 response: %s (body %s)", resp.Status, string(body))
+		return fmt.Errorf("non-200 response: %s (body %s)", resp.Status, redact.Bytes(body))
 	} else {
 		pretty, err := json.MarshalIndent(errorPayload, "", "\t")
 		if err != nil {
-			return fmt.Errorf("non-200 response: %s (body %s)", resp.Status, string(body))
+			return fmt.Errorf("non-200 response: %s (body %s)", resp.Status, redact.Bytes(body))
 		} else {
-			return fmt.Errorf("non-200 response: %s (body %s)", resp.Status, string(pretty))
+			return fmt.Errorf("non-200 response: %s (body %s)", resp.Status, redact.Bytes(pretty))
 		}
 	}
 }
@@ -876,9 +877,9 @@ func (cc *ConnClient) rawInvokeWithConfig(cmdType string, input json.RawMessage,
 
 	// if input contains sensitive information, log the masked input to console
 	if maskedInput == nil {
-		log.Printf("Running %q with %q", cmdType, input)
+		log.Debug("running connector command", "command", cmdType, "input", redact.Bytes(input))
 	} else {
-		log.Printf("Running %q with %q", cmdType, maskedInput)
+		log.Debug("running connector command", "command", cmdType, "input", redact.Bytes(maskedInput))
 	}
 
 	invokeCmd := invokeCommand{
@@ -900,7 +901,8 @@ func (cc *ConnClient) rawInvokeWithConfig(cmdType string, input json.RawMessage,
 func connResourceUrl(endpoint string, resourceParts ...string) string {
 	u, err := url.Parse(endpoint)
 	if err != nil {
-		log.Fatalf("invalid endpoint: %s (%q)", err, endpoint)
+		log.Warn("invalid endpoint", "error", err, "endpoint", endpoint)
+		return endpoint
 	}
 	u.Path = path.Join(append([]string{u.Path}, resourceParts...)...)
 	return u.String()

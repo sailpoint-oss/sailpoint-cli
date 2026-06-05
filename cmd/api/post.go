@@ -91,6 +91,9 @@ func newPostCmd() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("failed to read response: %w", err)
 			}
+			if err := ensureSuccess(resp, responseBody); err != nil {
+				return err
+			}
 
 			// If JSONPath is specified, evaluate it
 			if jsonPath != "" {
@@ -112,11 +115,8 @@ func newPostCmd() *cobra.Command {
 				}
 			}
 
-			if jsonPath != "" {
-				fmt.Fprint(cmd.OutOrStdout(), string(responseBody))
-			} else {
-				cmd.Println(string(responseBody))
-				fmt.Printf("Status: %s\n", resp.Status)
+			if err := writeResponse(cmd, responseBody, resp.Status, jsonPath); err != nil {
+				return err
 			}
 
 			return nil

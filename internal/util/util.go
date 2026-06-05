@@ -24,7 +24,7 @@ func init() {
 		glamour.WithAutoStyle(),
 	)
 	if err != nil {
-		panic(err)
+		log.Warn("Markdown renderer unavailable; falling back to plain help text", "error", err)
 	}
 
 }
@@ -42,9 +42,13 @@ func SanitizeFileName(fileName string) string {
 }
 
 func RenderMarkdown(markdown string) string {
+	if renderer == nil {
+		return markdown
+	}
 	out, err := renderer.Render(markdown)
 	if err != nil {
-		panic(err)
+		log.Warn("Failed to render markdown; falling back to plain text", "error", err)
+		return markdown
 	}
 
 	return out
@@ -58,7 +62,8 @@ type Help struct {
 func ParseHelp(help string) Help {
 	helpParser, err := regexp.Compile(`==([A-Za-z]+)==([\s\S]*?)====`)
 	if err != nil {
-		panic(err)
+		log.Warn("Failed to compile help parser", "error", err)
+		return Help{}
 	}
 
 	matches := helpParser.FindAllStringSubmatch(help, -1)

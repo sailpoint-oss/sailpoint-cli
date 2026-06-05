@@ -50,7 +50,10 @@ func newQueryCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "search_results", "Folder path to save the search results to. If the directory doesn't exist, then it will be created. (defaults to the current working directory)")
+	cmd.Flags().StringVarP(&folderPath, "folder-path", "f", "search_results", "Folder path to save the search results to. If the directory doesn't exist, then it will be created. (defaults to the current working directory)")
+	cmd.Flags().StringVar(&folderPath, "folderPath", "search_results", "Deprecated: use --folder-path")
+	cmd.Flags().MarkDeprecated("folderPath", "use --folder-path")
+	cmd.Flags().MarkHidden("folderPath")
 	cmd.Flags().StringArrayVar(&indices, "indices", []string{}, "Indices to perform the search query on (accessprofiles, accountactivities, entitlements, events, identities, roles)")
 	cmd.Flags().StringArrayVar(&sort, "sort", []string{}, "The sort value for the api call (displayName, +id...)")
 	cmd.MarkFlagRequired("indices")

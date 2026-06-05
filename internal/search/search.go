@@ -3,12 +3,14 @@ package search
 import (
 	"context"
 	"fmt"
-	"os"
+	"io"
+	"net/http"
 
 	"github.com/charmbracelet/log"
 	"github.com/mitchellh/mapstructure"
 	sailpoint "github.com/sailpoint-oss/golang-sdk/v2"
 	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v2/api_v3"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/clierror"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 )
 
@@ -59,8 +61,10 @@ func PerformSearch(apiClient sailpoint.APIClient, search sailpointsdk.Search) (S
 	ctx := context.TODO()
 	resp, r, err := sailpoint.PaginateWithDefaults[map[string]interface{}](apiClient.V3.SearchAPI.SearchPost(ctx).Search(search))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+		if r != nil {
+			return SearchResults, searchAPIError(r, err)
+		}
+		return SearchResults, fmt.Errorf("search request failed: %w", err)
 	}
 
 	log.Debug("Search complete")
@@ -131,8 +135,10 @@ func PerformSearchWithLimit(apiClient sailpoint.APIClient, search sailpointsdk.S
 	ctx := context.TODO()
 	resp, r, err := apiClient.V3.SearchAPI.SearchPost(ctx).Search(search).Limit(limit).Execute()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+		if r != nil {
+			return SearchResults, searchAPIError(r, err)
+		}
+		return SearchResults, fmt.Errorf("search request failed: %w", err)
 	}
 
 	log.Debug("Search complete")
@@ -191,6 +197,17 @@ func PerformSearchWithLimit(apiClient sailpoint.APIClient, search sailpointsdk.S
 	}
 
 	return SearchResults, nil
+}
+
+func searchAPIError(resp *http.Response, err error) error {
+	var body []byte
+	if resp.Body != nil {
+		body, _ = io.ReadAll(resp.Body)
+	}
+	if len(body) == 0 && err != nil {
+		body = []byte(err.Error())
+	}
+	return clierror.APIStatus(resp.StatusCode, resp.Status, body)
 }
 
 func IterateIndices(SearchResults SearchResults, searchQuery string, folderPath string, outputTypes []string) error {

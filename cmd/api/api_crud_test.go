@@ -74,6 +74,8 @@ func SaveTransform(fileName string, transform map[string]interface{}) error {
 }
 
 func TestNewCRUDCmd(t *testing.T) {
+	requireLiveCredentials(t)
+
 	var transform map[string]interface{}
 
 	err := json.Unmarshal([]byte(createTemplate), &transform)

@@ -31,6 +31,9 @@ func newCollectCommand() *cobra.Command {
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
+			if cmd.Flags().Changed("passwords") {
+				log.Warn("Passing passwords as flags can expose them in shell history and process listings. Omit --passwords to use the secure prompt.")
+			}
 
 			logFiles := []string{"/home/sailpoint/log/ccg.log", "/home/sailpoint/log/charon.log"}
 			configFiles := []string{"/home/sailpoint/proxy.yaml", "/etc/systemd/network/static.network", "/etc/resolv.conf"}
@@ -94,6 +97,7 @@ func newCollectCommand() *cobra.Command {
 	cmd.Flags().BoolVarP(&logs, "log", "l", false, "Retrieve log files")
 	cmd.Flags().BoolVarP(&config, "config", "c", false, "Retrieve config files")
 	cmd.Flags().StringArrayVarP(&credentials, "passwords", "p", []string{}, "Passwords for the servers in the same order that the servers are listed as arguments")
+	cmd.Flags().MarkDeprecated("passwords", "omit the flag to use the secure prompt")
 
 	cmd.MarkFlagsMutuallyExclusive("config", "log")
 

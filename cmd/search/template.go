@@ -26,7 +26,7 @@ func newTemplateCmd() *cobra.Command {
 		Aliases: []string{"temp"},
 		Args:    cobra.MaximumNArgs(1),
 		PreRun: func(cmd *cobra.Command, args []string) {
-			folderPath, _ := cmd.Flags().GetString("folderPath")
+			folderPath, _ := cmd.Flags().GetString("folder-path")
 			if folderPath == "" {
 				cmd.MarkFlagRequired("save")
 			}
@@ -96,7 +96,10 @@ func newTemplateCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "search_results", "Folder path to save the search results to. If the directory doesn't exist, then it will be created. (defaults to the current working directory)")
+	cmd.Flags().StringVarP(&folderPath, "folder-path", "f", "search_results", "Folder path to save the search results to. If the directory doesn't exist, then it will be created. (defaults to the current working directory)")
+	cmd.Flags().StringVar(&folderPath, "folderPath", "search_results", "Deprecated: use --folder-path")
+	cmd.Flags().MarkDeprecated("folderPath", "use --folder-path")
+	cmd.Flags().MarkHidden("folderPath")
 
 	return cmd
 }

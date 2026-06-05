@@ -5,6 +5,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/auth"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/clierror"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/spf13/cobra"
@@ -21,8 +22,9 @@ func newDeleteCommand() *cobra.Command {
 		Example: `  sail env delete staging
   sail env delete
   sail env delete production --force`,
-		Aliases: []string{"d", "rm"},
-		Args:    cobra.MaximumNArgs(1),
+		Aliases:           []string{"d", "rm"},
+		Args:              cobra.MaximumNArgs(1),
+		ValidArgsFunction: completeEnvironmentNames,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			environments := config.GetEnvironments()
 
@@ -33,12 +35,12 @@ func newDeleteCommand() *cobra.Command {
 
 			if envName == "" {
 				log.Warn("No active environment configured")
-				return nil
+				return clierror.Usage("no active environment configured")
 			}
 
 			if environments[envName] == nil {
 				log.Warn("Environment does not exist", "name", envName)
-				return nil
+				return clierror.NotFound("environment", envName, "Run 'sail env list' to see configured environments.")
 			}
 
 			// Safety check: warn if deleting active env
@@ -54,8 +56,8 @@ func newDeleteCommand() *cobra.Command {
 					return err
 				}
 				if !confirmed {
-					fmt.Println("Cancelled.")
-					return nil
+					fmt.Fprintln(cmd.ErrOrStderr(), "Cancelled.")
+					return clierror.Canceled("environment delete")
 				}
 			}
 

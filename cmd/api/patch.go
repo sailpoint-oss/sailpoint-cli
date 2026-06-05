@@ -94,6 +94,9 @@ func newPatchCmd() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("failed to read response: %w", err)
 			}
+			if err := ensureSuccess(resp, responseBody); err != nil {
+				return err
+			}
 
 			// If JSONPath is specified, evaluate it
 			if jsonPath != "" {
@@ -117,15 +120,15 @@ func newPatchCmd() *cobra.Command {
 
 			// Output to file or stdout
 			if outputFile != "" {
-				if err := writeToFile(outputFile, responseBody); err != nil {
-					return fmt.Errorf("failed to write to file: %w", err)
+				if err := writeResponseFile(cmd, outputFile, responseBody, resp.Status); err != nil {
+					return err
 				}
-				fmt.Printf("Response saved to %s\n", outputFile)
 			} else {
-				fmt.Fprint(cmd.OutOrStdout(), string(responseBody))
+				if err := writeResponse(cmd, responseBody, resp.Status, jsonPath); err != nil {
+					return err
+				}
 			}
 
-			fmt.Printf("\nStatus: %s\n", resp.Status)
 			return nil
 		},
 	}

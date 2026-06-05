@@ -29,6 +29,7 @@ func NewVACommand() *cobra.Command {
 		newParseCommand(),
 		newUpdateCommand(),
 		newListCommand(),
+		NewTroubleshootCmd(),
 	)
 
 	return cmd

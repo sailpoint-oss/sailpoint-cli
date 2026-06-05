@@ -9,11 +9,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-)
-
-// Expected number of subcommands to `sail` root command
-const (
-	numRootSubcommands = 19
+	"github.com/spf13/cobra"
 )
 
 func TestNewRootCmd_noArgs(t *testing.T) {
@@ -21,9 +17,29 @@ func TestNewRootCmd_noArgs(t *testing.T) {
 	defer ctrl.Finish()
 
 	cmd := NewRootCommand()
-	if len(cmd.Commands()) != numRootSubcommands {
-		t.Fatalf("expected: %d, actual: %d", numRootSubcommands, len(cmd.Commands()))
-	}
+	assertRootCommands(t, cmd, []string{
+		"access-profile",
+		"access-request",
+		"account",
+		"api",
+		"auth",
+		"cluster",
+		"config",
+		"connectors",
+		"entitlement",
+		"env",
+		"identity",
+		"role",
+		"source",
+	})
+	assertNoRootCommands(t, cmd, []string{
+		"access",
+		"admin",
+		"apps",
+		"audit",
+		"lifecycle",
+		"users",
+	})
 
 	b := new(bytes.Buffer)
 	cmd.SetOut(b)
@@ -44,7 +60,39 @@ func TestNewRootCmd_noArgs(t *testing.T) {
 	}
 }
 
-func TestNewRootCmd_completionDisabled(t *testing.T) {
+func assertRootCommands(t *testing.T, cmd interface{ CommandPath() string }, expected []string) {
+	t.Helper()
+	rootCmd, ok := cmd.(interface {
+		Find([]string) (*cobra.Command, []string, error)
+	})
+	if !ok {
+		t.Fatalf("unexpected command type")
+	}
+	for _, name := range expected {
+		found, _, err := rootCmd.Find([]string{name})
+		if err != nil || found == nil || found.Name() != name {
+			t.Fatalf("expected root command %q to exist", name)
+		}
+	}
+}
+
+func assertNoRootCommands(t *testing.T, cmd interface{ CommandPath() string }, names []string) {
+	t.Helper()
+	rootCmd, ok := cmd.(interface {
+		Find([]string) (*cobra.Command, []string, error)
+	})
+	if !ok {
+		t.Fatalf("unexpected command type")
+	}
+	for _, name := range names {
+		found, _, err := rootCmd.Find([]string{name})
+		if err == nil && found != nil && found.Name() == name {
+			t.Fatalf("did not expect root command %q to exist", name)
+		}
+	}
+}
+
+func TestNewRootCmd_completionEnabled(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -52,9 +100,9 @@ func TestNewRootCmd_completionDisabled(t *testing.T) {
 
 	b := new(bytes.Buffer)
 	cmd.SetOut(b)
-	cmd.SetArgs([]string{"completion"})
+	cmd.SetArgs([]string{"completion", "bash"})
 
-	if err := cmd.Execute(); err == nil {
-		t.Error("expected command to fail")
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("expected completion command to succeed: %v", err)
 	}
 }

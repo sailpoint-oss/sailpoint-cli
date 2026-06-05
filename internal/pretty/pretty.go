@@ -16,7 +16,7 @@ func init() {
 		glamour.WithAutoStyle(),
 	)
 	if err != nil {
-		panic(err)
+		log.Warn("Markdown renderer unavailable; falling back to JSON-only formatting", "error", err)
 	}
 
 }

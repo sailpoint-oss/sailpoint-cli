@@ -15,6 +15,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/clierror"
 )
 
 const defaultPageSize = 250
@@ -133,7 +134,7 @@ func paginatedGet(ctx context.Context, spClient client.Client, endpoint string, 
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		body, _ := io.ReadAll(resp.Body)
-		return nil, resp.Status, fmt.Errorf("request failed with status %s: %s", resp.Status, string(body))
+		return nil, resp.Status, clierror.APIStatus(resp.StatusCode, resp.Status, body)
 	}
 
 	body, err := io.ReadAll(resp.Body)

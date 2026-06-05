@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/log"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/redact"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 )
 
@@ -35,7 +36,7 @@ func HandleSDKError(resp *http.Response, sdkErr error) error {
 		log.Error(err)
 	}
 
-	return errors.New(util.RenderMarkdown(sdkErrParts[0] + util.PrettyPrint(resp.Header) + sdkErrParts[1] + util.PrettyPrint(data) + sdkErrParts[2]))
+	return errors.New(util.RenderMarkdown(sdkErrParts[0] + util.PrettyPrint(redact.Value(resp.Header)) + sdkErrParts[1] + util.PrettyPrint(redact.Value(data)) + sdkErrParts[2]))
 }
 
 func PrintSDKResult(resp *http.Response, field string) string {

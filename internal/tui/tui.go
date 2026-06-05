@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/clierror"
 )
 
 var docStyle = lipgloss.NewStyle().Margin(1, 2)
@@ -22,8 +23,6 @@ type Choice struct {
 	Id          string
 }
 
-var choice ListItem
-
 func (i ListItem) Title() string       { return i.title }
 func (i ListItem) Description() string { return i.description }
 func (i ListItem) FilterValue() string { return i.title }
@@ -31,6 +30,7 @@ func (i ListItem) FilterValue() string { return i.title }
 type model struct {
 	List     list.Model
 	Quitting bool
+	Selected *ListItem
 }
 
 func (m model) Init() tea.Cmd {
@@ -48,7 +48,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			i, ok := m.List.SelectedItem().(ListItem)
 			if ok {
-				choice = i
+				m.Selected = &i
 			}
 			return m, tea.Quit
 		}
@@ -67,12 +67,11 @@ func (m model) View() string {
 	return docStyle.Render(m.List.View())
 }
 
-func (m model) Retrieve() ListItem {
-	if choice.title != "" {
-		return choice
-	} else {
-		return ListItem{}
+func (m model) Retrieve() (ListItem, bool) {
+	if m.Selected == nil {
+		return ListItem{}, false
 	}
+	return *m.Selected, true
 }
 
 func PromptList(choices []Choice, Title string) (Choice, error) {
@@ -89,11 +88,20 @@ func PromptList(choices []Choice, Title string) (Choice, error) {
 
 	p := tea.NewProgram(m, tea.WithAltScreen())
 
-	if _, err := p.Run(); err != nil {
+	finalModel, err := p.Run()
+	if err != nil {
 		return Choice{}, fmt.Errorf("error running program: %s", err)
 	}
 
-	choice := m.Retrieve()
+	final, ok := finalModel.(model)
+	if !ok {
+		return Choice{}, fmt.Errorf("unexpected list prompt result")
+	}
+
+	choice, ok := final.Retrieve()
+	if !ok {
+		return Choice{}, clierror.Canceled("selection")
+	}
 
 	return Choice{Title: choice.title, Description: choice.description, Id: choice.id}, nil
 }
