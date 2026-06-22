@@ -35,6 +35,72 @@ func TestLoadAndValidateWorkspaceManifest_Valid(t *testing.T) {
 	}
 }
 
+func TestLoadAndValidateWorkspaceManifest_ValidIframeAllow(t *testing.T) {
+	path := writeManifestFixture(t, `{
+  "version": 1,
+  "manifest": {
+    "alias": "access-request-plugin",
+    "name": {"en-US": "Access Request"},
+    "description": {"en-US": "Plugin description"},
+    "slots": [{"slotId": "full-page"}],
+    "iframeAllow": {}
+  }
+}`)
+
+	cfg, err := loadAndValidateWorkspaceManifest(path)
+	if err != nil {
+		t.Fatalf("expected valid manifest, got err: %v", err)
+	}
+	if cfg.Manifest.IframeAllow == nil {
+		t.Fatal("expected iframeAllow map to be present")
+	}
+}
+
+func TestLoadAndValidateWorkspaceManifest_ValidIframeAllowWithDirectives(t *testing.T) {
+	path := writeManifestFixture(t, `{
+  "version": 1,
+  "manifest": {
+    "alias": "access-request-plugin",
+    "name": {"en-US": "Access Request"},
+    "description": {"en-US": "Plugin description"},
+    "slots": [{"slotId": "full-page"}],
+    "iframeAllow": {"camera": ["'self'"]}
+  }
+}`)
+
+	cfg, err := loadAndValidateWorkspaceManifest(path)
+	if err != nil {
+		t.Fatalf("expected valid manifest, got err: %v", err)
+	}
+	if len(cfg.Manifest.IframeAllow) != 1 {
+		t.Fatalf("expected one iframeAllow directive, got: %+v", cfg.Manifest.IframeAllow)
+	}
+	if got := cfg.Manifest.IframeAllow["camera"]; len(got) != 1 || got[0] != "'self'" {
+		t.Fatalf("unexpected camera directive: %+v", got)
+	}
+}
+
+func TestLoadAndValidateWorkspaceManifest_StringIframeAllowRejected(t *testing.T) {
+	path := writeManifestFixture(t, `{
+  "version": 1,
+  "manifest": {
+    "alias": "access-request-plugin",
+    "name": {"en-US": "Access Request"},
+    "description": {"en-US": "Plugin description"},
+    "slots": [{"slotId": "full-page"}],
+    "iframeAllow": "camera 'self'"
+  }
+}`)
+
+	_, err := loadAndValidateWorkspaceManifest(path)
+	if err == nil {
+		t.Fatal("expected string iframeAllow to fail")
+	}
+	if !strings.Contains(err.Error(), "cannot unmarshal") {
+		t.Fatalf("expected unmarshal type error, got: %v", err)
+	}
+}
+
 func TestLoadAndValidateWorkspaceManifest_ValidSlotWithOptionalFields(t *testing.T) {
 	path := writeManifestFixture(t, `{
   "version": 1,
