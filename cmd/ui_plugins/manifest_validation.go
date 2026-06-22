@@ -74,8 +74,8 @@ func validateWorkspaceManifest(cfg *uiPluginWorkspaceConfig) error {
 		return fmt.Errorf("manifest.slots is required and must contain at least one slot")
 	}
 	for i, slot := range manifest.Slots {
-		if strings.TrimSpace(slot) == "" {
-			return fmt.Errorf("manifest.slots[%d] must not be empty", i)
+		if strings.TrimSpace(slot.SlotID) == "" {
+			return fmt.Errorf("manifest.slots[%d].slotId is required", i)
 		}
 	}
 

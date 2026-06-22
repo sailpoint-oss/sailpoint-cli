@@ -8,6 +8,13 @@ type uiPluginWorkspaceConfig struct {
 	Build    *uiPluginBuildConfig `json:"build,omitempty"`
 }
 
+// uiPluginSlot declares a UI extension point the plugin occupies.
+type uiPluginSlot struct {
+	SlotID               string   `json:"slotId"`
+	RequiredCapabilities []string `json:"requiredCapabilities,omitempty"`
+	RestrictToUsers      []string `json:"restrictToUsers,omitempty"`
+}
+
 // uiPluginManifest is the backend-facing payload section.
 type uiPluginManifest struct {
 	Alias                   string              `json:"alias"`
@@ -17,7 +24,7 @@ type uiPluginManifest struct {
 	ContentSecurityPolicies map[string][]string `json:"contentSecurityPolicies,omitempty"`
 	PermissionPolicy        map[string][]string `json:"permissionPolicy,omitempty"`
 	IframeAllow             string              `json:"iframeAllow,omitempty"`
-	Slots                   []string            `json:"slots"`
+	Slots                   []uiPluginSlot      `json:"slots"`
 }
 
 // uiPluginBuildConfig is local CLI-only config and never sent to backend.
