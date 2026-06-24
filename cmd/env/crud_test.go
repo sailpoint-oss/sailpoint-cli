@@ -71,6 +71,37 @@ func TestEnvLocalCRUD(t *testing.T) {
 	}
 }
 
+func TestEnvDeleteLastActiveEnvironmentClearsActiveEnvironment(t *testing.T) {
+	previousEnvironments := viper.GetStringMap("environments")
+	previousActive := viper.GetString("activeenvironment")
+	t.Cleanup(func() {
+		viper.Set("environments", previousEnvironments)
+		viper.Set("activeenvironment", previousActive)
+		config.ClearActiveEnvironmentOverride()
+	})
+
+	envName := "sail-cli-ci-only-env"
+	viper.Set("environments", map[string]any{
+		envName: map[string]any{
+			"tenanturl": "https://tenant.identitynow.com",
+			"baseurl":   "https://tenant.api.identitynow.com",
+			"authtype":  "oauth",
+		},
+	})
+	config.SetActiveEnvironment(envName)
+
+	deleteCmd := newDeleteCommand()
+	deleteCmd.SetArgs([]string{envName})
+	deleteCmd.Flags().Set("force", "true")
+	if err := deleteCmd.Execute(); err != nil {
+		t.Fatalf("env delete failed: %v", err)
+	}
+
+	if got := config.GetActiveEnvironment(); got != "" {
+		t.Fatalf("expected active environment to be cleared, got %q", got)
+	}
+}
+
 func executeEnvCommand(t *testing.T, cmd *cobra.Command, args []string) string {
 	t.Helper()
 

@@ -67,7 +67,7 @@ func NewRootCommand() *cobra.Command {
 			log.SetReportTimestamp(false)
 
 			if cmd.Flags().Changed("env") {
-				viper.Set("activeenvironment", envFlag)
+				config.SetActiveEnvironmentOverride(envFlag)
 			}
 			if cmd.Flags().Changed("debug") || cmd.Flags().Changed("verbose") {
 				viper.Set("debug", debug || verbose)

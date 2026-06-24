@@ -101,13 +101,24 @@ func GetJSONOutput() bool {
 
 // --- Environment management ---
 
+var (
+	activeEnvironmentOverride    string
+	activeEnvironmentOverrideSet bool
+)
+
 func GetEnvironments() map[string]interface{} {
 	return viper.GetStringMap("environments")
 }
 
 func GetActiveEnvironment() string {
+	if activeEnvironmentOverrideSet {
+		return activeEnvironmentOverride
+	}
 	env := strings.ToLower(viper.GetString("activeenvironment"))
 	if env == "" {
+		if viper.IsSet("activeenvironment") {
+			return ""
+		}
 		return "default"
 	}
 	return env
@@ -115,6 +126,16 @@ func GetActiveEnvironment() string {
 
 func SetActiveEnvironment(activeEnv string) {
 	viper.Set("activeenvironment", strings.ToLower(activeEnv))
+}
+
+func SetActiveEnvironmentOverride(activeEnv string) {
+	activeEnvironmentOverride = strings.ToLower(activeEnv)
+	activeEnvironmentOverrideSet = true
+}
+
+func ClearActiveEnvironmentOverride() {
+	activeEnvironmentOverride = ""
+	activeEnvironmentOverrideSet = false
 }
 
 // GetAuthType returns the auth type for the active environment.

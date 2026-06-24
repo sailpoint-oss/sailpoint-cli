@@ -296,6 +296,76 @@ func TestPaginatedGet_PagesMode_MissingTotalCount(t *testing.T) {
 	}
 }
 
+func TestPaginatedGet_RejectsInvalidLimitAndOffset(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := mocks.NewMockClient(ctrl)
+
+	tests := []struct {
+		name string
+		cfg  PaginationConfig
+		want string
+	}{
+		{
+			name: "zero limit",
+			cfg:  PaginationConfig{Pages: 2, Limit: 0, Offset: 0},
+			want: "limit must be greater than 0",
+		},
+		{
+			name: "negative limit",
+			cfg:  PaginationConfig{Pages: 2, Limit: -1, Offset: 0},
+			want: "limit must be greater than 0",
+		},
+		{
+			name: "negative offset",
+			cfg:  PaginationConfig{Pages: 2, Limit: 250, Offset: -1},
+			want: "offset must be greater than or equal to 0",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, _, err := paginatedGet(context.Background(), mockClient, "/v2024/accounts", map[string]string{}, nil, tt.cfg)
+			if err == nil {
+				t.Fatal("expected error")
+			}
+			if !strings.Contains(err.Error(), tt.want) {
+				t.Fatalf("expected %q in error, got %v", tt.want, err)
+			}
+		})
+	}
+}
+
+func TestPaginatedGet_AllModeDoesNotTrustShortFirstPageOverTotalCount(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := mocks.NewMockClient(ctrl)
+
+	gomock.InOrder(
+		mockClient.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(
+			makeResponse(200, "200 OK", `[{"id":1},{"id":2}]`, map[string]string{"X-Total-Count": "7"}), nil),
+		mockClient.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(
+			makeResponse(200, "200 OK", `[{"id":6},{"id":7}]`, nil), nil),
+	)
+
+	pageCfg := PaginationConfig{All: true, Limit: 5, Offset: 0}
+	body, _, err := paginatedGet(context.Background(), mockClient, "/v2024/accounts", map[string]string{}, nil, pageCfg)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	var items []json.RawMessage
+	if err := json.Unmarshal(body, &items); err != nil {
+		t.Fatalf("failed to unmarshal: %v", err)
+	}
+
+	if len(items) != 4 {
+		t.Errorf("expected items from both pages, got %d", len(items))
+	}
+}
+
 func TestPaginatedGet_RespectsUserLimitOffset(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

@@ -9,7 +9,9 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func TestNewRootCmd_noArgs(t *testing.T) {
@@ -104,5 +106,32 @@ func TestNewRootCmd_completionEnabled(t *testing.T) {
 
 	if err := cmd.Execute(); err != nil {
 		t.Fatalf("expected completion command to succeed: %v", err)
+	}
+}
+
+func TestRootEnvFlagDoesNotPersistActiveEnvironment(t *testing.T) {
+	viper.Reset()
+	config.ClearActiveEnvironmentOverride()
+	t.Cleanup(func() {
+		viper.Reset()
+		config.ClearActiveEnvironmentOverride()
+	})
+
+	viper.Set("activeenvironment", "production")
+
+	cmd := NewRootCommand()
+	cmd.SetOut(new(bytes.Buffer))
+	cmd.SetErr(new(bytes.Buffer))
+	cmd.SetArgs([]string{"--env", "staging", "config", "debug"})
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("expected command to succeed: %v", err)
+	}
+
+	if got := config.GetActiveEnvironment(); got != "staging" {
+		t.Fatalf("active environment override = %q, want %q", got, "staging")
+	}
+	if got := viper.GetString("activeenvironment"); got != "production" {
+		t.Fatalf("persisted activeenvironment = %q, want %q", got, "production")
 	}
 }

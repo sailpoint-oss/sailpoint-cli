@@ -119,6 +119,12 @@ func getWithRetry(ctx context.Context, spClient client.Client, url string, heade
 func paginatedGet(ctx context.Context, spClient client.Client, endpoint string, headers map[string]string, queryParams []string, pageCfg PaginationConfig) ([]byte, string, error) {
 	limit := pageCfg.Limit
 	offset := pageCfg.Offset
+	if limit <= 0 {
+		return nil, "", clierror.Usage("pagination limit must be greater than 0")
+	}
+	if offset < 0 {
+		return nil, "", clierror.Usage("pagination offset must be greater than or equal to 0")
+	}
 
 	reqURL, err := buildPaginatedEndpoint(endpoint, queryParams, offset, limit, true)
 	if err != nil {
@@ -170,7 +176,7 @@ func paginatedGet(ctx context.Context, spClient client.Client, endpoint string, 
 	allItems = append(allItems, firstPage...)
 	lastStatus := resp.Status
 
-	if len(firstPage) < limit {
+	if !pageCfg.All && len(firstPage) < limit {
 		totalPages = 1
 	}
 
