@@ -16,7 +16,7 @@ const (
 func newGolangCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "golang",
-		Short:   "Initialize a new GO SDK project",
+		Short:   "Initialize a new Go SDK project",
 		Long:    "\nInitialize a new GO SDK project by fetching the template from GitHub.\n\n",
 		Example: "sail sdk init golang\nsail sdk init go example-project",
 		Aliases: []string{"go"},

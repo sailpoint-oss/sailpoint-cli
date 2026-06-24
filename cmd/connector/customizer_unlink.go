@@ -18,7 +18,7 @@ func newCustomizerUnlinkCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "unlink",
 		Short:   "Unlink connector customizer from connector instance",
-		Example: "sail conn customizers unlink -i 5678",
+		Example: "  sail conn customizers unlink -i <instance-id>",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			instanceID := cmd.Flags().Lookup("instance-id").Value.String()

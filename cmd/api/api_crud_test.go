@@ -36,7 +36,6 @@ var (
   }
 }`)
 
-	path       = "test_data"
 	createFile = "test_create.json"
 	updateFile = "test_update.json"
 )
@@ -51,8 +50,8 @@ func randSeq(n int) string {
 	return string(b)
 }
 
-func SaveTransform(fileName string, transform map[string]interface{}) error {
-	file, err := os.OpenFile((filepath.Join(path, fileName)), os.O_RDWR|os.O_CREATE, 0666)
+func SaveTransform(dir string, fileName string, transform map[string]interface{}) error {
+	file, err := os.OpenFile(filepath.Join(dir, fileName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
 	}
@@ -74,6 +73,8 @@ func SaveTransform(fileName string, transform map[string]interface{}) error {
 }
 
 func TestNewCRUDCmd(t *testing.T) {
+	requireLiveCredentials(t)
+
 	var transform map[string]interface{}
 
 	err := json.Unmarshal([]byte(createTemplate), &transform)
@@ -84,13 +85,13 @@ func TestNewCRUDCmd(t *testing.T) {
 	transformName := randSeq(16)
 	transform["name"] = transformName
 
-	// Make sure the output dir exists first
+	path := t.TempDir()
 	err = os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		t.Fatalf("Error Creating Folders: %v", err)
 	}
 
-	err = SaveTransform(createFile, transform)
+	err = SaveTransform(path, createFile, transform)
 	if err != nil {
 		t.Fatalf("Unable to save test data: %v", err)
 	}
@@ -115,6 +116,14 @@ func TestNewCRUDCmd(t *testing.T) {
 	}
 	transformID := string(responseBytes)
 	log.Info("Transform ID", "ID", transformID)
+	defer func() {
+		deleteCMD := newDeleteCmd()
+		deleteCMD.SetOut(new(bytes.Buffer))
+		deleteCMD.SetArgs([]string{"/v2024/transforms/" + transformID})
+		if err := deleteCMD.Execute(); err != nil {
+			t.Logf("failed to clean up transform %s: %v", transformID, err)
+		}
+	}()
 
 	// Validate the transform was created by getting it
 	getCMD := newGetCmd()
@@ -153,7 +162,7 @@ func TestNewCRUDCmd(t *testing.T) {
 	}
 	attributes["attributeName"] = "UPDATED_DEPARTMENT"
 
-	err = SaveTransform(updateFile, updateTransform)
+	err = SaveTransform(path, updateFile, updateTransform)
 	if err != nil {
 		t.Fatalf("Unable to save update test data: %v", err)
 	}
@@ -199,14 +208,6 @@ func TestNewCRUDCmd(t *testing.T) {
 		t.Fatalf("Retrieved transform name '%s' does not match original name '%s'", retrievedValue, "UPDATED_DEPARTMENT")
 	}
 
-	// Clean up - delete the transform
-	deleteCMD := newDeleteCmd()
-	deleteBuffer := new(bytes.Buffer)
-	deleteCMD.SetOut(deleteBuffer)
-	deleteCMD.SetArgs([]string{"/v2024/transforms/" + transformID})
-
-	err = deleteCMD.Execute()
-	if err != nil {
-		t.Fatalf("TestNewDeleteCmd: Unable to execute the command successfully: %v", err)
-	}
+	// Cleanup is deferred immediately after create so failures in the middle of
+	// the test do not leave a live transform behind.
 }

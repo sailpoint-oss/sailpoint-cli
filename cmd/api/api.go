@@ -10,7 +10,7 @@ func NewAPICommand() *cobra.Command {
 		Use:     "api",
 		Short:   "Make API requests to SailPoint endpoints",
 		Long:    "\nMake API requests to SailPoint endpoints. Use this command to interact with SailPoint APIs directly.\n\n",
-		Example: "sail api get /beta/accounts",
+		Example: "  sail api get /beta/accounts\n  sail api post /beta/accounts --body '{\"name\":\"test\"}'",
 		Aliases: []string{"a"},
 		Args:    cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {

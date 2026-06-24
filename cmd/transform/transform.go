@@ -13,9 +13,9 @@ const (
 func NewTransformCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "transform",
-		Short:   "Manage transforms in Identity Security Cloud",
-		Long:    "\nManage transforms in Identity Security Cloud\n\n",
-		Example: "sail transform | sail tran",
+		Short:   "Manage transforms",
+		Long:    "\nManage transforms in Identity Security Cloud.\n\nTransforms allow you to manipulate attribute data during provisioning\nand aggregation. Use subcommands to list, create, update, delete,\ndownload, or preview transforms.\n",
+		Example: "  sail transform\n  sail tran",
 		Aliases: []string{"tran"},
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()

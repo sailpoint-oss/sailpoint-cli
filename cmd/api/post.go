@@ -32,12 +32,6 @@ func newPostCmd() *cobra.Command {
 		Aliases: []string{"p"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := config.InitConfig()
-			if err != nil {
-				return err
-			}
-
-			// Get the SailPoint client configuration
 			cfg, err := config.GetConfig()
 			if err != nil {
 				return err
@@ -83,7 +77,7 @@ func newPostCmd() *cobra.Command {
 			}
 
 			ctx := context.Background()
-			log.Info("Making POST request", "endpoint", endpoint)
+			log.Debug("Making POST request", "endpoint", endpoint)
 
 			// Make the request
 			resp, err := spClient.Post(ctx, endpoint, contentType, body, headers)
@@ -96,6 +90,9 @@ func newPostCmd() *cobra.Command {
 			responseBody, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return fmt.Errorf("failed to read response: %w", err)
+			}
+			if err := ensureSuccess(resp, responseBody); err != nil {
+				return err
 			}
 
 			// If JSONPath is specified, evaluate it
@@ -118,11 +115,8 @@ func newPostCmd() *cobra.Command {
 				}
 			}
 
-			if jsonPath != "" {
-				fmt.Fprint(cmd.OutOrStdout(), string(responseBody))
-			} else {
-				cmd.Println(string(responseBody))
-				fmt.Printf("Status: %s\n", resp.Status)
+			if err := writeResponse(cmd, responseBody, resp.Status, jsonPath); err != nil {
+				return err
 			}
 
 			return nil

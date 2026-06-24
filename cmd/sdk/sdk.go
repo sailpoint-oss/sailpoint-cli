@@ -9,8 +9,8 @@ func NewSDKCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "sdk",
 		Short:   "Initialize or configure SDK projects",
-		Long:    "\nInitialize or configure SDK projects\n\n",
-		Example: "sail sdk",
+		Long:    "\nInitialize or configure SailPoint SDK projects.\n\nSupported languages: Go, Python, TypeScript, and PowerShell.\n",
+		Example: "  sail sdk init\n  sail sdk init config",
 		Args:    cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()

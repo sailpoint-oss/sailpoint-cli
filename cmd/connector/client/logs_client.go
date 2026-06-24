@@ -7,14 +7,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"math"
 	"net/http"
 	"net/url"
 	"path"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/redact"
 )
 
 const TimeFormatLocal = `2006-01-02T15:04:05.000-07:00`
@@ -39,7 +40,8 @@ const StatsEndpoint = "/beta/platform-logs/stats"
 func logsResourceUrl(endpoint string, queryParms *map[string]string, resourceParts ...string) string {
 	u, err := url.Parse(endpoint)
 	if err != nil {
-		log.Fatalf("invalid endpoint: %s (%q)", err, endpoint)
+		log.Warn("invalid endpoint", "error", err, "endpoint", endpoint)
+		return endpoint
 	}
 	u.Path = path.Join(append([]string{u.Path}, resourceParts...)...)
 	//set query parms
@@ -130,7 +132,7 @@ func (c *LogsClient) GetLogs(ctx context.Context, logInput LogInput) (*LogEvents
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("error retrieving logs, non-200 response: %s body: %s", resp.Status, body)
+		return nil, fmt.Errorf("error retrieving logs, non-200 response: %s body: %s", resp.Status, redact.Bytes(body))
 	}
 
 	raw, err := io.ReadAll(resp.Body)
@@ -192,7 +194,7 @@ func (c *LogsClient) GetStats(ctx context.Context, from time.Time, connectorID s
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("error retrieving logs, non-200 response: %s. Body: %s", resp.Status, body)
+		return nil, fmt.Errorf("error retrieving logs, non-200 response: %s body: %s", resp.Status, redact.Bytes(body))
 	}
 
 	raw, err := io.ReadAll(resp.Body)

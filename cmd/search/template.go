@@ -10,7 +10,7 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/search"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/templates"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/spf13/cobra"
 )
@@ -20,24 +20,18 @@ func newTemplateCmd() *cobra.Command {
 	var template string
 	cmd := &cobra.Command{
 		Use:     "template",
-		Short:   "Perform search operations in Identity Security Cloud, using a predefined search template",
-		Long:    "\nPerform search operations in Identity Security Cloud, using a predefined search template\n\n",
-		Example: "sail search template",
+		Short:   "Search using a predefined template",
+		Long:    "\nRun a search in Identity Security Cloud using a predefined template.\nTemplates provide pre-built queries with optional variables for common\nsearch patterns. Results are saved as JSON files.\n",
+		Example: "  sail search template\n  sail search template all-provisioning-events-90-days",
 		Aliases: []string{"temp"},
 		Args:    cobra.MaximumNArgs(1),
 		PreRun: func(cmd *cobra.Command, args []string) {
-			folderPath, _ := cmd.Flags().GetString("folderPath")
+			folderPath, _ := cmd.Flags().GetString("folder-path")
 			if folderPath == "" {
 				cmd.MarkFlagRequired("save")
 			}
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-
-			err := config.InitConfig()
-			if err != nil {
-				return err
-			}
-
 			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
 				return err
@@ -74,7 +68,10 @@ func newTemplateCmd() *cobra.Command {
 			if len(selectedTemplate.Variables) > 0 {
 				for _, varEntry := range selectedTemplate.Variables {
 
-					resp := terminal.InputPrompt("Input " + varEntry.Prompt + ":")
+					resp, err := tui.Input(varEntry.Prompt, "")
+					if err != nil {
+						return err
+					}
 					selectedTemplate.Raw = []byte(strings.ReplaceAll(string(selectedTemplate.Raw), "{{"+varEntry.Name+"}}", resp))
 				}
 				err := json.Unmarshal(selectedTemplate.Raw, &selectedTemplate.SearchQuery)
@@ -99,7 +96,10 @@ func newTemplateCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "search_results", "Folder path to save the search results to. If the directory doesn't exist, then it will be created. (defaults to the current working directory)")
+	cmd.Flags().StringVarP(&folderPath, "folder-path", "f", "search_results", "Folder path to save the search results to. If the directory doesn't exist, then it will be created. (defaults to the current working directory)")
+	cmd.Flags().StringVar(&folderPath, "folderPath", "search_results", "Deprecated: use --folder-path")
+	cmd.Flags().MarkDeprecated("folderPath", "use --folder-path")
+	cmd.Flags().MarkHidden("folderPath")
 
 	return cmd
 }

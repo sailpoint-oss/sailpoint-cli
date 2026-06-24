@@ -4,9 +4,9 @@ package connector
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 
+	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v2"
@@ -78,7 +78,7 @@ func bindDevConfig(flags *pflag.FlagSet) {
 	}
 	err = yaml.Unmarshal(raw, cfg)
 	if err != nil {
-		log.Printf("Failed to unmarshal '.dev.yaml': %s", err)
+		log.Warn("failed to unmarshal .dev.yaml", "error", err)
 		return
 	}
 
@@ -94,7 +94,8 @@ func bindDevConfig(flags *pflag.FlagSet) {
 		if f != nil && !f.Changed {
 			raw, err := json.Marshal(cfg.Config)
 			if err != nil {
-				panic(fmt.Sprintf("Failed to encode config as json: %s", err))
+				log.Warn("failed to encode config as JSON", "error", err)
+				return
 			}
 			flags.Set("config-json", string(raw))
 		}

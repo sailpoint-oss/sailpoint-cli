@@ -10,13 +10,13 @@ import (
 	"path"
 
 	"github.com/fatih/color"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/va"
 	"github.com/spf13/cobra"
 	"github.com/vbauerster/mpb/v8"
 )
 
-func NewTroubleshootCmd(term terminal.Terminal) *cobra.Command {
+func NewTroubleshootCmd() *cobra.Command {
 	var output string
 	cmd := &cobra.Command{
 		Use:     "troubleshoot",
@@ -32,7 +32,10 @@ func NewTroubleshootCmd(term terminal.Terminal) *cobra.Command {
 
 			var credentials []string
 			for credential := 0; credential < len(args); credential++ {
-				password, _ := term.PromptPassword(fmt.Sprintf("Enter Password for %v:", args[credential]))
+				password, err := tui.Password(fmt.Sprintf("Enter password for %v", args[credential]))
+				if err != nil {
+					return err
+				}
 				credentials = append(credentials, password)
 			}
 
@@ -71,7 +74,6 @@ func NewTroubleshootCmd(term terminal.Terminal) *cobra.Command {
 
 		}}
 
-	cmd.Flags().StringP("endpoint", "e", "", "Host to troubleshoot")
 	cmd.Flags().StringVarP(&output, "output", "o", "", "Path to save the log file")
 
 	return cmd

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/va"
 	"github.com/spf13/cobra"
@@ -17,7 +17,7 @@ import (
 //go:embed collect.md
 var collectHelp string
 
-func newCollectCommand(term terminal.Terminal) *cobra.Command {
+func newCollectCommand() *cobra.Command {
 	help := util.ParseHelp(collectHelp)
 	var credentials []string
 	var output string
@@ -31,6 +31,9 @@ func newCollectCommand(term terminal.Terminal) *cobra.Command {
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
+			if cmd.Flags().Changed("passwords") {
+				log.Warn("Passing passwords as flags can expose them in shell history and process listings. Omit --passwords to use the secure prompt.")
+			}
 
 			logFiles := []string{"/home/sailpoint/log/ccg.log", "/home/sailpoint/log/charon.log"}
 			configFiles := []string{"/home/sailpoint/proxy.yaml", "/etc/systemd/network/static.network", "/etc/resolv.conf"}
@@ -67,7 +70,7 @@ func newCollectCommand(term terminal.Terminal) *cobra.Command {
 				}
 
 				if password == "" {
-					password, err = term.PromptPassword("Please enter the password for " + endpoint)
+					password, err = tui.Password("Enter password for " + endpoint)
 					if err != nil {
 						return err
 					}
@@ -94,6 +97,7 @@ func newCollectCommand(term terminal.Terminal) *cobra.Command {
 	cmd.Flags().BoolVarP(&logs, "log", "l", false, "Retrieve log files")
 	cmd.Flags().BoolVarP(&config, "config", "c", false, "Retrieve config files")
 	cmd.Flags().StringArrayVarP(&credentials, "passwords", "p", []string{}, "Passwords for the servers in the same order that the servers are listed as arguments")
+	cmd.Flags().MarkDeprecated("passwords", "omit the flag to use the secure prompt")
 
 	cmd.MarkFlagsMutuallyExclusive("config", "log")
 

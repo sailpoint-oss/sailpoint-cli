@@ -6,7 +6,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
@@ -24,9 +24,11 @@ func newListCommand() *cobra.Command {
 
 			if len(environments) != 0 {
 				log.Warn("You are about to Print out the list of Environments")
-				res := terminal.InputPrompt("Press Enter to continue")
-				log.Info("Response", "res", res)
-				if res == "" {
+				confirmed, err := tui.Confirm("List all configured environments?")
+				if err != nil {
+					return err
+				}
+				if confirmed {
 					fmt.Println(util.PrettyPrint(environments))
 				}
 			} else {

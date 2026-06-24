@@ -18,9 +18,9 @@ func newDownloadCommand() *cobra.Command {
 	var destination string
 	cmd := &cobra.Command{
 		Use:     "download",
-		Short:   "Download all transforms from Identity Security Cloud",
-		Long:    "\nDownload all transforms from Identity Security Cloud\n\n",
-		Example: "sail transform download -d transform_files | sail transform dl",
+		Short:   "Download all transforms",
+		Long:    "\nDownload all transforms from Identity Security Cloud and save\nthem as individual JSON files. Use the --destination flag to\nspecify the output directory.\n",
+		Example: "  sail transform download\n  sail transform download -d transform_files",
 		Aliases: []string{"dl"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

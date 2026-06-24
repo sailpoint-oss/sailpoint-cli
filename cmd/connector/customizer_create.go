@@ -18,7 +18,7 @@ func newCustomizerCreateCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "create <customizer-name>",
 		Short:   "Create connector customizer",
-		Example: "sail conn customizers create \"My Customizer\"",
+		Example: "  sail conn customizers create \"My Customizer\"",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			raw, err := json.Marshal(customizer{Name: args[0]})

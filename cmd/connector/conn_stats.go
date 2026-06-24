@@ -27,9 +27,9 @@ var durationMap = map[byte]int64{
 func newConnStatsCmd(spClient client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "stats",
-		Short:   "Command Stats",
-		Long:    "Command execution stats for a tenant, default to last 24hs if duration not specified",
-		Example: "sail conn stats",
+		Short:   "Show connector command statistics",
+		Long:    "Show command execution statistics for a tenant. Defaults to the last 24 hours if no duration is specified.",
+		Example: "  sail conn stats\n  sail conn stats -d 1w\n  sail conn stats -c <connector-id>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := getTenantStats(spClient, cmd); err != nil {
 				return err

@@ -17,7 +17,7 @@ func newInstanceListCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "list",
 		Short:   "List all connector instances",
-		Example: "sail conn instances list",
+		Example: "  sail conn instances list",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			resp, err := client.Get(cmd.Context(), util.ResourceUrl(connectorInstancesEndpoint), nil)

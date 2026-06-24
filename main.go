@@ -6,6 +6,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/root"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/clierror"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/spf13/cobra"
 )
@@ -34,6 +35,6 @@ func main() {
 	// When error occurs, we need to make sure we exit the program with an error code. We
 	// don't need to log it here because the sub commands already log it to the console.
 	if err != nil {
-		os.Exit(1)
+		os.Exit(clierror.ExitCode(err))
 	}
 }

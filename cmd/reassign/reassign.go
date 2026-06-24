@@ -19,6 +19,7 @@ import (
 	sailpoint "github.com/sailpoint-oss/golang-sdk/v2"
 	"github.com/sailpoint-oss/golang-sdk/v2/api_v2024"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
@@ -84,24 +85,23 @@ func NewReassignCommand() *cobra.Command {
 	help := util.ParseHelp(reassignHelp)
 	cmd := &cobra.Command{
 		Use:     "reassign",
-		Short:   "Reassign object ownership in Identity Security Cloud",
+		Short:   "Reassign object ownership",
 		Long:    help.Long,
 		Example: help.Example,
 		Args:    cobra.OnlyValidArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			w := cmd.OutOrStdout()
 
 			if from == "" || to == "" {
 				return errors.New("both --from and --to flags are required when using --object-id")
 			}
 
 			if dryRun && force {
-				log.Error("cannot use --dry-run and --force together")
-				os.Exit(1)
+				return errors.New("cannot use --dry-run and --force together")
 			}
 
 			if from == to {
-				log.Error("from and to Identities cannot be the same")
-				os.Exit(1)
+				return errors.New("--from and --to identities cannot be the same")
 			}
 
 			if objectId != "" {
@@ -112,27 +112,21 @@ func NewReassignCommand() *cobra.Command {
 				summary, err := determineObjectTypeAndCreateReassignment(objectId, from, to, dryRun)
 
 				if err != nil {
-					log.Error("error determining object type:", "error", err)
-					os.Exit(1)
+					return fmt.Errorf("error determining object type: %w", err)
 				}
 
 				if !force {
-					printSummary(summary)
+					printSummary(w, summary)
 
 					if !summary.DryRun {
 						promptSaveReport(&summary)
 
-						fmt.Printf("Would you like to proceed with reassigning this object from '%s' to '%s': ", summary.From.Name, summary.To.Name)
-						var reassignResponse string
-						_, err = fmt.Scanln(&reassignResponse)
+						confirmed, err := tui.Confirm(fmt.Sprintf("Proceed with reassigning this object from '%s' to '%s'?", summary.From.Name, summary.To.Name))
 						if err != nil {
-							fmt.Println("Failed to read input:", err)
 							return err
 						}
 
-						response := strings.ToLower(strings.TrimSpace(reassignResponse))
-
-						if response == "y" {
+						if confirmed {
 							m := initialModel(from, to, objectTypes, dryRun, force)
 							m.reassignResult = &summary
 							m.reassigning = true
@@ -143,7 +137,7 @@ func NewReassignCommand() *cobra.Command {
 							}
 
 						} else {
-							fmt.Println("Cancelled reassignment.")
+							fmt.Fprintln(w, "Cancelled reassignment.")
 						}
 					} else {
 						promptSaveReport(&summary)
@@ -166,42 +160,35 @@ func NewReassignCommand() *cobra.Command {
 			p := tea.NewProgram(initialModel(from, to, objectTypes, dryRun, force))
 			finalModel, err := p.Run()
 			if err != nil {
-				fmt.Println("Error:", err)
-				os.Exit(1)
+				return fmt.Errorf("error running reassignment: %w", err)
 			}
 
 			if m, ok := finalModel.(model); ok && m.err != nil {
-				log.Error("An error occurred when gathering objects to reassign:", "error", m.err)
-				os.Exit(1)
+				return fmt.Errorf("error gathering objects to reassign: %w", m.err)
 			}
 
 			if m, ok := finalModel.(model); ok && m.reassignResult != nil {
 				p.Quit()
 
 				if m.reassignResult.IsEmpty() {
-					fmt.Println("No objects to reassign.")
+					fmt.Fprintln(w, "No objects to reassign.")
 					return nil
 				}
 
 				if !m.force {
-					printSummary(*m.reassignResult)
+					printSummary(w, *m.reassignResult)
 
 					// If this was not a dry run proceed with the reassignment flow
 					if !m.reassignResult.DryRun {
 
 						promptSaveReport(m.reassignResult)
 
-						fmt.Printf("Would you like to proceed with reassigning these objects from '%s' to '%s': ", m.reassignResult.From.Name, m.reassignResult.To.Name)
-						var reassignResponse string
-						_, err = fmt.Scanln(&reassignResponse)
+						confirmed, err := tui.Confirm(fmt.Sprintf("Proceed with reassigning these objects from '%s' to '%s'?", m.reassignResult.From.Name, m.reassignResult.To.Name))
 						if err != nil {
-							fmt.Println("Failed to read input:", err)
 							return err
 						}
 
-						response := strings.ToLower(strings.TrimSpace(reassignResponse))
-
-						if response == "y" {
+						if confirmed {
 							m := initialModel(from, to, objectTypes, dryRun, force)
 							m.reassignResult = finalModel.(model).reassignResult
 							m.reassigning = true
@@ -219,7 +206,7 @@ func NewReassignCommand() *cobra.Command {
 							}
 
 						} else {
-							fmt.Println("Cancelled reassignment.")
+							fmt.Fprintln(w, "Cancelled reassignment.")
 						}
 
 					} else {
@@ -424,25 +411,17 @@ func determineObjectTypeAndCreateReassignment(objectId string, from string, to s
 }
 
 func promptSaveReport(summary *ReassignSummary) error {
-	fmt.Print("Would you like to save the full report to a file (y/n): ")
-	var response string
-	_, err := fmt.Scanln(&response)
+	save, err := tui.Confirm("Save the full report to a file?")
 	if err != nil {
-		return fmt.Errorf("failed to read input: %w", err)
+		return err
 	}
-	response = strings.ToLower(strings.TrimSpace(response))
-	if response != "y" {
+	if !save {
 		return nil
 	}
 
-	fmt.Print("Enter the file name (without extension)(default: reassign_report): ")
-	var fileName string
-	_, err = fmt.Scanln(&fileName)
-	if err != nil && err.Error() != "unexpected newline" {
-		return fmt.Errorf("failed to read input: %w", err)
-	}
-	if strings.TrimSpace(fileName) == "" {
-		fileName = "reassign_report"
+	fileName, err := tui.Input("File name (without extension)", "reassign_report")
+	if err != nil {
+		return err
 	}
 	return writeReport(*summary, fmt.Sprintf("%s.json", fileName))
 }
@@ -524,29 +503,29 @@ func contains(slice []string, value string) bool {
 	return false
 }
 
-func printSummary(summary ReassignSummary) {
-	fmt.Println("Reassignment Preview")
-	fmt.Println("====================")
-	fmt.Printf("From Owner:       %s (%s)\n", summary.From.ID, summary.From.Name)
-	fmt.Printf("To Owner:         %s (%s)\n", summary.To.ID, summary.To.Name)
+func printSummary(w io.Writer, summary ReassignSummary) {
+	fmt.Fprintln(w, "Reassignment Preview")
+	fmt.Fprintln(w, "====================")
+	fmt.Fprintf(w, "From Owner:       %s (%s)\n", summary.From.ID, summary.From.Name)
+	fmt.Fprintf(w, "To Owner:         %s (%s)\n", summary.To.ID, summary.To.Name)
 
-	fmt.Printf("Object Types:     %s\n", strings.Join(summary.ObjectTypes, ", "))
-	fmt.Printf("Dry Run:          %t\n\n", summary.DryRun)
+	fmt.Fprintf(w, "Object Types:     %s\n", strings.Join(summary.ObjectTypes, ", "))
+	fmt.Fprintf(w, "Dry Run:          %t\n\n", summary.DryRun)
 
-	fmt.Println("Objects to Reassign:")
-	fmt.Println("---------------------")
-	fmt.Printf("%-20s %s\n", "Object Type", "Count")
-	fmt.Printf("%-20s %s\n", "-----------", "-----")
+	fmt.Fprintln(w, "Objects to Reassign:")
+	fmt.Fprintln(w, "---------------------")
+	fmt.Fprintf(w, "%-20s %s\n", "Object Type", "Count")
+	fmt.Fprintf(w, "%-20s %s\n", "-----------", "-----")
 
 	total := 0
 	for objectType, count := range summary.ObjectCounts {
-		fmt.Printf("%-20s %d\n", objectType, count)
+		fmt.Fprintf(w, "%-20s %d\n", objectType, count)
 		total += count
 	}
-	fmt.Printf("\nTotal:             %d objects\n\n", total)
+	fmt.Fprintf(w, "\nTotal:             %d objects\n\n", total)
 
 	if summary.DryRun {
-		fmt.Println("No changes have been made. Run the command without --dry-run to proceed.")
+		fmt.Fprintln(w, "No changes have been made. Run the command without --dry-run to proceed.")
 	}
 }
 

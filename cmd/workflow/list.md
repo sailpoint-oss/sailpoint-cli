@@ -1,16 +1,16 @@
 ==Long==
 
 # List
-	
+
 List workflows from Identity Security Cloud.
 
-## API References
+## API Reference
  - https://developer.sailpoint.com/docs/api/beta/list-workflows
 ====
 
 ==Example==
 
 ```bash
-    sail workflow list
+sail workflow list
 ```
 ====

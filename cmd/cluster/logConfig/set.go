@@ -73,10 +73,16 @@ func newSetCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&level, "rootLogLevel", "r", "", "Root log level for the log configuration.")
-	cmd.Flags().Int32VarP(&durationInMinutes, "durationInMinutes", "d", 30, "Duration in minutes for the log configuration.\nProvided value must be above 5 and below 1440")
+	cmd.Flags().StringVarP(&level, "root-log-level", "r", "", "Root log level for the log configuration.")
+	cmd.Flags().StringVar(&level, "rootLogLevel", "", "Deprecated: use --root-log-level")
+	cmd.Flags().MarkDeprecated("rootLogLevel", "use --root-log-level")
+	cmd.Flags().MarkHidden("rootLogLevel")
+	cmd.Flags().Int32VarP(&durationInMinutes, "duration-minutes", "d", 30, "Duration in minutes for the log configuration.\nProvided value must be above 5 and below 1440")
+	cmd.Flags().Int32Var(&durationInMinutes, "durationInMinutes", 30, "Deprecated: use --duration-minutes")
+	cmd.Flags().MarkDeprecated("durationInMinutes", "use --duration-minutes")
+	cmd.Flags().MarkHidden("durationInMinutes")
 	cmd.Flags().StringVarP(&expiration, "expiration", "e", "", "Expiration string value for the log configuration. Example: 2020-12-15T19:13:36.079Z")
 	cmd.Flags().StringArrayVarP(&connectors, "connector", "c", []string{}, "Connectors and Log Level to configure. Example:\n-c sailpoint.connector.ADLDAPConnector=TRACE\n--connector sailpoint.connector.ADLDAPConnector=TRACE")
-	cmd.MarkFlagsMutuallyExclusive("expiration", "durationInMinutes")
+	cmd.MarkFlagsMutuallyExclusive("expiration", "duration-minutes")
 	return cmd
 }

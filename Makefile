@@ -29,7 +29,9 @@ test-race:
 
 .PHONY: install
 install:
-	go build -o /usr/local/bin/sail -buildvcs=false
+	go build -o sail -buildvcs=false
+	sudo install -m 755 sail /usr/local/bin/sail
+	rm -f sail
 
 .PHONY: vhs
 vhs:

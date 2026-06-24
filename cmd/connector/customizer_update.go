@@ -17,8 +17,8 @@ import (
 func newCustomizerUpdateCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "update",
-		Short:   "Create connector customizer",
-		Example: "sail conn customizers update -c 1234 -n \"My Customizer\"",
+		Short:   "Update a connector customizer",
+		Example: "  sail conn customizers update -c <customizer-id> -n \"My Customizer\"",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 

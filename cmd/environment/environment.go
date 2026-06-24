@@ -14,11 +14,12 @@ var environmentHelp string
 func NewEnvironmentCommand() *cobra.Command {
 	help := util.ParseHelp(environmentHelp)
 	cmd := &cobra.Command{
-		Use:     "environment",
-		Short:   "Manage Environments for the CLI",
-		Long:    help.Long,
-		Example: help.Example,
-		Aliases: []string{"env"},
+		Use:        "environment",
+		Short:      "Manage environments for the CLI",
+		Long:       help.Long,
+		Example:    help.Example,
+		Deprecated: "use 'sail env' instead",
+		// "env" alias removed -- use 'sail env' instead (new command)
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
 		},

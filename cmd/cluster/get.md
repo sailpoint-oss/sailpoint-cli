@@ -3,7 +3,7 @@
 
 Get a VA cluster's configuration from Identity Security Cloud.
 
-## API References:
+## API Reference
  - https://developer.sailpoint.com/docs/api/beta/get-managed-cluster
 
 ====

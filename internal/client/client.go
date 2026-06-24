@@ -3,13 +3,14 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 
+	"github.com/charmbracelet/log"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/redact"
 )
 
 type Client interface {
@@ -52,7 +53,7 @@ func (c *SpClient) Get(ctx context.Context, url string, headers map[string]strin
 
 	if c.cfg.Debug {
 		dbg, _ := httputil.DumpRequest(req, true)
-		fmt.Println(string(dbg))
+		log.Debug("HTTP request", "dump", redact.Bytes(dbg))
 	}
 
 	resp, err := c.client.Do(req)
@@ -62,7 +63,7 @@ func (c *SpClient) Get(ctx context.Context, url string, headers map[string]strin
 
 	if c.cfg.Debug {
 		dbg, _ := httputil.DumpResponse(resp, true)
-		fmt.Println(string(dbg))
+		log.Debug("HTTP response", "dump", redact.Bytes(dbg))
 	}
 	return resp, nil
 }
@@ -85,7 +86,7 @@ func (c *SpClient) Delete(ctx context.Context, url string, params map[string]str
 
 	if c.cfg.Debug {
 		dbg, _ := httputil.DumpRequest(req, true)
-		fmt.Println(string(dbg))
+		log.Debug("HTTP request", "dump", redact.Bytes(dbg))
 	}
 
 	if params != nil {
@@ -103,7 +104,7 @@ func (c *SpClient) Delete(ctx context.Context, url string, params map[string]str
 
 	if c.cfg.Debug {
 		dbg, _ := httputil.DumpResponse(resp, true)
-		fmt.Println(string(dbg))
+		log.Debug("HTTP response", "dump", redact.Bytes(dbg))
 	}
 	return resp, nil
 }
@@ -128,7 +129,7 @@ func (c *SpClient) Post(ctx context.Context, url string, contentType string, bod
 
 	if c.cfg.Debug {
 		dbg, _ := httputil.DumpRequest(req, true)
-		fmt.Println(string(dbg))
+		log.Debug("HTTP request", "dump", redact.Bytes(dbg))
 	}
 
 	resp, err := c.client.Do(req)
@@ -137,7 +138,7 @@ func (c *SpClient) Post(ctx context.Context, url string, contentType string, bod
 	}
 	if c.cfg.Debug {
 		dbg, _ := httputil.DumpResponse(resp, true)
-		fmt.Println(string(dbg))
+		log.Debug("HTTP response", "dump", redact.Bytes(dbg))
 	}
 	return resp, nil
 }
@@ -161,7 +162,7 @@ func (c *SpClient) Put(ctx context.Context, url string, contentType string, body
 
 	if c.cfg.Debug {
 		dbg, _ := httputil.DumpRequest(req, true)
-		fmt.Println(string(dbg))
+		log.Debug("HTTP request", "dump", redact.Bytes(dbg))
 	}
 
 	resp, err := c.client.Do(req)
@@ -171,7 +172,7 @@ func (c *SpClient) Put(ctx context.Context, url string, contentType string, body
 
 	if c.cfg.Debug {
 		dbg, _ := httputil.DumpResponse(resp, true)
-		fmt.Println(string(dbg))
+		log.Debug("HTTP response", "dump", redact.Bytes(dbg))
 	}
 
 	return resp, nil
@@ -195,7 +196,7 @@ func (c *SpClient) Patch(ctx context.Context, url string, body io.Reader, header
 
 	if c.cfg.Debug {
 		dbg, _ := httputil.DumpRequest(req, true)
-		fmt.Println(string(dbg))
+		log.Debug("HTTP request", "dump", redact.Bytes(dbg))
 	}
 
 	resp, err := c.client.Do(req)
@@ -205,7 +206,7 @@ func (c *SpClient) Patch(ctx context.Context, url string, body io.Reader, header
 
 	if c.cfg.Debug {
 		dbg, _ := httputil.DumpResponse(resp, true)
-		fmt.Println(string(dbg))
+		log.Debug("HTTP response", "dump", redact.Bytes(dbg))
 	}
 
 	return resp, nil

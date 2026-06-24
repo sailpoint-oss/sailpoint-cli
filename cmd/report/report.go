@@ -6,7 +6,6 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"os"
 	"path"
 	"strings"
 
@@ -15,7 +14,7 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/templates"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/tui"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
@@ -31,18 +30,12 @@ func NewReportCommand() *cobra.Command {
 	var template string
 	cmd := &cobra.Command{
 		Use:     "report",
-		Short:   "Generate a report from a template using Identity Security Cloud search queries",
+		Short:   "Generate a report from a template",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"rep"},
 		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-
-			err := config.InitConfig()
-			if err != nil {
-				return err
-			}
-
 			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
 				return err
@@ -79,7 +72,10 @@ func NewReportCommand() *cobra.Command {
 			if len(selectedTemplate.Variables) > 0 {
 				for _, varEntry := range selectedTemplate.Variables {
 
-					resp := terminal.InputPrompt("Input " + varEntry.Prompt + ":")
+					resp, err := tui.Input(varEntry.Prompt, "")
+					if err != nil {
+						return err
+					}
 					selectedTemplate.Raw = []byte(strings.ReplaceAll(string(selectedTemplate.Raw), "{{"+varEntry.Name+"}}", resp))
 				}
 				err := json.Unmarshal(selectedTemplate.Raw, &selectedTemplate.Queries)
@@ -97,8 +93,10 @@ func NewReportCommand() *cobra.Command {
 
 				resp, err := apiClient.V3.SearchAPI.SearchCount(context.TODO()).Search(*searchQuery).Execute()
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-					fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", resp)
+					return fmt.Errorf("failed to count results for report query %d: %w", i+1, err)
+				}
+				if resp == nil || len(resp.Header["X-Total-Count"]) == 0 {
+					return fmt.Errorf("missing X-Total-Count header for report query %d", i+1)
 				}
 				selectedTemplate.Queries[i].ResultCount = resp.Header["X-Total-Count"][0]
 			}
@@ -121,7 +119,10 @@ func NewReportCommand() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&save, "save", "s", false, "save the report to a file")
-	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "reports", "folder path to save the reports in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
+	cmd.Flags().StringVarP(&folderPath, "folder-path", "f", "reports", "Folder path to save reports in")
+	cmd.Flags().StringVar(&folderPath, "folderPath", "reports", "Deprecated: use --folder-path")
+	cmd.Flags().MarkDeprecated("folderPath", "use --folder-path")
+	cmd.Flags().MarkHidden("folderPath")
 
 	return cmd
 

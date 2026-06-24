@@ -21,7 +21,7 @@ func newDownloadCommand() *cobra.Command {
 	var folderPath string
 	cmd := &cobra.Command{
 		Use:     "download {--import <importID> --export <exportID>}",
-		Short:   "Download the results of import or export jobs from Identity Security Cloud",
+		Short:   "Download the results of import or export jobs",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"down"},
@@ -55,7 +55,10 @@ func newDownloadCommand() *cobra.Command {
 
 	cmd.Flags().StringArrayVarP(&importIDs, "import", "", []string{}, "Specify the IDs of the import jobs to download results for")
 	cmd.Flags().StringArrayVarP(&exportIDs, "export", "", []string{}, "Specify the IDs of the export jobs to download results for")
-	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "spconfig-exports", "Folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
+	cmd.Flags().StringVarP(&folderPath, "folder-path", "f", "spconfig-exports", "Folder path to save the search results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
+	cmd.Flags().StringVar(&folderPath, "folderPath", "spconfig-exports", "Deprecated: use --folder-path")
+	cmd.Flags().MarkDeprecated("folderPath", "use --folder-path")
+	cmd.Flags().MarkHidden("folderPath")
 
 	return cmd
 }

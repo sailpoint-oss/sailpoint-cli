@@ -17,7 +17,7 @@ func newCustomizerGetCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "get",
 		Short:   "Get connector customizer",
-		Example: "sail conn customizers update -c 1234",
+		Example: "  sail conn customizers get -c <customizer-id>",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			id := cmd.Flags().Lookup("id").Value.String()

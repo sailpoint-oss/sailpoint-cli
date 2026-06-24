@@ -1,4 +1,4 @@
-package config
+package auth
 
 import (
 	"encoding/json"

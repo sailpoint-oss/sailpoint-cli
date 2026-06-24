@@ -13,8 +13,8 @@ func newConnLogsTailCmd(client client.Client) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "tail",
-		Short:   "Tail Logs",
-		Example: "sail logs tail",
+		Short:   "Tail connector logs in real time",
+		Example: "  sail conn logs tail",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := tailLogs(client, cmd); err != nil {
 				return err

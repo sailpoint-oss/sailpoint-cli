@@ -8,9 +8,9 @@ import (
 func NewRuleCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "rule",
-		Short:   "Manage rules in Identity Security Cloud",
-		Long:    "\nManage rules in Identity Security Cloud\n\n",
-		Example: "sail rule",
+		Short:   "Manage rules",
+		Long:    "\nManage cloud rules and connector rules in Identity Security Cloud.\nUse subcommands to list or download rules.\n",
+		Example: "  sail rule list\n  sail rule download",
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
 		},

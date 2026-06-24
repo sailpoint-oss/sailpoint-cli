@@ -1,4 +1,15 @@
-# Set
+# Set (Deprecated)
+
+> **Deprecated:** The `set` command is deprecated. Use `sail config` for global settings and `sail env` for environment management.
+>
+> **Migration guide:**
+> | Old command | New command |
+> |---|---|
+> | `sail set debug enable` | `sail config debug true` |
+> | `sail set auth pat` | `sail env update` (then choose PAT) |
+> | `sail set pat -i <id> -s <secret>` | `sail env update` (then enter credentials) |
+> | `sail set exportTemplates <path>` | `sail config export-templates-path <path>` |
+> | `sail set searchTemplates <path>` | `sail config search-templates-path <path>` |
 
 The `set` command makes it easy to update configuration values for the SailPoint CLI.
 
@@ -16,7 +27,7 @@ The `set` command makes it easy to update configuration values for the SailPoint
 
 Run the following command to set the current authentication method for the CLI.
 
-> :warning: **Currently only Personal Access Token Authentication is supported**: OAuth possibly coming in the future!
+> **Note:** Both Personal Access Token (PAT) and OAuth authentication methods are supported.
 
 ```shell
 sail set auth pat

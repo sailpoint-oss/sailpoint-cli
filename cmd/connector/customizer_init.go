@@ -26,7 +26,7 @@ func newCustomizerInitCmd() *cobra.Command {
 		Use:     "init <customizer-name>",
 		Short:   "Initialize new connector customizer project",
 		Long:    `init sets up a new TypeScript project with sample connector customizer included for reference.`,
-		Example: "sail conn customizers init \"My Customizer\"",
+		Example: "  sail conn customizers init \"My Customizer\"",
 		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			projName := args[0]

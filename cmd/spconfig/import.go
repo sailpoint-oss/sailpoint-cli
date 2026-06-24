@@ -18,7 +18,7 @@ func newImportCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "import",
-		Short:   "Start an import job in Identity Security Cloud",
+		Short:   "Start an SPConfig import job",
 		Long:    "\nStart an import job in Identity Security Cloud\n\n",
 		Example: "sail spconfig import",
 		Aliases: []string{"imp"},
@@ -57,10 +57,16 @@ func newImportCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&filePath, "filePath", "f", "", "Path to the file containing the import payload")
-	cmd.Flags().StringVarP(&folderPath, "folderPath", "p", "spconfig-imports", "Folder path to save the import results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
+	cmd.Flags().StringVarP(&filePath, "file-path", "f", "", "Path to the file containing the import payload")
+	cmd.Flags().StringVar(&filePath, "filePath", "", "Deprecated: use --file-path")
+	cmd.Flags().MarkDeprecated("filePath", "use --file-path")
+	cmd.Flags().MarkHidden("filePath")
+	cmd.Flags().StringVarP(&folderPath, "folder-path", "p", "spconfig-imports", "Folder path to save the import results in. If the directory doesn't exist, then it will be automatically created. (default is the current working directory)")
+	cmd.Flags().StringVar(&folderPath, "folderPath", "spconfig-imports", "Deprecated: use --folder-path")
+	cmd.Flags().MarkDeprecated("folderPath", "use --folder-path")
+	cmd.Flags().MarkHidden("folderPath")
 	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "Wait for the import job to finish, and then download the results")
-	cmd.MarkFlagRequired("filepath")
+	cmd.MarkFlagRequired("file-path")
 
 	return cmd
 }

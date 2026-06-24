@@ -2,7 +2,7 @@
 # JSONPath Validator
 JSONPath validation for workflows and event triggers.
 
-References:
+## Reference
  - https://developer.sailpoint.com/docs/extensibility/event-triggers/filtering-events
  - https://documentation.sailpoint.com/saas/help/workflows/workflow-basics.html#trigger_filter
 ====
@@ -10,7 +10,7 @@ References:
 ==Example==
 
 ```bash
-sail spconfig jsonpath
+sail jsonpath
 ```
 
 ====

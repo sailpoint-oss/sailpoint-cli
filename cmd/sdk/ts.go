@@ -16,7 +16,7 @@ const (
 func newTypescriptCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "typescript",
-		Short:   "Initialize a new typescript SDK project",
+		Short:   "Initialize a new TypeScript SDK project",
 		Long:    "\nInitialize a new TypeScript SDK project by fetching the template from GitHub.\n\n",
 		Example: "sail sdk init typescript\nsail sdk init ts example-project",
 		Aliases: []string{"ts"},

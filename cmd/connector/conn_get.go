@@ -16,8 +16,8 @@ import (
 func newConnGetCmd(client client.Client) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",
-		Short: "Get Connector",
-		Long:  "Get Connector",
+		Short: "Get a connector by ID",
+		Long:  "Get a connector by ID or alias",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			connectorRef := cmd.Flags().Lookup("id").Value.String()

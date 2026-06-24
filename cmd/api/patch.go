@@ -33,12 +33,6 @@ func newPatchCmd() *cobra.Command {
 		Aliases: []string{"pa"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := config.InitConfig()
-			if err != nil {
-				return err
-			}
-
-			// Get the SailPoint client configuration
 			cfg, err := config.GetConfig()
 			if err != nil {
 				return err
@@ -86,7 +80,7 @@ func newPatchCmd() *cobra.Command {
 			}
 
 			ctx := context.Background()
-			log.Info("Making PATCH request", "endpoint", endpoint)
+			log.Debug("Making PATCH request", "endpoint", endpoint)
 
 			// Make the request
 			resp, err := spClient.Patch(ctx, endpoint, body, headers)
@@ -99,6 +93,9 @@ func newPatchCmd() *cobra.Command {
 			responseBody, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return fmt.Errorf("failed to read response: %w", err)
+			}
+			if err := ensureSuccess(resp, responseBody); err != nil {
+				return err
 			}
 
 			// If JSONPath is specified, evaluate it
@@ -123,15 +120,15 @@ func newPatchCmd() *cobra.Command {
 
 			// Output to file or stdout
 			if outputFile != "" {
-				if err := writeToFile(outputFile, responseBody); err != nil {
-					return fmt.Errorf("failed to write to file: %w", err)
+				if err := writeResponseFile(cmd, outputFile, responseBody, resp.Status); err != nil {
+					return err
 				}
-				fmt.Printf("Response saved to %s\n", outputFile)
 			} else {
-				fmt.Fprint(cmd.OutOrStdout(), string(responseBody))
+				if err := writeResponse(cmd, responseBody, resp.Status, jsonPath); err != nil {
+					return err
+				}
 			}
 
-			fmt.Printf("\nStatus: %s\n", resp.Status)
 			return nil
 		},
 	}

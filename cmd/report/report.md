@@ -3,9 +3,9 @@
 
 Generate a report from Identity Security Cloud.
 
-## API References:
+## API Reference
  - https://developer.sailpoint.com/docs/api/v3/search
-  
+
 ====
 
 ==Example==

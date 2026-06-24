@@ -9,6 +9,8 @@ import (
 )
 
 func TestTenantEndpoint(t *testing.T) {
+	requireLiveCredentials(t)
+
 	// Create the GET command
 	cmd := newGetCmd()
 
@@ -23,6 +25,8 @@ func TestTenantEndpoint(t *testing.T) {
 }
 
 func TestListTransformations(t *testing.T) {
+	requireLiveCredentials(t)
+
 	// Create the GET command
 	cmd := newGetCmd()
 

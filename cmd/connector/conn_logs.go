@@ -18,8 +18,8 @@ func newConnLogsCmd(spClient client.Client) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "logs",
-		Short:   "List Logs",
-		Example: "sail logs",
+		Short:   "List connector logs",
+		Example: "  sail conn logs\n  sail conn logs --start 2h --level ERROR",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := formatDates(cmd); err != nil {
 				return err

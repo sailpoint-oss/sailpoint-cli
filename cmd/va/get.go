@@ -20,7 +20,7 @@ func newGetCommand() *cobra.Command {
 	help := util.ParseHelp(getHelp)
 	cmd := &cobra.Command{
 		Use:     "get",
-		Short:   "Get a virtual appliance configuration from Identity Security Cloud",
+		Short:   "Get a virtual appliance configuration",
 		Long:    help.Long,
 		Example: help.Example,
 		RunE: func(cmd *cobra.Command, args []string) error {

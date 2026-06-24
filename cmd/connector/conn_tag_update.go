@@ -20,8 +20,8 @@ func newConnTagUpdateCmd(client client.Client) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "update",
-		Short:   "Update Connector Tag",
-		Example: "sail conn tags update -n rc -v 10",
+		Short:   "Update a connector tag",
+		Example: "  sail conn tags update -c <connector-id> -n rc -v 10",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			connectorRef := cmd.Flags().Lookup("id").Value.String()
 			tagName := cmd.Flags().Lookup("name").Value.String()

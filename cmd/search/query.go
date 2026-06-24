@@ -16,17 +16,11 @@ func newQueryCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "query",
 		Short:   "Manually search using a specific query and indices",
-		Long:    "\nRun a search query in Identity Security Cloud, using a specific query and indicies\n\n",
-		Example: "sail search query \"(type:provisioning AND created:[now-90d TO now])\" --indices events",
+		Long:    "\nRun a search query in Identity Security Cloud using a specific query string\nand indices. Results are saved as JSON files in the specified folder.\n",
+		Example: "  sail search query \"(type:provisioning AND created:[now-90d TO now])\" --indices events\n  sail search query \"name:a*\" --indices identities --sort \"-created\"",
 		Aliases: []string{"que"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-
-			err := config.InitConfig()
-			if err != nil {
-				return err
-			}
-
 			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
 				return err
@@ -56,7 +50,10 @@ func newQueryCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&folderPath, "folderPath", "f", "search_results", "Folder path to save the search results to. If the directory doesn't exist, then it will be created. (defaults to the current working directory)")
+	cmd.Flags().StringVarP(&folderPath, "folder-path", "f", "search_results", "Folder path to save the search results to. If the directory doesn't exist, then it will be created. (defaults to the current working directory)")
+	cmd.Flags().StringVar(&folderPath, "folderPath", "search_results", "Deprecated: use --folder-path")
+	cmd.Flags().MarkDeprecated("folderPath", "use --folder-path")
+	cmd.Flags().MarkHidden("folderPath")
 	cmd.Flags().StringArrayVar(&indices, "indices", []string{}, "Indices to perform the search query on (accessprofiles, accountactivities, entitlements, events, identities, roles)")
 	cmd.Flags().StringArrayVar(&sort, "sort", []string{}, "The sort value for the api call (displayName, +id...)")
 	cmd.MarkFlagRequired("indices")
