@@ -1,4 +1,3 @@
-// Copyright (c) 2026, SailPoint Technologies, Inc. All rights reserved.
 package ui_plugins
 
 // uiPluginWorkspaceConfig represents the sp-ui-plugin.json workspace contract.
