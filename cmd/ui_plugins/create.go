@@ -54,7 +54,7 @@ func newCreateCommand() *cobra.Command {
 
 	cmd.Flags().BoolVar(&private, "private", false, "Restrict the plugin to the current user on every slot")
 	cmd.Flags().StringSliceVar(&restrictToUsers, "restrict-to-users", nil, "Restrict the plugin to the given user identity GUIDs on every slot (comma-separated)")
-	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Validate and print the payload that would be sent without calling the backend")
+	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Validate the manifest and print the payload that would be sent, without creating the plugin instance")
 	cmd.Flags().BoolVar(&jsonOutput, "json", false, "Print the raw UMS response on success")
 
 	return cmd
@@ -176,7 +176,7 @@ func mapUMSCreateError(status int, body []byte, alias string) error {
 	case http.StatusForbidden:
 		return fmt.Errorf("not authorized to create UI plugins (requires the idn:plugins-ui:create right): %s", message)
 	case http.StatusNotFound:
-		return fmt.Errorf("the UI plugins feature is not enabled for this tenant: %s", message)
+		return fmt.Errorf("the UI plugins feature is not enabled for this tenant, or the endpoint is unavailable: %s", message)
 	case http.StatusConflict:
 		return fmt.Errorf("a plugin instance with alias %q already exists for this tenant: %s", alias, message)
 	default:
