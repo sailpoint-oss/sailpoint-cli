@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/log"
-	beta "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
+	"github.com/sailpoint-oss/golang-sdk/v3/managed_clusters"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
@@ -31,7 +31,7 @@ func newSetCommand() *cobra.Command {
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			rootLevel := beta.StandardLevel(level)
+			rootLevel := managed_clusters.Standardlevel(level)
 
 			if !rootLevel.IsValid() {
 				return errors.New("invalid logLevel: " + level)
@@ -47,11 +47,11 @@ func newSetCommand() *cobra.Command {
 				return err
 			}
 
-			logLevels := make(map[string]beta.StandardLevel)
+			logLevels := make(map[string]managed_clusters.Standardlevel)
 
 			for _, connector := range connectors {
 				parts := strings.Split(connector, "=")
-				conLevel := beta.StandardLevel(parts[1])
+				conLevel := managed_clusters.Standardlevel(parts[1])
 				if conLevel.IsValid() {
 					logLevels[parts[0]] = conLevel
 				} else {
@@ -61,7 +61,13 @@ func newSetCommand() *cobra.Command {
 
 			for _, clusterId := range args {
 
-				configuration, resp, err := apiClient.Beta.ManagedClustersAPI.PutClientLogConfiguration(context.TODO(), clusterId).ClientLogConfiguration(beta.ClientLogConfiguration{DurationMinutes: durationInMinutes, RootLevel: rootLevel, LogLevels: &logLevels}).Execute()
+				logConfig := managed_clusters.NewClientlogconfigurationdurationminutes(rootLevel)
+				logConfig.DurationMinutes = &durationInMinutes
+				logConfig.LogLevels = &logLevels
+
+				req := managed_clusters.ClientlogconfigurationdurationminutesAsPutClientLogConfigurationV1Request(logConfig)
+
+				configuration, resp, err := apiClient.ManagedClustersAPI.PutClientLogConfigurationV1(context.TODO(), clusterId).PutClientLogConfigurationV1Request(req).Execute()
 				if err != nil {
 					return sdk.HandleSDKError(resp, err)
 				}

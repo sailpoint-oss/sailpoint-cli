@@ -11,8 +11,8 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/fatih/color"
-	sailpoint "github.com/sailpoint-oss/golang-sdk/v2"
-	beta "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
+	sailpoint "github.com/sailpoint-oss/golang-sdk/v3"
+	"github.com/sailpoint-oss/golang-sdk/v3/sp_config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 	"github.com/spf13/cobra"
@@ -82,7 +82,7 @@ func newDownloadCommand() *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			var options *map[string]beta.ObjectExportImportOptions
+			var options *map[string]sp_config.Objectexportimportoptions
 
 			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
@@ -115,9 +115,9 @@ func newDownloadCommand() *cobra.Command {
 	return cmd
 }
 
-func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, includeTypes []string, excludeTypes []string, options *map[string]beta.ObjectExportImportOptions, destination string) error {
+func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, includeTypes []string, excludeTypes []string, options *map[string]sp_config.Objectexportimportoptions, destination string) error {
 
-	job, _, err := apiClient.Beta.SPConfigAPI.ExportSpConfig(context.TODO()).ExportPayload(beta.ExportPayload{Description: &description, IncludeTypes: includeTypes, ExcludeTypes: excludeTypes, ObjectOptions: options}).Execute()
+	job, _, err := apiClient.SPConfigAPI.ExportSpConfigV1(context.TODO()).Exportpayload(sp_config.Exportpayload{Description: &description, IncludeTypes: includeTypes, ExcludeTypes: excludeTypes, ObjectOptions: options}).Execute()
 	if err != nil {
 		return err
 	}
@@ -125,7 +125,7 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 	time.Sleep(3 * time.Second)
 
 	for {
-		response, _, err := apiClient.Beta.SPConfigAPI.GetSpConfigExportStatus(context.TODO(), job.JobId).Execute()
+		response, _, err := apiClient.SPConfigAPI.GetSpConfigExportStatusV1(context.TODO(), job.JobId).Execute()
 		if err != nil {
 			return err
 		}
@@ -135,7 +135,7 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 		} else {
 			switch response.Status {
 			case "COMPLETE":
-				exportData, _, err := apiClient.Beta.SPConfigAPI.GetSpConfigExport(context.TODO(), job.JobId).Execute()
+				exportData, _, err := apiClient.SPConfigAPI.GetSpConfigExportV1(context.TODO(), job.JobId).Execute()
 				if err != nil {
 					return err
 				}
@@ -270,7 +270,7 @@ func saveCloudXMLRules(apiClient *sailpoint.APIClient, description string, inclu
 
 func saveJSONConnectorRules(apiClient *sailpoint.APIClient, destination string) error {
 
-	connectorRules, _, err := apiClient.Beta.ConnectorRuleManagementAPI.GetConnectorRuleList(context.TODO()).Execute()
+	connectorRules, _, err := apiClient.ConnectorRuleManagementAPI.GetConnectorRuleListV1(context.TODO()).Execute()
 
 	if err != nil {
 		return err

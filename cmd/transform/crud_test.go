@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
-	v3 "github.com/sailpoint-oss/golang-sdk/v2/api_v3"
+	"github.com/sailpoint-oss/golang-sdk/v3/transforms"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 )
@@ -74,7 +74,7 @@ func SaveTransform(fileName string, transform map[string]interface{}) error {
 }
 func TestNewCRUDCmd(t *testing.T) {
 
-	var transform v3.Transform
+	var transform transforms.Transform
 
 	err := json.Unmarshal([]byte(createTemplate), &transform)
 	if err != nil {

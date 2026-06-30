@@ -10,7 +10,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/fatih/color"
-	beta "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
+	"github.com/sailpoint-oss/golang-sdk/v3/sp_config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
@@ -39,7 +39,7 @@ func newListCommand() *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			var options *map[string]beta.ObjectExportImportOptions
+			var options *map[string]sp_config.Objectexportimportoptions
 
 			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
@@ -53,7 +53,7 @@ func newListCommand() *cobra.Command {
 				}
 			}
 
-			job, _, err := apiClient.Beta.SPConfigAPI.ExportSpConfig(context.TODO()).ExportPayload(beta.ExportPayload{Description: &description, IncludeTypes: includeTypes, ExcludeTypes: excludeTypes, ObjectOptions: options}).Execute()
+			job, _, err := apiClient.SPConfigAPI.ExportSpConfigV1(context.TODO()).Exportpayload(sp_config.Exportpayload{Description: &description, IncludeTypes: includeTypes, ExcludeTypes: excludeTypes, ObjectOptions: options}).Execute()
 			if err != nil {
 				return err
 			}
@@ -63,7 +63,7 @@ func newListCommand() *cobra.Command {
 			time.Sleep(2 * time.Second)
 
 			for {
-				response, _, err := apiClient.Beta.SPConfigAPI.GetSpConfigExportStatus(context.TODO(), job.JobId).Execute()
+				response, _, err := apiClient.SPConfigAPI.GetSpConfigExportStatusV1(context.TODO(), job.JobId).Execute()
 				if err != nil {
 					return err
 				}
@@ -74,7 +74,7 @@ func newListCommand() *cobra.Command {
 					switch response.Status {
 					case "COMPLETE":
 						log.Info("Job Complete")
-						exportData, _, err := apiClient.Beta.SPConfigAPI.GetSpConfigExport(context.TODO(), job.JobId).Execute()
+						exportData, _, err := apiClient.SPConfigAPI.GetSpConfigExportV1(context.TODO(), job.JobId).Execute()
 						if err != nil {
 							return err
 						}

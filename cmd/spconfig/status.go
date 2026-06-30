@@ -28,7 +28,7 @@ func newStatusCommand() *cobra.Command {
 
 			for _, jobId := range exportJobs {
 
-				status, _, err := apiClient.Beta.SPConfigAPI.GetSpConfigExportStatus(context.TODO(), jobId).Execute()
+				status, _, err := apiClient.SPConfigAPI.GetSpConfigExportStatusV1(context.TODO(), jobId).Execute()
 				if err != nil {
 					return err
 				}
@@ -37,7 +37,7 @@ func newStatusCommand() *cobra.Command {
 
 			for _, jobId := range importJobs {
 
-				status, _, err := apiClient.Beta.SPConfigAPI.GetSpConfigImportStatus(context.TODO(), jobId).Execute()
+				status, _, err := apiClient.SPConfigAPI.GetSpConfigImportStatusV1(context.TODO(), jobId).Execute()
 				if err != nil {
 					return err
 				}

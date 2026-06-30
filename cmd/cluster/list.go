@@ -4,8 +4,8 @@ import (
 	"context"
 	_ "embed"
 
-	sailpoint "github.com/sailpoint-oss/golang-sdk/v2"
-	beta "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
+	sailpoint "github.com/sailpoint-oss/golang-sdk/v3"
+	"github.com/sailpoint-oss/golang-sdk/v3/managed_clusters"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
@@ -32,7 +32,7 @@ func newListCommand() *cobra.Command {
 				return err
 			}
 
-			clusters, resp, clustersErr := sailpoint.PaginateWithDefaults[beta.ManagedCluster](apiClient.Beta.ManagedClustersAPI.GetManagedClusters(context.TODO()))
+			clusters, resp, clustersErr := sailpoint.PaginateWithDefaults[managed_clusters.Managedcluster](apiClient.ManagedClustersAPI.GetManagedClustersV1(context.TODO()))
 			if clustersErr != nil {
 				return sdk.HandleSDKError(resp, clustersErr)
 			}

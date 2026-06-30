@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/log"
-	v3 "github.com/sailpoint-oss/golang-sdk/v2/api_v3"
+	"github.com/sailpoint-oss/golang-sdk/v3/search"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/templates"
@@ -90,12 +90,12 @@ func NewReportCommand() *cobra.Command {
 
 			for i, currentQuery := range selectedTemplate.Queries {
 
-				searchQuery := v3.NewSearch()
-				query := v3.NewQuery()
+				searchQuery := search.NewSearch()
+				query := search.NewQuery()
 				query.SetQuery(currentQuery.QueryString)
 				searchQuery.Query = query
 
-				resp, err := apiClient.V3.SearchAPI.SearchCount(context.TODO()).Search(*searchQuery).Execute()
+				resp, err := apiClient.SearchAPI.SearchCountV1(context.TODO()).Search(*searchQuery).Execute()
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 					fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", resp)
