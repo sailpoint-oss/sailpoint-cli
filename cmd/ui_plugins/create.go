@@ -3,18 +3,27 @@ package ui_plugins
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	neturl "net/url"
 	"strings"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
-const pluginInstancesEndpoint = "/v2026/ui-plugins"
+//go:embed create.md
+var createHelp string
+
+const (
+	pluginInstancesEndpoint = "/v2026/ui-plugins"
+	validateAliasEndpoint   = pluginInstancesEndpoint + "/validate-alias"
+)
 
 func newCreateCommand() *cobra.Command {
 	var private bool
@@ -22,10 +31,13 @@ func newCreateCommand() *cobra.Command {
 	var dryRun bool
 	var jsonOutput bool
 
+	help := util.ParseHelp(createHelp)
 	cmd := &cobra.Command{
-		Use:   "create",
-		Short: "Create a UI plugin instance in the current tenant",
-		Args:  cobra.NoArgs,
+		Use:     "create",
+		Short:   "Create a UI plugin instance in the current tenant",
+		Long:    help.Long,
+		Example: help.Example,
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts := createConfig{
 				private:         private,
@@ -34,21 +46,15 @@ func newCreateCommand() *cobra.Command {
 				jsonOutput:      jsonOutput,
 			}
 
-			// The client is only needed on the non-dry-run path; a dry run never
-			// touches config or the network.
-			var spClient client.Client
-			if !dryRun {
-				if err := config.InitConfig(); err != nil {
-					return err
-				}
-				cliConfig, err := config.GetConfig()
-				if err != nil {
-					return err
-				}
-				spClient = client.NewSpClient(cliConfig)
+			// A dry run still calls the read-only validate-alias endpoint, so it
+			// needs a client too. Tolerate a missing client on a dry run so the
+			// payload preview still prints when config/auth is unavailable.
+			spClient, clientErr := newPluginClient()
+			if !dryRun && clientErr != nil {
+				return clientErr
 			}
 
-			return runCreate(context.Background(), spClient, manifestFileName, cmd.OutOrStdout(), config.GetCurrentIdentityID, opts)
+			return runCreate(context.Background(), spClient, manifestFileName, cmd.OutOrStdout(), cmd.ErrOrStderr(), config.GetCurrentIdentityID, opts)
 		},
 	}
 
@@ -68,12 +74,25 @@ type createConfig struct {
 	jsonOutput      bool
 }
 
+// newPluginClient builds an authenticated client from the active CLI config.
+func newPluginClient() (client.Client, error) {
+	if err := config.InitConfig(); err != nil {
+		return nil, err
+	}
+	cliConfig, err := config.GetConfig()
+	if err != nil {
+		return nil, err
+	}
+	return client.NewSpClient(cliConfig), nil
+}
+
 // runCreate loads and validates the workspace manifest at manifestPath, applies
-// visibility overrides, then either prints the payload (dry run) or POSTs it via
-// the provided client and renders the result. The client is only used on the
-// non-dry-run path, so callers may pass nil for a dry run. currentUser resolves
-// the GUID for --private and is injected for testability.
-func runCreate(ctx context.Context, c client.Client, manifestPath string, out io.Writer, currentUser func() (string, error), opts createConfig) error {
+// visibility overrides, then either previews the payload (dry run, with a
+// best-effort alias availability check) or POSTs it via the provided client and
+// renders the result. currentUser resolves the GUID for --private and is injected
+// for testability. The payload preview is written to out; advisory notes from the
+// dry-run alias check are written to errOut.
+func runCreate(ctx context.Context, c client.Client, manifestPath string, out io.Writer, errOut io.Writer, currentUser func() (string, error), opts createConfig) error {
 	cfg, err := loadAndValidateWorkspaceManifest(manifestPath)
 	if err != nil {
 		return err
@@ -94,7 +113,7 @@ func runCreate(ctx context.Context, c client.Client, manifestPath string, out io
 
 	if opts.dryRun {
 		_, _ = fmt.Fprintln(out, string(payload))
-		return nil
+		return checkAliasAvailability(ctx, c, errOut, cfg.Manifest.Alias)
 	}
 
 	headers := map[string]string{"Accept": "application/json"}
@@ -119,6 +138,42 @@ func runCreate(ctx context.Context, c client.Client, manifestPath string, out io
 	}
 
 	return renderCreateSuccess(out, body, cfg.Manifest.Alias)
+}
+
+// checkAliasAvailability performs a best-effort dry-run pre-check against the UMS
+// validate-alias endpoint (GET, read-only). It returns a non-nil error only when the
+// backend gives a definitive negative answer — the alias is already taken (409) or
+// invalid (400) — so a dry run surfaces a create that would fail. Every other outcome
+// (no client, transport error, or an inconclusive status such as 401/403/404 while the
+// route is not yet externally accessible) is reported to errOut and treated as
+// non-fatal, leaving the printed payload as the dry-run result.
+func checkAliasAvailability(ctx context.Context, c client.Client, errOut io.Writer, alias string) error {
+	if c == nil {
+		_, _ = fmt.Fprintln(errOut, "Skipped alias availability check: no authenticated client available.")
+		return nil
+	}
+
+	url := validateAliasEndpoint + "?alias=" + neturl.QueryEscape(alias)
+	resp, err := c.Get(ctx, url, map[string]string{"Accept": "application/json"})
+	if err != nil {
+		_, _ = fmt.Fprintf(errOut, "Could not verify alias availability: %v\n", err)
+		return nil
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+
+	switch {
+	case resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices:
+		return nil
+	case resp.StatusCode == http.StatusConflict:
+		return fmt.Errorf("alias %q is already in use in this tenant; create would be rejected: %s", alias, umsErrorMessage(body))
+	case resp.StatusCode == http.StatusBadRequest:
+		return fmt.Errorf("alias %q is invalid: %s", alias, umsErrorMessage(body))
+	default:
+		_, _ = fmt.Fprintf(errOut, "Could not verify alias availability (status %d): %s\n", resp.StatusCode, umsErrorMessage(body))
+		return nil
+	}
 }
 
 // resolveRestrictToUsers builds the de-duplicated, order-preserving union of the
