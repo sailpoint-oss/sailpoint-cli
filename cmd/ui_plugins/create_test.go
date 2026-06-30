@@ -2,11 +2,244 @@ package ui_plugins
 
 import (
 	"bytes"
+	"context"
 	"errors"
+	"io"
+	"net/http"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
 )
+
+const testManifestJSON = `{
+  "version": 1,
+  "manifest": {
+    "alias": "access-request-plugin",
+    "name": {"en-US": "Access Request"},
+    "description": {"en-US": "Plugin description"},
+    "slots": [{"slotId": "full-page"}]
+  }
+}`
+
+// fakeClient is a test double for client.Client that returns a canned response
+// from Post and records the request it received. Other methods are unused.
+type fakeClient struct {
+	status    int
+	body      string
+	postErr   error
+	postCalls int
+	gotURL    string
+	gotBody   []byte
+}
+
+var _ client.Client = (*fakeClient)(nil)
+
+func (f *fakeClient) Post(ctx context.Context, url string, contentType string, body io.Reader, headers map[string]string) (*http.Response, error) {
+	f.postCalls++
+	f.gotURL = url
+	if body != nil {
+		f.gotBody, _ = io.ReadAll(body)
+	}
+	if f.postErr != nil {
+		return nil, f.postErr
+	}
+	return &http.Response{
+		StatusCode: f.status,
+		Body:       io.NopCloser(strings.NewReader(f.body)),
+	}, nil
+}
+
+func (f *fakeClient) Get(ctx context.Context, url string, headers map[string]string) (*http.Response, error) {
+	return nil, errors.New("unused")
+}
+
+func (f *fakeClient) Delete(ctx context.Context, url string, params map[string]string, headers map[string]string) (*http.Response, error) {
+	return nil, errors.New("unused")
+}
+
+func (f *fakeClient) Put(ctx context.Context, url string, contentType string, body io.Reader, headers map[string]string) (*http.Response, error) {
+	return nil, errors.New("unused")
+}
+
+func (f *fakeClient) Patch(ctx context.Context, url string, body io.Reader, headers map[string]string) (*http.Response, error) {
+	return nil, errors.New("unused")
+}
+
+func tempManifestPath(t *testing.T, content string) string {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), manifestFileName)
+	writeManifestAtPath(t, path, content)
+	return path
+}
+
+func stubCurrentUser() (string, error) { return "current-user-guid", nil }
+
+// --- runCreate: end-to-end HTTP path via fake client ---
+
+func TestRunCreate_SuccessHumanOutput(t *testing.T) {
+	fc := &fakeClient{status: http.StatusCreated, body: `{"pluginInstanceId":"pi-123","alias":"access-request-plugin"}`}
+	var out bytes.Buffer
+
+	err := runCreate(context.Background(), fc, tempManifestPath(t, testManifestJSON), &out, stubCurrentUser, createConfig{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if fc.postCalls != 1 {
+		t.Fatalf("expected exactly one Post, got %d", fc.postCalls)
+	}
+	if fc.gotURL != pluginInstancesEndpoint {
+		t.Fatalf("expected POST to %s, got %s", pluginInstancesEndpoint, fc.gotURL)
+	}
+	if !strings.Contains(string(fc.gotBody), "access-request-plugin") {
+		t.Fatalf("expected manifest alias in request body, got: %s", fc.gotBody)
+	}
+	got := out.String()
+	if !strings.Contains(got, "pi-123") || !strings.Contains(got, "access-request-plugin") {
+		t.Fatalf("expected success summary with id and alias, got: %s", got)
+	}
+}
+
+func TestRunCreate_JSONPassthrough(t *testing.T) {
+	respBody := `{"pluginInstanceId":"pi-123","alias":"access-request-plugin","slots":[]}`
+	fc := &fakeClient{status: http.StatusCreated, body: respBody}
+	var out bytes.Buffer
+
+	err := runCreate(context.Background(), fc, tempManifestPath(t, testManifestJSON), &out, stubCurrentUser, createConfig{jsonOutput: true})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if strings.TrimSpace(out.String()) != respBody {
+		t.Fatalf("expected raw response body passthrough, got: %s", out.String())
+	}
+	if strings.Contains(out.String(), "Created plugin instance") {
+		t.Fatalf("--json output should not include the human summary, got: %s", out.String())
+	}
+}
+
+func TestRunCreate_ErrorMapping(t *testing.T) {
+	tests := []struct {
+		name   string
+		status int
+		body   string
+		want   string
+	}{
+		{name: "bad request", status: 400, body: `{"message":"alias must be 3-63 chars"}`, want: "invalid request"},
+		{name: "forbidden", status: 403, body: `{"message":"Forbidden"}`, want: "not authorized"},
+		{name: "not found", status: 404, body: `{"message":"Not Found"}`, want: "not enabled"},
+		{name: "conflict", status: 409, body: `{"message":"alias 'access-request-plugin' already exists for this tenant"}`, want: "already exists"},
+		{name: "server error", status: 500, body: `{"message":"boom"}`, want: "status 500"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fc := &fakeClient{status: tt.status, body: tt.body}
+			var out bytes.Buffer
+
+			err := runCreate(context.Background(), fc, tempManifestPath(t, testManifestJSON), &out, stubCurrentUser, createConfig{})
+			if err == nil {
+				t.Fatal("expected an error")
+			}
+			if !strings.Contains(err.Error(), tt.want) {
+				t.Fatalf("expected error to contain %q, got: %v", tt.want, err)
+			}
+			if fc.postCalls != 1 {
+				t.Fatalf("expected the request to be sent, got %d Post calls", fc.postCalls)
+			}
+			if out.Len() != 0 {
+				t.Fatalf("expected no stdout on error, got: %s", out.String())
+			}
+		})
+	}
+}
+
+func TestRunCreate_TransportError(t *testing.T) {
+	fc := &fakeClient{postErr: errors.New("connection refused")}
+	var out bytes.Buffer
+
+	err := runCreate(context.Background(), fc, tempManifestPath(t, testManifestJSON), &out, stubCurrentUser, createConfig{})
+	if err == nil {
+		t.Fatal("expected a transport error")
+	}
+	if !strings.Contains(err.Error(), "failed to create plugin instance") {
+		t.Fatalf("expected wrapped transport error, got: %v", err)
+	}
+}
+
+func TestRunCreate_DryRunSkipsClient(t *testing.T) {
+	fc := &fakeClient{status: http.StatusCreated, body: `{}`}
+	var out bytes.Buffer
+
+	err := runCreate(context.Background(), fc, tempManifestPath(t, testManifestJSON), &out, stubCurrentUser, createConfig{dryRun: true})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if fc.postCalls != 0 {
+		t.Fatal("dry run must not call the client")
+	}
+	if !strings.Contains(out.String(), `"alias": "access-request-plugin"`) {
+		t.Fatalf("expected payload printed on dry run, got: %s", out.String())
+	}
+}
+
+func TestRunCreate_DryRunAppliesOverrides(t *testing.T) {
+	fc := &fakeClient{}
+	var out bytes.Buffer
+
+	err := runCreate(context.Background(), fc, tempManifestPath(t, testManifestJSON), &out, stubCurrentUser,
+		createConfig{dryRun: true, private: true, restrictToUsers: []string{"user-a"}})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	got := out.String()
+	if !strings.Contains(got, "restrictToUsers") || !strings.Contains(got, "user-a") || !strings.Contains(got, "current-user-guid") {
+		t.Fatalf("expected union of override users in payload, got: %s", got)
+	}
+}
+
+func TestRunCreate_InvalidManifestSkipsPost(t *testing.T) {
+	invalid := `{
+  "version": 1,
+  "manifest": {
+    "name": {"en-US": "Access Request"},
+    "description": {"en-US": "Plugin description"},
+    "slots": [{"slotId": "full-page"}]
+  }
+}`
+	fc := &fakeClient{status: http.StatusCreated, body: `{}`}
+	var out bytes.Buffer
+
+	err := runCreate(context.Background(), fc, tempManifestPath(t, invalid), &out, stubCurrentUser, createConfig{})
+	if err == nil {
+		t.Fatal("expected validation error")
+	}
+	if !strings.Contains(err.Error(), "manifest.alias is required") {
+		t.Fatalf("expected validation error, got: %v", err)
+	}
+	if fc.postCalls != 0 {
+		t.Fatal("invalid manifest must fail before any backend call")
+	}
+}
+
+func TestRunCreate_PrivateResolverErrorSkipsPost(t *testing.T) {
+	wantErr := errors.New("no user context")
+	fc := &fakeClient{status: http.StatusCreated, body: `{}`}
+	var out bytes.Buffer
+
+	err := runCreate(context.Background(), fc, tempManifestPath(t, testManifestJSON), &out,
+		func() (string, error) { return "", wantErr }, createConfig{private: true})
+	if !errors.Is(err, wantErr) {
+		t.Fatalf("expected current-user error to propagate, got: %v", err)
+	}
+	if fc.postCalls != 0 {
+		t.Fatal("resolver failure must fail before any backend call")
+	}
+}
+
+// --- pure helpers ---
 
 func TestResolveRestrictToUsers(t *testing.T) {
 	currentUser := func() (string, error) { return "current-user-guid", nil }
@@ -166,6 +399,8 @@ func TestRenderCreateSuccess(t *testing.T) {
 	})
 }
 
+// --- command wiring (cobra + experimental gate + flags), hermetic via dry run ---
+
 func TestCreateCommand_DryRunPrintsPayloadWithoutBuildSection(t *testing.T) {
 	t.Setenv(experimentalUIPluginsEnvVar, "1")
 	cwd := t.TempDir()
@@ -200,40 +435,7 @@ func TestCreateCommand_DryRunPrintsPayloadWithoutBuildSection(t *testing.T) {
 	}
 }
 
-func TestCreateCommand_DryRunAppliesRestrictToUsers(t *testing.T) {
-	t.Setenv(experimentalUIPluginsEnvVar, "1")
-	cwd := t.TempDir()
-	writeManifestAtPath(t, filepath.Join(cwd, manifestFileName), `{
-  "version": 1,
-  "manifest": {
-    "alias": "access-request-plugin",
-    "name": {"en-US": "Access Request"},
-    "description": {"en-US": "Plugin description"},
-    "slots": [{"slotId": "full-page"}, {"slotId": "side-panel"}]
-  }
-}`)
-
-	restore := chdirForTest(t, cwd)
-	defer restore()
-
-	cmd := NewUIPluginsCommand()
-	var out bytes.Buffer
-	cmd.SetOut(&out)
-	cmd.SetArgs([]string{"create", "--dry-run", "--restrict-to-users", "user-a,user-b"})
-	if err := cmd.Execute(); err != nil {
-		t.Fatalf("expected dry-run to succeed, got: %v", err)
-	}
-
-	output := out.String()
-	if strings.Count(output, "restrictToUsers") != 2 {
-		t.Fatalf("expected restrictToUsers on both slots, got: %s", output)
-	}
-	if !strings.Contains(output, "user-a") || !strings.Contains(output, "user-b") {
-		t.Fatalf("expected override users in payload, got: %s", output)
-	}
-}
-
-func TestCreateCommand_InvalidManifestFailsBeforeNetwork(t *testing.T) {
+func TestCreateCommand_InvalidManifestSurfacesValidationError(t *testing.T) {
 	t.Setenv(experimentalUIPluginsEnvVar, "1")
 	cwd := t.TempDir()
 	writeManifestAtPath(t, filepath.Join(cwd, manifestFileName), `{
@@ -249,13 +451,14 @@ func TestCreateCommand_InvalidManifestFailsBeforeNetwork(t *testing.T) {
 	defer restore()
 
 	cmd := NewUIPluginsCommand()
-	cmd.SetArgs([]string{"create"})
+	// --dry-run keeps this hermetic (no config/auth needed); validation runs first regardless.
+	cmd.SetArgs([]string{"create", "--dry-run"})
 	err := cmd.Execute()
 	if err == nil {
 		t.Fatal("expected create to fail on an invalid manifest")
 	}
 	if !strings.Contains(err.Error(), "manifest.alias is required") {
-		t.Fatalf("expected validation error before any network call, got: %v", err)
+		t.Fatalf("expected validation error, got: %v", err)
 	}
 }
 

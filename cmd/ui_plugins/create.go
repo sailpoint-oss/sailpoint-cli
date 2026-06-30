@@ -27,61 +27,28 @@ func newCreateCommand() *cobra.Command {
 		Short: "Create a UI plugin instance in the current tenant",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := loadAndValidateWorkspaceManifest(manifestFileName)
-			if err != nil {
-				return err
+			opts := createConfig{
+				private:         private,
+				restrictToUsers: restrictToUsers,
+				dryRun:          dryRun,
+				jsonOutput:      jsonOutput,
 			}
 
-			users, err := resolveRestrictToUsers(private, restrictToUsers, config.GetCurrentIdentityID)
-			if err != nil {
-				return err
-			}
-			if len(users) > 0 {
-				applyVisibilityOverride(&cfg.Manifest, users)
-			}
-
-			payload, err := json.MarshalIndent(cfg.Manifest, "", "  ")
-			if err != nil {
-				return fmt.Errorf("failed to encode plugin manifest: %w", err)
-			}
-
-			if dryRun {
-				_, _ = fmt.Fprintln(cmd.OutOrStdout(), string(payload))
-				return nil
+			// The client is only needed on the non-dry-run path; a dry run never
+			// touches config or the network.
+			var spClient client.Client
+			if !dryRun {
+				if err := config.InitConfig(); err != nil {
+					return err
+				}
+				cliConfig, err := config.GetConfig()
+				if err != nil {
+					return err
+				}
+				spClient = client.NewSpClient(cliConfig)
 			}
 
-			if err := config.InitConfig(); err != nil {
-				return err
-			}
-			cliConfig, err := config.GetConfig()
-			if err != nil {
-				return err
-			}
-
-			spClient := client.NewSpClient(cliConfig)
-			headers := map[string]string{"Accept": "application/json"}
-
-			resp, err := spClient.Post(context.Background(), pluginInstancesEndpoint, "application/json", bytes.NewReader(payload), headers)
-			if err != nil {
-				return fmt.Errorf("failed to create plugin instance: %w", err)
-			}
-			defer resp.Body.Close()
-
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return fmt.Errorf("failed to read response: %w", err)
-			}
-
-			if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
-				return mapUMSCreateError(resp.StatusCode, body, cfg.Manifest.Alias)
-			}
-
-			if jsonOutput {
-				_, _ = fmt.Fprintln(cmd.OutOrStdout(), string(body))
-				return nil
-			}
-
-			return renderCreateSuccess(cmd.OutOrStdout(), body, cfg.Manifest.Alias)
+			return runCreate(context.Background(), spClient, manifestFileName, cmd.OutOrStdout(), config.GetCurrentIdentityID, opts)
 		},
 	}
 
@@ -91,6 +58,67 @@ func newCreateCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&jsonOutput, "json", false, "Print the raw UMS response on success")
 
 	return cmd
+}
+
+// createConfig captures the create command's flag values.
+type createConfig struct {
+	private         bool
+	restrictToUsers []string
+	dryRun          bool
+	jsonOutput      bool
+}
+
+// runCreate loads and validates the workspace manifest at manifestPath, applies
+// visibility overrides, then either prints the payload (dry run) or POSTs it via
+// the provided client and renders the result. The client is only used on the
+// non-dry-run path, so callers may pass nil for a dry run. currentUser resolves
+// the GUID for --private and is injected for testability.
+func runCreate(ctx context.Context, c client.Client, manifestPath string, out io.Writer, currentUser func() (string, error), opts createConfig) error {
+	cfg, err := loadAndValidateWorkspaceManifest(manifestPath)
+	if err != nil {
+		return err
+	}
+
+	users, err := resolveRestrictToUsers(opts.private, opts.restrictToUsers, currentUser)
+	if err != nil {
+		return err
+	}
+	if len(users) > 0 {
+		applyVisibilityOverride(&cfg.Manifest, users)
+	}
+
+	payload, err := json.MarshalIndent(cfg.Manifest, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to encode plugin manifest: %w", err)
+	}
+
+	if opts.dryRun {
+		_, _ = fmt.Fprintln(out, string(payload))
+		return nil
+	}
+
+	headers := map[string]string{"Accept": "application/json"}
+	resp, err := c.Post(ctx, pluginInstancesEndpoint, "application/json", bytes.NewReader(payload), headers)
+	if err != nil {
+		return fmt.Errorf("failed to create plugin instance: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response: %w", err)
+	}
+
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return mapUMSCreateError(resp.StatusCode, body, cfg.Manifest.Alias)
+	}
+
+	if opts.jsonOutput {
+		_, _ = fmt.Fprintln(out, string(body))
+		return nil
+	}
+
+	return renderCreateSuccess(out, body, cfg.Manifest.Alias)
 }
 
 // resolveRestrictToUsers builds the de-duplicated, order-preserving union of the
