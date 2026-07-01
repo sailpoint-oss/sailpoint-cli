@@ -17,7 +17,10 @@ func TestValidateManifestCommand_Success(t *testing.T) {
     "alias": "access-request-plugin",
     "name": {"en-US": "Access Request"},
     "description": {"en-US": "Plugin description"},
-    "slots": [{"slotId": "full-page"}]
+    "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
+    "iframeAllow": {}
   }
 }`)
 
@@ -45,7 +48,10 @@ func TestValidateManifestCommand_RejectsExtraArgs(t *testing.T) {
     "alias": "access-request-plugin",
     "name": {"en-US": "Access Request"},
     "description": {"en-US": "Plugin description"},
-    "slots": [{"slotId": "full-page"}]
+    "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
+    "iframeAllow": {}
   }
 }`)
 
@@ -72,7 +78,10 @@ func TestValidateManifestCommand_AliasSuccess(t *testing.T) {
     "alias": "access-request-plugin",
     "name": {"en-US": "Access Request"},
     "description": {"en-US": "Plugin description"},
-    "slots": [{"slotId": "full-page"}]
+    "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
+    "iframeAllow": {}
   }
 }`)
 
@@ -94,7 +103,10 @@ func TestValidateManifestCommand_Failure(t *testing.T) {
   "manifest": {
     "name": {"en-US": "Access Request"},
     "description": {"en-US": "Plugin description"},
-    "slots": [{"slotId": "full-page"}]
+    "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
+    "iframeAllow": {}
   }
 }`)
 

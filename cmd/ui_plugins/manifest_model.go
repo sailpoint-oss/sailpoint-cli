@@ -20,9 +20,9 @@ type uiPluginManifest struct {
 	Name                    map[string]string   `json:"name"`
 	Description             map[string]string   `json:"description"`
 	APIScopes               []string            `json:"apiScopes,omitempty"`
-	ContentSecurityPolicies map[string][]string `json:"contentSecurityPolicies,omitempty"`
-	PermissionPolicy        map[string][]string `json:"permissionPolicy,omitempty"`
-	IframeAllow             map[string][]string `json:"iframeAllow,omitempty"`
+	ContentSecurityPolicies map[string][]string `json:"contentSecurityPolicies"`
+	PermissionPolicy        map[string][]string `json:"permissionPolicy"`
+	IframeAllow             map[string][]string `json:"iframeAllow"`
 	Slots                   []uiPluginSlot      `json:"slots"`
 }
 

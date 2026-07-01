@@ -19,7 +19,10 @@ const testManifestJSON = `{
     "alias": "access-request-plugin",
     "name": {"en-US": "Access Request"},
     "description": {"en-US": "Plugin description"},
-    "slots": [{"slotId": "full-page"}]
+    "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
+    "iframeAllow": {}
   }
 }`
 
@@ -29,7 +32,10 @@ const manifestWithBuildJSON = `{
     "alias": "access-request-plugin",
     "name": {"en-US": "Access Request"},
     "description": {"en-US": "Plugin description"},
-    "slots": [{"slotId": "full-page"}]
+    "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
+    "iframeAllow": {}
   },
   "build": {"outDir": "dist", "port": 8080}
 }`
@@ -361,7 +367,10 @@ func TestRunCreate_DryRunAppliesOverrides(t *testing.T) {
     "alias": "access-request-plugin",
     "name": {"en-US": "Access Request"},
     "description": {"en-US": "Plugin description"},
-    "slots": [{"slotId": "full-page"}, {"slotId": "side-panel"}]
+    "slots": [{"slotId": "full-page"}, {"slotId": "side-panel"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
+    "iframeAllow": {}
   }
 }`
 	err := runCreate(context.Background(), fc, tempManifestPath(t, manifest), &out, &errOut, stubCurrentUser,

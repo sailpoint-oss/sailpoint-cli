@@ -78,6 +78,18 @@ func validateWorkspaceManifest(cfg *uiPluginWorkspaceConfig) error {
 		}
 	}
 
+	// The backend requires these policy objects to be present; an empty object
+	// {} is accepted. Directive names/values are validated by UMS, not here.
+	if manifest.ContentSecurityPolicies == nil {
+		return fmt.Errorf("manifest.contentSecurityPolicies is required (use an empty object {} if the plugin declares no CSP directives)")
+	}
+	if manifest.PermissionPolicy == nil {
+		return fmt.Errorf("manifest.permissionPolicy is required (use an empty object {} if the plugin declares no permission-policy directives)")
+	}
+	if manifest.IframeAllow == nil {
+		return fmt.Errorf("manifest.iframeAllow is required (use an empty object {} if the plugin declares no iframe-allow directives)")
+	}
+
 	if cfg.Build != nil {
 		if cfg.Build.Port != nil && *cfg.Build.Port <= 0 {
 			return fmt.Errorf("build.port must be greater than 0")
