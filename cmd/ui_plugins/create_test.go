@@ -39,19 +39,21 @@ const manifestWithBuildJSON = `{
 // response. The remaining methods are unused.
 type fakeClient struct {
 	// Post (create)
-	status    int
-	body      string
-	postErr   error
-	postCalls int
-	gotURL    string
-	gotBody   []byte
+	status         int
+	body           string
+	postErr        error
+	postCalls      int
+	gotURL         string
+	gotBody        []byte
+	gotPostHeaders map[string]string
 
 	// Get (validate-alias)
-	getStatus int
-	getBody   string
-	getErr    error
-	getCalls  int
-	gotGetURL string
+	getStatus     int
+	getBody       string
+	getErr        error
+	getCalls      int
+	gotGetURL     string
+	gotGetHeaders map[string]string
 }
 
 var _ client.Client = (*fakeClient)(nil)
@@ -59,6 +61,7 @@ var _ client.Client = (*fakeClient)(nil)
 func (f *fakeClient) Post(ctx context.Context, url string, contentType string, body io.Reader, headers map[string]string) (*http.Response, error) {
 	f.postCalls++
 	f.gotURL = url
+	f.gotPostHeaders = headers
 	if body != nil {
 		f.gotBody, _ = io.ReadAll(body)
 	}
@@ -74,6 +77,7 @@ func (f *fakeClient) Post(ctx context.Context, url string, contentType string, b
 func (f *fakeClient) Get(ctx context.Context, url string, headers map[string]string) (*http.Response, error) {
 	f.getCalls++
 	f.gotGetURL = url
+	f.gotGetHeaders = headers
 	if f.getErr != nil {
 		return nil, f.getErr
 	}
@@ -123,6 +127,9 @@ func TestRunCreate_SuccessHumanOutput(t *testing.T) {
 	}
 	if !strings.Contains(string(fc.gotBody), "access-request-plugin") {
 		t.Fatalf("expected manifest alias in request body, got: %s", fc.gotBody)
+	}
+	if fc.gotPostHeaders[experimentalHeader] != "true" {
+		t.Fatalf("expected %s header on create, got: %v", experimentalHeader, fc.gotPostHeaders)
 	}
 	got := out.String()
 	if !strings.Contains(got, "pi-123") || !strings.Contains(got, "access-request-plugin") {
@@ -254,6 +261,9 @@ func TestRunCreate_DryRunPrintsPayloadAndChecksAlias(t *testing.T) {
 	}
 	if !strings.Contains(fc.gotGetURL, validateAliasEndpoint) || !strings.Contains(fc.gotGetURL, "alias=access-request-plugin") {
 		t.Fatalf("unexpected validate-alias URL: %s", fc.gotGetURL)
+	}
+	if fc.gotGetHeaders[experimentalHeader] != "true" {
+		t.Fatalf("expected %s header on alias check, got: %v", experimentalHeader, fc.gotGetHeaders)
 	}
 	if !strings.Contains(out.String(), `"alias": "access-request-plugin"`) {
 		t.Fatalf("expected payload on stdout, got: %s", out.String())
@@ -554,6 +564,16 @@ func TestCreateCommand_InvalidManifestSurfacesValidationError(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "manifest.alias is required") {
 		t.Fatalf("expected validation error, got: %v", err)
+	}
+}
+
+func TestUIPluginRequestHeaders(t *testing.T) {
+	h := uiPluginRequestHeaders()
+	if h[experimentalHeader] != "true" {
+		t.Fatalf("expected %s: true, got: %v", experimentalHeader, h)
+	}
+	if h["Accept"] != "application/json" {
+		t.Fatalf("expected Accept: application/json, got: %v", h)
 	}
 }
 

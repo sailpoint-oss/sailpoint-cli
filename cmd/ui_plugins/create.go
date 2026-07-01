@@ -23,7 +23,21 @@ var createHelp string
 const (
 	pluginInstancesEndpoint = "/v2026/ui-plugins"
 	validateAliasEndpoint   = pluginInstancesEndpoint + "/validate-alias"
+
+	// experimentalHeader must be sent on ui-plugins requests while the routes are
+	// in a preview API lifecycle state (limited-preview / public-preview).
+	experimentalHeader = "X-SailPoint-Experimental"
 )
+
+// uiPluginRequestHeaders returns the headers required on every external
+// ui-plugins request: JSON accept plus the experimental opt-in header the
+// preview-state routes require.
+func uiPluginRequestHeaders() map[string]string {
+	return map[string]string{
+		"Accept":           "application/json",
+		experimentalHeader: "true",
+	}
+}
 
 func newCreateCommand() *cobra.Command {
 	var private bool
@@ -116,8 +130,7 @@ func runCreate(ctx context.Context, c client.Client, manifestPath string, out io
 		return checkAliasAvailability(ctx, c, errOut, cfg.Manifest.Alias)
 	}
 
-	headers := map[string]string{"Accept": "application/json"}
-	resp, err := c.Post(ctx, pluginInstancesEndpoint, "application/json", bytes.NewReader(payload), headers)
+	resp, err := c.Post(ctx, pluginInstancesEndpoint, "application/json", bytes.NewReader(payload), uiPluginRequestHeaders())
 	if err != nil {
 		return fmt.Errorf("failed to create plugin instance: %w", err)
 	}
@@ -154,7 +167,7 @@ func checkAliasAvailability(ctx context.Context, c client.Client, errOut io.Writ
 	}
 
 	url := validateAliasEndpoint + "?alias=" + neturl.QueryEscape(alias)
-	resp, err := c.Get(ctx, url, map[string]string{"Accept": "application/json"})
+	resp, err := c.Get(ctx, url, uiPluginRequestHeaders())
 	if err != nil {
 		_, _ = fmt.Fprintf(errOut, "Could not verify alias availability: %v\n", err)
 		return nil
