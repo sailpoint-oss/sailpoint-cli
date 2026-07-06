@@ -111,6 +111,30 @@ func TestLooksLikeUUID(t *testing.T) {
 	}
 }
 
+func TestTruncateForTable(t *testing.T) {
+	tests := []struct {
+		in   string
+		max  int
+		want string
+	}{
+		{"short", 40, "short"},
+		{"exactly-ten", 11, "exactly-ten"}, // len == max, unchanged
+		{"this-is-a-very-long-alias-value", 10, "this-is-a…"},
+		{"café-plugin-with-accents-that-runs-long", 10, "café-plug…"}, // rune-safe
+		{"x", 1, "x"},
+		{"xy", 1, "…"},
+	}
+	for _, tt := range tests {
+		if got := truncateForTable(tt.in, tt.max); got != tt.want {
+			t.Fatalf("truncateForTable(%q, %d) = %q, want %q", tt.in, tt.max, got, tt.want)
+		}
+	}
+	// The multibyte case must not split a rune: result stays valid UTF-8.
+	if got := truncateForTable("héllo-wörld-café", 8); len([]rune(got)) != 8 {
+		t.Fatalf("expected 8 runes, got %d (%q)", len([]rune(got)), got)
+	}
+}
+
 func TestLocalizedName(t *testing.T) {
 	tests := []struct {
 		name map[string]string
@@ -150,8 +174,8 @@ func TestListPluginInstances_SinglePage(t *testing.T) {
 func TestListPluginInstances_Paginates(t *testing.T) {
 	full := "[" + strings.Repeat(`{"pluginInstanceId":"x"},`, pluginInstancesPageSize-1) + `{"pluginInstanceId":"x"}]`
 	c := &seqClient{getQueue: []stubResp{
-		{status: 200, body: full},                          // exactly 250 -> fetch again
-		{status: 200, body: `[{"pluginInstanceId":"y"}]`},  // short page -> stop
+		{status: 200, body: full},                         // exactly 250 -> fetch again
+		{status: 200, body: `[{"pluginInstanceId":"y"}]`}, // short page -> stop
 	}}
 
 	items, err := listPluginInstances(context.Background(), c)

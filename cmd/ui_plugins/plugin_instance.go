@@ -22,6 +22,10 @@ const (
 	resolveAliasEndpoint = pluginInstancesEndpoint + "/resolve-alias"
 	// pluginInstancesPageSize is the UMS maximum page size for the list endpoint.
 	pluginInstancesPageSize = 250
+	// tableColumnMaxWidth caps the width of author-entered columns (alias, name) in
+	// the list table so long values don't blow out the layout. Full values are always
+	// available via --json.
+	tableColumnMaxWidth = 40
 )
 
 // pluginInstance is the subset of the UMS PluginInstanceDto the list and delete
@@ -189,13 +193,33 @@ func localizedName(name map[string]string) string {
 }
 
 // renderPluginInstanceTable prints instances as an Alias/Id/Name/Created table,
-// sorted by alias.
+// sorted by alias. Author-entered columns (alias, name) are truncated for layout;
+// full values remain available via --json.
 func renderPluginInstanceTable(w io.Writer, items []pluginInstance) {
 	rows := make([][]string, 0, len(items))
 	for _, p := range items {
-		rows = append(rows, []string{p.Alias, p.PluginInstanceID, localizedName(p.Name), p.Created})
+		rows = append(rows, []string{
+			truncateForTable(p.Alias, tableColumnMaxWidth),
+			p.PluginInstanceID,
+			truncateForTable(localizedName(p.Name), tableColumnMaxWidth),
+			p.Created,
+		})
 	}
 	output.WriteTable(w, []string{"Alias", "Id", "Name", "Created"}, rows, "Alias")
+}
+
+// truncateForTable shortens s to at most maxRunes runes, appending an ellipsis when
+// truncated. It counts runes, not bytes, so multibyte author-entered text is never
+// split mid-character.
+func truncateForTable(s string, maxRunes int) string {
+	runes := []rune(s)
+	if len(runes) <= maxRunes {
+		return s
+	}
+	if maxRunes <= 1 {
+		return "…"
+	}
+	return string(runes[:maxRunes-1]) + "…"
 }
 
 // renderDeleteConfirmation prints the details of the instance about to be deleted,

@@ -7,7 +7,7 @@ All instances are returned — the command pages through the backend internally,
 
 ## Output
 
-By default a table is printed; an empty tenant prints `No plugin instances found.` Use `--json` to print the raw plugin instance list as a JSON array instead (useful for scripting).
+By default a table is printed; an empty tenant prints `No plugin instances found.` Long author-entered values (alias, name) are truncated with an ellipsis to keep the table readable — use `--json` to print the raw, untruncated plugin instance list as a JSON array (useful for scripting).
 ====
 
 ==Example==
