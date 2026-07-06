@@ -1,4 +1,3 @@
-// Copyright (c) 2026, SailPoint Technologies, Inc. All rights reserved.
 package ui_plugins
 
 import (
@@ -17,8 +16,8 @@ func TestNewUIPluginsCommandStructure(t *testing.T) {
 		t.Fatal("expected ui-plugins command to be hidden")
 	}
 
-	if len(cmd.Commands()) != 7 {
-		t.Fatalf("expected 7 subcommands, got %d", len(cmd.Commands()))
+	if len(cmd.Commands()) != 8 {
+		t.Fatalf("expected 8 subcommands, got %d", len(cmd.Commands()))
 	}
 }
 

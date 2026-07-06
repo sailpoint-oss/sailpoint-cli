@@ -1,4 +1,3 @@
-// Copyright (c) 2026, SailPoint Technologies, Inc. All rights reserved.
 package ui_plugins
 
 import (
@@ -42,6 +41,7 @@ func NewUIPluginsCommand() *cobra.Command {
 		newUploadCommand(),
 		newListCommand(),
 		newDeleteCommand(),
+		newValidateManifestCommand(),
 	)
 
 	return cmd

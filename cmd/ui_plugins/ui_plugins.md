@@ -17,6 +17,7 @@ Planned workflow commands:
 - upload
 - list
 - delete
+- validate-manifest (alias: validate) — offline structural validation of `./sp-ui-plugin.json`; does not call UMS
 ====
 
 ==Example==
