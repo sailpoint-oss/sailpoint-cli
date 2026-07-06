@@ -4,7 +4,7 @@ import (
 	"context"
 	_ "embed"
 
-	beta "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
+	"github.com/sailpoint-oss/golang-sdk/v3/managed_clusters"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
@@ -30,9 +30,9 @@ func newGetCommand() *cobra.Command {
 			}
 
 			if len(args) > 0 {
-				var output []*beta.ManagedCluster
+				var output []*managed_clusters.Managedcluster
 				for _, id := range args {
-					clusters, resp, clustersErr := apiClient.Beta.ManagedClustersAPI.GetManagedCluster(context.TODO(), id).Execute()
+					clusters, resp, clustersErr := apiClient.ManagedClustersAPI.GetManagedClusterV1(context.TODO(), id).Execute()
 					if clustersErr != nil {
 						return sdk.HandleSDKError(resp, clustersErr)
 					}

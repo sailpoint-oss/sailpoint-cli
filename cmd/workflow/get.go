@@ -5,7 +5,7 @@ import (
 	"context"
 	_ "embed"
 
-	beta "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
+	"github.com/sailpoint-oss/golang-sdk/v3/workflows"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
@@ -31,7 +31,7 @@ func newGetCommand() *cobra.Command {
 				return err
 			}
 
-			workflows, resp, sdkErr := apiClient.Beta.WorkflowsAPI.ListWorkflows(context.TODO()).Execute()
+			workflowList, resp, sdkErr := apiClient.WorkflowsAPI.ListWorkflowsV1(context.TODO()).Execute()
 			if sdkErr != nil {
 				err := sdk.HandleSDKError(resp, sdkErr)
 				if err != nil {
@@ -40,17 +40,17 @@ func newGetCommand() *cobra.Command {
 			}
 
 			if len(args) > 0 {
-				var filteredList []beta.Workflow
-				for _, workflow := range workflows {
+				var filteredList []workflows.Workflow
+				for _, workflow := range workflowList {
 					if slices.Contains(args, *workflow.Id) {
 						filteredList = append(filteredList, workflow)
 
 					}
 				}
-				workflows = filteredList
+				workflowList = filteredList
 			}
 
-			cmd.Println(util.PrettyPrint(workflows))
+			cmd.Println(util.PrettyPrint(workflowList))
 
 			return nil
 		},

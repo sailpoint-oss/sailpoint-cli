@@ -25,7 +25,7 @@ func newDeleteCommand() *cobra.Command {
 
 			for _, transformID := range args {
 
-				_, err = apiClient.V3.TransformsAPI.DeleteTransform(context.TODO(), transformID).Execute()
+				_, err = apiClient.TransformsAPI.DeleteTransformV1(context.TODO(), transformID).Execute()
 				if err != nil {
 					return err
 				}

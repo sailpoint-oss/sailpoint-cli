@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
-	sailpoint "github.com/sailpoint-oss/golang-sdk/v2"
+	sailpoint "github.com/sailpoint-oss/golang-sdk/v3"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/types"
 	"github.com/spf13/viper"
 	keyring "github.com/zalando/go-keyring"
@@ -169,6 +169,7 @@ func InitAPIClient(experimental bool) (*sailpoint.APIClient, error) {
 	}
 
 	apiClient = sailpoint.NewAPIClient(configuration)
+
 	if GetDebug() {
 		logger := log.NewWithOptions(os.Stdout, log.Options{
 			ReportCaller:    true,
@@ -176,12 +177,10 @@ func InitAPIClient(experimental bool) (*sailpoint.APIClient, error) {
 			Level:           log.DebugLevel,
 		})
 		debugLogger := logger.StandardLog(log.StandardLogOptions{ForceLevel: log.DebugLevel})
-		apiClient.V3.GetConfig().HTTPClient.Logger = debugLogger
-		apiClient.Beta.GetConfig().HTTPClient.Logger = debugLogger
+		configuration.HTTPClient.Logger = debugLogger
 	} else {
 		var DevNull types.DevNull
-		apiClient.V3.GetConfig().HTTPClient.Logger = DevNull
-		apiClient.Beta.GetConfig().HTTPClient.Logger = DevNull
+		configuration.HTTPClient.Logger = DevNull
 	}
 
 	return apiClient, nil

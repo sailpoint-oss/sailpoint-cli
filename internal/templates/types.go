@@ -1,8 +1,8 @@
 package templates
 
 import (
-	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
-	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v2/api_v3"
+	sailpointbetasdk "github.com/sailpoint-oss/golang-sdk/v3/sp_config"
+	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v3/search"
 )
 
 type Template interface {
@@ -40,7 +40,7 @@ type ExportTemplate struct {
 	Name        string                         `json:"name"`
 	Description string                         `json:"description"`
 	Variables   []Variable                     `json:"variables"`
-	ExportBody  sailpointbetasdk.ExportPayload `json:"exportBody"`
+	ExportBody  sailpointbetasdk.Exportpayload `json:"exportBody"`
 	Raw         []byte
 }
 

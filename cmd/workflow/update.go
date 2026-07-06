@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	beta "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
+	"github.com/sailpoint-oss/golang-sdk/v3/workflows"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
@@ -31,7 +31,7 @@ func newUpdateCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			var workflowFiles []string
-			var workflowList []beta.Workflow
+			var workflowList []workflows.Workflow
 
 			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
@@ -59,7 +59,7 @@ func newUpdateCommand() *cobra.Command {
 			}
 
 			for _, workflowFile := range workflowFiles {
-				var workflow beta.Workflow
+				var workflow workflows.Workflow
 				contents, err := os.ReadFile(workflowFile)
 				if err != nil {
 					return err
@@ -75,10 +75,10 @@ func newUpdateCommand() *cobra.Command {
 					return err
 				}
 
-				workFlowBody := beta.WorkflowBody{}
+				workFlowBody := workflows.Workflowbody{}
 				workFlowBody.UnmarshalJSON(body)
 
-				returnedWorkflow, resp, sdkErr := apiClient.Beta.WorkflowsAPI.PutWorkflow(context.TODO(), *workflowEntry.Id).WorkflowBody(workFlowBody).Execute()
+				returnedWorkflow, resp, sdkErr := apiClient.WorkflowsAPI.PutWorkflowV1(context.TODO(), *workflowEntry.Id).Workflowbody(workFlowBody).Execute()
 				if sdkErr != nil {
 					err := sdk.HandleSDKError(resp, sdkErr)
 					if err != nil {

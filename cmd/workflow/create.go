@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	beta "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
+	"github.com/sailpoint-oss/golang-sdk/v3/workflows"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
@@ -35,8 +35,8 @@ func newCreateCommand() *cobra.Command {
 				return err
 			}
 
-			var workflows []beta.Workflow
-			var returnedWorkflows []beta.Workflow
+			var workflowList []workflows.Workflow
+			var returnedWorkflows []workflows.Workflow
 			var workflowFiles []string
 
 			if directory {
@@ -63,38 +63,38 @@ func newCreateCommand() *cobra.Command {
 
 			for _, filePath := range workflowFiles {
 
-				file, err := os.OpenFile(filePath, os.O_RDONLY, os.ModePerm)
+				f, err := os.OpenFile(filePath, os.O_RDONLY, os.ModePerm)
 				if err != nil {
 					return err
 				}
 
-				decoder := json.NewDecoder(file)
+				decoder := json.NewDecoder(f)
 				decoder.DisallowUnknownFields()
 
-				var workflow beta.Workflow
+				var workflow workflows.Workflow
 				err = decoder.Decode(&workflow)
 				if err != nil {
 					return err
 				}
 
-				workflows = append(workflows, workflow)
+				workflowList = append(workflowList, workflow)
 
 			}
 
-			for _, workflow := range workflows {
+			for _, workflow := range workflowList {
 				body, err := workflow.MarshalJSON()
 				if err != nil {
 					return err
 				}
 
-				createReq := beta.CreateWorkflowRequest{}
+				createReq := workflows.CreateWorkflowV1Request{}
 
 				err = createReq.UnmarshalJSON(body)
 				if err != nil {
 					return err
 				}
 
-				workflowResp, resp, sdkErr := apiClient.Beta.WorkflowsAPI.CreateWorkflow(context.TODO()).CreateWorkflowRequest(createReq).Execute()
+				workflowResp, resp, sdkErr := apiClient.WorkflowsAPI.CreateWorkflowV1(context.TODO()).CreateWorkflowV1Request(createReq).Execute()
 				if sdkErr != nil {
 					err := sdk.HandleSDKError(resp, sdkErr)
 					if err != nil {

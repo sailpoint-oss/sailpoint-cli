@@ -7,8 +7,8 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/mitchellh/mapstructure"
-	sailpoint "github.com/sailpoint-oss/golang-sdk/v2"
-	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v2/api_v3"
+	sailpoint "github.com/sailpoint-oss/golang-sdk/v3"
+	sailpointsdk "github.com/sailpoint-oss/golang-sdk/v3/search"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
 )
 
@@ -35,7 +35,7 @@ func BuildSearch(searchQuery string, sort []string, indices []string) (sailpoint
 
 	search := sailpointsdk.NewSearch()
 	search.Query = sailpointsdk.NewQuery()
-	search.QueryResultFilter = sailpointsdk.NewQueryResultFilter()
+	search.QueryResultFilter = sailpointsdk.NewQueryresultfilter()
 	search.Query.Query = &searchQuery
 	search.Sort = sort
 	search.Indices = []sailpointsdk.Index{}
@@ -57,7 +57,7 @@ func PerformSearch(apiClient sailpoint.APIClient, search sailpointsdk.Search) (S
 	var SearchResults SearchResults
 
 	ctx := context.TODO()
-	resp, r, err := sailpoint.PaginateWithDefaults[map[string]interface{}](apiClient.V3.SearchAPI.SearchPost(ctx).Search(search))
+	resp, r, err := sailpoint.PaginateWithDefaults[map[string]interface{}](apiClient.SearchAPI.SearchPostV1(ctx).Search(search))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -129,7 +129,7 @@ func PerformSearchWithLimit(apiClient sailpoint.APIClient, search sailpointsdk.S
 	}
 
 	ctx := context.TODO()
-	resp, r, err := apiClient.V3.SearchAPI.SearchPost(ctx).Search(search).Limit(limit).Execute()
+	resp, r, err := apiClient.SearchAPI.SearchPostV1(ctx).Search(search).Limit(limit).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)

@@ -9,10 +9,10 @@ import (
 	"os"
 
 	"github.com/charmbracelet/log"
-	sailpoint "github.com/sailpoint-oss/golang-sdk/v2"
-	beta "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
-	v2024 "github.com/sailpoint-oss/golang-sdk/v2/api_v2024"
-	v3 "github.com/sailpoint-oss/golang-sdk/v2/api_v3"
+	sailpoint "github.com/sailpoint-oss/golang-sdk/v3"
+	"github.com/sailpoint-oss/golang-sdk/v3/identity_attributes"
+	"github.com/sailpoint-oss/golang-sdk/v3/identity_profiles"
+	"github.com/sailpoint-oss/golang-sdk/v3/transforms"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/output"
@@ -29,9 +29,9 @@ func newPreviewCommand() *cobra.Command {
 	var filepath string
 	var profile string
 	var identity string
-	var identityProfile *v2024.IdentityProfile
-	var identityAttributeConfig *v2024.IdentityAttributeConfig
-	var identityPreview *v2024.IdentityPreviewResponse
+	var identityProfile *identity_profiles.Identityprofile
+	var identityAttributeConfig *identity_profiles.Identityattributeconfig
+	var identityPreview *identity_profiles.Identitypreviewresponse
 	cmd := &cobra.Command{
 		Use:     "preview",
 		Short:   "Preview a transform result in Identity Security Cloud",
@@ -40,7 +40,7 @@ func newPreviewCommand() *cobra.Command {
 		Aliases: []string{"pre"},
 		Args:    cobra.OnlyValidArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var transform v2024.Transform
+			var transform transforms.Transform
 			var decoder *json.Decoder
 
 			if profile == "" && identity == "" {
@@ -79,7 +79,7 @@ func newPreviewCommand() *cobra.Command {
 				return err
 			}
 
-			transformObj, resp, err := apiClient.V2024.TransformsAPI.CreateTransform(context.TODO()).Transform(transform).Execute()
+			transformObj, resp, err := apiClient.TransformsAPI.CreateTransformV1(context.TODO()).Transform(transform).Execute()
 
 			defer cleanupPreviewObjects(apiClient, transformObj.GetId())
 
@@ -88,7 +88,7 @@ func newPreviewCommand() *cobra.Command {
 			}
 
 			var attributeType = "string"
-			identityAttribute, resp, err := apiClient.Beta.IdentityAttributesAPI.CreateIdentityAttribute(context.TODO()).IdentityAttribute(beta.IdentityAttribute{Name: "sailpointCLIPreview", Type: *beta.NewNullableString(&attributeType)}).Execute()
+			identityAttribute, resp, err := apiClient.IdentityAttributesAPI.CreateIdentityAttributeV1(context.TODO()).Identityattribute2(identity_attributes.Identityattribute2{Name: "sailpointCLIPreview", Type: *identity_attributes.NewNullableString(&attributeType)}).Execute()
 
 			defer cleanupIdentityAttribute(apiClient, identityAttribute.GetName())
 
@@ -97,18 +97,18 @@ func newPreviewCommand() *cobra.Command {
 			}
 
 			if profile == "" {
-				identity_profiles, resp, err := sailpoint.PaginateWithDefaults[v3.IdentityProfile](apiClient.V3.IdentityProfilesAPI.ListIdentityProfiles(context.TODO()))
+				profileList, resp, err := sailpoint.PaginateWithDefaults[identity_profiles.Identityprofile](apiClient.IdentityProfilesAPI.ListIdentityProfilesV1(context.TODO()))
 				if err != nil {
 					return sdk.HandleSDKError(resp, err)
 				}
 
-				profile, err = SelectProfile(identity_profiles)
+				profile, err = SelectProfile(profileList)
 				if err != nil {
 					return err
 				}
 			}
 
-			identityProfile, resp, err = apiClient.V2024.IdentityProfilesAPI.GetIdentityProfile(context.TODO(), profile).Execute()
+			identityProfile, resp, err = apiClient.IdentityProfilesAPI.GetIdentityProfileV1(context.TODO(), profile).Execute()
 
 			if err != nil {
 				return sdk.HandleSDKError(resp, err)
@@ -136,9 +136,9 @@ func newPreviewCommand() *cobra.Command {
 			}
 
 			var transformType = "reference"
-			identityAttributeConfig.AttributeTransforms = append(identityAttributeConfig.AttributeTransforms, v2024.IdentityAttributeTransform{
+			identityAttributeConfig.AttributeTransforms = append(identityAttributeConfig.AttributeTransforms, identity_profiles.Identityattributetransform{
 				IdentityAttributeName: &identityAttribute.Name,
-				TransformDefinition: &v2024.TransformDefinition{
+				TransformDefinition: &identity_profiles.Transformdefinition{
 					Type: &transformType,
 					Attributes: map[string]interface{}{
 						"id": transformObj.GetName(),
@@ -147,15 +147,15 @@ func newPreviewCommand() *cobra.Command {
 			})
 
 			var enabled = true
-			var request = v2024.IdentityPreviewRequest{
+			var request = identity_profiles.Identitypreviewrequest{
 				IdentityId: &identity,
-				IdentityAttributeConfig: &v2024.IdentityAttributeConfig{
+				IdentityAttributeConfig: &identity_profiles.Identityattributeconfig{
 					Enabled:             &enabled,
 					AttributeTransforms: identityAttributeConfig.AttributeTransforms,
 				},
 			}
 
-			identityPreview, resp, err = apiClient.V2024.IdentityProfilesAPI.GenerateIdentityPreview(context.TODO()).IdentityPreviewRequest(request).Execute()
+			identityPreview, resp, err = apiClient.IdentityProfilesAPI.GenerateIdentityPreviewV1(context.TODO()).Identitypreviewrequest(request).Execute()
 
 			if err != nil {
 				//fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -210,7 +210,7 @@ func newPreviewCommand() *cobra.Command {
 	return cmd
 }
 
-func SelectProfile[T v3.IdentityProfile](profiles []v3.IdentityProfile) (string, error) {
+func SelectProfile(profiles []identity_profiles.Identityprofile) (string, error) {
 	var prompts []tui.Choice
 	for i := 0; i < len(profiles); i++ {
 		temp := profiles[i]
@@ -245,7 +245,7 @@ func SelectIdentity[T search.Identity](identities []search.Identity) (string, er
 func cleanupPreviewObjects(apiClient *sailpoint.APIClient, transformId string) error {
 	log.Debug("Cleaning up preview objects")
 
-	resp, err := apiClient.V2024.TransformsAPI.DeleteTransform(context.TODO(), transformId).Execute()
+	resp, err := apiClient.TransformsAPI.DeleteTransformV1(context.TODO(), transformId).Execute()
 	if err != nil {
 		return sdk.HandleSDKError(resp, err)
 	}
@@ -256,7 +256,7 @@ func cleanupPreviewObjects(apiClient *sailpoint.APIClient, transformId string) e
 func cleanupIdentityAttribute(apiClient *sailpoint.APIClient, attributeName string) error {
 	log.Debug("Cleaning up identity attribute object")
 
-	resp, err := apiClient.Beta.IdentityAttributesAPI.DeleteIdentityAttribute(context.TODO(), attributeName).Execute()
+	resp, err := apiClient.IdentityAttributesAPI.DeleteIdentityAttributeV1(context.TODO(), attributeName).Execute()
 
 	if err != nil {
 		return sdk.HandleSDKError(resp, err)

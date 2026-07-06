@@ -30,7 +30,7 @@ func newGetCommand() *cobra.Command {
 
 			for _, clusterId := range args {
 
-				configuration, resp, err := apiClient.Beta.ManagedClustersAPI.GetClientLogConfiguration(context.TODO(), clusterId).Execute()
+				configuration, resp, err := apiClient.ManagedClustersAPI.GetClientLogConfigurationV1(context.TODO(), clusterId).Execute()
 				if err != nil {
 					return sdk.HandleSDKError(resp, err)
 				}

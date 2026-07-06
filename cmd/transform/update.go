@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/charmbracelet/log"
-	beta "github.com/sailpoint-oss/golang-sdk/v2/api_beta"
+	"github.com/sailpoint-oss/golang-sdk/v3/transforms"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/spf13/cobra"
@@ -23,7 +23,7 @@ func newUpdateCommand() *cobra.Command {
 		Aliases: []string{"u"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var transform beta.TransformRead
+			var transform transforms.Transformread
 
 			filepath := cmd.Flags().Lookup("file").Value.String()
 			if filepath != "" {
@@ -53,14 +53,14 @@ func newUpdateCommand() *cobra.Command {
 
 			log.Info("Updating Transform", "transformID", id)
 
-			updateTransform := beta.Transform{Attributes: transform.Attributes, Type: transform.Type, Name: transform.Name}
+			updateTransform := transforms.Transform{Attributes: transform.Attributes, Type: transform.Type, Name: transform.Name}
 
 			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
 				return err
 			}
 
-			_, resp, err := apiClient.Beta.TransformsAPI.UpdateTransform(context.TODO(), id).Transform(updateTransform).Execute()
+			_, resp, err := apiClient.TransformsAPI.UpdateTransformV1(context.TODO(), id).Transform(updateTransform).Execute()
 			if err != nil {
 				return sdk.HandleSDKError(resp, err)
 			}

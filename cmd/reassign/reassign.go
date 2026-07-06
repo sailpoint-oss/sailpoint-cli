@@ -16,8 +16,15 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
-	sailpoint "github.com/sailpoint-oss/golang-sdk/v2"
-	"github.com/sailpoint-oss/golang-sdk/v2/api_v2024"
+	sailpoint "github.com/sailpoint-oss/golang-sdk/v3"
+	"github.com/sailpoint-oss/golang-sdk/v3/access_profiles"
+	"github.com/sailpoint-oss/golang-sdk/v3/entitlements"
+	"github.com/sailpoint-oss/golang-sdk/v3/governance_groups"
+	"github.com/sailpoint-oss/golang-sdk/v3/identities"
+	"github.com/sailpoint-oss/golang-sdk/v3/identity_profiles"
+	"github.com/sailpoint-oss/golang-sdk/v3/roles"
+	"github.com/sailpoint-oss/golang-sdk/v3/sources"
+	"github.com/sailpoint-oss/golang-sdk/v3/workflows"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
@@ -48,13 +55,13 @@ type ReassignSummary struct {
 	ObjectTypes      []string
 	DryRun           bool
 	Verbose          bool
-	Sources          []api_v2024.Source
-	Roles            []api_v2024.Role
-	AccessProfiles   []api_v2024.AccessProfile
-	Entitlements     []api_v2024.Entitlement
-	IdentityProfiles []api_v2024.IdentityProfile
-	GovernanceGroups []api_v2024.WorkgroupDto
-	Workflows        []api_v2024.Workflow
+	Sources          []sources.Source
+	Roles            []roles.Role
+	AccessProfiles   []access_profiles.Accessprofile
+	Entitlements     []entitlements.Entitlementv2
+	IdentityProfiles []identity_profiles.Identityprofile
+	GovernanceGroups []governance_groups.Workgroupdto
+	Workflows        []workflows.Workflow
 	Errors           map[string][]string
 }
 
@@ -261,7 +268,7 @@ func NewReassignCommand() *cobra.Command {
 
 func determineObjectTypeAndCreateReassignment(objectId string, from string, to string, dryRun bool) (ReassignSummary, error) {
 	var summary ReassignSummary
-	var reassignIdentities []api_v2024.Identity
+	var reassignIdentities []identities.Identity
 	var objectsToReassign []string
 
 	apiClient, err := config.InitAPIClient(true)
@@ -272,7 +279,7 @@ func determineObjectTypeAndCreateReassignment(objectId string, from string, to s
 
 	if from != "" && to != "" {
 		filters := fmt.Sprintf("id in (\"%s\",\"%s\")", from, to)
-		identities, _, err := apiClient.V2024.IdentitiesAPI.ListIdentities(context.TODO()).Filters(filters).Execute()
+		identities, _, err := apiClient.IdentitiesAPI.ListIdentitiesV1(context.TODO()).Filters(filters).Execute()
 		if err != nil {
 			return summary, err
 		}
@@ -294,7 +301,7 @@ func determineObjectTypeAndCreateReassignment(objectId string, from string, to s
 	summary = NewReassignSummary(fromIdentity, toIdentity, objectsToReassign, dryRun)
 
 	// Check if the objectId is a source
-	source, resp, err := apiClient.V2024.SourcesAPI.GetSource(context.TODO(), objectId).Execute()
+	source, resp, err := apiClient.SourcesAPI.GetSourceV1(context.TODO(), objectId).Execute()
 	if err != nil {
 		if resp.StatusCode != http.StatusNotFound && resp.StatusCode != http.StatusBadRequest {
 			log.Debug("Error getting access profile:", "error", err)
@@ -313,7 +320,7 @@ func determineObjectTypeAndCreateReassignment(objectId string, from string, to s
 	}
 
 	// Check if the objectId is a role
-	role, resp, err := apiClient.V2024.RolesAPI.GetRole(context.TODO(), objectId).Execute()
+	role, resp, err := apiClient.RolesAPI.GetRoleV1(context.TODO(), objectId).Execute()
 	if err != nil {
 		if resp.StatusCode != http.StatusNotFound && resp.StatusCode != http.StatusBadRequest {
 			log.Debug("Error getting access profile:", "error", err)
@@ -331,7 +338,7 @@ func determineObjectTypeAndCreateReassignment(objectId string, from string, to s
 	}
 
 	// Check if the objectId is an access profile
-	accessProfile, resp, err := apiClient.V2024.AccessProfilesAPI.GetAccessProfile(context.TODO(), objectId).Execute()
+	accessProfile, resp, err := apiClient.AccessProfilesAPI.GetAccessProfileV1(context.TODO(), objectId).Execute()
 	if err != nil {
 		if resp.StatusCode != http.StatusNotFound && resp.StatusCode != http.StatusBadRequest {
 			log.Debug("Error getting access profile:", "error", err)
@@ -349,7 +356,7 @@ func determineObjectTypeAndCreateReassignment(objectId string, from string, to s
 		}
 	}
 
-	entitlement, resp, err := apiClient.V2024.EntitlementsAPI.GetEntitlement(context.TODO(), objectId).Execute()
+	entitlement, resp, err := apiClient.EntitlementsAPI.GetEntitlementV1(context.TODO(), objectId).Execute()
 	if err != nil {
 		if resp.StatusCode != http.StatusNotFound && resp.StatusCode != http.StatusBadRequest {
 			log.Debug("Error getting entitlement:", "error", err)
@@ -366,7 +373,7 @@ func determineObjectTypeAndCreateReassignment(objectId string, from string, to s
 		}
 	}
 
-	identityProfile, resp, err := apiClient.V2024.IdentityProfilesAPI.GetIdentityProfile(context.TODO(), objectId).Execute()
+	identityProfile, resp, err := apiClient.IdentityProfilesAPI.GetIdentityProfileV1(context.TODO(), objectId).Execute()
 	if err != nil {
 		if resp.StatusCode != http.StatusNotFound && resp.StatusCode != http.StatusBadRequest {
 			log.Debug("Error getting identity profile:", "error", err)
@@ -384,7 +391,7 @@ func determineObjectTypeAndCreateReassignment(objectId string, from string, to s
 		}
 	}
 
-	governanceGroup, resp, err := apiClient.V2024.GovernanceGroupsAPI.GetWorkgroup(context.TODO(), objectId).Execute()
+	governanceGroup, resp, err := apiClient.GovernanceGroupsAPI.GetWorkgroupV1(context.TODO(), objectId).Execute()
 	if err != nil {
 		if resp.StatusCode != http.StatusNotFound && resp.StatusCode != http.StatusBadRequest {
 			log.Debug("Error getting governance group:", "error", err)
@@ -402,7 +409,7 @@ func determineObjectTypeAndCreateReassignment(objectId string, from string, to s
 		}
 	}
 
-	workflow, resp, err := apiClient.V2024.WorkflowsAPI.GetWorkflow(context.TODO(), objectId).Execute()
+	workflow, resp, err := apiClient.WorkflowsAPI.GetWorkflowV1(context.TODO(), objectId).Execute()
 	if err != nil {
 		if resp.StatusCode != http.StatusNotFound && resp.StatusCode != http.StatusBadRequest {
 			log.Debug("Error getting workflow:", "error", err)
@@ -561,7 +568,7 @@ func NewReassignSummary(fromIdentity Identity, toIdentity Identity, supportedObj
 	}
 }
 
-func getNameByID(identities []api_v2024.Identity, targetID string) string {
+func getNameByID(identities []identities.Identity, targetID string) string {
 	for _, identity := range identities {
 		if *identity.Id == targetID {
 			return identity.Name
@@ -598,7 +605,7 @@ func (m model) Init() tea.Cmd {
 		if err != nil {
 			return func() tea.Msg { return errMsg(err) }
 		}
-		return tea.Batch(m.spinner.Tick, nextReassignmentStepCmd(apiClient.V2024, *m.reassignResult, 0))
+		return tea.Batch(m.spinner.Tick, nextReassignmentStepCmd(apiClient, *m.reassignResult, 0))
 	}
 	return tea.Batch(m.spinner.Tick, fetchReassignSummaryCmd(m.from, m.to, m.objectTypes, m.dryRun, m.force))
 }
@@ -608,16 +615,16 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 		// your logic here (init API, gather data, etc)
 		// return errMsg(err) on error or summaryMsg(result)
 		var objectsToReassign []string
-		var reassignIdentities []api_v2024.Identity
-		var sources []api_v2024.Source
-		var roles []api_v2024.Role
-		var accessProfiles []api_v2024.AccessProfile
-		var identityProfiles []api_v2024.IdentityProfile
-		var filteredIdentityProfiles []api_v2024.IdentityProfile
-		var entitlements []api_v2024.Entitlement
-		var governanceGroups []api_v2024.WorkgroupDto
-		var filteredGovernanceGroups []api_v2024.WorkgroupDto
-		var filteredWorkflows []api_v2024.Workflow
+		var reassignIdentities []identities.Identity
+		var sourceList []sources.Source
+		var roleList []roles.Role
+		var accessProfileList []access_profiles.Accessprofile
+		var identityProfileList []identity_profiles.Identityprofile
+		var filteredIdentityProfiles []identity_profiles.Identityprofile
+		var entitlementList []entitlements.Entitlementv2
+		var governanceGroupList []governance_groups.Workgroupdto
+		var filteredGovernanceGroups []governance_groups.Workgroupdto
+		var filteredWorkflows []workflows.Workflow
 		var resp *http.Response
 
 		apiClient, err := config.InitAPIClient(true)
@@ -627,7 +634,7 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 		}
 		if from != "" && to != "" {
 			filters := fmt.Sprintf("id in (\"%s\",\"%s\")", from, to)
-			identities, _, err := apiClient.V2024.IdentitiesAPI.ListIdentities(context.TODO()).Filters(filters).Execute()
+			identities, _, err := apiClient.IdentitiesAPI.ListIdentitiesV1(context.TODO()).Filters(filters).Execute()
 			if err != nil {
 				return errMsg(err)
 			}
@@ -663,7 +670,7 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 			log.Debug("Gathering sources to reassign")
 
 			filters := fmt.Sprintf("owner.id eq \"%s\"", from)
-			_, resp, err = apiClient.V2024.SourcesAPI.ListSources(context.TODO()).Filters(filters).Count(true).Limit(1).Execute()
+			_, resp, err = apiClient.SourcesAPI.ListSourcesV1(context.TODO()).Filters(filters).Count(true).Limit(1).Execute()
 
 			if err != nil {
 				return errMsg(fmt.Errorf("failed to get count of sources owned by id %s: %w", fromIdentity.ID, err))
@@ -680,29 +687,29 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 			if totalSources > 250 {
 				// Paginate through the sources
 				log.Debug("Paginating Sources, total to reassign: ", totalSources)
-				sources, _, err = sailpoint.Paginate[api_v2024.Source](apiClient.V2024.SourcesAPI.ListSources(context.TODO()).Filters(filters), 0, 250, int32(totalSources))
+				sourceList, _, err = sailpoint.Paginate[sources.Source](apiClient.SourcesAPI.ListSourcesV1(context.TODO()).Filters(filters), 0, 250, int32(totalSources))
 
 				if err != nil {
 					return errMsg(fmt.Errorf("failed to paginate sources owned by id %s: %w", fromIdentity.ID, err))
 				}
 
 			} else {
-				sources, _, err = apiClient.V2024.SourcesAPI.ListSources(context.TODO()).Filters(filters).Execute()
+				sourceList, _, err = apiClient.SourcesAPI.ListSourcesV1(context.TODO()).Filters(filters).Execute()
 
 				if err != nil {
 					return errMsg(fmt.Errorf("failed to retrieve sources owned by id %s: %w", fromIdentity.ID, err))
 				}
 			}
 
-			reassignSummary.Sources = sources
-			reassignSummary.ObjectCounts["source"] = len(sources)
+			reassignSummary.Sources = sourceList
+			reassignSummary.ObjectCounts["source"] = len(sourceList)
 
 		}
 
 		if contains(objectsToReassign, "role") {
 			log.Debug("Gathering roles to reassign")
 			filters := fmt.Sprintf("owner.id eq \"%s\"", from)
-			_, resp, err = apiClient.V2024.RolesAPI.ListRoles(context.TODO()).Filters(filters).Count(true).Limit(1).Execute()
+			_, resp, err = apiClient.RolesAPI.ListRolesV1(context.TODO()).Filters(filters).Count(true).Limit(1).Execute()
 			if err != nil {
 				return errMsg(fmt.Errorf("failed to get count of roles owned by id %s: %w", fromIdentity.ID, err))
 			}
@@ -717,28 +724,28 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 			if totalRoles > 250 {
 				// Paginate through the roles
 				log.Debug("Paginating roles, total to reassign: ", totalRoles)
-				roles, _, err = sailpoint.Paginate[api_v2024.Role](apiClient.V2024.RolesAPI.ListRoles(context.TODO()).Filters(filters), 0, 250, int32(totalRoles))
+				roleList, _, err = sailpoint.Paginate[roles.Role](apiClient.RolesAPI.ListRolesV1(context.TODO()).Filters(filters), 0, 250, int32(totalRoles))
 
 				if err != nil {
 					return errMsg(fmt.Errorf("failed to paginate roles owned by id %s: %w", fromIdentity.ID, err))
 				}
 
 			} else {
-				roles, _, err = apiClient.V2024.RolesAPI.ListRoles(context.TODO()).Filters(filters).Execute()
+				roleList, _, err = apiClient.RolesAPI.ListRolesV1(context.TODO()).Filters(filters).Execute()
 
 				if err != nil {
 					return errMsg(fmt.Errorf("failed to retrieve roles owned by id %s: %w", fromIdentity.ID, err))
 				}
 			}
 
-			reassignSummary.Roles = roles
-			reassignSummary.ObjectCounts["role"] = len(roles)
+			reassignSummary.Roles = roleList
+			reassignSummary.ObjectCounts["role"] = len(roleList)
 		}
 
 		if contains(objectsToReassign, "access-profile") {
 			log.Debug("Gathering access profiles to reassign")
 			filters := fmt.Sprintf("owner.id eq \"%s\"", from)
-			_, resp, err = apiClient.V2024.AccessProfilesAPI.ListAccessProfiles(context.TODO()).Filters(filters).Count(true).Limit(1).Execute()
+			_, resp, err = apiClient.AccessProfilesAPI.ListAccessProfilesV1(context.TODO()).Filters(filters).Count(true).Limit(1).Execute()
 
 			if err != nil {
 				return errMsg(fmt.Errorf("failed to get count of access profiles owned by id %s: %w", fromIdentity.ID, err))
@@ -754,28 +761,28 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 			if totalAccessProfiles > 250 {
 				// Paginate through the roles
 				log.Debug("Paginating access profiles, total to reassign: ", totalAccessProfiles)
-				accessProfiles, _, err = sailpoint.Paginate[api_v2024.AccessProfile](apiClient.V2024.AccessProfilesAPI.ListAccessProfiles(context.TODO()).Filters(filters), 0, 250, int32(totalAccessProfiles))
+				accessProfileList, _, err = sailpoint.Paginate[access_profiles.Accessprofile](apiClient.AccessProfilesAPI.ListAccessProfilesV1(context.TODO()).Filters(filters), 0, 250, int32(totalAccessProfiles))
 
 				if err != nil {
 					return errMsg(fmt.Errorf("failed to paginate access profiles owned by id %s: %w", fromIdentity.ID, err))
 				}
 
 			} else {
-				accessProfiles, _, err = apiClient.V2024.AccessProfilesAPI.ListAccessProfiles(context.TODO()).Filters(filters).Execute()
+				accessProfileList, _, err = apiClient.AccessProfilesAPI.ListAccessProfilesV1(context.TODO()).Filters(filters).Execute()
 
 				if err != nil {
 					return errMsg(fmt.Errorf("failed to retrieve access profiles owned by id %s: %w", fromIdentity.ID, err))
 				}
 			}
 
-			reassignSummary.AccessProfiles = accessProfiles
-			reassignSummary.ObjectCounts["access-profile"] = len(accessProfiles)
+			reassignSummary.AccessProfiles = accessProfileList
+			reassignSummary.ObjectCounts["access-profile"] = len(accessProfileList)
 		}
 
 		if contains(objectsToReassign, "entitlement") {
 			log.Debug("Gathering entitlements to reassign")
 			filters := fmt.Sprintf("owner.id eq \"%s\"", from)
-			_, resp, err = apiClient.V2024.EntitlementsAPI.ListEntitlements(context.TODO()).Filters(filters).Count(true).Limit(1).Execute()
+			_, resp, err = apiClient.EntitlementsAPI.ListEntitlementsV1(context.TODO()).Filters(filters).Count(true).Limit(1).Execute()
 			if err != nil {
 				return errMsg(fmt.Errorf("failed to get count of entitlements owned by id %s: %w", fromIdentity.ID, err))
 			}
@@ -790,27 +797,27 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 			if totalEntitlements > 250 {
 				// Paginate through the roles
 				log.Debug("Paginating entitlements, total to reassign: ", totalEntitlements)
-				entitlements, _, err = sailpoint.Paginate[api_v2024.Entitlement](apiClient.V2024.EntitlementsAPI.ListEntitlements(context.TODO()).Filters(filters), 0, 250, int32(totalEntitlements))
+				entitlementList, _, err = sailpoint.Paginate[entitlements.Entitlementv2](apiClient.EntitlementsAPI.ListEntitlementsV1(context.TODO()).Filters(filters), 0, 250, int32(totalEntitlements))
 
 				if err != nil {
 					return errMsg(fmt.Errorf("failed to paginate entitlements owned by id %s: %w", fromIdentity.ID, err))
 				}
 
 			} else {
-				entitlements, _, err = apiClient.V2024.EntitlementsAPI.ListEntitlements(context.TODO()).Filters(filters).Execute()
+				entitlementList, _, err = apiClient.EntitlementsAPI.ListEntitlementsV1(context.TODO()).Filters(filters).Execute()
 
 				if err != nil {
 					return errMsg(fmt.Errorf("failed to retrieve entitlements owned by id %s: %w", fromIdentity.ID, err))
 				}
 			}
 
-			reassignSummary.Entitlements = entitlements
-			reassignSummary.ObjectCounts["entitlement"] = len(entitlements)
+			reassignSummary.Entitlements = entitlementList
+			reassignSummary.ObjectCounts["entitlement"] = len(entitlementList)
 		}
 
 		if contains(objectsToReassign, "identity-profile") {
 			log.Debug("Gathering identity profiles to reassign")
-			_, resp, err := apiClient.V2024.IdentityProfilesAPI.ListIdentityProfiles(context.TODO()).Count(true).Limit(1).Execute()
+			_, resp, err := apiClient.IdentityProfilesAPI.ListIdentityProfilesV1(context.TODO()).Count(true).Limit(1).Execute()
 			if err != nil {
 				return errMsg(fmt.Errorf("failed to get count of identity profiles owned by id %s: %w", fromIdentity.ID, err))
 			}
@@ -825,14 +832,14 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 			if totalIdentityProfiles > 250 {
 				// Paginate through the roles
 				log.Debug("Paginating identity profiles, total to reassign: ", totalIdentityProfiles)
-				identityProfiles, _, err = sailpoint.Paginate[api_v2024.IdentityProfile](apiClient.V2024.IdentityProfilesAPI.ListIdentityProfiles(context.TODO()), 0, 250, int32(totalIdentityProfiles))
+				identityProfileList, _, err = sailpoint.Paginate[identity_profiles.Identityprofile](apiClient.IdentityProfilesAPI.ListIdentityProfilesV1(context.TODO()), 0, 250, int32(totalIdentityProfiles))
 
 				if err != nil {
 					return errMsg(fmt.Errorf("failed to paginate identity profiles owned by id %s: %w", fromIdentity.ID, err))
 				}
 
 			} else {
-				identityProfiles, _, err = apiClient.V2024.IdentityProfilesAPI.ListIdentityProfiles(context.TODO()).Execute()
+				identityProfileList, _, err = apiClient.IdentityProfilesAPI.ListIdentityProfilesV1(context.TODO()).Execute()
 
 				if err != nil {
 					return errMsg(fmt.Errorf("failed to retrieve identity profiles owned by id %s: %w", fromIdentity.ID, err))
@@ -840,7 +847,7 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 			}
 
 			// Filter identity profiles by owner
-			for _, profile := range identityProfiles {
+			for _, profile := range identityProfileList {
 				if profile.Owner.Get() != nil {
 					if *profile.Owner.Get().Id == from {
 						filteredIdentityProfiles = append(filteredIdentityProfiles, profile)
@@ -854,7 +861,7 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 
 		if contains(objectsToReassign, "governance-group") {
 			log.Debug("Gathering governance groups to reassign")
-			_, resp, err := apiClient.V2024.GovernanceGroupsAPI.ListWorkgroups(context.TODO()).Count(true).Limit(1).Execute()
+			_, resp, err := apiClient.GovernanceGroupsAPI.ListWorkgroupsV1(context.TODO()).Count(true).Limit(1).Execute()
 			if err != nil {
 				return errMsg(fmt.Errorf("failed to get count of governance groups owned by id %s: %w", fromIdentity.ID, err))
 			}
@@ -869,14 +876,14 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 			if totalGovernanceGroups > 250 {
 				// Paginate through the roles
 				log.Debug("Paginating governance groups, total to reassign: ", totalGovernanceGroups)
-				governanceGroups, _, err = sailpoint.Paginate[api_v2024.WorkgroupDto](apiClient.V2024.GovernanceGroupsAPI.ListWorkgroups(context.TODO()), 0, 250, int32(totalGovernanceGroups))
+				governanceGroupList, _, err = sailpoint.Paginate[governance_groups.Workgroupdto](apiClient.GovernanceGroupsAPI.ListWorkgroupsV1(context.TODO()), 0, 250, int32(totalGovernanceGroups))
 
 				if err != nil {
 					return errMsg(fmt.Errorf("failed to paginate governance groups owned by id %s: %w", fromIdentity.ID, err))
 				}
 
 			} else {
-				governanceGroups, _, err = apiClient.V2024.GovernanceGroupsAPI.ListWorkgroups(context.TODO()).Execute()
+				governanceGroupList, _, err = apiClient.GovernanceGroupsAPI.ListWorkgroupsV1(context.TODO()).Execute()
 
 				if err != nil {
 					return errMsg(fmt.Errorf("failed to retrieve governance groups owned by id %s: %w", fromIdentity.ID, err))
@@ -884,7 +891,7 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 			}
 
 			// Filter governance groups by owner
-			for _, group := range governanceGroups {
+			for _, group := range governanceGroupList {
 				if group.Owner.Id != nil && *group.Owner.Id == from {
 					filteredGovernanceGroups = append(filteredGovernanceGroups, group)
 				}
@@ -897,7 +904,7 @@ func fetchReassignSummaryCmd(from string, to string, objectTypes string, dryRun 
 		// No need to paginate workflows due to the limit of 100 per tenant
 		if contains(objectsToReassign, "workflow") {
 			log.Debug("Gathering workflows to reassign")
-			workflows, _, err := apiClient.V2024.WorkflowsAPI.ListWorkflows(context.TODO()).Execute()
+			workflows, _, err := apiClient.WorkflowsAPI.ListWorkflowsV1(context.TODO()).Execute()
 			if err != nil {
 				return errMsg(fmt.Errorf("failed to retrieve workflows owned by id %s: %w", fromIdentity.ID, err))
 			}
@@ -945,7 +952,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err != nil {
 			return m, func() tea.Msg { return errMsg(err) }
 		}
-		return m, nextReassignmentStepCmd(apiClient.V2024, *m.reassignResult, msg)
+		return m, nextReassignmentStepCmd(apiClient, *m.reassignResult, msg)
 	default:
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
@@ -978,7 +985,7 @@ func (m model) View() string {
 	return str
 }
 
-func nextReassignmentStepCmd(apiClient *api_v2024.APIClient, summary ReassignSummary, index int) tea.Cmd {
+func nextReassignmentStepCmd(apiClient *sailpoint.APIClient, summary ReassignSummary, index int) tea.Cmd {
 	steps := []struct {
 		name      string
 		shouldRun bool
@@ -1039,13 +1046,13 @@ func getErrorDetails(err error, resp *http.Response) string {
 	return err.Error()
 }
 
-func reassignSources(apiClient *api_v2024.APIClient, from Identity, to Identity, sources []api_v2024.Source, summary *ReassignSummary) error {
-	if len(sources) > 0 {
-		for _, source := range sources {
+func reassignSources(apiClient *sailpoint.APIClient, from Identity, to Identity, sourcesList []sources.Source, summary *ReassignSummary) error {
+	if len(sourcesList) > 0 {
+		for _, source := range sourcesList {
 
-			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
-			patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
-			_, resp, err := apiClient.SourcesAPI.UpdateSource(context.TODO(), *source.Id).JsonPatchOperation(patchArray).Execute()
+			newOwnerId := sources.JsonpatchoperationValue{String: &to.ID}
+			patchArray := []sources.Jsonpatchoperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
+			_, resp, err := apiClient.SourcesAPI.UpdateSourceV1(context.TODO(), *source.Id).Jsonpatchoperation(patchArray).Execute()
 
 			if err != nil {
 				summary.Errors["source"] = append(summary.Errors["source"], "Error updating source owner for source id ("+*source.Id+"):"+getErrorDetails(err, resp))
@@ -1055,12 +1062,12 @@ func reassignSources(apiClient *api_v2024.APIClient, from Identity, to Identity,
 	return nil
 }
 
-func reassignRoles(apiClient *api_v2024.APIClient, from Identity, to Identity, roles []api_v2024.Role, summary *ReassignSummary) error {
-	if len(roles) > 0 {
-		for _, role := range roles {
-			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
-			patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
-			_, resp, err := apiClient.RolesAPI.PatchRole(context.TODO(), *role.Id).JsonPatchOperation(patchArray).Execute()
+func reassignRoles(apiClient *sailpoint.APIClient, from Identity, to Identity, rolesList []roles.Role, summary *ReassignSummary) error {
+	if len(rolesList) > 0 {
+		for _, role := range rolesList {
+			newOwnerId := roles.JsonpatchoperationValue{String: &to.ID}
+			patchArray := []roles.Jsonpatchoperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
+			_, resp, err := apiClient.RolesAPI.PatchRoleV1(context.TODO(), *role.Id).Jsonpatchoperation(patchArray).Execute()
 
 			if err != nil {
 				summary.Errors["role"] = append(summary.Errors["role"], "Error updating role owner for role id ("+*role.Id+"):"+getErrorDetails(err, resp))
@@ -1071,12 +1078,12 @@ func reassignRoles(apiClient *api_v2024.APIClient, from Identity, to Identity, r
 
 }
 
-func reassignAccessProfiles(apiClient *api_v2024.APIClient, from Identity, to Identity, accessProfiles []api_v2024.AccessProfile, summary *ReassignSummary) error {
-	if len(accessProfiles) > 0 {
-		for _, accessProfile := range accessProfiles {
-			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
-			patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
-			_, _, err := apiClient.AccessProfilesAPI.PatchAccessProfile(context.TODO(), *accessProfile.Id).JsonPatchOperation(patchArray).Execute()
+func reassignAccessProfiles(apiClient *sailpoint.APIClient, from Identity, to Identity, accessProfilesList []access_profiles.Accessprofile, summary *ReassignSummary) error {
+	if len(accessProfilesList) > 0 {
+		for _, accessProfile := range accessProfilesList {
+			newOwnerId := access_profiles.JsonpatchoperationValue{String: &to.ID}
+			patchArray := []access_profiles.Jsonpatchoperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
+			_, _, err := apiClient.AccessProfilesAPI.PatchAccessProfileV1(context.TODO(), *accessProfile.Id).Jsonpatchoperation(patchArray).Execute()
 
 			if err != nil {
 				summary.Errors["access-profile"] = append(summary.Errors["access-profile"], "Error updating access profile owner for access profile id ("+*accessProfile.Id+"):"+getErrorDetails(err, nil))
@@ -1087,14 +1094,14 @@ func reassignAccessProfiles(apiClient *api_v2024.APIClient, from Identity, to Id
 	return nil
 }
 
-func reassignEntitlements(apiClient *api_v2024.APIClient, from Identity, to Identity, entitlements []api_v2024.Entitlement, summary *ReassignSummary) error {
-	if len(entitlements) > 0 {
-		for _, entitlement := range entitlements {
+func reassignEntitlements(apiClient *sailpoint.APIClient, from Identity, to Identity, entitlementsList []entitlements.Entitlementv2, summary *ReassignSummary) error {
+	if len(entitlementsList) > 0 {
+		for _, entitlement := range entitlementsList {
 
-			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
-			newOwnerName := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.Name}
-			patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}, {Op: "replace", Path: "/owner/name", Value: &newOwnerName}}
-			_, _, err := apiClient.EntitlementsAPI.PatchEntitlement(context.TODO(), *entitlement.Id).JsonPatchOperation(patchArray).Execute()
+			newOwnerId := entitlements.JsonpatchoperationValue{String: &to.ID}
+			newOwnerName := entitlements.JsonpatchoperationValue{String: &to.Name}
+			patchArray := []entitlements.Jsonpatchoperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}, {Op: "replace", Path: "/owner/name", Value: &newOwnerName}}
+			_, _, err := apiClient.EntitlementsAPI.PatchEntitlementV1(context.TODO(), *entitlement.Id).Jsonpatchoperation(patchArray).Execute()
 
 			if err != nil {
 				summary.Errors["entitlement"] = append(summary.Errors["entitlement"], "Error updating entitlement owner for entitlement id ("+*entitlement.Id+"):"+getErrorDetails(err, nil))
@@ -1105,12 +1112,12 @@ func reassignEntitlements(apiClient *api_v2024.APIClient, from Identity, to Iden
 	return nil
 }
 
-func reassignIdentityProfiles(apiClient *api_v2024.APIClient, from Identity, to Identity, identityProfiles []api_v2024.IdentityProfile, summary *ReassignSummary) error {
-	if len(identityProfiles) > 0 {
-		for _, identityProfile := range identityProfiles {
-			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
-			patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
-			_, _, err := apiClient.IdentityProfilesAPI.UpdateIdentityProfile(context.TODO(), *identityProfile.Id).JsonPatchOperation(patchArray).Execute()
+func reassignIdentityProfiles(apiClient *sailpoint.APIClient, from Identity, to Identity, identityProfilesList []identity_profiles.Identityprofile, summary *ReassignSummary) error {
+	if len(identityProfilesList) > 0 {
+		for _, identityProfile := range identityProfilesList {
+			newOwnerId := identity_profiles.JsonpatchoperationValue{String: &to.ID}
+			patchArray := []identity_profiles.Jsonpatchoperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
+			_, _, err := apiClient.IdentityProfilesAPI.UpdateIdentityProfileV1(context.TODO(), *identityProfile.Id).Jsonpatchoperation(patchArray).Execute()
 
 			if err != nil {
 				summary.Errors["identity-profile"] = append(summary.Errors["identity-profile"], "Error updating identity profile owner for identity profile id ("+*identityProfile.Id+"):"+getErrorDetails(err, nil))
@@ -1121,12 +1128,12 @@ func reassignIdentityProfiles(apiClient *api_v2024.APIClient, from Identity, to 
 	return nil
 }
 
-func reassignGovernanceGroups(apiClient *api_v2024.APIClient, from Identity, to Identity, governanceGroups []api_v2024.WorkgroupDto, summary *ReassignSummary) error {
-	if len(governanceGroups) > 0 {
-		for _, governanceGroup := range governanceGroups {
-			newOwnerId := api_v2024.UpdateMultiHostSourcesRequestInnerValue{String: &to.ID}
-			patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
-			_, _, err := apiClient.GovernanceGroupsAPI.PatchWorkgroup(context.TODO(), *governanceGroup.Id).JsonPatchOperation(patchArray).Execute()
+func reassignGovernanceGroups(apiClient *sailpoint.APIClient, from Identity, to Identity, governanceGroupsList []governance_groups.Workgroupdto, summary *ReassignSummary) error {
+	if len(governanceGroupsList) > 0 {
+		for _, governanceGroup := range governanceGroupsList {
+			newOwnerId := governance_groups.JsonpatchoperationValue{String: &to.ID}
+			patchArray := []governance_groups.Jsonpatchoperation{{Op: "replace", Path: "/owner/id", Value: &newOwnerId}}
+			_, _, err := apiClient.GovernanceGroupsAPI.PatchWorkgroupV1(context.TODO(), *governanceGroup.Id).Jsonpatchoperation(patchArray).Execute()
 
 			if err != nil {
 				summary.Errors["governance-group"] = append(summary.Errors["governance-group"], "Error updating governance group owner for governance group id ("+*governanceGroup.Id+"):"+getErrorDetails(err, nil))
@@ -1137,18 +1144,18 @@ func reassignGovernanceGroups(apiClient *api_v2024.APIClient, from Identity, to 
 	return nil
 }
 
-func reassignWorkflows(apiClient *api_v2024.APIClient, from Identity, to Identity, workflows []api_v2024.Workflow, summary *ReassignSummary) error {
-	if len(workflows) > 0 {
-		for _, workflow := range workflows {
+func reassignWorkflows(apiClient *sailpoint.APIClient, from Identity, to Identity, workflowsList []workflows.Workflow, summary *ReassignSummary) error {
+	if len(workflowsList) > 0 {
+		for _, workflow := range workflowsList {
 
 			patchObject := map[string]interface{}{
 				"id":   to.ID,
 				"type": "IDENTITY",
 			}
 
-			newOwner := api_v2024.UpdateMultiHostSourcesRequestInnerValue{MapmapOfStringAny: &patchObject}
-			patchArray := []api_v2024.JsonPatchOperation{{Op: "replace", Path: "/owner", Value: &newOwner}}
-			_, _, err := apiClient.WorkflowsAPI.PatchWorkflow(context.TODO(), *workflow.Id).JsonPatchOperation(patchArray).Execute()
+			newOwner := workflows.JsonpatchoperationValue{MapmapOfStringAny: &patchObject}
+			patchArray := []workflows.Jsonpatchoperation{{Op: "replace", Path: "/owner", Value: &newOwner}}
+			_, _, err := apiClient.WorkflowsAPI.PatchWorkflowV1(context.TODO(), *workflow.Id).Jsonpatchoperation(patchArray).Execute()
 
 			if err != nil {
 				summary.Errors["workflow"] = append(summary.Errors["workflow"], "Error updating workflow owner for workflow id ("+*workflow.Id+"):"+getErrorDetails(err, nil))
