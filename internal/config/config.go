@@ -206,6 +206,32 @@ func CheckToken(tokenString string) error {
 	return nil
 }
 
+// GetCurrentIdentityID returns the identity GUID of the authenticated user,
+// read from the active access token's identity_id claim. It makes no API call.
+// It returns an error when the token cannot be obtained or carries no user
+// context (for example a service token without an associated identity).
+func GetCurrentIdentityID() (string, error) {
+	tokenString, err := GetAuthToken()
+	if err != nil {
+		return "", err
+	}
+
+	token, err := jwt.ParseSigned(tokenString)
+	if err != nil {
+		return "", err
+	}
+
+	var claims map[string]interface{}
+	token.UnsafeClaimsWithoutVerification(&claims)
+
+	identityID, _ := claims["identity_id"].(string)
+	if strings.TrimSpace(identityID) == "" {
+		return "", fmt.Errorf("could not determine the current user identity from the active token; authenticate with a user context to use this option")
+	}
+
+	return identityID, nil
+}
+
 func SetTime(inputTime time.Time) string {
 	return inputTime.Format(time.RFC3339)
 }

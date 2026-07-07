@@ -14,7 +14,10 @@ func TestLoadAndValidateWorkspaceManifest_Valid(t *testing.T) {
     "alias": "access-request-plugin",
     "name": {"en-US": "Access Request"},
     "description": {"en-US": "Plugin description"},
-    "slots": [{"slotId": "full-page"}]
+    "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
+    "iframeAllow": {}
   },
   "build": {
     "outDir": "./dist",
@@ -42,6 +45,8 @@ func TestLoadAndValidateWorkspaceManifest_ValidIframeAllow(t *testing.T) {
     "name": {"en-US": "Access Request"},
     "description": {"en-US": "Plugin description"},
     "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
     "iframeAllow": {}
   }
 }`)
@@ -63,6 +68,8 @@ func TestLoadAndValidateWorkspaceManifest_ValidIframeAllowWithDirectives(t *test
     "name": {"en-US": "Access Request"},
     "description": {"en-US": "Plugin description"},
     "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
     "iframeAllow": {"camera": ["'self'"]}
   }
 }`)
@@ -111,7 +118,10 @@ func TestLoadAndValidateWorkspaceManifest_ValidSlotWithOptionalFields(t *testing
       "slotId": "full-page",
       "requiredCapabilities": ["ORG_ADMIN"],
       "restrictToUsers": ["2c9180827f9b911e017f9b9122340000"]
-    }]
+    }],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
+    "iframeAllow": {}
   }
 }`)
 
@@ -267,6 +277,50 @@ func TestLoadAndValidateWorkspaceManifest_MissingRequiredManifestField(t *testin
 	}
 	if !strings.Contains(err.Error(), "manifest.alias is required") {
 		t.Fatalf("expected alias required error, got: %v", err)
+	}
+}
+
+func TestLoadAndValidateWorkspaceManifest_MissingContentSecurityPolicies(t *testing.T) {
+	path := writeManifestFixture(t, `{
+  "version": 1,
+  "manifest": {
+    "alias": "access-request-plugin",
+    "name": {"en-US": "Access Request"},
+    "description": {"en-US": "Plugin description"},
+    "slots": [{"slotId": "full-page"}],
+    "permissionPolicy": {},
+    "iframeAllow": {}
+  }
+}`)
+
+	_, err := loadAndValidateWorkspaceManifest(path)
+	if err == nil {
+		t.Fatal("expected missing contentSecurityPolicies to fail")
+	}
+	if !strings.Contains(err.Error(), "manifest.contentSecurityPolicies is required") {
+		t.Fatalf("expected contentSecurityPolicies required error, got: %v", err)
+	}
+}
+
+func TestLoadAndValidateWorkspaceManifest_MissingIframeAllow(t *testing.T) {
+	path := writeManifestFixture(t, `{
+  "version": 1,
+  "manifest": {
+    "alias": "access-request-plugin",
+    "name": {"en-US": "Access Request"},
+    "description": {"en-US": "Plugin description"},
+    "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {}
+  }
+}`)
+
+	_, err := loadAndValidateWorkspaceManifest(path)
+	if err == nil {
+		t.Fatal("expected missing iframeAllow to fail")
+	}
+	if !strings.Contains(err.Error(), "manifest.iframeAllow is required") {
+		t.Fatalf("expected iframeAllow required error, got: %v", err)
 	}
 }
 
