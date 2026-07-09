@@ -21,7 +21,7 @@ import (
 var createHelp string
 
 const (
-	pluginInstancesEndpoint = "/v2026/ui-plugins"
+	pluginInstancesEndpoint = "/ui-plugins/v1"
 	validateAliasEndpoint   = pluginInstancesEndpoint + "/validate-alias"
 
 	// experimentalHeader must be sent on ui-plugins requests while the routes are
