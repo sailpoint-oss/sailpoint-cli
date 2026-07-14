@@ -79,20 +79,16 @@ func (c instance) columns() []string {
 
 var instanceColumns = []string{"ID", "Name", "Customizer ID"}
 
-type customizer struct {
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	ImageVersion *int   `json:"imageVersion,omitempty"`
-}
-
-func (c customizer) columns() []string {
-	if c.ImageVersion == nil {
-		return []string{c.ID, c.Name, ""}
-	}
-	return []string{c.ID, c.Name, strconv.Itoa(*c.ImageVersion)}
-}
-
 var customizerColumns = []string{"ID", "Name", "Version"}
+
+// customizerRow builds a table row for a connector customizer returned by the SDK.
+func customizerRow(id, name string, imageVersion *int64) []string {
+	version := ""
+	if imageVersion != nil {
+		version = strconv.FormatInt(*imageVersion, 10)
+	}
+	return []string{id, name, version}
+}
 
 type customizerVersion struct {
 	CustomizerID string `json:"connectorCustomizerId"`
