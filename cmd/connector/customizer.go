@@ -19,11 +19,14 @@ func newConnCustomizersCmd(client client.Client) *cobra.Command {
 
 	cmd.AddCommand(
 		newCustomizerInitCmd(),
-		newCustomizerListCmd(client),
-		newCustomizerCreateCmd(client),
-		newCustomizerGetCmd(client),
-		newCustomizerUpdateCmd(client),
-		newCustomizerDeleteCmd(client),
+		newCustomizerListCmd(),
+		newCustomizerCreateCmd(),
+		newCustomizerGetCmd(),
+		newCustomizerUpdateCmd(),
+		newCustomizerDeleteCmd(),
+		// upload, link, and unlink still use the raw client: the SDK's
+		// version-create has no file-upload param, and connector-instances
+		// (link/unlink) is not available in the SDK.
 		newCustomizerCreateVersionCmd(client),
 		newCustomizerLinkCmd(client),
 		newCustomizerUnlinkCmd(client),
