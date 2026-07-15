@@ -3,15 +3,13 @@ package connector
 
 import (
 	"fmt"
-	"io"
-	"net/http"
 
-	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
-	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/sdk"
 	"github.com/spf13/cobra"
 )
 
-func newCustomizerDeleteCmd(client client.Client) *cobra.Command {
+func newCustomizerDeleteCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "delete",
 		Short:   "Delete connector customizer",
@@ -20,17 +18,14 @@ func newCustomizerDeleteCmd(client client.Client) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			id := cmd.Flags().Lookup("id").Value.String()
 
-			resp, err := client.Delete(cmd.Context(), util.ResourceUrl(connectorCustomizersEndpoint, id), nil, nil)
+			apiClient, err := config.InitAPIClient(false)
 			if err != nil {
 				return err
 			}
-			defer func() {
-				_ = resp.Body.Close()
-			}()
 
-			if resp.StatusCode != http.StatusNoContent {
-				body, _ := io.ReadAll(resp.Body)
-				return fmt.Errorf("delete customizer failed. status: %s\nbody: %s", resp.Status, string(body))
+			resp, err := apiClient.ConnectorCustomizersAPI.DeleteConnectorCustomizerV1(cmd.Context(), id).Execute()
+			if err != nil {
+				return sdk.HandleSDKError(resp, err)
 			}
 
 			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "connector customizer %s deleted.\n", id)
