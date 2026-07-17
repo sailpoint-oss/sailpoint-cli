@@ -15,7 +15,7 @@ import (
 	"strings"
 )
 
- // 100MB CLI guardrail; backend enforces the real limit
+// 100MB CLI guardrail; backend enforces the real limit
 const maxBundleBytes = 100 << 20
 
 // uploadFile is a single compiled asset to include in an asset bundle
@@ -175,7 +175,7 @@ type assetBundleResponse struct {
 
 // renderUploadSuccess prints a human-readable confirmation of the
 // uploaded bundle.
-func renderUploadSuccess(w io.Writer, body []byte, alias string) error {
+func renderUploadSuccess(w io.Writer, body []byte, alias string, pluginURL string) error {
 	var parsed assetBundleResponse
 	_ = json.Unmarshal(body, &parsed)
 
@@ -183,6 +183,10 @@ func renderUploadSuccess(w io.Writer, body []byte, alias string) error {
 		_, _ = fmt.Fprintf(w, "Uploaded %d asset(s) to plugin %q (bundle %s)\n", len(parsed.Assets), alias, parsed.AssetBundleID)
 	} else {
 		_, _ = fmt.Fprintf(w, "Uploaded assets to plugin %q\n", alias)
+	}
+
+	if pluginURL != "" {
+		_, _ = fmt.Fprintf(w, "The plugin can be viewed at:\n%s\n", pluginURL)
 	}
 	return nil
 }

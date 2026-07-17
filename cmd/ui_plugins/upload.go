@@ -7,9 +7,11 @@ import (
 	"io"
 	"net/http"
 	neturl "net/url"
+	"path"
 	"strings"
 
 	"github.com/sailpoint-oss/sailpoint-cli/internal/client"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
 )
@@ -88,7 +90,8 @@ func runUpload(ctx context.Context, c client.Client, manifestPath string, flagOu
 		return mapUMSUploadError(resp.StatusCode, respBody, cfg.Manifest.Alias)
 	}
 
-	return renderUploadSuccess(out, respBody, cfg.Manifest.Alias)
+	viewURL := pluginViewURL(config.GetTenantUrl(), instance.PluginInstanceID)
+	return renderUploadSuccess(out, respBody, cfg.Manifest.Alias, viewURL)
 }
 
 // resolveUploadOutDir determines which build output directory to upload. An
@@ -110,4 +113,17 @@ func resolveUploadOutDir(flagOutDir string, cfg *uiPluginWorkspaceConfig) (strin
 	}
 
 	return outDir, nil
+}
+
+func pluginViewURL(tenantURL, pluginInstanceID string) string {
+	tenantURL = strings.TrimRight(strings.TrimSpace(tenantURL), "/")
+	if tenantURL == "" || pluginInstanceID == "" {
+		return ""
+	}
+	u, err := neturl.Parse(tenantURL)
+	if err != nil {
+		return ""
+	}
+	u.Path = path.Join(u.Path, "ui", "plugin", pluginInstanceID)
+	return u.String()
 }
