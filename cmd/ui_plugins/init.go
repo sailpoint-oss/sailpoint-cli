@@ -29,7 +29,7 @@ const (
 	uiPluginTemplatesBranch    = "main"
 	angularStarterSubdir       = "angular/starter"
 	genericGuideFileName       = "SAILPOINT_PLUGIN_GUIDE.md"
-	defaultDevServerPort       = 3000
+	defaultDevServerPort       = 4200
 
 	// maxAliasPrompts bounds the interactive re-prompt loop so exhausted stdin
 	// (EOF) can't spin it forever.
@@ -298,8 +298,8 @@ func hasControlChars(s string) bool {
 
 func resolvePort(r *bufio.Reader, deps initDeps, opts initOptions, interactive bool) (int, error) {
 	if opts.portSet {
-		if opts.port <= 0 {
-			return 0, fmt.Errorf("port must be greater than 0")
+		if portErr := validatePortNumber(opts.port); portErr != nil {
+			return 0, portErr
 		}
 		return opts.port, nil
 	}
@@ -314,10 +314,17 @@ func resolvePort(r *bufio.Reader, deps initDeps, opts initOptions, interactive b
 	if err != nil {
 		return 0, fmt.Errorf("port must be a number: %q", strings.TrimSpace(v))
 	}
-	if port <= 0 {
-		return 0, fmt.Errorf("port must be greater than 0")
+	if portErr := validatePortNumber(port); portErr != nil {
+		return 0, portErr
 	}
 	return port, nil
+}
+
+func validatePortNumber(port int) error {
+	if port <= 0 {
+		return fmt.Errorf("port must be greater than 0")
+	}
+	return nil
 }
 
 // writeOwnedFile writes a file init manages, prompting before overwriting an

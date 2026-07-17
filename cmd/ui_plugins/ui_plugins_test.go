@@ -50,11 +50,11 @@ func TestUIPluginsGateEnabled(t *testing.T) {
 func TestUIPluginsStubReachableWhenEnabled(t *testing.T) {
 	t.Setenv(experimentalUIPluginsEnvVar, "1")
 	cmd := NewUIPluginsCommand()
-	cmd.SetArgs([]string{"link"})
+	cmd.SetArgs([]string{"update"})
 
 	err := cmd.Execute()
 	if err == nil {
-		t.Fatal("expected link stub command to return not implemented error")
+		t.Fatal("expected update stub command to return not implemented error")
 	}
 
 	if !strings.Contains(err.Error(), "not implemented yet") {
