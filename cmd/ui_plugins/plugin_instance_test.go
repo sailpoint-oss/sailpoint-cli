@@ -18,8 +18,9 @@ type stubResp struct {
 }
 
 // seqClient is a test double for client.Client that returns queued Get responses in
-// order (for pagination and lookups) and a single canned Delete response. It records
-// the URLs it was called with. Post/Put/Patch are unused here.
+// order (for pagination and lookups), a single canned Delete response, and a single
+// canned Patch response. It records the URLs, bodies, and headers it was called with.
+// Post/Put are unused here.
 type seqClient struct {
 	getQueue   []stubResp
 	getURLs    []string
@@ -29,6 +30,12 @@ type seqClient struct {
 	deleteCalls   int
 	deleteURL     string
 	deleteHeaders map[string]string
+
+	patchResp    stubResp
+	patchCalls   int
+	patchURL     string
+	patchBody    []byte
+	patchHeaders map[string]string
 }
 
 func (s *seqClient) Get(ctx context.Context, url string, headers map[string]string) (*http.Response, error) {
@@ -62,7 +69,16 @@ func (s *seqClient) Put(ctx context.Context, url, contentType string, body io.Re
 	return nil, errors.New("unused")
 }
 func (s *seqClient) Patch(ctx context.Context, url string, body io.Reader, headers map[string]string) (*http.Response, error) {
-	return nil, errors.New("unused")
+	s.patchCalls++
+	s.patchURL = url
+	s.patchHeaders = headers
+	if body != nil {
+		s.patchBody, _ = io.ReadAll(body)
+	}
+	if s.patchResp.err != nil {
+		return nil, s.patchResp.err
+	}
+	return &http.Response{StatusCode: s.patchResp.status, Body: io.NopCloser(strings.NewReader(s.patchResp.body))}, nil
 }
 
 func TestListAndDeleteSendExperimentalHeader(t *testing.T) {
