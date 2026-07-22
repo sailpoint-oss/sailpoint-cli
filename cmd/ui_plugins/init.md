@@ -13,7 +13,7 @@ Get a UI plugin project to a clean starting point. `init` has two flows on one c
 - **Plugin Name** — the display name (`--name`, or the positional argument).
 - **Plugin Alias** — the tenant-unique key (`--alias`); defaults to a slug of the name. The alias is validated against your tenant immediately and the command fails fast if it is already taken or invalid.
 - **Build Output Directory** — required when attaching with `--path` (`--out-dir`).
-- **Port** — the local dev server port when attaching with `--path` (`--port`, default 3000).
+- **Port** — the local dev server port when attaching with `--path` (`--port`, default 4200).
 
 The alias validation requires an authenticated CLI; `init` fails fast if no authenticated client is available.
 
@@ -33,7 +33,7 @@ SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins init "My Plugin" --alias my-plugi
 
 # Attach the SDK to an existing project
 SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins init "My Plugin" \
-  --path ./existing-app --out-dir ./dist/app --port 3000
+  --path ./existing-app --out-dir ./dist/app --port 4200
 
 # Overwrite plugin files init manages if they already exist
 SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins init "My Plugin" --path ./existing-app --out-dir ./dist/app --force
