@@ -13,7 +13,7 @@ Planned workflow commands:
 - init
 - create
 - link
-- update
+- push-manifest (alias: update)
 - upload
 - list
 - delete

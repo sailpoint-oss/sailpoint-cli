@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//go:embed update.md
+//go:embed push_manifest.md
 var updateHelp string
 
 func newUpdateCommand() *cobra.Command {
@@ -27,8 +27,9 @@ func newUpdateCommand() *cobra.Command {
 
 	help := util.ParseHelp(updateHelp)
 	cmd := &cobra.Command{
-		Use:     "update",
-		Short:   "Update an existing UI plugin instance's manifest configuration",
+		Use:     "push-manifest",
+		Aliases: []string{"update"},
+		Short:   "Push your local manifest configuration to the UI plugin instance in ISC",
 		Long:    help.Long,
 		Example: help.Example,
 		Args:    cobra.NoArgs,

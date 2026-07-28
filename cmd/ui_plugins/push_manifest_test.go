@@ -397,10 +397,15 @@ func TestRenderUpdateSuccess(t *testing.T) {
 // --- command wiring (cobra + experimental gate), hermetic: fails at validation
 // before any backend call, so no client/network is exercised ---
 
-func TestUpdateCommand_InvalidManifestSurfacesValidationError(t *testing.T) {
-	t.Setenv(experimentalUIPluginsEnvVar, "1")
-	cwd := t.TempDir()
-	writeManifestAtPath(t, filepath.Join(cwd, manifestFileName), `{
+// Both the canonical name and the update alias must resolve to the same command.
+// Each is exercised hermetically: an invalid manifest fails at validation before
+// any backend call, so no client/network is touched.
+func TestPushManifestCommand_InvalidManifestSurfacesValidationError(t *testing.T) {
+	for _, name := range []string{"push-manifest", "update"} {
+		t.Run(name, func(t *testing.T) {
+			t.Setenv(experimentalUIPluginsEnvVar, "1")
+			cwd := t.TempDir()
+			writeManifestAtPath(t, filepath.Join(cwd, manifestFileName), `{
   "version": 1,
   "manifest": {
     "name": {"en-US": "Access Request"},
@@ -409,16 +414,18 @@ func TestUpdateCommand_InvalidManifestSurfacesValidationError(t *testing.T) {
   }
 }`)
 
-	restore := chdirForTest(t, cwd)
-	defer restore()
+			restore := chdirForTest(t, cwd)
+			defer restore()
 
-	cmd := NewUIPluginsCommand()
-	cmd.SetArgs([]string{"update", "--dry-run"})
-	err := cmd.Execute()
-	if err == nil {
-		t.Fatal("expected update to fail on an invalid manifest")
-	}
-	if !strings.Contains(err.Error(), "manifest.alias is required") {
-		t.Fatalf("expected validation error, got: %v", err)
+			cmd := NewUIPluginsCommand()
+			cmd.SetArgs([]string{name, "--dry-run"})
+			err := cmd.Execute()
+			if err == nil {
+				t.Fatalf("expected %q to fail on an invalid manifest", name)
+			}
+			if !strings.Contains(err.Error(), "manifest.alias is required") {
+				t.Fatalf("expected validation error from %q, got: %v", name, err)
+			}
+		})
 	}
 }
