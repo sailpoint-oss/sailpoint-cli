@@ -65,7 +65,7 @@ func newInitCommand() *cobra.Command {
 	help := util.ParseHelp(initHelp)
 	cmd := &cobra.Command{
 		Use:     "init [plugin-name]",
-		Short:   "Scaffold a new UI plugin workspace or attach the SDK to an existing project",
+		Short:   "Scaffold a new UI plugin workspace or prepare an existing project",
 		Long:    help.Long,
 		Example: help.Example,
 		Args:    cobra.MaximumNArgs(1),

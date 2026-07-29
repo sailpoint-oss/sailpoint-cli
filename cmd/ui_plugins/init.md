@@ -31,7 +31,7 @@ SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins init
 # Scaffold headlessly (no prompts)
 SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins init "My Plugin" --alias my-plugin
 
-# Attach the SDK to an existing project
+# Prepare an existing project
 SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins init "My Plugin" \
   --path ./existing-app --out-dir ./dist/app --port 4200
 
