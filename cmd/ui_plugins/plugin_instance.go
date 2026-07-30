@@ -2,6 +2,7 @@ package ui_plugins
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -28,6 +29,17 @@ const (
 	tableColumnMaxWidth = 40
 )
 
+type pluginState string
+
+const (
+	stateEnabled  pluginState = "ENABLED"
+	stateDisabled pluginState = "DISABLED"
+)
+
+type statePayload struct {
+	State string `json:"state"`
+}
+
 // pluginInstance is the subset of the UMS PluginInstanceDto the list and delete
 // commands need for display. Unrecognized fields are ignored on decode; the raw
 // body is preserved separately when --json fidelity is required.
@@ -37,6 +49,7 @@ type pluginInstance struct {
 	Name                map[string]string `json:"name"`
 	Created             string            `json:"created"`
 	Slots               []uiPluginSlot    `json:"slots"`
+	State               pluginState       `json:"state"`
 	ActiveAssetBundleID *string           `json:"activeAssetBundleId"`
 }
 
@@ -87,10 +100,10 @@ func listPluginInstances(ctx context.Context, c client.Client) ([]json.RawMessag
 	return all, nil
 }
 
-// resolveDeleteTarget resolves a delete argument to a plugin instance, choosing the
+// resolvePluginTarget resolves a plugin argument to a plugin instance, choosing the
 // lookup by the argument's shape: a UUID is looked up by ID, anything else by alias.
 // It returns the typed instance and its raw response body (for --json).
-func resolveDeleteTarget(ctx context.Context, c client.Client, arg string) (*pluginInstance, []byte, error) {
+func resolvePluginTarget(ctx context.Context, c client.Client, arg string) (*pluginInstance, []byte, error) {
 	if looksLikeUUID(arg) {
 		return getPluginInstanceByID(ctx, c, arg)
 	}
@@ -171,6 +184,36 @@ func ambiguousAliasError(alias string, body []byte) error {
 	return fmt.Errorf("alias %q resolves to multiple plugin instances; re-run delete with a specific plugin ID: %s", alias, umsErrorMessage(body))
 }
 
+// setPluginInstanceState updates a plugin instance state to the
+// provided value (desired).
+func setPluginInstanceState(ctx context.Context, c client.Client, instance *pluginInstance, desired pluginState) ([]byte, error) {
+
+	payload, err := json.Marshal(statePayload{State: string(desired)})
+	if err != nil {
+		return nil, fmt.Errorf("failed to update plugin instance state: %w", err)
+	}
+
+	headers := uiPluginRequestHeaders()
+	headers["Content-Type"] = "application/json"
+
+	url := pluginInstancesEndpoint + "/" + neturl.PathEscape(instance.PluginInstanceID)
+	resp, err := c.Patch(ctx, url, bytes.NewReader(payload), headers)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update plugin instance state: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response: %w", err)
+	}
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return nil, mapUMSUpdateError(resp.StatusCode, body, instance.Alias)
+	}
+
+	return body, nil
+}
+
 // localizedName returns a display name from a localized name map, preferring the
 // English locale and falling back to the first locale in sorted order.
 func localizedName(name map[string]string) string {
@@ -203,9 +246,10 @@ func renderPluginInstanceTable(w io.Writer, items []pluginInstance) {
 			p.PluginInstanceID,
 			truncateForTable(localizedName(p.Name), tableColumnMaxWidth),
 			p.Created,
+			string(p.State),
 		})
 	}
-	output.WriteTable(w, []string{"Alias", "Id", "Name", "Created"}, rows, "Alias")
+	output.WriteTable(w, []string{"Alias", "Id", "Name", "Created", "State"}, rows, "Alias")
 }
 
 // truncateForTable shortens s to at most maxRunes runes, appending an ellipsis when
@@ -222,10 +266,10 @@ func truncateForTable(s string, maxRunes int) string {
 	return string(runes[:maxRunes-1]) + "…"
 }
 
-// renderDeleteConfirmation prints the details of the instance about to be deleted,
-// warning when it has an active asset bundle (a live deployment).
-func renderDeleteConfirmation(w io.Writer, inst *pluginInstance) {
-	fmt.Fprintln(w, "You are about to delete the following UI plugin instance:")
+// renderConfirmation prints the details of the instance, warning when
+// it has an active asset bundle (a live deployment).
+func renderConfirmation(w io.Writer, action string, inst *pluginInstance) {
+	fmt.Fprintf(w, "You are about to %s the following UI plugin instance:\n", action)
 	fmt.Fprintf(w, "  Alias:     %s\n", inst.Alias)
 	fmt.Fprintf(w, "  Name:      %s\n", localizedName(inst.Name))
 	fmt.Fprintf(w, "  Plugin ID: %s\n", inst.PluginInstanceID)
@@ -299,4 +343,14 @@ func mapUMSDeleteError(status int, body []byte, target string) error {
 	default:
 		return fmt.Errorf("failed to delete plugin instance %q (status %d): %s", target, status, message)
 	}
+}
+
+// pluginInstanceLabel returns a formatted string with alias if the
+// provided plugin instance has an alias, otherwise it returns the
+// plugin instance id.
+func pluginInstanceLabel(inst *pluginInstance) string {
+	if inst.Alias != "" {
+		return fmt.Sprintf("%s (alias: %s)", inst.PluginInstanceID, inst.Alias)
+	}
+	return inst.PluginInstanceID
 }

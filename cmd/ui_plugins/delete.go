@@ -48,7 +48,7 @@ func newDeleteCommand() *cobra.Command {
 // ambiguous-alias and not-found guards are always enforced. When jsonOutput is set,
 // the confirmation is written to errOut so stdout carries only the resulting JSON.
 func runDelete(ctx context.Context, c client.Client, in io.Reader, out io.Writer, errOut io.Writer, arg string, force bool, jsonOutput bool) error {
-	inst, raw, err := resolveDeleteTarget(ctx, c, arg)
+	inst, raw, err := resolvePluginTarget(ctx, c, arg)
 	if err != nil {
 		return err
 	}
@@ -58,7 +58,7 @@ func runDelete(ctx context.Context, c client.Client, in io.Reader, out io.Writer
 		if jsonOutput {
 			promptOut = errOut
 		}
-		renderDeleteConfirmation(promptOut, inst)
+		renderConfirmation(promptOut, "delete", inst)
 
 		confirmed, err := promptYesNo(in, promptOut, fmt.Sprintf("Delete plugin instance %s?", inst.PluginInstanceID))
 		if err != nil {

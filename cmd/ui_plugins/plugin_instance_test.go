@@ -221,7 +221,7 @@ func TestResolveDeleteTarget_UUIDUsesGetByID(t *testing.T) {
 	id := "2c918085-7a1e-1b2c-817a-1e1b2c000000"
 	c := &seqClient{getQueue: []stubResp{{status: 200, body: `{"pluginInstanceId":"` + id + `","alias":"my-plugin"}`}}}
 
-	inst, _, err := resolveDeleteTarget(context.Background(), c, id)
+	inst, _, err := resolvePluginTarget(context.Background(), c, id)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -236,7 +236,7 @@ func TestResolveDeleteTarget_UUIDUsesGetByID(t *testing.T) {
 func TestResolveDeleteTarget_AliasUsesResolve(t *testing.T) {
 	c := &seqClient{getQueue: []stubResp{{status: 200, body: `{"pluginInstanceId":"pi-1","alias":"my-plugin"}`}}}
 
-	inst, _, err := resolveDeleteTarget(context.Background(), c, "my-plugin")
+	inst, _, err := resolvePluginTarget(context.Background(), c, "my-plugin")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -250,7 +250,7 @@ func TestResolveDeleteTarget_AliasUsesResolve(t *testing.T) {
 
 func TestResolveDeleteTarget_NotFound(t *testing.T) {
 	c := &seqClient{getQueue: []stubResp{{status: 404, body: `{"message":"Not Found"}`}}}
-	_, _, err := resolveDeleteTarget(context.Background(), c, "missing-plugin")
+	_, _, err := resolvePluginTarget(context.Background(), c, "missing-plugin")
 	if err == nil || !strings.Contains(err.Error(), "not found") {
 		t.Fatalf("expected not-found error, got: %v", err)
 	}
@@ -260,7 +260,7 @@ func TestResolveDeleteTarget_AmbiguousAlias(t *testing.T) {
 	body := `{"message":"Alias resolves to multiple plugin instances","conflicts":[{"pluginInstanceId":"pi-1"},{"pluginInstanceId":"pi-2"}]}`
 	c := &seqClient{getQueue: []stubResp{{status: 409, body: body}}}
 
-	_, _, err := resolveDeleteTarget(context.Background(), c, "dup-plugin")
+	_, _, err := resolvePluginTarget(context.Background(), c, "dup-plugin")
 	if err == nil {
 		t.Fatal("expected ambiguity error")
 	}
@@ -269,5 +269,79 @@ func TestResolveDeleteTarget_AmbiguousAlias(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "specific plugin ID") {
 		t.Fatalf("expected guidance to use a plugin ID, got: %v", err)
+	}
+}
+
+func TestPluginInstanceLabel(t *testing.T) {
+	withAlias := &pluginInstance{PluginInstanceID: "pi-1", Alias: "my-plugin"}
+	if got := pluginInstanceLabel(withAlias); got != "pi-1 (alias: my-plugin)" {
+		t.Fatalf("with alias: got %q", got)
+	}
+
+	noAlias := &pluginInstance{PluginInstanceID: "pi-1"}
+	if got := pluginInstanceLabel(noAlias); got != "pi-1" {
+		t.Fatalf("without alias: got %q", got)
+	}
+}
+
+func TestSetPluginInstanceState_DisableSuccess(t *testing.T) {
+	c := &seqClient{patchResp: stubResp{status: 200, body: `{"pluginInstanceId":"pi-1","state":"DISABLED"}`}}
+	inst := &pluginInstance{PluginInstanceID: "pi-1", Alias: "my-plugin"}
+
+	body, err := setPluginInstanceState(context.Background(), c, inst, stateDisabled)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if c.patchCalls != 1 {
+		t.Fatalf("expected 1 Patch, got %d", c.patchCalls)
+	}
+	if !strings.HasSuffix(c.patchURL, "/pi-1") {
+		t.Fatalf("expected PATCH on the instance id, got: %s", c.patchURL)
+	}
+	// The Content-Type header is required: without it UMS silently ignores the
+	// body, bumps `modified`, and leaves state unchanged. Guard against regressing it.
+	if got := c.patchHeaders["Content-Type"]; got != "application/json" {
+		t.Fatalf("PATCH must set Content-Type application/json, got %q (headers: %v)", got, c.patchHeaders)
+	}
+	if got := c.patchHeaders[experimentalHeader]; got != "true" {
+		t.Fatalf("PATCH missing %s header, got: %v", experimentalHeader, c.patchHeaders)
+	}
+	if got := strings.TrimSpace(string(c.patchBody)); got != `{"state":"DISABLED"}` {
+		t.Fatalf("unexpected PATCH body: %s", got)
+	}
+	if !strings.Contains(string(body), `"state":"DISABLED"`) {
+		t.Fatalf("expected the PATCH response body returned, got: %s", body)
+	}
+}
+
+func TestSetPluginInstanceState_EnableBody(t *testing.T) {
+	c := &seqClient{patchResp: stubResp{status: 200, body: `{}`}}
+	inst := &pluginInstance{PluginInstanceID: "pi-1"}
+
+	if _, err := setPluginInstanceState(context.Background(), c, inst, stateEnabled); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got := strings.TrimSpace(string(c.patchBody)); got != `{"state":"ENABLED"}` {
+		t.Fatalf("unexpected PATCH body: %s", got)
+	}
+}
+
+func TestSetPluginInstanceState_ErrorMapping(t *testing.T) {
+	c := &seqClient{patchResp: stubResp{status: 403, body: `{"message":"Forbidden"}`}}
+	inst := &pluginInstance{PluginInstanceID: "pi-1", Alias: "my-plugin"}
+
+	_, err := setPluginInstanceState(context.Background(), c, inst, stateDisabled)
+	if err == nil || !strings.Contains(err.Error(), "not authorized to update") {
+		t.Fatalf("expected update forbidden mapping, got: %v", err)
+	}
+}
+
+func TestSetPluginInstanceState_TransportError(t *testing.T) {
+	c := &seqClient{patchResp: stubResp{err: errors.New("connection refused")}}
+	inst := &pluginInstance{PluginInstanceID: "pi-1"}
+
+	_, err := setPluginInstanceState(context.Background(), c, inst, stateDisabled)
+	if err == nil || !strings.Contains(err.Error(), "failed to update plugin instance state") {
+		t.Fatalf("expected wrapped transport error, got: %v", err)
 	}
 }

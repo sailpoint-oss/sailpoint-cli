@@ -3,6 +3,8 @@ package ui_plugins
 import (
 	"strings"
 	"testing"
+
+	"github.com/spf13/cobra"
 )
 
 func TestNewUIPluginsCommandStructure(t *testing.T) {
@@ -16,9 +18,25 @@ func TestNewUIPluginsCommandStructure(t *testing.T) {
 		t.Fatal("expected ui-plugins command to be hidden")
 	}
 
-	if len(cmd.Commands()) != 9 {
-		t.Fatalf("expected 9 subcommands, got %d", len(cmd.Commands()))
+	if len(cmd.Commands()) != 11 {
+		t.Fatalf("expected 11 subcommands, got %d", len(cmd.Commands()))
 	}
+
+	for _, name := range []string{"disable", "enable"} {
+		if !hasSubcommand(cmd, name) {
+			t.Fatalf("expected %q subcommand to be registered", name)
+		}
+	}
+}
+
+// hasSubcommand reports whether cmd has a direct subcommand with the given name.
+func hasSubcommand(cmd *cobra.Command, name string) bool {
+	for _, sub := range cmd.Commands() {
+		if sub.Name() == name {
+			return true
+		}
+	}
+	return false
 }
 
 func TestUIPluginsGateDisabled(t *testing.T) {
