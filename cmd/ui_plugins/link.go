@@ -99,6 +99,7 @@ func link(ctx context.Context, c client.Client, manifestPath string, flagPort in
 
 	fmt.Fprintf(errOut, "Plugin %s linked to port %d\nTo load your local plugin in ISC navigate to:\n", instance.Alias, resolvedPort)
 	fmt.Fprintf(out, "%s?spPluginDev=%s\n", viewURL, neturl.QueryEscape(instance.Alias))
+	fmt.Fprintf(errOut, "\nNext: start your local dev server on port %d, then open the URL above in ISC.\n(Angular template: `npm start`. Other setups: see the plugin guide in your workspace.)\n", resolvedPort)
 
 	return nil
 }

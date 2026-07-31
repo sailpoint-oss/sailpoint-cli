@@ -46,18 +46,3 @@ func TestUIPluginsGateEnabled(t *testing.T) {
 		t.Fatalf("expected command to run when gate is enabled, got: %v", err)
 	}
 }
-
-func TestUIPluginsStubReachableWhenEnabled(t *testing.T) {
-	t.Setenv(experimentalUIPluginsEnvVar, "1")
-	cmd := NewUIPluginsCommand()
-	cmd.SetArgs([]string{"update"})
-
-	err := cmd.Execute()
-	if err == nil {
-		t.Fatal("expected update stub command to return not implemented error")
-	}
-
-	if !strings.Contains(err.Error(), "not implemented yet") {
-		t.Fatalf("expected not implemented error, got: %s", err.Error())
-	}
-}

@@ -303,5 +303,7 @@ func renderCreateSuccess(w io.Writer, body []byte, fallbackAlias string) error {
 		_, _ = fmt.Fprintf(w, "Created plugin instance (alias: %s)\n", alias)
 	}
 
+	_, _ = fmt.Fprint(w, "\nNext steps:\n  sail ui-plugins link   # develop locally against this tenant\n  sail ui-plugins upload # deploy compiled assets (requires the project is built first)\n")
+
 	return nil
 }
