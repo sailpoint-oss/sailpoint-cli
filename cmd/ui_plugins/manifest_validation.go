@@ -48,6 +48,11 @@ func parseWorkspaceManifestStrict(raw []byte) (*uiPluginWorkspaceConfig, error) 
 		return nil, fmt.Errorf("manifest must contain a single JSON object")
 	}
 
+	if cfg.Manifest.State == nil {
+		defaultState := stateEnabled
+		cfg.Manifest.State = &defaultState
+	}
+
 	return &cfg, nil
 }
 
@@ -101,4 +106,3 @@ func validateWorkspaceManifest(cfg *uiPluginWorkspaceConfig) error {
 
 	return nil
 }
-

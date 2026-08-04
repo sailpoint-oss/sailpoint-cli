@@ -42,6 +42,8 @@ func NewUIPluginsCommand() *cobra.Command {
 		newUploadCommand(),
 		newListCommand(),
 		newDeleteCommand(),
+		newDisableCommand(),
+		newEnableCommand(),
 		newValidateManifestCommand(),
 	)
 

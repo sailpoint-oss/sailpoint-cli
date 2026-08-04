@@ -144,4 +144,3 @@ func writeManifestAtPath(t *testing.T, path string, content string) {
 		t.Fatalf("failed to write manifest fixture: %v", err)
 	}
 }
-

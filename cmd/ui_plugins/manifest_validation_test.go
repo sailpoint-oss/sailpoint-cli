@@ -354,4 +354,3 @@ func writeManifestFixture(t *testing.T, content string) string {
 	}
 	return path
 }
-
