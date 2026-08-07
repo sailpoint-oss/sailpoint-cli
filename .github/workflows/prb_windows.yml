@@ -10,7 +10,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main, ui-plugins]
+    branches: [main]
 
 concurrency:
   group: windows-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
