@@ -64,8 +64,12 @@ func chdirTemp(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("getwd: %v", err)
 	}
-	t.Cleanup(func() { _ = os.Chdir(origWd) })
 	workdir := t.TempDir()
+	// Restore the working directory after t.TempDir registers its cleanup so
+	// that, under t.Cleanup's LIFO ordering, we chdir out before TempDir's
+	// RemoveAll runs. Windows cannot remove a directory that is the process's
+	// current working directory.
+	t.Cleanup(func() { _ = os.Chdir(origWd) })
 	if err := os.Chdir(workdir); err != nil {
 		t.Fatalf("chdir: %v", err)
 	}
