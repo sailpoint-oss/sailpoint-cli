@@ -3,9 +3,11 @@ package ui_plugins
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -159,6 +161,92 @@ func TestRunCreate_JSONPassthrough(t *testing.T) {
 	if strings.Contains(out.String(), "Created plugin instance") {
 		t.Fatalf("--json output should not include the human summary, got: %s", out.String())
 	}
+}
+
+func TestRunCreate_AppliesDevDocumentHeaders(t *testing.T) {
+	dir := t.TempDir()
+	manifestPath := filepath.Join(dir, manifestFileName)
+	writeManifestAtPath(t, manifestPath, testManifestJSON)
+	writeAngularFixture(t, dir, "access-request-plugin", false)
+
+	respBody := `{"pluginInstanceId":"pi-123","alias":"access-request-plugin","devDocumentHeaders":{"Content-Security-Policy":"` + sampleCSP + `","Permissions-Policy":"` + samplePP + `"}}`
+	fc := &fakeClient{status: http.StatusCreated, body: respBody}
+	var out, errOut bytes.Buffer
+
+	err := runCreate(context.Background(), fc, manifestPath, &out, &errOut, stubCurrentUser, createConfig{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(errOut.String(), "Restart ng serve") {
+		t.Fatalf("expected restart note on stderr, got: %s", errOut.String())
+	}
+
+	raw, err := os.ReadFile(filepath.Join(dir, angularManifestFileName))
+	if err != nil {
+		t.Fatalf("read angular.json: %v", err)
+	}
+	if !strings.Contains(string(raw), sampleCSP) {
+		t.Fatalf("angular.json missing CSP: %s", raw)
+	}
+}
+
+func TestRunCreate_SucceedsWhenDevDocumentHeadersPatchFails(t *testing.T) {
+	dir := t.TempDir()
+	manifestPath := filepath.Join(dir, manifestFileName)
+	writeManifestAtPath(t, manifestPath, testManifestJSON)
+	writeMultiProjectAngularFixture(t, dir)
+
+	respBody := `{"pluginInstanceId":"pi-123","alias":"access-request-plugin","devDocumentHeaders":{"Content-Security-Policy":"` + sampleCSP + `"}}`
+	fc := &fakeClient{status: http.StatusCreated, body: respBody}
+	var out, errOut bytes.Buffer
+
+	err := runCreate(context.Background(), fc, manifestPath, &out, &errOut, stubCurrentUser, createConfig{})
+	if err != nil {
+		t.Fatalf("create should succeed when header patching fails, got: %v", err)
+	}
+	if !strings.Contains(out.String(), "Created plugin instance pi-123") {
+		t.Fatalf("expected success output, got: %s", out.String())
+	}
+	if !strings.Contains(errOut.String(), "Warning: could not update angular.json dev server headers") {
+		t.Fatalf("expected header patch warning on stderr, got: %s", errOut.String())
+	}
+}
+
+func TestRunCreate_AppliesEmptyPermissionsPolicy(t *testing.T) {
+	dir := t.TempDir()
+	manifestPath := filepath.Join(dir, manifestFileName)
+	writeManifestAtPath(t, manifestPath, testManifestJSON)
+	writeAngularFixture(t, dir, "access-request-plugin", false)
+
+	respBody := `{"pluginInstanceId":"pi-123","alias":"access-request-plugin","devDocumentHeaders":{"Content-Security-Policy":"` + sampleCSP + `","Permissions-Policy":""}}`
+	fc := &fakeClient{status: http.StatusCreated, body: respBody}
+	var out, errOut bytes.Buffer
+
+	err := runCreate(context.Background(), fc, manifestPath, &out, &errOut, stubCurrentUser, createConfig{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	var root map[string]any
+	if err := json.Unmarshal(readFileBytes(t, filepath.Join(dir, angularManifestFileName)), &root); err != nil {
+		t.Fatalf("parse angular.json: %v", err)
+	}
+	headers := root["projects"].(map[string]any)["access-request-plugin"].(map[string]any)["architect"].(map[string]any)["serve"].(map[string]any)["options"].(map[string]any)["headers"].(map[string]any)
+	if headers[headerContentSecurityPolicy] != sampleCSP {
+		t.Fatalf("CSP = %v", headers[headerContentSecurityPolicy])
+	}
+	if headers[headerPermissionsPolicy] != "" {
+		t.Fatalf("Permissions-Policy = %v, want empty string", headers[headerPermissionsPolicy])
+	}
+}
+
+func readFileBytes(t *testing.T, path string) []byte {
+	t.Helper()
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read %s: %v", path, err)
+	}
+	return raw
 }
 
 func TestRunCreate_ErrorMapping(t *testing.T) {

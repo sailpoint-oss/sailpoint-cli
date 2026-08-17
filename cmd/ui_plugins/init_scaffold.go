@@ -123,7 +123,7 @@ func renameAngularProject(destDir, alias string) error {
 	// — robust across Angular versions and independent of angular.json layout.
 	content = strings.ReplaceAll(content, `"`+sentinelName+`:`, `"`+alias+`:`)
 
-	return os.WriteFile(path, []byte(content), 0644)
+	return writeFileAtomic(path, []byte(content))
 }
 
 func setPackageName(destDir, alias string) error {

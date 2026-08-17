@@ -85,12 +85,19 @@ func link(ctx context.Context, c client.Client, manifestPath string, flagPort in
 	defer resp.Body.Close()
 
 	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
-		// The response body is read only to explain a failure. The success
-		// path intentionally ignores it so this command does not depend on
-		// the link endpoint's response shape.
+		// The response body is read only to explain a failure. On success it
+		// carries devDocumentHeaders for angular.json patching.
 		respBody, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("unable to create link: %s", umsErrorMessage(respBody))
 	}
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read link response: %w", err)
+	}
+
+	headers, _ := parseDevDocumentHeaders(respBody)
+	applyDevDocumentHeadersBestEffort(manifestPath, cfg.Manifest.Alias, headers, errOut)
 
 	viewURL := pluginViewURL(tenantUrl, instance.PluginInstanceID)
 	if viewURL == "" {
