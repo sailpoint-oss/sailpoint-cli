@@ -18,6 +18,16 @@ When both are supplied, each slot's `restrictToUsers` is the de-duplicated union
 
 `--dry-run` validates the manifest, applies any overrides, and prints the exact payload that would be sent — without creating the instance. It also performs a read-only alias availability check against the tenant when possible; an alias that is already taken or invalid is reported, while an inconclusive check (e.g. connectivity or access) is noted without failing.
 
+## Local dev document headers
+
+On a successful create (not `--dry-run`), when the backend returns `devDocumentHeaders`, the CLI writes the `Content-Security-Policy` and `Permissions-Policy` values into `./angular.json` at `projects.<alias>.architect.serve.options.headers` (creating the `headers` object if needed). Values are copied as returned by the backend, including an empty `Permissions-Policy` when present. Other `serve.options` keys (such as HTTPS settings) are preserved. `sp-ui-plugin.json` is not modified for dev headers.
+
+The Angular project patched is resolved from the manifest alias: the CLI looks for `projects.<alias>` first (matching the project name `init` sets during scaffolding). If that key is missing but `angular.json` defines exactly one project, that sole project is updated instead. If multiple projects are defined and none matches the alias, create still succeeds with a warning on stderr that `angular.json` could not be updated; local dev CSP may remain stale until you rename the project to match the alias or add the headers manually under the correct project.
+
+If `./angular.json` is missing (for example, a non-Angular workspace attached with `init --path`), a note is printed and create still succeeds. When headers change, a restart reminder is printed to stderr — restart `ng serve` / `npm start` before testing in ISC.
+
+Use `--json` to inspect the raw backend response, including `devDocumentHeaders`; header patching still runs as a side effect unless backend omits that field.
+
 ## Output
 
 On success a short confirmation with the new plugin instance ID and alias is printed. Use `--json` to print the raw UMS response instead.

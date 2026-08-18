@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -150,6 +152,72 @@ func TestLink_SuccessWithFlagPort(t *testing.T) {
 	}
 	if strings.Contains(errOut.String(), "defaulting to port") {
 		t.Fatalf("did not expect a defaulting notice when --port is set, got: %s", errOut.String())
+	}
+}
+
+func TestLink_AppliesDevDocumentHeaders(t *testing.T) {
+	withTenantURL(t, "https://tenant.example.com")
+	dir := t.TempDir()
+	manifestPath := filepath.Join(dir, manifestFileName)
+	writeManifestAtPath(t, manifestPath, testManifestJSON)
+	writeAngularFixture(t, dir, "access-request-plugin", true)
+
+	linkBody := `{"devOverrides":{"devUrl":"https://localhost:4300"},"devDocumentHeaders":{"Content-Security-Policy":"` + sampleCSP + `"}}`
+	fc := &fakeClient{
+		getStatus: http.StatusOK,
+		getBody:   linkResolvedBody,
+		status:    http.StatusOK,
+		body:      linkBody,
+	}
+	var out, errOut bytes.Buffer
+
+	err := link(context.Background(), fc, manifestPath, 4300, true, &out, &errOut)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(errOut.String(), "Restart ng serve") {
+		t.Fatalf("expected restart note, got: %s", errOut.String())
+	}
+
+	raw, err := os.ReadFile(filepath.Join(dir, angularManifestFileName))
+	if err != nil {
+		t.Fatalf("read angular.json: %v", err)
+	}
+	if !strings.Contains(string(raw), sampleCSP) {
+		t.Fatalf("angular.json missing updated CSP: %s", raw)
+	}
+	if strings.Contains(string(raw), "old-csp") {
+		t.Fatalf("angular.json should replace prior CSP: %s", raw)
+	}
+}
+
+func TestLink_PrintsDeveloperURLWhenDevDocumentHeadersPatchFails(t *testing.T) {
+	withTenantURL(t, "https://tenant.example.com")
+	dir := t.TempDir()
+	manifestPath := filepath.Join(dir, manifestFileName)
+	writeManifestAtPath(t, manifestPath, testManifestJSON)
+	writeMultiProjectAngularFixture(t, dir)
+
+	linkBody := `{"devOverrides":{"devUrl":"https://localhost:4300"},"devDocumentHeaders":{"Content-Security-Policy":"` + sampleCSP + `"}}`
+	fc := &fakeClient{
+		getStatus: http.StatusOK,
+		getBody:   linkResolvedBody,
+		status:    http.StatusOK,
+		body:      linkBody,
+	}
+	var out, errOut bytes.Buffer
+
+	err := link(context.Background(), fc, manifestPath, 4300, true, &out, &errOut)
+	if err != nil {
+		t.Fatalf("link should succeed when header patching fails, got: %v", err)
+	}
+
+	wantDevURL := "https://tenant.example.com/ui/plugin/pi-123?spPluginDev=access-request-plugin"
+	if got := strings.TrimSpace(out.String()); got != wantDevURL {
+		t.Fatalf("stdout = %q, want exactly %q", got, wantDevURL)
+	}
+	if !strings.Contains(errOut.String(), "Warning: could not update angular.json dev server headers") {
+		t.Fatalf("expected header patch warning on stderr, got: %s", errOut.String())
 	}
 }
 

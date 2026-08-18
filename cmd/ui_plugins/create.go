@@ -145,6 +145,9 @@ func runCreate(ctx context.Context, c client.Client, manifestPath string, out io
 		return mapUMSCreateError(resp.StatusCode, body, cfg.Manifest.Alias)
 	}
 
+	headers, _ := parseDevDocumentHeaders(body)
+	applyDevDocumentHeadersBestEffort(manifestPath, cfg.Manifest.Alias, headers, errOut)
+
 	if opts.jsonOutput {
 		_, _ = fmt.Fprintln(out, string(body))
 		return nil
