@@ -3,6 +3,7 @@ package ui_plugins
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -32,7 +33,9 @@ func TestWriteFileAtomic(t *testing.T) {
 	if err != nil {
 		t.Fatalf("stat file: %v", err)
 	}
-	if info.Mode().Perm() != 0600 {
+	// Windows has no Unix permission model; Mode().Perm() only reflects the
+	// read-only bit, so exact-mode assertions cannot hold there.
+	if runtime.GOOS != "windows" && info.Mode().Perm() != 0600 {
 		t.Fatalf("mode = %o, want %o", info.Mode().Perm(), os.FileMode(0600))
 	}
 
@@ -66,7 +69,9 @@ func TestWriteFileAtomicCreatesNewFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("stat file: %v", err)
 	}
-	if info.Mode().Perm() != 0644 {
+	// Windows has no Unix permission model; Mode().Perm() only reflects the
+	// read-only bit, so exact-mode assertions cannot hold there.
+	if runtime.GOOS != "windows" && info.Mode().Perm() != 0644 {
 		t.Fatalf("mode = %o, want %o", info.Mode().Perm(), os.FileMode(0644))
 	}
 }
@@ -91,7 +96,9 @@ func TestFilePermissions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("existing file: %v", err)
 	}
-	if perm != 0600 {
+	// Windows has no Unix permission model; Mode().Perm() only reflects the
+	// read-only bit, so exact-mode assertions cannot hold there.
+	if runtime.GOOS != "windows" && perm != 0600 {
 		t.Fatalf("existing perm = %o, want %o", perm, os.FileMode(0600))
 	}
 }
