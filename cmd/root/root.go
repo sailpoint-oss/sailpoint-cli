@@ -26,7 +26,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var version = "2.3.0"
+var version = "2.4.0"
 
 //go:embed root.md
 var rootHelp string
