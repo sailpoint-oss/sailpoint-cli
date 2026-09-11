@@ -1,25 +1,24 @@
 package config
 
 import (
-	"bytes"
-	"crypto/aes"
-	"crypto/cipher"
+	"bufio"
 	"crypto/rand"
-	"crypto/rsa"
 	"crypto/sha256"
-	"crypto/x509"
+	"crypto/subtle"
 	"encoding/base64"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/charmbracelet/log"
 	"github.com/skratchdot/open-golang/open"
 	keyring "github.com/zalando/go-keyring"
+	"golang.org/x/term"
 	"gopkg.in/square/go-jose.v2/jwt"
 )
 
@@ -47,70 +46,19 @@ type TokenSet struct {
 	RefreshExpiry time.Time
 }
 
-// AuthRequest represents the request body for initiating OAuth authentication
-type AuthRequest struct {
-	Tenant     string `json:"tenant,omitempty"`
-	APIBaseURL string `json:"apiBaseURL,omitempty"`
-	PublicKey  string `json:"publicKey"`
+// oauthInfo is the tenant OAuth discovery document served at
+// {baseURL}/oauth/info.
+type oauthInfo struct {
+	AuthorizeEndpoint string `json:"authorizeEndpoint"`
 }
 
-// AuthResponse represents the response from the authentication initiation endpoint
-type AuthResponse struct {
-	AuthURL      string `json:"authURL"`
-	ID           string `json:"id"`
-	BaseURL      string `json:"baseURL"`
-	PickupSecret string `json:"pickupSecret"`
-	TTL          int64  `json:"ttl"`
-}
-
-func confirmationCodeFromID(id string) string {
-	id = strings.TrimSpace(id)
-	if len(id) < 8 {
-		return strings.ToUpper(id)
-	}
-
-	suffix := id[len(id)-8:]
-	return strings.ToUpper(suffix[:4] + "-" + suffix[4:])
-}
-
-func newOAuthTokenRequest(tokenURL, id, pickupSecret string) (*http.Request, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", tokenURL, id), nil)
-	if err != nil {
-		return nil, err
-	}
-	if pickupSecret != "" {
-		req.Header.Set("Authorization", "Bearer "+pickupSecret)
-	}
-	return req, nil
-}
-
-// OAuthTokenResponse represents the response containing the encrypted token from OAuth flow
-type OAuthTokenResponse struct {
-	ID        string `json:"id"`
-	BaseURL   string `json:"baseURL"`
-	TokenInfo string `json:"tokenInfo"`
-}
-
-// EncryptedTokenData represents the structure of the encrypted token JSON
-type EncryptedTokenData struct {
-	Version   string `json:"version"`
-	Algorithm struct {
-		Symmetric  string `json:"symmetric"`
-		Asymmetric string `json:"asymmetric"`
-	} `json:"algorithm"`
-	Data struct {
-		Ciphertext   string `json:"ciphertext"`
-		EncryptedKey string `json:"encryptedKey"`
-		IV           string `json:"iv"`
-		AuthTag      string `json:"authTag"`
-	} `json:"data"`
-}
-
-// RefreshRequest represents the request body for refreshing OAuth tokens
-type RefreshRequest struct {
-	RefreshToken string `json:"refreshToken"`
-	APIBaseURL   string `json:"apiBaseURL,omitempty"`
-	Tenant       string `json:"tenant,omitempty"`
+// pastePayload is the value the user copies from the redirect page. The page
+// packs the authorization code together with the state it received, so this
+// CLI can prove that the code belongs to the request it started.
+type pastePayload struct {
+	Version int    `json:"v"`
+	Code    string `json:"code"`
+	State   string `json:"state"`
 }
 
 func DeleteOAuthToken(env string) error {
@@ -265,17 +213,29 @@ func SetOAuthRefreshExpiry(expiry time.Time) error {
 
 }
 
-var (
-	tokenSet TokenSet
+const (
+	// ClientID is the public OAuth client registered for the SailPoint
+	// developer tools. Public clients hold no secret and must use PKCE.
+	ClientID = "sailapps"
+
+	// RedirectURI is a static page that displays the authorization code for
+	// the user to copy.
+	RedirectURI = "https://developer.sailpoint.com/sailapps"
+
+	// redirectURLEnvVar overrides RedirectURI for local development. Only a
+	// loopback URL is accepted, so the code can only reach this machine.
+	redirectURLEnvVar = "SAIL_OAUTH_REDIRECT_URL"
+
+	// pastePrefix marks a value produced by the redirect page.
+	pastePrefix = "sp1."
+
+	// pasteVersion is the payload version this CLI understands.
+	pasteVersion = 1
 )
 
-const (
-	ClientID             = "sailpoint-cli"
-	AuthLambdaBaseURL    = "https://nug87yusrg.execute-api.us-east-1.amazonaws.com/Prod/sailapps"
-	AuthLambdaAuthURL    = AuthLambdaBaseURL + "/auth"
-	AuthLambdaTokenURL   = AuthLambdaBaseURL + "/auth/token"
-	AuthLambdaRefreshURL = AuthLambdaBaseURL + "/auth/refresh"
-)
+// oauthHTTPClient is used for every OAuth request, so that a slow endpoint
+// cannot block sign-in forever.
+var oauthHTTPClient = &http.Client{Timeout: 30 * time.Second}
 
 func ResetCacheOAuth() error {
 	err := DeleteOAuthToken("")
@@ -327,292 +287,359 @@ func CacheOAuth(set TokenSet) error {
 	return nil
 }
 
-// generateKeyPair creates a new 2048-bit RSA key pair for OAuth authentication
-// Returns the private key, the public key as base64-encoded PEM, and any error
-func generateKeyPair() (*rsa.PrivateKey, string, error) {
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		return nil, "", fmt.Errorf("failed to generate RSA key pair: %v", err)
+// redirectURI returns the redirect URI for this sign-in. The default is the
+// static SailPoint page. SAIL_OAUTH_REDIRECT_URL overrides it for local
+// development, and only a loopback host is accepted.
+func redirectURI() (string, error) {
+	override := strings.TrimSpace(os.Getenv(redirectURLEnvVar))
+	if override == "" {
+		return RedirectURI, nil
 	}
 
-	publicKeyBytes, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
+	parsed, err := url.Parse(override)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to marshal public key: %v", err)
+		return "", fmt.Errorf("%s is not a valid URL: %v", redirectURLEnvVar, err)
 	}
 
-	publicKeyPEM := pem.EncodeToMemory(&pem.Block{
-		Type:  "PUBLIC KEY",
-		Bytes: publicKeyBytes,
-	})
+	host := strings.ToLower(parsed.Hostname())
+	if parsed.Scheme != "http" || (host != "localhost" && host != "127.0.0.1") {
+		return "", fmt.Errorf("%s must be a loopback URL, such as http://localhost:4200/sailapps", redirectURLEnvVar)
+	}
 
-	publicKeyBase64 := base64.StdEncoding.EncodeToString(publicKeyPEM)
-	return privateKey, publicKeyBase64, nil
+	return override, nil
 }
 
-// decryptHybridToken decrypts a token encrypted with hybrid RSA-OAEP + AES-256-GCM encryption
-func decryptHybridToken(encryptedData *EncryptedTokenData, privateKey *rsa.PrivateKey) (string, error) {
-	// 1. Decode base64 components
-	encryptedKey, err := base64.StdEncoding.DecodeString(encryptedData.Data.EncryptedKey)
+// assertHTTPSURL parses rawURL and rejects it unless it is a plain HTTPS URL.
+// The host itself is not restricted, because a tenant can use a vanity domain.
+func assertHTTPSURL(rawURL string, label string) (*url.URL, error) {
+	parsed, err := url.Parse(strings.TrimSpace(rawURL))
 	if err != nil {
-		return "", fmt.Errorf("failed to decode encrypted key: %v", err)
+		return nil, fmt.Errorf("%s is not a valid URL: %v", label, err)
+	}
+	if parsed.Scheme != "https" {
+		return nil, fmt.Errorf("%s must use HTTPS", label)
+	}
+	if parsed.Hostname() == "" {
+		return nil, fmt.Errorf("%s has no host", label)
+	}
+	if parsed.User != nil {
+		return nil, fmt.Errorf("%s must not include credentials", label)
+	}
+	if parsed.Fragment != "" {
+		return nil, fmt.Errorf("%s must not include a fragment", label)
 	}
 
-	ciphertext, err := base64.StdEncoding.DecodeString(encryptedData.Data.Ciphertext)
-	if err != nil {
-		return "", fmt.Errorf("failed to decode ciphertext: %v", err)
-	}
-
-	iv, err := base64.StdEncoding.DecodeString(encryptedData.Data.IV)
-	if err != nil {
-		return "", fmt.Errorf("failed to decode IV: %v", err)
-	}
-
-	authTag, err := base64.StdEncoding.DecodeString(encryptedData.Data.AuthTag)
-	if err != nil {
-		return "", fmt.Errorf("failed to decode auth tag: %v", err)
-	}
-
-	// 2. Decrypt AES key using RSA-OAEP-SHA256
-	aesKey, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, privateKey, encryptedKey, nil)
-	if err != nil {
-		return "", fmt.Errorf("RSA decryption failed: %v", err)
-	}
-
-	// 3. Decrypt token using AES-256-GCM
-	block, err := aes.NewCipher(aesKey)
-	if err != nil {
-		return "", fmt.Errorf("failed to create AES cipher: %v", err)
-	}
-
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return "", fmt.Errorf("failed to create GCM: %v", err)
-	}
-
-	// Append auth tag to ciphertext (GCM expects it this way)
-	ciphertextWithTag := append(ciphertext, authTag...)
-
-	plaintext, err := gcm.Open(nil, iv, ciphertextWithTag, nil)
-	if err != nil {
-		return "", fmt.Errorf("AES-GCM decryption failed: %v", err)
-	}
-
-	return string(plaintext), nil
+	return parsed, nil
 }
 
-func OAuthLogin() (TokenSet, error) {
-	var set TokenSet
-
-	// Step 1: Generate RSA key pair for this authentication session
-	privateKey, publicKeyBase64, err := generateKeyPair()
+// discoverAuthorizeEndpoint reads the authorize endpoint from
+// {baseURL}/oauth/info.
+//
+// The token endpoint is not taken from this document. The authorization code
+// and the PKCE verifier always go to the tenant URL from configuration, so a
+// discovery response can never move them to another host.
+func discoverAuthorizeEndpoint(baseURL string) (string, error) {
+	resp, err := oauthHTTPClient.Get(baseURL + "/oauth/info")
 	if err != nil {
-		return set, fmt.Errorf("failed to generate key pair: %v", err)
-	}
-	log.Debug("Generated RSA key pair for OAuth authentication")
-
-	// Step 2: Initiate authentication flow with the public key
-	authRequest := AuthRequest{
-		APIBaseURL: GetBaseUrl(),
-		PublicKey:  publicKeyBase64,
-	}
-
-	requestBody, err := json.Marshal(authRequest)
-	if err != nil {
-		return set, fmt.Errorf("failed to marshal auth request: %v", err)
-	}
-
-	resp, err := http.Post(AuthLambdaAuthURL, "application/json", bytes.NewBuffer(requestBody))
-	if err != nil {
-		return set, fmt.Errorf("failed to initiate auth with lambda: %v", err)
+		return "", fmt.Errorf("failed to read tenant OAuth information: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return set, fmt.Errorf("auth lambda returned non-200 status: %d, body: %s", resp.StatusCode, string(bodyBytes))
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("tenant OAuth information returned status %d: %s", resp.StatusCode, strings.TrimSpace(string(body)))
 	}
 
-	var authResponse AuthResponse
-	if err := json.NewDecoder(resp.Body).Decode(&authResponse); err != nil {
-		return set, fmt.Errorf("failed to decode auth lambda response: %v", err)
+	var info oauthInfo
+	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
+		return "", fmt.Errorf("failed to decode tenant OAuth information: %v", err)
 	}
 
-	log.Debug("Auth response received", "id", authResponse.ID, "baseURL", authResponse.BaseURL)
-	if confirmationCode := confirmationCodeFromID(authResponse.ID); confirmationCode != "" {
-		fmt.Printf("SailApps confirmation code: %s\n", confirmationCode)
+	if info.AuthorizeEndpoint == "" {
+		return "", fmt.Errorf("tenant OAuth information is missing the authorize endpoint")
+	}
+	if _, err := assertHTTPSURL(info.AuthorizeEndpoint, "authorize endpoint"); err != nil {
+		return "", err
 	}
 
-	// Update the base URL for this session
-	if authResponse.BaseURL != "" {
-		SetBaseUrl(authResponse.BaseURL)
-	}
-
-	// Step 3: Present Auth URL to user
-	log.Info("Attempting to open browser for authentication")
-	err = open.Run(authResponse.AuthURL)
-	if err != nil {
-		log.Warn("Cannot open automatically, Please manually open OAuth login page below")
-		fmt.Println(authResponse.AuthURL)
-	}
-
-	// Step 4: Poll Auth-Lambda for encrypted token using UUID
-	ticker := time.NewTicker(2 * time.Second)
-	defer ticker.Stop()
-
-	timeout := time.After(5 * time.Minute)
-	for {
-		select {
-		case <-timeout:
-			return set, fmt.Errorf("authentication timed out after 5 minutes")
-		case <-ticker.C:
-			// Query Auth-Lambda for token using UUID
-			tokenReq, err := newOAuthTokenRequest(AuthLambdaTokenURL, authResponse.ID, authResponse.PickupSecret)
-			if err != nil {
-				return set, fmt.Errorf("failed to create token polling request: %v", err)
-			}
-
-			tokenResp, err := http.DefaultClient.Do(tokenReq)
-			if err != nil {
-				log.Debug("Error polling for token", "error", err)
-				continue
-			}
-
-			if tokenResp.StatusCode == http.StatusOK {
-				var tokenResponse OAuthTokenResponse
-				if err := json.NewDecoder(tokenResp.Body).Decode(&tokenResponse); err != nil {
-					tokenResp.Body.Close()
-					return set, fmt.Errorf("failed to decode token response: %v", err)
-				}
-				tokenResp.Body.Close()
-
-				// Update base URL if provided in token response
-				if tokenResponse.BaseURL != "" {
-					SetBaseUrl(tokenResponse.BaseURL)
-				}
-
-				// Parse the encrypted token data
-				var encryptedTokenData EncryptedTokenData
-				if err := json.Unmarshal([]byte(tokenResponse.TokenInfo), &encryptedTokenData); err != nil {
-					return set, fmt.Errorf("failed to parse encrypted token data: %v", err)
-				}
-
-				// Decrypt the token using our private key
-				decryptedTokenInfo, err := decryptHybridToken(&encryptedTokenData, privateKey)
-				if err != nil {
-					return set, fmt.Errorf("failed to decrypt token info: %v", err)
-				}
-
-				// Parse the decrypted token info into RefreshResponse
-				var response RefreshResponse
-				if err := json.Unmarshal([]byte(decryptedTokenInfo), &response); err != nil {
-					return set, fmt.Errorf("failed to parse decrypted token info: %v", err)
-				}
-
-				// Parse tokens to get expiry
-				var accessTokenClaims map[string]interface{}
-				accToken, err := jwt.ParseSigned(response.AccessToken)
-				if err != nil {
-					return set, fmt.Errorf("failed to parse access token: %v", err)
-				}
-				accToken.UnsafeClaimsWithoutVerification(&accessTokenClaims)
-
-				var refreshTokenClaims map[string]interface{}
-				refToken, err := jwt.ParseSigned(response.RefreshToken)
-				if err != nil {
-					return set, fmt.Errorf("failed to parse refresh token: %v", err)
-				}
-				refToken.UnsafeClaimsWithoutVerification(&refreshTokenClaims)
-
-				set = TokenSet{
-					AccessToken:   response.AccessToken,
-					AccessExpiry:  time.Unix(int64(accessTokenClaims["exp"].(float64)), 0),
-					RefreshToken:  response.RefreshToken,
-					RefreshExpiry: time.Unix(int64(refreshTokenClaims["exp"].(float64)), 0),
-				}
-
-				log.Info("OAuth authentication successful")
-				return set, nil
-			}
-			bodyBytes, _ := io.ReadAll(tokenResp.Body)
-			if tokenResp.StatusCode == http.StatusUnauthorized {
-				tokenResp.Body.Close()
-				return set, fmt.Errorf("token polling unauthorized: %s", string(bodyBytes))
-			}
-			log.Debug("Token not ready", "status", tokenResp.StatusCode, "body", string(bodyBytes))
-			tokenResp.Body.Close()
-		}
-	}
+	return info.AuthorizeEndpoint, nil
 }
 
-func RefreshOAuth() (TokenSet, error) {
+// randomURLSafeString returns byteLength random bytes as a base64url string.
+func randomURLSafeString(byteLength int) (string, error) {
+	buf := make([]byte, byteLength)
+	if _, err := rand.Read(buf); err != nil {
+		return "", fmt.Errorf("failed to generate random value: %v", err)
+	}
+	return base64.RawURLEncoding.EncodeToString(buf), nil
+}
+
+// codeChallenge returns the S256 PKCE challenge for a verifier (RFC 7636).
+func codeChallenge(verifier string) string {
+	digest := sha256.Sum256([]byte(verifier))
+	return base64.RawURLEncoding.EncodeToString(digest[:])
+}
+
+// confirmationCodeFromState returns the short code that both this CLI and the
+// redirect page display. The user compares the two before pasting.
+func confirmationCodeFromState(state string) string {
+	if len(state) < 8 {
+		return ""
+	}
+	return state[:4] + "-" + state[4:8]
+}
+
+// parsePasteCode unpacks the value the user copied from the redirect page and
+// verifies that its state matches the state this CLI sent.
+func parsePasteCode(pasted string, expectedState string) (string, error) {
+	pasted = strings.TrimSpace(pasted)
+	if pasted == "" {
+		return "", fmt.Errorf("no code was entered")
+	}
+	if !strings.HasPrefix(pasted, pastePrefix) {
+		return "", fmt.Errorf("the code must start with %q, so it did not come from the SailPoint sign-in page", pastePrefix)
+	}
+
+	decoded, err := base64.RawURLEncoding.DecodeString(strings.TrimPrefix(pasted, pastePrefix))
+	if err != nil {
+		return "", fmt.Errorf("the code is damaged, so copy it again: %v", err)
+	}
+
+	var payload pastePayload
+	if err := json.Unmarshal(decoded, &payload); err != nil {
+		return "", fmt.Errorf("the code is damaged, so copy it again: %v", err)
+	}
+	if payload.Version != pasteVersion {
+		return "", fmt.Errorf("the code uses version %d, so update the CLI", payload.Version)
+	}
+	if payload.Code == "" {
+		return "", fmt.Errorf("the code is missing the authorization code")
+	}
+	if subtle.ConstantTimeCompare([]byte(payload.State), []byte(expectedState)) != 1 {
+		return "", fmt.Errorf("the code belongs to a different sign-in attempt, so start again")
+	}
+
+	return payload.Code, nil
+}
+
+// requestToken posts a form to the tenant token endpoint and returns the token
+// response. The client authenticates with its client ID only, because the
+// client is public.
+func requestToken(tokenEndpoint string, form url.Values) (RefreshResponse, error) {
 	var response RefreshResponse
-	var set TokenSet
 
-	tempRefreshToken, err := GetRefreshToken()
+	form.Set("client_id", ClientID)
+
+	resp, err := oauthHTTPClient.PostForm(tokenEndpoint, form)
 	if err != nil {
-		return set, err
-	}
-
-	// Prepare the refresh request body
-	refreshRequest := RefreshRequest{
-		RefreshToken: tempRefreshToken,
-		APIBaseURL:   GetBaseUrl(),
-		Tenant:       GetTenantUrl(),
-	}
-
-	requestBody, err := json.Marshal(refreshRequest)
-	if err != nil {
-		return set, fmt.Errorf("failed to marshal refresh request: %v", err)
-	}
-
-	resp, err := http.Post(AuthLambdaRefreshURL, "application/json", bytes.NewBuffer(requestBody))
-	if err != nil {
-		return set, fmt.Errorf("failed to refresh token: %v", err)
+		return response, fmt.Errorf("failed to reach the token endpoint: %v", err)
 	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return set, fmt.Errorf("token refresh failed with status %d: %s", resp.StatusCode, string(bodyBytes))
-	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return set, err
+		return response, fmt.Errorf("failed to read the token response: %v", err)
 	}
 
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		return set, err
+	if resp.StatusCode != http.StatusOK {
+		return response, fmt.Errorf("token request failed with status %d: %s", resp.StatusCode, strings.TrimSpace(string(body)))
 	}
 
+	if err := json.Unmarshal(body, &response); err != nil {
+		return response, fmt.Errorf("failed to decode the token response: %v", err)
+	}
 	if response.AccessToken == "" {
-		return set, fmt.Errorf("no access token in refresh response")
+		return response, fmt.Errorf("no access token in the token response")
 	}
-
 	if response.RefreshToken == "" {
-		return set, fmt.Errorf("no refresh token in refresh response")
+		return response, fmt.Errorf("no refresh token in the token response")
 	}
 
-	var accessToken map[string]interface{}
-	accToken, err := jwt.ParseSigned(response.AccessToken)
+	return response, nil
+}
+
+// tokenSetFromResponse reads the expiry of each token from its own claims.
+func tokenSetFromResponse(response RefreshResponse) (TokenSet, error) {
+	var set TokenSet
+
+	accessExpiry, err := tokenExpiry(response.AccessToken)
 	if err != nil {
-		return set, err
+		return set, fmt.Errorf("failed to parse access token: %v", err)
 	}
-	accToken.UnsafeClaimsWithoutVerification(&accessToken)
 
-	var refreshToken map[string]interface{}
-	refToken, err := jwt.ParseSigned(response.RefreshToken)
+	refreshExpiry, err := tokenExpiry(response.RefreshToken)
 	if err != nil {
-		return set, err
+		return set, fmt.Errorf("failed to parse refresh token: %v", err)
 	}
-	refToken.UnsafeClaimsWithoutVerification(&refreshToken)
 
-	set = TokenSet{
+	return TokenSet{
 		AccessToken:   response.AccessToken,
-		AccessExpiry:  time.Unix(int64(accessToken["exp"].(float64)), 0),
+		AccessExpiry:  accessExpiry,
 		RefreshToken:  response.RefreshToken,
-		RefreshExpiry: time.Unix(int64(refreshToken["exp"].(float64)), 0),
+		RefreshExpiry: refreshExpiry,
+	}, nil
+}
+
+func tokenExpiry(token string) (time.Time, error) {
+	var expiry time.Time
+
+	parsed, err := jwt.ParseSigned(token)
+	if err != nil {
+		return expiry, err
+	}
+
+	var claims map[string]interface{}
+	if err := parsed.UnsafeClaimsWithoutVerification(&claims); err != nil {
+		return expiry, err
+	}
+
+	exp, ok := claims["exp"].(float64)
+	if !ok {
+		return expiry, fmt.Errorf("token has no exp claim")
+	}
+
+	return time.Unix(int64(exp), 0), nil
+}
+
+// promptForPasteCode reads the code the user copied from the redirect page.
+func promptForPasteCode(in io.Reader) (string, error) {
+	reader := bufio.NewReader(in)
+	line, err := reader.ReadString('\n')
+	if err != nil && line == "" {
+		return "", fmt.Errorf("failed to read the code: %v", err)
+	}
+	return strings.TrimSpace(line), nil
+}
+
+// requireInteractiveTerminal reports a clear error when nobody can paste a
+// code, instead of waiting on a closed input forever.
+func requireInteractiveTerminal() error {
+	if term.IsTerminal(int(os.Stdin.Fd())) {
+		return nil
+	}
+	return fmt.Errorf("OAuth login needs an interactive terminal, because you must paste a code from the browser. Use a personal access token for a non-interactive session")
+}
+
+// OAuthLogin runs the OAuth 2.0 authorization code flow with PKCE. The browser
+// sends the code to a static SailPoint page, the user copies it back, and this
+// CLI exchanges it directly with the tenant.
+func OAuthLogin() (TokenSet, error) {
+	var set TokenSet
+
+	if err := requireInteractiveTerminal(); err != nil {
+		return set, err
+	}
+
+	redirect, err := redirectURI()
+	if err != nil {
+		return set, err
+	}
+
+	baseParsed, err := assertHTTPSURL(strings.TrimSuffix(GetBaseUrl(), "/"), "tenant API URL")
+	if err != nil {
+		return set, err
+	}
+	baseURL := baseParsed.Scheme + "://" + baseParsed.Host
+	tokenEndpoint := baseURL + "/oauth/token"
+
+	authorizeEndpoint, err := discoverAuthorizeEndpoint(baseURL)
+	if err != nil {
+		return set, err
+	}
+
+	codeVerifier, err := randomURLSafeString(32)
+	if err != nil {
+		return set, err
+	}
+
+	state, err := randomURLSafeString(32)
+	if err != nil {
+		return set, err
+	}
+
+	authorizeURL, err := url.Parse(authorizeEndpoint)
+	if err != nil {
+		return set, fmt.Errorf("authorize endpoint is not a valid URL: %v", err)
+	}
+	query := authorizeURL.Query()
+	query.Set("client_id", ClientID)
+	query.Set("response_type", "code")
+	query.Set("redirect_uri", redirect)
+	query.Set("state", state)
+	query.Set("code_challenge", codeChallenge(codeVerifier))
+	query.Set("code_challenge_method", "S256")
+	authorizeURL.RawQuery = query.Encode()
+
+	log.Info("Opening the browser to sign in", "tenant", baseParsed.Host)
+	if err := open.Run(authorizeURL.String()); err != nil {
+		log.Warn("Cannot open the browser automatically", "error", err)
+	}
+
+	// Always print the URL. The browser can fail to open on a headless host, on
+	// a remote shell, or inside a container.
+	fmt.Fprintln(os.Stderr, "\nIf the browser did not open, go to this URL to sign in:")
+	fmt.Fprintln(os.Stderr, authorizeURL.String())
+
+	fmt.Fprintf(os.Stderr, "\nConfirmation code: %s\n", confirmationCodeFromState(state))
+	fmt.Fprintln(os.Stderr, "Sign in, make sure that the page shows the same confirmation code, and copy the one-time code.")
+	fmt.Fprint(os.Stderr, "\nPaste the one-time code here: ")
+
+	pasted, err := promptForPasteCode(os.Stdin)
+	if err != nil {
+		return set, err
+	}
+
+	authorizationCode, err := parsePasteCode(pasted, state)
+	if err != nil {
+		return set, err
+	}
+
+	form := url.Values{}
+	form.Set("grant_type", "authorization_code")
+	form.Set("code", authorizationCode)
+	form.Set("redirect_uri", redirect)
+	form.Set("code_verifier", codeVerifier)
+
+	response, err := requestToken(tokenEndpoint, form)
+	if err != nil {
+		return set, err
+	}
+
+	set, err = tokenSetFromResponse(response)
+	if err != nil {
+		return set, err
+	}
+
+	log.Info("OAuth authentication successful")
+	return set, nil
+}
+
+// RefreshOAuth exchanges the stored refresh token with the tenant directly.
+func RefreshOAuth() (TokenSet, error) {
+	var set TokenSet
+
+	refreshToken, err := GetRefreshToken()
+	if err != nil {
+		return set, err
+	}
+
+	baseParsed, err := assertHTTPSURL(strings.TrimSuffix(GetBaseUrl(), "/"), "tenant API URL")
+	if err != nil {
+		return set, err
+	}
+
+	form := url.Values{}
+	form.Set("grant_type", "refresh_token")
+	form.Set("refresh_token", refreshToken)
+
+	response, err := requestToken(baseParsed.Scheme+"://"+baseParsed.Host+"/oauth/token", form)
+	if err != nil {
+		return set, err
+	}
+
+	set, err = tokenSetFromResponse(response)
+	if err != nil {
+		return set, err
 	}
 
 	log.Debug("OAuth token refresh successful")
