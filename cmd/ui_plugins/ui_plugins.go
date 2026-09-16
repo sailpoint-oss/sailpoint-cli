@@ -18,6 +18,7 @@ func NewUIPluginsCommand() *cobra.Command {
 	help := util.ParseHelp(uiPluginsHelp)
 	cmd := &cobra.Command{
 		Use:     "ui-plugins",
+		Aliases: []string{"ui-plugin"},
 		Short:   "Manage UI plugin workflows in Identity Security Cloud",
 		Long:    help.Long,
 		Example: help.Example,
@@ -56,7 +57,7 @@ func isUIPluginsEnabled() bool {
 
 func experimentalDisabledError() error {
 	return fmt.Errorf(
-		"the `sail ui-plugins` command group is experimental and currently disabled. Enable it with `%s=1`",
+		"the `sail ui-plugins` command group is experimental and currently disabled. Enable it with `export %s=1`",
 		experimentalUIPluginsEnvVar,
 	)
 }

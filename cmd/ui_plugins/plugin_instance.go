@@ -309,7 +309,7 @@ func mapUMSListError(status int, body []byte) error {
 	case http.StatusForbidden:
 		return fmt.Errorf("not authorized to list UI plugins (requires the idn:plugins-ui:read right): %s", message)
 	case http.StatusNotFound:
-		return fmt.Errorf("the UI plugins feature is not enabled for this tenant, or the endpoint is unavailable: %s", message)
+		return fmt.Errorf("the UI plugins feature is not enabled for this tenant, or the idn:ui-plugins or idn:ui-plugins-author product license is not provisioned: %s", message)
 	default:
 		return fmt.Errorf("failed to list plugin instances (status %d): %s", status, message)
 	}
@@ -324,7 +324,7 @@ func mapUMSLookupError(status int, body []byte, target string) error {
 	case http.StatusForbidden:
 		return fmt.Errorf("not authorized to read UI plugins (requires the idn:plugins-ui:read right): %s", message)
 	case http.StatusNotFound:
-		return fmt.Errorf("plugin instance %q not found (or the UI plugins feature is not enabled for this tenant): %s", target, message)
+		return fmt.Errorf("plugin instance %q not found, the UI plugins feature is not enabled, or the idn:ui-plugins or idn:ui-plugins-author product license is not provisioned for this tenant: %s", target, message)
 	default:
 		return fmt.Errorf("failed to look up plugin instance %q (status %d): %s", target, status, message)
 	}
@@ -339,7 +339,7 @@ func mapUMSDeleteError(status int, body []byte, target string) error {
 	case http.StatusForbidden:
 		return fmt.Errorf("not authorized to delete UI plugins (requires the idn:plugins-ui:delete right): %s", message)
 	case http.StatusNotFound:
-		return fmt.Errorf("plugin instance %q not found: %s", target, message)
+		return fmt.Errorf("plugin instance %q not found — check the alias or ID for a typo (or the UI plugins feature may be unavailable for this tenant): %s", target, message)
 	default:
 		return fmt.Errorf("failed to delete plugin instance %q (status %d): %s", target, status, message)
 	}

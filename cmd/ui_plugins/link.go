@@ -88,7 +88,7 @@ func link(ctx context.Context, c client.Client, manifestPath string, flagPort in
 		// The response body is read only to explain a failure. On success it
 		// carries devDocumentHeaders for angular.json patching.
 		respBody, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("unable to create link: %s", umsErrorMessage(respBody))
+		return mapUMSLinkError(resp.StatusCode, respBody, cfg.Manifest.Alias)
 	}
 
 	respBody, err := io.ReadAll(resp.Body)
@@ -109,6 +109,19 @@ func link(ctx context.Context, c client.Client, manifestPath string, flagPort in
 	fmt.Fprintf(errOut, "\nNext: start your local dev server on port %d, then open the URL above in ISC.\n(Angular template: `npm start`. Other setups: see the plugin guide in your workspace.)\n", resolvedPort)
 
 	return nil
+}
+
+// mapUMSLinkError translates a non-2xx link response into an actionable error.
+func mapUMSLinkError(status int, body []byte, alias string) error {
+	message := umsErrorMessage(body)
+	switch status {
+	case http.StatusForbidden:
+		return fmt.Errorf("not authorized to link UI plugins (requires the idn:plugins-ui:update right): %s", message)
+	case http.StatusNotFound:
+		return fmt.Errorf("plugin instance for alias %q not found, the UI plugins feature is not enabled, or the idn:ui-plugins-author product license is not provisioned for this tenant: %s", alias, message)
+	default:
+		return fmt.Errorf("failed to create link for plugin %q (status %d): %s", alias, status, message)
+	}
 }
 
 func resolveLinkPort(flagPort int, portSet bool, cfg *uiPluginWorkspaceConfig) (port int, defaulted bool, err error) {

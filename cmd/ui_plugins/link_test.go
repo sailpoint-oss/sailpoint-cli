@@ -317,7 +317,7 @@ func TestLink_LinkErrorSurfaced(t *testing.T) {
 	var out, errOut bytes.Buffer
 
 	err := link(context.Background(), fc, tempManifestPath(t, testManifestJSON), 4300, true, &out, &errOut)
-	if err == nil || !strings.Contains(err.Error(), "unable to create link") {
+	if err == nil || !strings.Contains(err.Error(), "not authorized to link") {
 		t.Fatalf("expected a link error, got: %v", err)
 	}
 	if !strings.Contains(err.Error(), "Forbidden") {
@@ -340,5 +340,25 @@ func TestLink_TransportError(t *testing.T) {
 	err := link(context.Background(), fc, tempManifestPath(t, testManifestJSON), 4300, true, &out, &errOut)
 	if err == nil || !strings.Contains(err.Error(), "failed to create link") {
 		t.Fatalf("expected a wrapped transport error, got: %v", err)
+	}
+}
+
+func TestMapUMSLinkError(t *testing.T) {
+	tests := []struct {
+		name   string
+		status int
+		want   string
+	}{
+		{"forbidden", 403, "not authorized to link"},
+		{"not found", 404, "not found"},
+		{"unexpected", 500, "status 500"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := mapUMSLinkError(tt.status, []byte(`{"message":"boom"}`), "my-plugin")
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Fatalf("expected %q, got: %v", tt.want, err)
+			}
+		})
 	}
 }
