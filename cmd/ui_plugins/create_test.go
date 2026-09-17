@@ -635,11 +635,10 @@ func TestRenderCreateSuccess(t *testing.T) {
 	})
 }
 
-// --- command wiring (cobra + experimental gate), hermetic: fails at validation
+// --- command wiring (cobra), hermetic: fails at validation
 // before the dry-run alias check, so no client/network is exercised ---
 
 func TestCreateCommand_InvalidManifestSurfacesValidationError(t *testing.T) {
-	t.Setenv(experimentalUIPluginsEnvVar, "1")
 	cwd := t.TempDir()
 	writeManifestAtPath(t, filepath.Join(cwd, manifestFileName), `{
   "version": 1,
