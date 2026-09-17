@@ -203,7 +203,7 @@ func mapUMSUploadError(status int, body []byte, alias string) error {
 	case http.StatusForbidden:
 		return fmt.Errorf("not authorized to upload UI plugin assets (requires the idn:plugins-ui:update right): %s", message)
 	case http.StatusNotFound:
-		return fmt.Errorf("plugin instance for alias %q not found, or the UI plugins feature is not enabled for this tenant: %s", alias, message)
+		return fmt.Errorf("plugin instance for alias %q not found, the UI plugins feature is not enabled, or the idn:ui-plugins-author product license is not provisioned for this tenant: %s", alias, message)
 	case http.StatusRequestEntityTooLarge:
 		return fmt.Errorf("asset bundle for plugin %q exceeds the maximum allowed size: %s", alias, message)
 	default:
