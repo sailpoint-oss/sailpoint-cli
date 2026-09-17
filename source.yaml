@@ -1,3 +1,10 @@
+# Sources validated by `sail conn validate-sources`.
+#
+# Each entry is cloned and its dev script runs with your identity and
+# credentials, so:
+#   - `repository` must be an allowed owner on github.com (see --allowed-owner).
+#   - `repositoryRef` must be a full 40 character commit SHA. Pass
+#     --allow-mutable-ref to accept the branch names below instead.
 - name: smartsheet
   repository: git@github.com:sailpoint/saas-conn-smartsheet.git
   repositoryRef: main
