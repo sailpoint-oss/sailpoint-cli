@@ -3,7 +3,7 @@
 
 Manage VAs in Identity Security Cloud.
 
-Some subcommands (collect, update, troubleshoot) connect directly to VAs over SSH or SFTP. Those commands require network access to the VA and the VA's sailpoint user password.
+Some subcommands (collect, update) connect directly to VAs over SSH or SFTP. Those commands require network access to the VA and the VA's sailpoint user password.
 
 ====
 
