@@ -40,7 +40,7 @@ func NewConnCmd(term terminal.Terminal) *cobra.Command {
 
 	Client := client.NewSpClient(Config)
 
-	conn.PersistentFlags().StringP("conn-endpoint", "e", connectorsEndpoint, "Override connectors endpoint")
+	conn.PersistentFlags().StringP("conn-endpoint", "e", connectorsEndpoint, "Override connectors endpoint (a path, a url on the configured tenant, or a loopback url for local development)")
 	conn.PersistentFlags().Int64("read-limit", accountReadLimit, "Set read limit for accounts and entitlements read")
 
 	conn.AddCommand(
