@@ -1,0 +1,83 @@
+controls:
+  - control_id: AC-2
+    control_title: Account Management
+    checks:
+      - check_id: ac2-01
+        description: "All sources have a designated owner"
+        severity: high
+        json_path: "$.data.sources"
+        rule: "all_have_field"
+        field: "owner.id"
+      - check_id: ac2-02
+        description: "Authoritative source exists"
+        severity: high
+        json_path: "$.data.sources"
+        rule: "any_match"
+        field: "authoritative"
+        expected: true
+  - control_id: AC-5
+    control_title: Separation of Duties
+    checks:
+      - check_id: ac5-01
+        description: "SOD policies exist and are enforced"
+        severity: critical
+        json_path: "$.data.sod_policies"
+        rule: "count_gte"
+        expected: 1
+  - control_id: AC-7
+    control_title: Unsuccessful Logon Attempts
+    checks:
+      - check_id: ac7-01
+        description: "Account lockout is configured"
+        severity: high
+        json_path: "$.data.auth_org_config"
+        rule: "field_exists"
+        field: "lockoutThreshold"
+  - control_id: IA-2(1)
+    control_title: MFA for Privileged Accounts
+    checks:
+      - check_id: ia2_1-01
+        description: "MFA is enabled"
+        severity: critical
+        json_path: "$.data.auth_org_config"
+        rule: "field_equals"
+        field: "mfaEnabled"
+        expected: true
+  - control_id: IA-5(1)
+    control_title: Password-Based Authentication
+    checks:
+      - check_id: ia5_1-01
+        description: "Password min length >= 12"
+        severity: high
+        json_path: "$.data.password_policies"
+        rule: "all_field_gte"
+        field: "minLength"
+        expected: 12
+  - control_id: PS-4
+    control_title: Personnel Termination
+    checks:
+      - check_id: ps4-01
+        description: "Leaver/terminated lifecycle state exists"
+        severity: critical
+        json_path: "$.data.lifecycle_states"
+        rule: "any_field_matches"
+        field: "technicalName"
+        pattern: "inactive|terminated|leaver"
+  - control_id: AU-2
+    control_title: Event Logging
+    checks:
+      - check_id: au2-01
+        description: "Provisioning events are being generated"
+        severity: high
+        json_path: "$.data.events.provisioning_count"
+        rule: "value_gte"
+        expected: 1
+  - control_id: AC-6(7)
+    control_title: Review of User Privileges
+    checks:
+      - check_id: ac6_7-01
+        description: "Access certifications exist"
+        severity: critical
+        json_path: "$.data.certifications"
+        rule: "count_gte"
+        expected: 1
