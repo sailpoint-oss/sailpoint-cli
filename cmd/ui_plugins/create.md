@@ -37,19 +37,19 @@ On success a short confirmation with the new plugin instance ID and alias is pri
 
 ```bash
 # Create from ./sp-ui-plugin.json
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins create
+sail ui-plugins create
 
 # Preview the payload (and check alias availability) without creating
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins create --dry-run
+sail ui-plugins create --dry-run
 
 # Restrict the plugin to yourself on every slot
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins create --private
+sail ui-plugins create --private
 
 # Restrict the plugin to specific users on every slot
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins create --restrict-to-users 2c9180...a1,2c9180...b2
+sail ui-plugins create --restrict-to-users 2c9180...a1,2c9180...b2
 
 # Print the raw UMS response on success
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins create --json
+sail ui-plugins create --json
 ```
 
 ====
