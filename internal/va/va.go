@@ -4,6 +4,8 @@ package va
 import (
 	"bufio"
 	"bytes"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -166,6 +168,104 @@ func RunVACmdLive(addr string, password string, cmd string) error {
 
 	// Return the output
 	return nil
+}
+
+func dialVA(addr string, password string) (*ssh.Client, error) {
+	config, err := newSSHClientConfig(password)
+	if err != nil {
+		return nil, err
+	}
+	return ssh.Dial("tcp", net.JoinHostPort(addr, "22"), config)
+}
+
+// RunVAScriptLive uploads script to a new, uniquely named file on the VA over SFTP, executes it with bash
+// while streaming its output to stdout, and removes the file afterwards. The script is uploaded rather
+// than piped over stdin so that any interactive reads in the script do not consume the script body.
+func RunVAScriptLive(addr string, password string, script []byte) error {
+	client, err := dialVA(addr, password)
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
+	sftpClient, err := sftp.NewClient(client)
+	if err != nil {
+		return fmt.Errorf("failed to create SFTP client: %v", err)
+	}
+	defer sftpClient.Close()
+
+	suffix := make([]byte, 8)
+	if _, err := rand.Read(suffix); err != nil {
+		return fmt.Errorf("failed to generate script name: %v", err)
+	}
+	remotePath := fmt.Sprintf("/tmp/sail-va-script-%s.sh", hex.EncodeToString(suffix))
+
+	// O_EXCL ensures we never write into, or execute, a file another user created at this path.
+	remoteFile, err := sftpClient.OpenFile(remotePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL)
+	if err != nil {
+		return fmt.Errorf("failed to create remote script file: %v", err)
+	}
+	defer sftpClient.Remove(remotePath)
+
+	if err := remoteFile.Chmod(0700); err != nil {
+		remoteFile.Close()
+		return fmt.Errorf("failed to set remote script permissions: %v", err)
+	}
+	if _, err := remoteFile.Write(script); err != nil {
+		remoteFile.Close()
+		return fmt.Errorf("failed to upload script: %v", err)
+	}
+	if err := remoteFile.Close(); err != nil {
+		return fmt.Errorf("failed to upload script: %v", err)
+	}
+
+	session, err := client.NewSession()
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	session.Stdout = os.Stdout
+
+	return session.Run("/bin/bash " + remotePath)
+}
+
+// FindLatestVAFile returns the most recently modified file on the VA matching the glob pattern.
+func FindLatestVAFile(addr string, password string, pattern string) (string, error) {
+	client, err := dialVA(addr, password)
+	if err != nil {
+		return "", err
+	}
+	defer client.Close()
+
+	sftpClient, err := sftp.NewClient(client)
+	if err != nil {
+		return "", fmt.Errorf("failed to create SFTP client: %v", err)
+	}
+	defer sftpClient.Close()
+
+	matches, err := sftpClient.Glob(pattern)
+	if err != nil {
+		return "", fmt.Errorf("failed to list remote files: %v", err)
+	}
+
+	var latest string
+	var latestInfo os.FileInfo
+	for _, match := range matches {
+		info, err := sftpClient.Stat(match)
+		if err != nil || !info.Mode().IsRegular() {
+			continue
+		}
+		if latestInfo == nil || info.ModTime().After(latestInfo.ModTime()) {
+			latest, latestInfo = match, info
+		}
+	}
+
+	if latest == "" {
+		return "", fmt.Errorf("no files matching %s found on %s", pattern, addr)
+	}
+
+	return latest, nil
 }
 
 func CollectVAFiles(endpoint string, password string, output string, files []string, p *mpb.Progress) error {

@@ -1,6 +1,8 @@
 package va
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"sync"
@@ -26,6 +28,10 @@ func NewTroubleshootCmd(term terminal.Terminal) *cobra.Command {
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
+			if err := verifyTroubleshootingScript(TroubleshootingScript); err != nil {
+				return err
+			}
+
 			if output == "" {
 				output, _ = os.Getwd()
 			}
@@ -48,9 +54,14 @@ func NewTroubleshootCmd(term terminal.Terminal) *cobra.Command {
 
 				password := credentials[index]
 
-				orgErr := va.RunVACmdLive(endpoint, password, TroubleshootingScript)
+				orgErr := va.RunVAScriptLive(endpoint, password, TroubleshootingScript)
 				if orgErr != nil {
 					return orgErr
+				}
+
+				archive, findErr := va.FindLatestVAFile(endpoint, password, TroubleshootingArchiveGlob)
+				if findErr != nil {
+					return findErr
 				}
 
 				var wg sync.WaitGroup
@@ -59,12 +70,12 @@ func NewTroubleshootCmd(term terminal.Terminal) *cobra.Command {
 					mpb.WithRefreshRate(180*time.Millisecond),
 					mpb.WithWaitGroup(&wg))
 
-				err := va.CollectVAFiles(endpoint, password, outputDir, []string{"/home/sailpoint/stuntlog.txt"}, p)
+				err := va.CollectVAFiles(endpoint, password, outputDir, []string{archive}, p)
 				if err != nil {
 					return err
 				}
 
-				color.Green("stuntlog copied to %s", outputDir)
+				color.Green("stunt archive copied to %s", outputDir)
 			}
 
 			return nil
@@ -76,4 +87,13 @@ func NewTroubleshootCmd(term terminal.Terminal) *cobra.Command {
 
 	return cmd
 
+}
+
+// verifyTroubleshootingScript ensures the embedded script matches the reviewed digest before it is executed.
+func verifyTroubleshootingScript(script []byte) error {
+	sum := sha256.Sum256(script)
+	if hex.EncodeToString(sum[:]) != TroubleshootingScriptSHA256 {
+		return errors.New("embedded troubleshooting script does not match the reviewed checksum; refusing to run it")
+	}
+	return nil
 }
