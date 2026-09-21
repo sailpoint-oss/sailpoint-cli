@@ -30,16 +30,16 @@ On success a confirmation with the disabled plugin ID (and alias, when known) is
 
 ```bash
 # Disable by alias (prompts for confirmation)
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins disable access-request-plugin
+sail ui-plugins disable access-request-plugin
 
 # Disable by plugin ID
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins disable 2c918085-7a1e-1b2c-817a-1e1b2c000000
+sail ui-plugins disable 2c918085-7a1e-1b2c-817a-1e1b2c000000
 
 # Skip the confirmation prompt
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins disable access-request-plugin --force
+sail ui-plugins disable access-request-plugin --force
 
 # Print the disabled instance as JSON (scripting)
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins disable access-request-plugin --force --json
+sail ui-plugins disable access-request-plugin --force --json
 ```
 
 ====

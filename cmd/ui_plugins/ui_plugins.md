@@ -2,13 +2,6 @@
 # UI Plugins
 Manage UI Plugin workflows in Identity Security Cloud.
 
-This command group is currently experimental and hidden from default command discovery.
-Enable it for development with:
-
-```bash
-export SAIL_EXPERIMENTAL_UI_PLUGINS=1
-```
-
 ## Typical flow
 
 **Local development**
@@ -30,6 +23,6 @@ performs offline structural validation of `./sp-ui-plugin.json` without calling 
 ==Example==
 ```bash
 sail ui-plugins
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins init
+sail ui-plugins init
 ```
 ====

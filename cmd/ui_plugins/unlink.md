@@ -18,7 +18,7 @@ On success a short confirmation is printed. Backend failures are surfaced with a
 
 ```bash
 # Remove your local dev link for the plugin in this workspace
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins unlink
+sail ui-plugins unlink
 ```
 
 ====

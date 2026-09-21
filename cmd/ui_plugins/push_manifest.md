@@ -29,22 +29,22 @@ On success a short confirmation with the plugin instance ID and alias is printed
 
 ```bash
 # Push your manifest from ./sp-ui-plugin.json
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins push-manifest
+sail ui-plugins push-manifest
 
 # Also available under the update alias
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins update
+sail ui-plugins update
 
 # Preview the payload (and check the instance exists) without pushing
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins push-manifest --dry-run
+sail ui-plugins push-manifest --dry-run
 
 # Restrict the plugin to yourself on every slot
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins push-manifest --private
+sail ui-plugins push-manifest --private
 
 # Restrict the plugin to specific users on every slot
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins push-manifest --restrict-to-users 2c9180...a1,2c9180...b2
+sail ui-plugins push-manifest --restrict-to-users 2c9180...a1,2c9180...b2
 
 # Print the raw UMS response on success
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins push-manifest --json
+sail ui-plugins push-manifest --json
 ```
 
 ====
