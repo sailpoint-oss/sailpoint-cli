@@ -145,6 +145,35 @@ func TestRunCreate_SuccessHumanOutput(t *testing.T) {
 	}
 }
 
+func TestRunCreate_ForwardsIframeSandboxAndPolicyMaps(t *testing.T) {
+	fc := &fakeClient{status: http.StatusCreated, body: `{"pluginInstanceId":"pi-123"}`}
+	var out bytes.Buffer
+
+	manifest := workspaceManifestWithSandbox(`, "iframeSandbox": ["b", "allow-popups", "b", "", " "]`)
+	err := runCreate(context.Background(), fc, tempManifestPath(t, manifest), &out, io.Discard, stubCurrentUser, createConfig{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	var payload struct {
+		IframeSandbox    []string            `json:"iframeSandbox"`
+		IframeAllow      map[string][]string `json:"iframeAllow"`
+		PermissionPolicy map[string][]string `json:"permissionPolicy"`
+	}
+	if err := json.Unmarshal(fc.gotBody, &payload); err != nil {
+		t.Fatalf("decode POST body: %v", err)
+	}
+	if !equalStrings(payload.IframeSandbox, []string{"b", "allow-popups", "b", "", " "}) {
+		t.Fatalf("iframeSandbox changed in POST body: %#v", payload.IframeSandbox)
+	}
+	if !equalStrings(payload.IframeAllow["camera"], []string{"'src'"}) {
+		t.Fatalf("iframeAllow changed in POST body: %#v", payload.IframeAllow)
+	}
+	if !equalStrings(payload.PermissionPolicy["camera"], []string{"'self'"}) {
+		t.Fatalf("permissionPolicy changed in POST body: %#v", payload.PermissionPolicy)
+	}
+}
+
 func TestRunCreate_JSONPassthrough(t *testing.T) {
 	respBody := `{"pluginInstanceId":"pi-123","alias":"access-request-plugin","slots":[]}`
 	fc := &fakeClient{status: http.StatusCreated, body: respBody}
@@ -322,6 +351,27 @@ func TestRunCreate_InvalidManifestSkipsPost(t *testing.T) {
 	}
 }
 
+func TestRunCreate_InvalidIframeSandboxSkipsBackendCalls(t *testing.T) {
+	fc := &fakeClient{status: http.StatusCreated, body: `{}`}
+	var out bytes.Buffer
+
+	err := runCreate(
+		context.Background(),
+		fc,
+		tempManifestPath(t, workspaceManifestWithSandbox(`, "iframeSandbox": [1]`)),
+		&out,
+		io.Discard,
+		stubCurrentUser,
+		createConfig{},
+	)
+	if err == nil || !strings.Contains(err.Error(), "cannot unmarshal") {
+		t.Fatalf("expected iframeSandbox type error, got: %v", err)
+	}
+	if fc.postCalls != 0 || fc.getCalls != 0 {
+		t.Fatal("invalid iframeSandbox must fail before any backend call")
+	}
+}
+
 func TestRunCreate_PrivateResolverErrorSkipsPost(t *testing.T) {
 	wantErr := errors.New("no user context")
 	fc := &fakeClient{status: http.StatusCreated, body: `{}`}
@@ -368,6 +418,43 @@ func TestRunCreate_DryRunPrintsPayloadAndChecksAlias(t *testing.T) {
 	// Available => clean stdout (payload only), nothing on stderr.
 	if errOut.Len() != 0 {
 		t.Fatalf("expected no advisory output when alias is available, got: %s", errOut.String())
+	}
+}
+
+func TestRunCreate_DryRunPreservesIframeSandboxPresence(t *testing.T) {
+	tests := []struct {
+		name        string
+		field       string
+		wantPresent bool
+	}{
+		{name: "omitted"},
+		{name: "null omitted", field: `, "iframeSandbox": null`},
+		{name: "empty array present", field: `, "iframeSandbox": []`, wantPresent: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var out bytes.Buffer
+			err := runCreate(
+				context.Background(),
+				nil,
+				tempManifestPath(t, workspaceManifestWithSandbox(tt.field)),
+				&out,
+				io.Discard,
+				stubCurrentUser,
+				createConfig{dryRun: true},
+			)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			gotPresent := strings.Contains(out.String(), `"iframeSandbox"`)
+			if gotPresent != tt.wantPresent {
+				t.Fatalf("iframeSandbox presence = %t, want %t; payload: %s", gotPresent, tt.wantPresent, out.String())
+			}
+			if tt.wantPresent && !strings.Contains(out.String(), `"iframeSandbox": []`) {
+				t.Fatalf("empty iframeSandbox was not preserved: %s", out.String())
+			}
+		})
 	}
 }
 

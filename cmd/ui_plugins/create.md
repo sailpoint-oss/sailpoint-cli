@@ -18,6 +18,18 @@ When both are supplied, each slot's `restrictToUsers` is the de-duplicated union
 
 `--dry-run` validates the manifest, applies any overrides, and prints the exact payload that would be sent — without creating the instance. It also performs a read-only alias availability check against the tenant when possible; an alias that is already taken or invalid is reported, while an inconclusive check (e.g. connectivity or access) is noted without failing.
 
+## Iframe policy fields
+
+When present, the optional `iframeSandbox` string array is forwarded as written in the create payload. UMS validates sandbox token values and policy expressions, including the single-quoted `"'src'"` value used by `iframeAllow` and `"'self'"` used by `permissionPolicy`; the CLI does not rewrite them.
+
+```json
+{
+  "permissionPolicy": {"camera": ["'self'"]},
+  "iframeAllow": {"camera": ["'src'"]},
+  "iframeSandbox": []
+}
+```
+
 ## Local dev document headers
 
 On a successful create (not `--dry-run`), when the backend returns `devDocumentHeaders`, the CLI writes the `Content-Security-Policy` and `Permissions-Policy` values into `./angular.json` at `projects.<alias>.architect.serve.options.headers` (creating the `headers` object if needed). Values are copied as returned by the backend, including an empty `Permissions-Policy` when present. Other `serve.options` keys (such as HTTPS settings) are preserved. `sp-ui-plugin.json` is not modified for dev headers.

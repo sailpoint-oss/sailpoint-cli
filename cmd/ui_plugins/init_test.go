@@ -49,6 +49,16 @@ func TestGenerateWorkspaceManifest_Valid(t *testing.T) {
 	if cfg.Manifest.ContentSecurityPolicies == nil || cfg.Manifest.PermissionPolicy == nil || cfg.Manifest.IframeAllow == nil {
 		t.Error("policy maps must be non-nil")
 	}
+	if cfg.Manifest.IframeSandbox != nil {
+		t.Fatalf("optional iframeSandbox must be omitted, got: %#v", *cfg.Manifest.IframeSandbox)
+	}
+	raw, err := json.Marshal(cfg)
+	if err != nil {
+		t.Fatalf("marshal generated manifest: %v", err)
+	}
+	if strings.Contains(string(raw), `"iframeSandbox"`) {
+		t.Fatalf("generated manifest must omit iframeSandbox: %s", raw)
+	}
 }
 
 // writeStarterFixture creates a minimal copy of the Angular starter's
@@ -236,6 +246,16 @@ func TestRunInit_PathAttach_Headless(t *testing.T) {
 	}
 	if cfg.Build.OutDir != "./dist/app" || cfg.Build.Port == nil || *cfg.Build.Port != defaultDevServerPort {
 		t.Errorf("build config = %+v (want outDir ./dist/app, port %d)", cfg.Build, defaultDevServerPort)
+	}
+	if cfg.Manifest.IframeSandbox != nil {
+		t.Fatalf("written manifest must omit iframeSandbox, got: %#v", *cfg.Manifest.IframeSandbox)
+	}
+	raw, err := os.ReadFile(filepath.Join(target, manifestFileName))
+	if err != nil {
+		t.Fatalf("read generated manifest: %v", err)
+	}
+	if strings.Contains(string(raw), `"iframeSandbox"`) {
+		t.Fatalf("written manifest must omit iframeSandbox: %s", raw)
 	}
 	if !guideFetched {
 		t.Error("guide was not fetched")

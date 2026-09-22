@@ -20,6 +20,18 @@ When both are supplied, each slot's `restrictToUsers` is the de-duplicated union
 
 `--dry-run` validates the manifest, applies any overrides, and prints the exact payload that would be sent — without updating the instance. It also performs a read-only check that the workspace alias resolves to an existing instance; an alias that resolves to nothing (run `create` first) or to more than one instance is reported, while an inconclusive check (e.g. connectivity or access) is noted without failing.
 
+## Iframe policy fields
+
+When present, the optional `iframeSandbox` string array is forwarded as written in the update payload. UMS validates sandbox token values and policy expressions, including the single-quoted `"'src'"` value used by `iframeAllow` and `"'self'"` used by `permissionPolicy`; the CLI does not rewrite them.
+
+```json
+{
+  "permissionPolicy": {"camera": ["'self'"]},
+  "iframeAllow": {"camera": ["'src'"]},
+  "iframeSandbox": []
+}
+```
+
 ## Output
 
 On success a short confirmation with the plugin instance ID and alias is printed. Use `--json` to print the raw UMS response instead.

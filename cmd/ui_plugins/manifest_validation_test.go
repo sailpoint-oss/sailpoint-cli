@@ -1,6 +1,7 @@
 package ui_plugins
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -70,7 +71,7 @@ func TestLoadAndValidateWorkspaceManifest_ValidIframeAllowWithDirectives(t *test
     "slots": [{"slotId": "full-page"}],
     "contentSecurityPolicies": {},
     "permissionPolicy": {},
-    "iframeAllow": {"camera": ["'self'"]}
+    "iframeAllow": {"camera": ["'src'"]}
   }
 }`)
 
@@ -81,8 +82,87 @@ func TestLoadAndValidateWorkspaceManifest_ValidIframeAllowWithDirectives(t *test
 	if len(cfg.Manifest.IframeAllow) != 1 {
 		t.Fatalf("expected one iframeAllow directive, got: %+v", cfg.Manifest.IframeAllow)
 	}
-	if got := cfg.Manifest.IframeAllow["camera"]; len(got) != 1 || got[0] != "'self'" {
+	if got := cfg.Manifest.IframeAllow["camera"]; len(got) != 1 || got[0] != "'src'" {
 		t.Fatalf("unexpected camera directive: %+v", got)
+	}
+}
+
+func TestLoadAndValidateWorkspaceManifest_IframeSandboxRoundTrip(t *testing.T) {
+	tests := []struct {
+		name        string
+		field       string
+		wantPresent bool
+		wantValues  []string
+	}{
+		{name: "omitted"},
+		{name: "null treated as omitted", field: `, "iframeSandbox": null`},
+		{name: "empty array preserved", field: `, "iframeSandbox": []`, wantPresent: true, wantValues: []string{}},
+		{
+			name:        "opaque strings preserve order and duplicates",
+			field:       `, "iframeSandbox": ["allow-popups", "b", "allow-popups", "", " "]`,
+			wantPresent: true,
+			wantValues:  []string{"allow-popups", "b", "allow-popups", "", " "},
+		},
+		{
+			name:        "null element follows existing string slice behavior",
+			field:       `, "iframeSandbox": ["x", null]`,
+			wantPresent: true,
+			wantValues:  []string{"x", ""},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg, err := loadAndValidateWorkspaceManifest(writeManifestFixture(t, workspaceManifestWithSandbox(tt.field)))
+			if err != nil {
+				t.Fatalf("expected valid iframeSandbox, got: %v", err)
+			}
+
+			if gotPresent := cfg.Manifest.IframeSandbox != nil; gotPresent != tt.wantPresent {
+				t.Fatalf("iframeSandbox presence = %t, want %t", gotPresent, tt.wantPresent)
+			}
+			if tt.wantPresent && !equalStrings(*cfg.Manifest.IframeSandbox, tt.wantValues) {
+				t.Fatalf("iframeSandbox = %#v, want %#v", *cfg.Manifest.IframeSandbox, tt.wantValues)
+			}
+
+			payload, err := json.Marshal(cfg.Manifest)
+			if err != nil {
+				t.Fatalf("marshal manifest: %v", err)
+			}
+			var decoded map[string]any
+			if err := json.Unmarshal(payload, &decoded); err != nil {
+				t.Fatalf("decode marshaled manifest: %v", err)
+			}
+			_, gotPresent := decoded["iframeSandbox"]
+			if gotPresent != tt.wantPresent {
+				t.Fatalf("marshaled iframeSandbox presence = %t, want %t; payload: %s", gotPresent, tt.wantPresent, payload)
+			}
+		})
+	}
+}
+
+func TestLoadAndValidateWorkspaceManifest_InvalidIframeSandboxRejected(t *testing.T) {
+	tests := []struct {
+		name  string
+		field string
+		want  string
+	}{
+		{name: "string", field: `, "iframeSandbox": "allow-popups"`, want: "cannot unmarshal"},
+		{name: "object", field: `, "iframeSandbox": {"allow-popups": true}`, want: "cannot unmarshal"},
+		{name: "number element", field: `, "iframeSandbox": [1]`, want: "cannot unmarshal"},
+		{name: "snake case key", field: `, "iframe_sandbox": []`, want: "unknown field"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := loadAndValidateWorkspaceManifest(writeManifestFixture(t, workspaceManifestWithSandbox(tt.field)))
+			if err == nil {
+				t.Fatal("expected invalid iframeSandbox to fail")
+			}
+			if !strings.Contains(err.Error(), tt.want) {
+				t.Fatalf("expected error to contain %q, got: %v", tt.want, err)
+			}
+		})
 	}
 }
 
@@ -353,4 +433,19 @@ func writeManifestFixture(t *testing.T, content string) string {
 		t.Fatalf("failed to write manifest fixture: %v", err)
 	}
 	return path
+}
+
+func workspaceManifestWithSandbox(field string) string {
+	return `{
+  "version": 1,
+  "manifest": {
+    "alias": "access-request-plugin",
+    "name": {"en-US": "Access Request"},
+    "description": {"en-US": "Plugin description"},
+    "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {"camera": ["'self'"]},
+    "iframeAllow": {"camera": ["'src'"]}` + field + `
+  }
+}`
 }

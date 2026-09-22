@@ -23,6 +23,7 @@ type uiPluginManifest struct {
 	ContentSecurityPolicies map[string][]string `json:"contentSecurityPolicies"`
 	PermissionPolicy        map[string][]string `json:"permissionPolicy"`
 	IframeAllow             map[string][]string `json:"iframeAllow"`
+	IframeSandbox           *[]string           `json:"iframeSandbox,omitempty"`
 	State                   *pluginState        `json:"state"`
 	Slots                   []uiPluginSlot      `json:"slots"`
 }
