@@ -54,6 +54,8 @@ var assetContentTypes = map[string]string{
 	".ico":   "image/x-icon",
 	".txt":   "text/plain",
 	".pdf":   "application/pdf",
+	".wasm":  "application/wasm",
+	".md":    "text/markdown",
 }
 
 // collectUploadFiles validates the build output directory and gathers
