@@ -54,7 +54,6 @@ func NewConnCmd(term terminal.Terminal) *cobra.Command {
 		newConnInvokeCmd(Client, term),
 		newConnValidateCmd(Client),
 		newConnTagCmd(Client),
-		newConnValidateSourcesCmd(Client),
 		newConnLogsCmd(Client),
 		newConnStatsCmd(Client),
 		newConnDeleteCmd(Client),
