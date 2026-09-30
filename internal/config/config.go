@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -159,7 +160,7 @@ func InitAPIClient(experimental bool) (*sailpoint.APIClient, error) {
 
 	token, err := GetAuthToken()
 	if err != nil {
-		log.Debug("unable to retrieve accesstoken", "error", err)
+		return apiClient, err
 	}
 
 	configuration := sailpoint.NewCLIConfiguration(sailpoint.ClientConfiguration{Token: token, BaseURL: GetBaseUrl()})
@@ -432,9 +433,49 @@ func TestSecretsStorage() bool {
 	}
 }
 
+// CheckEnvironment returns an error that tells the user what to do when no
+// usable environment is configured. Setting SAIL_BASE_URL skips the check,
+// because the CLI can then run from environment variables alone.
+func CheckEnvironment() error {
+	if os.Getenv("SAIL_BASE_URL") != "" {
+		return nil
+	}
+
+	environments := GetEnvironments()
+	if len(environments) == 0 {
+		return fmt.Errorf("no environment is configured\n\n" +
+			"Run `sail env create` to set up an environment, or set SAIL_BASE_URL, SAIL_CLIENT_ID, and SAIL_CLIENT_SECRET to use environment variables")
+	}
+
+	active := GetActiveEnvironment()
+	if environments[active] == nil {
+		names := make([]string, 0, len(environments))
+		for name := range environments {
+			names = append(names, name)
+		}
+		sort.Strings(names)
+
+		problem := "no active environment is selected"
+		if strings.TrimSpace(active) != "" {
+			problem = fmt.Sprintf("the active environment %q does not exist", active)
+		}
+
+		return fmt.Errorf("%s\n\nConfigured environments: %s\n\n"+
+			"Run `sail env use <name>` to select one, or `sail env create` to add a new one", problem, strings.Join(names, ", "))
+	}
+
+	return nil
+}
+
 func Validate() error {
 	var errors int
 	authType := GetAuthType()
+
+	if err := CheckEnvironment(); err != nil {
+		return err
+	}
+
+	env := GetActiveEnvironment()
 
 	supportsSecrets := TestSecretsStorage()
 
@@ -447,7 +488,7 @@ func Validate() error {
 		}
 
 		if GetBaseUrl() == "" {
-			log.Error("configured environment is missing BaseURL")
+			log.Error("configured environment is missing BaseURL, run `sail env update " + env + "` to set it")
 			errors++
 		}
 
@@ -477,18 +518,18 @@ func Validate() error {
 		}
 
 		if GetBaseUrl() == "" {
-			log.Error("configured environment is missing BaseURL")
+			log.Error("configured environment is missing BaseURL, run `sail env update " + env + "` to set it")
 			errors++
 		}
 
 		if GetTenantUrl() == "" {
-			log.Error("configured environment is missing TenantURL")
+			log.Error("configured environment is missing TenantURL, run `sail env update " + env + "` to set it")
 			errors++
 		}
 
 	default:
 
-		log.Error("invalid authtype '%s' configured", authType)
+		log.Error("invalid authtype configured, run `sail set auth` to choose oauth or pat", "authtype", authType)
 		errors++
 
 	}

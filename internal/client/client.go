@@ -289,7 +289,10 @@ func (c *SpClient) resolveUrl(rawURL string) (string, bool, error) {
 	if u.Scheme == "" && u.Host == "" && u.Opaque == "" {
 		base := strings.TrimSuffix(config.GetBaseUrl(), "/")
 		if base == "" {
-			return "", false, fmt.Errorf("no tenant base url is configured, run \"sail configure\" or set SAIL_BASE_URL")
+			if err := config.CheckEnvironment(); err != nil {
+				return "", false, err
+			}
+			return "", false, fmt.Errorf("no tenant base url is configured, run \"sail env update\" or set SAIL_BASE_URL")
 		}
 		return base + trimmed, true, nil
 	}
@@ -311,7 +314,7 @@ func (c *SpClient) resolveUrl(rawURL string) (string, bool, error) {
 
 	base, err := url.Parse(strings.TrimSuffix(config.GetBaseUrl(), "/"))
 	if err != nil || base.Host == "" {
-		return "", false, fmt.Errorf("no valid tenant base url is configured, run \"sail configure\" or set SAIL_BASE_URL")
+		return "", false, fmt.Errorf("no valid tenant base url is configured, run \"sail env create\" or set SAIL_BASE_URL")
 	}
 
 	if !sameOrigin(base, u) {
