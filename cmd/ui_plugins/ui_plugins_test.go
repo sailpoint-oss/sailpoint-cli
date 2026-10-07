@@ -17,11 +17,11 @@ func TestNewUIPluginsCommandStructure(t *testing.T) {
 		t.Fatal("expected ui-plugins command to be visible")
 	}
 
-	if len(cmd.Commands()) != 11 {
-		t.Fatalf("expected 11 subcommands, got %d", len(cmd.Commands()))
+	if len(cmd.Commands()) != 12 {
+		t.Fatalf("expected 12 subcommands, got %d", len(cmd.Commands()))
 	}
 
-	for _, name := range []string{"disable", "enable"} {
+	for _, name := range []string{"disable", "enable", "rename"} {
 		if !hasSubcommand(cmd, name) {
 			t.Fatalf("expected %q subcommand to be registered", name)
 		}
