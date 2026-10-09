@@ -139,6 +139,19 @@ func deliverSkills(r *bufio.Reader, deps initDeps, archive []byte, destDir strin
 	return sum, nil
 }
 
+// removeStarterSkills deletes the skills the scaffolded starter bundled under
+// destDir/.agents/skills/, used to honor --no-skills in the new-workspace flow.
+// The empty .agents wrapper is removed too when nothing else remains in it.
+func removeStarterSkills(destDir string) error {
+	if err := os.RemoveAll(filepath.Join(destDir, agentSkillsDir)); err != nil {
+		return err
+	}
+	// os.Remove removes .agents only when it is now empty; a non-empty wrapper
+	// (other agent config) is left intact, so the error is intentionally ignored.
+	_ = os.Remove(filepath.Join(destDir, ".agents"))
+	return nil
+}
+
 // listSkillFolders returns the names of the immediate skill directories staged
 // under dir, in sorted order (os.ReadDir sorts), so delivery and prompting are
 // deterministic.

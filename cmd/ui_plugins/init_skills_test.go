@@ -178,8 +178,11 @@ func TestNewWorkspace_PathOnlyCollisionAllowed(t *testing.T) {
 
 func TestNewWorkspace_NoSkillsFlag(t *testing.T) {
 	workdir := initTestChdir(t)
+	// Both a root agnostic skill and a starter-bundled framework skill: --no-skills
+	// must deliver neither.
 	archive := buildTemplatesArchive(starterTarFiles(map[string]string{
-		".agents/skills/agnostic/SKILL.md": skillMD("agnostic", ""),
+		".agents/skills/agnostic/SKILL.md":                    skillMD("agnostic", ""),
+		"angular/starter/.agents/skills/framework-x/SKILL.md": skillMD("framework-x", ""),
 	}))
 	out := &strings.Builder{}
 	deps := initDeps{
@@ -193,7 +196,14 @@ func TestNewWorkspace_NoSkillsFlag(t *testing.T) {
 	if err := runInit(context.Background(), deps, initOptions{name: "My Plugin", noSkills: true}); err != nil {
 		t.Fatalf("runInit: %v", err)
 	}
-	mustNotExist(t, filepath.Join(workdir, "my-plugin", ".agents", "skills", "agnostic"))
+	dest := filepath.Join(workdir, "my-plugin")
+	// Neither the root agnostic skill nor the starter's own framework skill lands,
+	// and the empty .agents wrapper is cleaned up.
+	mustNotExist(t, filepath.Join(dest, ".agents", "skills", "agnostic"))
+	mustNotExist(t, filepath.Join(dest, ".agents", "skills", "framework-x"))
+	mustNotExist(t, filepath.Join(dest, ".agents"))
+	// The starter itself is still scaffolded.
+	mustExist(t, filepath.Join(dest, "package.json"))
 	if strings.Contains(out.String(), "Agent skills:") {
 		t.Errorf("no-skills run should not print a skills summary, got: %q", out.String())
 	}

@@ -169,7 +169,14 @@ func runNewWorkspace(deps initDeps, opts initOptions, name, alias string) error 
 	}
 
 	var skills skillSummary
-	if !opts.noSkills {
+	if opts.noSkills {
+		// The starter subtree bundles its own framework skills; --no-skills means
+		// deliver none, so remove what the starter carried in.
+		if err := removeStarterSkills(destDir); err != nil {
+			_ = os.RemoveAll(destDir)
+			return err
+		}
+	} else {
 		// Framework flow: path-only skills are skipped; a name collision with a
 		// starter skill is fatal. Keep the combined copy all-or-nothing.
 		skills, err = deliverSkills(nil, deps, archive, destDir, true, opts.force)
