@@ -102,8 +102,9 @@ func TestNewWorkspace_DeliversRootSkills(t *testing.T) {
 	mustExist(t, filepath.Join(dest, ".agents", "skills", "plugin-lifecycle-cli", "SKILL.md"))
 	// Starter's own skill came along with the starter subtree.
 	mustExist(t, filepath.Join(dest, ".agents", "skills", "plugin-routing", "SKILL.md"))
-	if !strings.Contains(out.String(), "Agent skills: added 1") {
-		t.Errorf("summary should report one added root skill, got: %q", out.String())
+	// Summary reports the full set: 1 starter-bundled + 1 repo-wide = 2.
+	if !strings.Contains(out.String(), "Agent skills: added 2") {
+		t.Errorf("summary should report all delivered skills, got: %q", out.String())
 	}
 }
 

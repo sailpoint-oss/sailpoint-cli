@@ -179,11 +179,19 @@ func runNewWorkspace(deps initDeps, opts initOptions, name, alias string) error 
 	} else {
 		// Framework flow: path-only skills are skipped; a name collision with a
 		// starter skill is fatal. Keep the combined copy all-or-nothing.
-		skills, err = deliverSkills(nil, deps, archive, destDir, true, opts.force)
+		if _, err = deliverSkills(nil, deps, archive, destDir, true, opts.force); err != nil {
+			_ = os.RemoveAll(destDir)
+			return err
+		}
+		// Report every skill now in the fresh workspace — the starter's own
+		// bundled skills plus the repo-wide ones merged on top — not just the
+		// repo-wide delta. A brand-new workspace never skips or overwrites.
+		total, err := countSkillFolders(filepath.Join(destDir, agentSkillsDir))
 		if err != nil {
 			_ = os.RemoveAll(destDir)
 			return err
 		}
+		skills = skillSummary{added: total}
 	}
 
 	fmt.Fprintf(deps.out, "\nCreated plugin workspace %q.\n", alias)

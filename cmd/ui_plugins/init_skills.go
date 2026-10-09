@@ -152,6 +152,25 @@ func removeStarterSkills(destDir string) error {
 	return nil
 }
 
+// countSkillFolders returns the number of immediate skill directories in dir,
+// or 0 if dir does not exist (no skills were delivered).
+func countSkillFolders(dir string) (int, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return 0, nil
+		}
+		return 0, err
+	}
+	n := 0
+	for _, e := range entries {
+		if e.IsDir() {
+			n++
+		}
+	}
+	return n, nil
+}
+
 // listSkillFolders returns the names of the immediate skill directories staged
 // under dir, in sorted order (os.ReadDir sorts), so delivery and prompting are
 // deterministic.
