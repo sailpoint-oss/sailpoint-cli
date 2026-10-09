@@ -2,6 +2,7 @@ package ui_plugins
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	_ "embed"
 	"fmt"
@@ -38,25 +39,26 @@ const (
 
 // initOptions holds the resolved flag values for the init command.
 type initOptions struct {
-	name    string
-	alias   string
-	path    string
-	outDir  string
-	port    int
-	portSet bool
-	force   bool
+	name     string
+	alias    string
+	path     string
+	outDir   string
+	port     int
+	portSet  bool
+	force    bool
+	noSkills bool
 }
 
-// initDeps carries the command's I/O plus the network-touching seams (scaffold
-// and fetchGuide) so the orchestration is testable without GitHub or a live
-// tenant.
+// initDeps carries the command's I/O plus the network-touching seams
+// (fetchArchive and fetchGuide) so the orchestration — including skills
+// delivery — is testable without GitHub or a live tenant.
 type initDeps struct {
-	client     client.Client
-	in         io.Reader
-	out        io.Writer
-	errOut     io.Writer
-	scaffold   func(destDir string) error  // fetch + extract the angular starter subtree
-	fetchGuide func(destPath string) error // fetch + write the generic guide
+	client       client.Client
+	in           io.Reader
+	out          io.Writer
+	errOut       io.Writer
+	fetchArchive func() (io.ReadCloser, error) // fetch the templates repo tarball
+	fetchGuide   func(destPath string) error   // fetch + write the generic guide
 }
 
 func newInitCommand() *cobra.Command {
@@ -90,12 +92,12 @@ func newInitCommand() *cobra.Command {
 			}
 
 			deps := initDeps{
-				client:     spClient,
-				in:         cmd.InOrStdin(),
-				out:        cmd.OutOrStdout(),
-				errOut:     cmd.ErrOrStderr(),
-				scaffold:   defaultScaffold,
-				fetchGuide: defaultFetchGuide,
+				client:       spClient,
+				in:           cmd.InOrStdin(),
+				out:          cmd.OutOrStdout(),
+				errOut:       cmd.ErrOrStderr(),
+				fetchArchive: defaultFetchArchive,
+				fetchGuide:   defaultFetchGuide,
 			}
 			return runInit(context.Background(), deps, opts)
 		},
@@ -107,6 +109,7 @@ func newInitCommand() *cobra.Command {
 	cmd.Flags().StringVar(&opts.outDir, "out-dir", "", "Build output directory (required when attaching with --path)")
 	cmd.Flags().IntVar(&opts.port, "port", defaultDevServerPort, "Local dev server port (used when attaching with --path)")
 	cmd.Flags().BoolVar(&opts.force, "force", false, "Overwrite plugin files this command manages if they already exist")
+	cmd.Flags().BoolVar(&opts.noSkills, "no-skills", false, "Do not deliver the framework-agnostic agent skills")
 
 	return cmd
 }
@@ -134,28 +137,51 @@ func runInit(ctx context.Context, deps initDeps, opts initOptions) error {
 	if opts.path != "" {
 		return runPathAttach(r, deps, opts, name, alias, interactive)
 	}
-	return runNewWorkspace(deps, name, alias)
+	return runNewWorkspace(deps, opts, name, alias)
 }
 
-// runNewWorkspace scaffolds the Angular starter into ./<alias>/ and personalizes
-// it. It hard-fails if the destination already exists.
-func runNewWorkspace(deps initDeps, name, alias string) error {
+// runNewWorkspace scaffolds the Angular starter into ./<alias>/, personalizes
+// it, and merges the framework-agnostic agent skills on top. It hard-fails if
+// the destination already exists, and is all-or-nothing: any error after the
+// destination is created removes it so a failed run leaves nothing behind.
+func runNewWorkspace(deps initDeps, opts initOptions, name, alias string) error {
 	destDir := alias
 	if _, err := os.Stat(destDir); err == nil {
 		return fmt.Errorf("error: project '%s' already exists", destDir)
 	}
 
-	if err := deps.scaffold(destDir); err != nil {
+	// Fetch before creating anything so a download failure leaves no partial
+	// directory behind.
+	archive, err := fetchArchiveBytes(deps)
+	if err != nil {
+		return err
+	}
+
+	if err := initialize.ExtractSubtree(bytes.NewReader(archive), destDir, angularStarterSubdir); err != nil {
 		// Clean up a partially extracted directory; it did not exist before.
 		_ = os.RemoveAll(destDir)
 		return err
 	}
 
 	if err := personalizeScaffold(destDir, alias, name); err != nil {
+		_ = os.RemoveAll(destDir)
 		return err
 	}
 
-	fmt.Fprintf(deps.out, "\nCreated plugin workspace %q.\n\nNext steps:\n  cd %s\n  npm install\n  sail ui-plugins create\n", alias, destDir)
+	var skills skillSummary
+	if !opts.noSkills {
+		// Framework flow: path-only skills are skipped; a name collision with a
+		// starter skill is fatal. Keep the combined copy all-or-nothing.
+		skills, err = deliverSkills(nil, deps, archive, destDir, true, opts.force)
+		if err != nil {
+			_ = os.RemoveAll(destDir)
+			return err
+		}
+	}
+
+	fmt.Fprintf(deps.out, "\nCreated plugin workspace %q.\n", alias)
+	printSkillSummary(deps.out, opts.noSkills, skills)
+	fmt.Fprintf(deps.out, "\nNext steps:\n  cd %s\n  npm install\n  sail ui-plugins create\n", destDir)
 	return nil
 }
 
@@ -192,7 +218,24 @@ func runPathAttach(r *bufio.Reader, deps initDeps, opts initOptions, name, alias
 		return err
 	}
 
-	fmt.Fprintf(deps.out, "\nPrepared %q as a UI plugin workspace.\n\nNext steps:\n  Review %s and %s\n  Install @sailpoint/ui-plugin-sdk per the guide\n  sail ui-plugins create\n", opts.path, manifestFileName, genericGuideFileName)
+	// Deliver the framework-agnostic skills, merging into any existing
+	// .agents/skills/ without clobbering unrelated user skills. Skills are an
+	// additive convenience: a delivery failure warns but does not fail the
+	// attach, which has already written the manifest and guide.
+	var skills skillSummary
+	if !opts.noSkills && deps.fetchArchive != nil {
+		if archive, err := fetchArchiveBytes(deps); err != nil {
+			fmt.Fprintf(deps.errOut, "Warning: could not fetch agent skills: %v\n", err)
+		} else if s, err := deliverSkills(r, deps, archive, opts.path, false, opts.force); err != nil {
+			fmt.Fprintf(deps.errOut, "Warning: could not deliver agent skills: %v\n", err)
+		} else {
+			skills = s
+		}
+	}
+
+	fmt.Fprintf(deps.out, "\nPrepared %q as a UI plugin workspace.\n", opts.path)
+	printSkillSummary(deps.out, opts.noSkills, skills)
+	fmt.Fprintf(deps.out, "\nNext steps:\n  Review %s and %s\n  Install @sailpoint/ui-plugin-sdk per the guide\n  sail ui-plugins create\n", manifestFileName, genericGuideFileName)
 	return nil
 }
 
@@ -381,16 +424,32 @@ func checkAlias(ctx context.Context, c client.Client, errOut io.Writer, alias st
 // user knows the alias is re-checked later and how to resolve an unexpected miss.
 const aliasNotValidatedHint = "The alias will be checked again by `sail ui-plugins create`; fix your CLI authentication if this is unexpected."
 
-// defaultScaffold fetches the templates repo archive and extracts the Angular
-// starter subtree into destDir (no template substitution — personalization
-// happens afterward).
-func defaultScaffold(destDir string) error {
-	body, err := initialize.FetchArchive(uiPluginTemplatesRepoOwner, uiPluginTemplatesRepoName, uiPluginTemplatesBranch)
+// defaultFetchArchive downloads the templates repo tarball. The caller buffers
+// it so both the starter extraction and the skills delivery read from a single
+// download.
+func defaultFetchArchive() (io.ReadCloser, error) {
+	return initialize.FetchArchive(uiPluginTemplatesRepoOwner, uiPluginTemplatesRepoName, uiPluginTemplatesBranch)
+}
+
+// fetchArchiveBytes fetches and buffers the templates tarball so it can be read
+// more than once (starter extraction, then skills delivery).
+func fetchArchiveBytes(deps initDeps) ([]byte, error) {
+	body, err := deps.fetchArchive()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer body.Close()
-	return initialize.ExtractSubtree(body, destDir, angularStarterSubdir)
+	return io.ReadAll(body)
+}
+
+// printSkillSummary surfaces what skills delivery did, so brand-new (unprompted)
+// writes are still visible. Nothing is printed when no skills were delivered
+// (disabled, or none present in the template) — the absence is unremarkable.
+func printSkillSummary(out io.Writer, noSkills bool, s skillSummary) {
+	if noSkills || s.empty() {
+		return
+	}
+	fmt.Fprintf(out, "Agent skills: %s.\n", s)
 }
 
 // defaultFetchGuide downloads the generic plugin guide from the templates repo

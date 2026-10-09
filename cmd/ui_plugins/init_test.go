@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -51,11 +52,11 @@ func TestGenerateWorkspaceManifest_Valid(t *testing.T) {
 	}
 }
 
-// writeStarterFixture creates a minimal copy of the Angular starter's
-// personalization-relevant files (with the sentinel token) under dir.
-func writeStarterFixture(t *testing.T, dir string) {
-	t.Helper()
-	files := map[string]string{
+// starterFixtureFiles returns the Angular starter's personalization-relevant
+// files (keyed by starter-relative path, with the sentinel token) shared by the
+// on-disk fixture and the in-memory tarball builder.
+func starterFixtureFiles() map[string]string {
+	return map[string]string{
 		"angular.json": `{
   "projects": {
     "starter": {
@@ -76,7 +77,13 @@ func writeStarterFixture(t *testing.T, dir string) {
 		"src/app/app.spec.ts": "expect(x).toContain('Hello, starter');",
 		"src/index.html":      "<head><title>Starter</title></head>",
 	}
-	for rel, content := range files {
+}
+
+// writeStarterFixture creates a minimal copy of the Angular starter's
+// personalization-relevant files (with the sentinel token) under dir.
+func writeStarterFixture(t *testing.T, dir string) {
+	t.Helper()
+	for rel, content := range starterFixtureFiles() {
 		full := filepath.Join(dir, filepath.FromSlash(rel))
 		if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 			t.Fatalf("mkdir: %v", err)
@@ -398,14 +405,11 @@ func TestRunInit_PathConflict_SkipWithoutForce(t *testing.T) {
 func TestScaffoldFlow_PersonalizesFromStub(t *testing.T) {
 	workdir := initTestChdir(t)
 	deps := initDeps{
-		client: &fakeClient{getStatus: 200},
-		in:     strings.NewReader(""),
-		out:    &strings.Builder{},
-		errOut: &strings.Builder{},
-		scaffold: func(destDir string) error {
-			writeStarterFixture(t, destDir)
-			return nil
-		},
+		client:       &fakeClient{getStatus: 200},
+		in:           strings.NewReader(""),
+		out:          &strings.Builder{},
+		errOut:       &strings.Builder{},
+		fetchArchive: archiveFetcher(t, buildTemplatesArchive(starterTarFiles(nil))),
 	}
 	opts := initOptions{name: "My Plugin"} // new-workspace, headless; alias slug = my-plugin
 
@@ -425,21 +429,24 @@ func TestScaffoldFlow_DestExists_HardFail(t *testing.T) {
 	if err := os.Mkdir(filepath.Join(workdir, "my-plugin"), 0755); err != nil {
 		t.Fatalf("mkdir: %v", err)
 	}
-	scaffoldCalled := false
+	fetchCalled := false
 	deps := initDeps{
-		client:   &fakeClient{getStatus: 200},
-		in:       strings.NewReader(""),
-		out:      &strings.Builder{},
-		errOut:   &strings.Builder{},
-		scaffold: func(string) error { scaffoldCalled = true; return nil },
+		client: &fakeClient{getStatus: 200},
+		in:     strings.NewReader(""),
+		out:    &strings.Builder{},
+		errOut: &strings.Builder{},
+		fetchArchive: func() (io.ReadCloser, error) {
+			fetchCalled = true
+			return nil, errors.New("must not fetch")
+		},
 	}
 	opts := initOptions{name: "My Plugin"}
 
 	if err := runInit(context.Background(), deps, opts); err == nil || !strings.Contains(err.Error(), "already exists") {
 		t.Fatalf("expected already-exists error, got %v", err)
 	}
-	if scaffoldCalled {
-		t.Error("scaffold must not run when destination already exists")
+	if fetchCalled {
+		t.Error("archive must not be fetched when destination already exists")
 	}
 }
 
