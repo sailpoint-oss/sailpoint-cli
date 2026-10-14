@@ -24,6 +24,7 @@ func NewSetCmd(term terminal.Terminal) *cobra.Command {
 		newExportTemplateCommand(),
 		newSearchTemplateCommand(),
 		newPATCommand(term),
+		newBearerCommand(),
 	)
 
 	return cmd

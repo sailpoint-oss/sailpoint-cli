@@ -20,6 +20,7 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/ui_plugins"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/va"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/workflow"
+	"github.com/sailpoint-oss/sailpoint-cli/internal/config"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
@@ -75,6 +76,7 @@ func NewRootCommand() *cobra.Command {
 
 	root.PersistentFlags().StringVarP(&env, "env", "", "", "Environment to use for SailPoint CLI commands")
 	root.PersistentFlags().BoolVarP(&debug, "debug", "", false, "Enable debug logging")
+	root.PersistentFlags().StringVar(config.RuntimeAccessTokenVar(), "access-token", "", "Pre-minted Identity Security Cloud access token to send as a bearer token")
 	viper.BindPFlag("activeenvironment", root.PersistentFlags().Lookup("env"))
 	viper.BindPFlag("debug", root.PersistentFlags().Lookup("debug"))
 

@@ -14,15 +14,50 @@ The `set` command makes it easy to update configuration values for the SailPoint
 
 ## Authentication
 
-Run the following command to set the current authentication method for the CLI.
+The CLI can authenticate to Identity Security Cloud with a personal access token, OAuth, or a bearer token that another system has already minted.
 
-> :warning: **Currently only Personal Access Token Authentication is supported**: OAuth possibly coming in the future!
+### Personal access token
 
 ```shell
 sail set auth pat
+sail set pat
 ```
 
-This will set the currently active authentication method to PAT.
+PAT authentication exchanges a client ID and client secret at the OAuth token endpoint. You can also set `SAIL_BASE_URL`, `SAIL_CLIENT_ID`, and `SAIL_CLIENT_SECRET`.
+
+### OAuth
+
+```shell
+sail set auth oauth
+```
+
+OAuth signs in through the Identity Security Cloud web portal.
+
+### Bearer token
+
+Use bearer authentication when you receive an access token instead of a client ID and client secret. That token is the `access_token` returned after a client ID and client secret are presented to the Identity Security Cloud OAuth token endpoint. The CLI sends it as `Authorization: Bearer <token>` on every request and does not call the OAuth token endpoint again.
+
+For a deployment, or any other process that receives the token from another system:
+
+```shell
+export SAIL_BASE_URL="https://<tenant>.api.identitynow.com"
+export SAIL_ACCESS_TOKEN="<access_token>"
+```
+
+`SAIL_ACCESS_TOKEN` selects bearer authentication for that process, including when another authentication method is configured. You can also pass the token for a single invocation:
+
+```shell
+sail --access-token "<access_token>" <command>
+```
+
+To store the token for the active environment:
+
+```shell
+sail set auth bearer
+sail set bearer --token "<access_token>"
+```
+
+`sail set bearer` prompts for the token when `--token` is omitted. The value may be the raw access token or the full `Bearer <access_token>` header value. A stored token is kept in the system keyring, not in the config file, and is used for later commands until it expires. The CLI cannot refresh it. Mint a new token at the OAuth token endpoint and set it again.
 
 ## Debug
 
