@@ -3,7 +3,6 @@ package ui_plugins
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -14,9 +13,6 @@ import (
 	"path/filepath"
 	"strings"
 )
-
-// 100MB CLI guardrail; backend enforces the real limit
-const maxBundleBytes = 100 << 20
 
 // uploadFile is a single compiled asset to include in an asset bundle
 // upload.
@@ -75,8 +71,6 @@ func collectUploadFiles(root string) ([]uploadFile, error) {
 		return nil, fmt.Errorf("output path %s is not a directory", root)
 	}
 
-	var totalSize int64
-	var errBundleTooLarge = errors.New("bundle exceeds upload guardrail")
 	var files []uploadFile
 	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
@@ -93,20 +87,9 @@ func collectUploadFiles(root string) ([]uploadFile, error) {
 		if err != nil {
 			return err
 		}
-		info, err := d.Info()
-		if err != nil {
-			return err
-		}
-		totalSize += info.Size()
-		if totalSize > maxBundleBytes {
-			return errBundleTooLarge
-		}
 		files = append(files, uploadFile{relPath: filepath.ToSlash(rel), absPath: path})
 		return nil
 	})
-	if errors.Is(err, errBundleTooLarge) {
-		return nil, fmt.Errorf("output directory %s exceeds the %d MB upload guardrail", root, maxBundleBytes>>20)
-	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to read output directory %s: %w", root, err)
 	}
