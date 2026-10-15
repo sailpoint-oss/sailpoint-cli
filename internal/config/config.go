@@ -259,7 +259,7 @@ func GetAuthToken() (string, error) {
 		return "", err
 	}
 
-	switch GetAuthType() {
+	switch authTypeInUse() {
 
 	case "pat":
 
@@ -336,6 +336,17 @@ func GetAuthToken() (string, error) {
 			// }
 
 		}
+
+	case "bearer":
+
+		// The access token was already minted at the OAuth token endpoint.
+		// Send it on each request instead of exchanging a client ID and secret.
+		tempToken, err := GetBearerToken()
+		if err != nil {
+			return "", err
+		}
+
+		token = tempToken
 
 	default:
 		return token, fmt.Errorf("invalid authtype configured")
@@ -444,7 +455,7 @@ func CheckEnvironment() error {
 	environments := GetEnvironments()
 	if len(environments) == 0 {
 		return fmt.Errorf("no environment is configured\n\n" +
-			"Run `sail env create` to set up an environment, or set SAIL_BASE_URL, SAIL_CLIENT_ID, and SAIL_CLIENT_SECRET to use environment variables")
+			"Run `sail env create` to set up an environment, set SAIL_BASE_URL, SAIL_CLIENT_ID, and SAIL_CLIENT_SECRET for PAT authentication, or set SAIL_BASE_URL and SAIL_ACCESS_TOKEN to use a bearer token that was already minted at the Identity Security Cloud OAuth token endpoint")
 	}
 
 	active := GetActiveEnvironment()
@@ -469,7 +480,7 @@ func CheckEnvironment() error {
 
 func Validate() error {
 	var errors int
-	authType := GetAuthType()
+	authType := authTypeInUse()
 
 	if err := CheckEnvironment(); err != nil {
 		return err
@@ -527,9 +538,24 @@ func Validate() error {
 			errors++
 		}
 
+	case "bearer":
+
+		if strings.TrimSpace(os.Getenv(accessTokenEnvVar)) == "" && runtimeAccessToken == "" && !supportsSecrets {
+			log.Warn("Secrets storage is not currently functional on this platform, bearer authentication will only work with SAIL_ACCESS_TOKEN or --access-token")
+		}
+
+		if GetBaseUrl() == "" {
+			log.Error("configured environment is missing BaseURL, run `sail env update " + env + "` to set it")
+			errors++
+		}
+
+		if _, err := GetBearerToken(); err != nil {
+			return err
+		}
+
 	default:
 
-		log.Error("invalid authtype configured, run `sail set auth` to choose oauth or pat", "authtype", authType)
+		log.Error("invalid authtype configured, run `sail set auth` to choose oauth, pat, or bearer", "authtype", authType)
 		errors++
 
 	}

@@ -119,7 +119,7 @@ func CreateOrUpdateEnvironment(environmentName string, update bool) error {
 
 		tenantUrl, baseUrl = confirmTenantUrls(tenantUrl, baseUrl)
 
-		authType := terminal.InputPrompt("Authentication Type (oauth, pat):")
+		authType := strings.ToLower(strings.TrimSpace(terminal.InputPrompt("Authentication Type (oauth, pat, bearer):")))
 
 		if authType == "pat" {
 
@@ -169,11 +169,38 @@ func CreateOrUpdateEnvironment(environmentName string, update bool) error {
 			config.GetAuthToken()
 		}
 
+		if authType == "bearer" {
+
+			token, err := config.PromptForBearerToken()
+			if err != nil {
+				return err
+			}
+
+			if environmentName != "" {
+				config.SetActiveEnvironment(environmentName)
+			} else {
+				config.SetActiveEnvironment(tenant)
+			}
+
+			config.SetTenantUrl(tenantUrl)
+			config.SetBaseUrl(baseUrl)
+			config.SetAuthType(authType)
+
+			err = config.SetBearerToken(token)
+			if err != nil {
+				return err
+			}
+		}
+
 		fmt.Print("\n\nEnvironment successfully created.\n\n")
 		fmt.Print("You can change your authentication type at any time by running `sail set auth`.\n\n")
 
 		if authType == "pat" {
 			fmt.Print("You can change your client id and secret at any time by running `sail set pat`.\n\n")
+		}
+
+		if authType == "bearer" {
+			fmt.Print("You can change the bearer token at any time by running `sail set bearer`, or set SAIL_ACCESS_TOKEN.\n\n")
 		}
 	}
 	return nil
