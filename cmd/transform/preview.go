@@ -34,8 +34,8 @@ func newPreviewCommand() *cobra.Command {
 	var identityPreview *identity_profiles.Identitypreviewresponse
 	cmd := &cobra.Command{
 		Use:     "preview",
-		Short:   "Preview a transform result in Identity Security Cloud",
-		Long:    "\nPreview a transform result in Identity Security Cloud\n\n",
+		Short:   "Preview a transform result in SailPoint Human Fabric",
+		Long:    "\nPreview a transform result in SailPoint Human Fabric\n\n",
 		Example: "sail transform preview | sail transform pre",
 		Aliases: []string{"pre"},
 		Args:    cobra.OnlyValidArgs,

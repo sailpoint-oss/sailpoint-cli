@@ -20,7 +20,7 @@ func newGetCommand() *cobra.Command {
 	help := util.ParseHelp(getHelp)
 	cmd := &cobra.Command{
 		Use:     "get",
-		Short:   "Get workflows in Identity Security Cloud",
+		Short:   "Get workflows in SailPoint Human Fabric",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"g"},

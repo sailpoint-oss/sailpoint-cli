@@ -1,6 +1,6 @@
 ==Long==
 # Create
-Create workflows in Identity Security Cloud. 
+Create workflows in SailPoint Human Fabric. 
 
 ## API References:
  - https://developer.sailpoint.com/docs/api/beta/create-workflow

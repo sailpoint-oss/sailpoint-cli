@@ -15,8 +15,8 @@ import (
 func newListCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:     "list",
-		Short:   "List all transforms in Identity Security Cloud",
-		Long:    "\nList all transforms in Identity Security Cloud\n\n",
+		Short:   "List all transforms in SailPoint Human Fabric",
+		Long:    "\nList all transforms in SailPoint Human Fabric\n\n",
 		Example: "sail transform list | sail transform ls",
 		Aliases: []string{"ls"},
 		Args:    cobra.NoArgs,

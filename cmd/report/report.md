@@ -1,7 +1,7 @@
 ==Long==
 # Report
 
-Generate a report from Identity Security Cloud.
+Generate a report from SailPoint Human Fabric.
 
 ## API References:
  - https://developer.sailpoint.com/docs/api/v3/search

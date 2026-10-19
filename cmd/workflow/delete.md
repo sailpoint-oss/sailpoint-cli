@@ -1,6 +1,6 @@
 ==Long==
 # Delete
-Delete a workflow in Identity Security Cloud. You can delete multiple workflows at once, and you can delete a set of workflows specified in a file. 
+Delete a workflow in SailPoint Human Fabric. You can delete multiple workflows at once, and you can delete a set of workflows specified in a file. 
 
 ## API References:
  - https://developer.sailpoint.com/docs/api/beta/delete-workflow

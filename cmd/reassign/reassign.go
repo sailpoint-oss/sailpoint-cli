@@ -91,7 +91,7 @@ func NewReassignCommand() *cobra.Command {
 	help := util.ParseHelp(reassignHelp)
 	cmd := &cobra.Command{
 		Use:     "reassign",
-		Short:   "Reassign object ownership in Identity Security Cloud",
+		Short:   "Reassign object ownership in SailPoint Human Fabric",
 		Long:    help.Long,
 		Example: help.Example,
 		Args:    cobra.OnlyValidArgs,

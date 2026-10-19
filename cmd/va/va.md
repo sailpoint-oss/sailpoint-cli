@@ -1,7 +1,7 @@
 ==Long==
 # VA
 
-Manage VAs in Identity Security Cloud.
+Manage VAs in SailPoint Human Fabric.
 
 Some subcommands (collect, update, troubleshoot) connect directly to VAs over SSH or SFTP. Those commands require network access to the VA and the VA's sailpoint user password.
 

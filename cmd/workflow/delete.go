@@ -19,7 +19,7 @@ func newDeleteCommand() *cobra.Command {
 	help := util.ParseHelp(deleteHelp)
 	cmd := &cobra.Command{
 		Use:     "delete workflowID... ",
-		Short:   "Delete a workflow in Identity Security Cloud",
+		Short:   "Delete a workflow in SailPoint Human Fabric",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"del"},
