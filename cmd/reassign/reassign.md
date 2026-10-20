@@ -2,7 +2,7 @@
 
 # Reassign
 
-Run this command to reassign object ownership in SailPoint Human Fabric.
+Run this command to reassign object ownership in SailPoint Identity Security.
 
 You can reassign ownership for the following supported object types:
 

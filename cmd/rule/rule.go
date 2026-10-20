@@ -8,8 +8,8 @@ import (
 func NewRuleCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "rule",
-		Short:   "Manage rules in SailPoint Human Fabric",
-		Long:    "\nManage rules in SailPoint Human Fabric\n\n",
+		Short:   "Manage rules in SailPoint Identity Security",
+		Long:    "\nManage rules in SailPoint Identity Security\n\n",
 		Example: "sail rule",
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()

@@ -22,7 +22,7 @@ func newDownloadCommand() *cobra.Command {
 	var folderPath string
 	cmd := &cobra.Command{
 		Use:     "download",
-		Short:   "Download workflows from SailPoint Human Fabric",
+		Short:   "Download workflows from SailPoint Identity Security",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"down"},

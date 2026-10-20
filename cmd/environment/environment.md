@@ -1,7 +1,7 @@
 ==Long==
 # Environment
 
-Configure SailPoint Human Fabric environments for the CLI
+Configure SailPoint Identity Security environments for the CLI
 ====
 
 ==Example==

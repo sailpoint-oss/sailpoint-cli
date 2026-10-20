@@ -1,6 +1,6 @@
 # API Command
 
-The `api` command allows you to make direct API requests to SailPoint Human Fabric endpoints.
+The `api` command allows you to make direct API requests to SailPoint Identity Security endpoints.
 
 Similar to the GitHub CLI's `api` command, this provides a simple way to hit any custom API endpoint with custom headers, parameters, and content.
 

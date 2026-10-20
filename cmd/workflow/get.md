@@ -2,7 +2,7 @@
 
 # Get
 	
-Get a workflow from SailPoint Human Fabric by ID. 
+Get a workflow from SailPoint Identity Security by ID. 
 
 ## API References
  - https://developer.sailpoint.com/docs/api/beta/get-workflow

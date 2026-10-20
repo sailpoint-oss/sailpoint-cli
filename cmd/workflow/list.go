@@ -19,7 +19,7 @@ func newListCommand() *cobra.Command {
 	help := util.ParseHelp(listHelp)
 	cmd := &cobra.Command{
 		Use:     "list",
-		Short:   "List all workflows in SailPoint Human Fabric",
+		Short:   "List all workflows in SailPoint Identity Security",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"ls"},

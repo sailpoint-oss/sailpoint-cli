@@ -50,7 +50,7 @@ Run the following command to update a transform from a `json` file. Use the `-f`
 sail transform update -f transform.json
 ```
 
-A common workflow is to download the transforms first, make edits to the transform file, and then use the update command to save those edits in SailPoint Human Fabric.
+A common workflow is to download the transforms first, make edits to the transform file, and then use the update command to save those edits in SailPoint Identity Security.
 
 ## Delete transform
 

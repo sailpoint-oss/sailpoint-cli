@@ -23,7 +23,7 @@ func newUpdateCommand() *cobra.Command {
 	var directory bool
 	cmd := &cobra.Command{
 		Use:     "update",
-		Short:   "Update a workflow in SailPoint Human Fabric",
+		Short:   "Update a workflow in SailPoint Identity Security",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"up"},

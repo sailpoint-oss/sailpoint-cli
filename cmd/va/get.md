@@ -2,7 +2,7 @@
 
 # Get
 
-Get a VA configuration from SailPoint Human Fabric.
+Get a VA configuration from SailPoint Identity Security.
 
 ====
 

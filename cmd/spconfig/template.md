@@ -2,7 +2,7 @@
 
 # Template
 
-Begin an SPConfig export task in SailPoint Human Fabric, using a template.
+Begin an SPConfig export task in SailPoint Identity Security, using a template.
 
 ====
 

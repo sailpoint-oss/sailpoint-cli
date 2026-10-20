@@ -1,7 +1,7 @@
 ==Long==
 # Cluster
 
-Manage SailPoint Human Fabric VA clusters.
+Manage SailPoint Identity Security VA clusters.
 
 ## API Reference:
  - https://developer.sailpoint.com/docs/api/beta/managed-clusters

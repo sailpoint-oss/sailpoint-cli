@@ -1,6 +1,6 @@
 ==Long==
 # Download
-Downloads all workflows from SailPoint Human Fabric. By default, the downloaded workflows are located in the folder, "workflows". You can specify a folder to download the workflows to, as shown in the example. 
+Downloads all workflows from SailPoint Identity Security. By default, the downloaded workflows are located in the folder, "workflows". You can specify a folder to download the workflows to, as shown in the example. 
 
 ## API References:
  - https://developer.sailpoint.com/docs/api/beta/list-workflows

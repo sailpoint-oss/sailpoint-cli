@@ -20,8 +20,8 @@ func newCreateCommand() *cobra.Command {
 	var filepath string
 	cmd := &cobra.Command{
 		Use:     "create",
-		Short:   "Create a SailPoint Human Fabric transform from a file",
-		Long:    "\nCreate a SailPoint Human Fabric transform from a file\n\n",
+		Short:   "Create a SailPoint Identity Security transform from a file",
+		Long:    "\nCreate a SailPoint Identity Security transform from a file\n\n",
 		Example: "sail transform c -f /path/to/transform.json\nsail transform c < /path/to/transform.json\necho /path/to/transform.json | sail transform c",
 		Aliases: []string{"c"},
 		Args:    cobra.NoArgs,

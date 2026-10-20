@@ -1,7 +1,7 @@
 ==Long==
 # Get 
 
-Get a VA cluster's configuration from SailPoint Human Fabric.
+Get a VA cluster's configuration from SailPoint Identity Security.
 
 ## API References:
  - https://developer.sailpoint.com/docs/api/beta/get-managed-cluster

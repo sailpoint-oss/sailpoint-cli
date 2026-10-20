@@ -2,7 +2,7 @@
 
 # Workflows
 
-Manage workflows in SailPoint Human Fabric.
+Manage workflows in SailPoint Identity Security.
 
 ====
 

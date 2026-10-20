@@ -2,7 +2,7 @@
 
 # List
 
-List the VAs and VA clusters in the configured SailPoint Human Fabric tenant.
+List the VAs and VA clusters in the configured SailPoint Identity Security tenant.
 
 ====
 

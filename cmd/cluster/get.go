@@ -18,7 +18,7 @@ func newGetCommand() *cobra.Command {
 	help := util.ParseHelp(getHelp)
 	cmd := &cobra.Command{
 		Use:     "get",
-		Short:   "Get a cluster from SailPoint Human Fabric",
+		Short:   "Get a cluster from SailPoint Identity Security",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"get"},

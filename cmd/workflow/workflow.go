@@ -15,7 +15,7 @@ func NewWorkflowCommand() *cobra.Command {
 	help := util.ParseHelp(workflowHelp)
 	cmd := &cobra.Command{
 		Use:     "workflow",
-		Short:   "Manage workflows in SailPoint Human Fabric",
+		Short:   "Manage workflows in SailPoint Identity Security",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"work"},

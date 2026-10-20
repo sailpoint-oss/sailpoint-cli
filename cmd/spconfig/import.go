@@ -18,8 +18,8 @@ func newImportCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "import",
-		Short:   "Start an import job in SailPoint Human Fabric",
-		Long:    "\nStart an import job in SailPoint Human Fabric\n\n",
+		Short:   "Start an import job in SailPoint Identity Security",
+		Long:    "\nStart an import job in SailPoint Identity Security\n\n",
 		Example: "sail spconfig import",
 		Aliases: []string{"imp"},
 		Args:    cobra.NoArgs,

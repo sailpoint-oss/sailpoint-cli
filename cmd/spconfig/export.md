@@ -1,6 +1,6 @@
 ==Long==
 # Export
-Start an export job in SailPoint Human Fabric.
+Start an export job in SailPoint Identity Security.
 
 You can include or exclude the following valid types:
  - ACCESS_PROFILE

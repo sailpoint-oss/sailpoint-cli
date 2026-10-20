@@ -15,7 +15,7 @@ func NewSPConfigCommand() *cobra.Command {
 	help := util.ParseHelp(spconfigHelp)
 	cmd := &cobra.Command{
 		Use:     "spconfig",
-		Short:   "Perform SPConfig operations in SailPoint Human Fabric",
+		Short:   "Perform SPConfig operations in SailPoint Identity Security",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"spcon"},

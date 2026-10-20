@@ -21,7 +21,7 @@ func newDownloadCommand() *cobra.Command {
 	var folderPath string
 	cmd := &cobra.Command{
 		Use:     "download {--import <importID> --export <exportID>}",
-		Short:   "Download the results of import or export jobs from SailPoint Human Fabric",
+		Short:   "Download the results of import or export jobs from SailPoint Identity Security",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"down"},

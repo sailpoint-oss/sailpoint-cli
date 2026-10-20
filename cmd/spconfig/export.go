@@ -30,7 +30,7 @@ func newExportCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "export",
-		Short:   "Start an export job in SailPoint Human Fabric",
+		Short:   "Start an export job in SailPoint Identity Security",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"exp"},

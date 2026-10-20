@@ -31,7 +31,7 @@ func NewReportCommand() *cobra.Command {
 	var template string
 	cmd := &cobra.Command{
 		Use:     "report",
-		Short:   "Generate a report from a template using SailPoint Human Fabric search queries",
+		Short:   "Generate a report from a template using SailPoint Identity Security search queries",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"rep"},

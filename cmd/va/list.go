@@ -21,7 +21,7 @@ func newListCommand() *cobra.Command {
 	help := util.ParseHelp(listHelp)
 	cmd := &cobra.Command{
 		Use:     "list",
-		Short:   "List the virtual appliances configured in SailPoint Human Fabric",
+		Short:   "List the virtual appliances configured in SailPoint Identity Security",
 		Long:    help.Long,
 		Example: help.Example,
 		Args:    cobra.NoArgs,
