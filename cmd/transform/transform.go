@@ -13,8 +13,8 @@ const (
 func NewTransformCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "transform",
-		Short:   "Manage transforms in Identity Security Cloud",
-		Long:    "\nManage transforms in Identity Security Cloud\n\n",
+		Short:   "Manage transforms in SailPoint Identity Security",
+		Long:    "\nManage transforms in SailPoint Identity Security\n\n",
 		Example: "sail transform | sail tran",
 		Aliases: []string{"tran"},
 		Run: func(cmd *cobra.Command, args []string) {

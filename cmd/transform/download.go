@@ -18,8 +18,8 @@ func newDownloadCommand() *cobra.Command {
 	var destination string
 	cmd := &cobra.Command{
 		Use:     "download",
-		Short:   "Download all transforms from Identity Security Cloud",
-		Long:    "\nDownload all transforms from Identity Security Cloud\n\n",
+		Short:   "Download all transforms from SailPoint Identity Security",
+		Long:    "\nDownload all transforms from SailPoint Identity Security\n\n",
 		Example: "sail transform download -d transform_files | sail transform dl",
 		Aliases: []string{"dl"},
 		Args:    cobra.NoArgs,

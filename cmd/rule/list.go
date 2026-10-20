@@ -32,8 +32,8 @@ func newListCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "list",
-		Short:   "List all rules in Identity Security Cloud",
-		Long:    "\nList all rules in Identity Security Cloud\n\n",
+		Short:   "List all rules in SailPoint Identity Security",
+		Long:    "\nList all rules in SailPoint Identity Security\n\n",
 		Example: "sail rule list | sail rule ls",
 		Aliases: []string{"ls"},
 		Args:    cobra.NoArgs,

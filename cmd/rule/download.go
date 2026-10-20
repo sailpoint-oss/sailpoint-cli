@@ -75,8 +75,8 @@ func newDownloadCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "download",
-		Short:   "Download all rules in Identity Security Cloud",
-		Long:    "\nDownload all rules in Identity Security Cloud\n\n",
+		Short:   "Download all rules in SailPoint Identity Security",
+		Long:    "\nDownload all rules in SailPoint Identity Security\n\n",
 		Example: "sail rule download",
 		Aliases: []string{"d"},
 		Args:    cobra.NoArgs,

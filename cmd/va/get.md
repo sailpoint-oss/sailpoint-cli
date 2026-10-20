@@ -2,7 +2,7 @@
 
 # Get
 
-Get a VA configuration from Identity Security Cloud.
+Get a VA configuration from SailPoint Identity Security.
 
 ====
 

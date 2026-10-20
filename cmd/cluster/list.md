@@ -1,7 +1,7 @@
 ==Long==
 # List
 
-List all VA clusters from Identity Security Cloud.
+List all VA clusters from SailPoint Identity Security.
 
 ## API References:
  - https://developer.sailpoint.com/docs/api/beta/get-managed-clusters
