@@ -203,6 +203,93 @@ func ExtractSubtree(tarball io.Reader, destDir, subdir string) error {
 	return nil
 }
 
+// SubtreeMapping routes entries under the archive's <Subdir>/ (relative to the
+// archive root) to <Dest>, a path relative to the extraction destination root.
+// Dest "." places the subtree's contents at the destination root.
+type SubtreeMapping struct {
+	Subdir string // archive subdir below the archive root, e.g. "angular/starter" or ".agents/skills"
+	Dest   string // destination-relative path, e.g. "." or ".agents/skills"
+}
+
+// ExtractSubtrees extracts, in a single streaming pass, the entries under each
+// mapping's Subdir into that mapping's Dest (relative to destRoot). Each archive
+// entry is routed to the first mapping it matches. It returns a per-Subdir count
+// of matched entries so callers can tell which subtrees were present.
+//
+// Unlike ExtractSubtree it is merge-tolerant: destRoot may already exist and is
+// written into in place, and a mapping that matches nothing is not an error (its
+// count is simply zero) — the caller decides whether an absent subtree is fatal
+// or a graceful skip. The path-traversal / Zip-Slip guards in extractGzipTar are
+// preserved.
+func ExtractSubtrees(tarball io.Reader, destRoot string, mappings []SubtreeMapping) (map[string]int, error) {
+	if destRoot == "" {
+		return nil, errors.New("destination directory cannot be empty")
+	}
+	if len(mappings) == 0 {
+		return nil, errors.New("at least one mapping is required")
+	}
+
+	absRoot, err := filepath.Abs(destRoot)
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve destination path: %w", err)
+	}
+
+	sep := string(filepath.Separator)
+	type prepared struct {
+		key      string
+		osSubdir string
+		prefix   string
+		osDest   string
+	}
+	preps := make([]prepared, 0, len(mappings))
+	counts := make(map[string]int, len(mappings))
+	for _, m := range mappings {
+		if strings.TrimSpace(m.Subdir) == "" {
+			return nil, errors.New("mapping subdir cannot be empty")
+		}
+		osSubdir := filepath.Clean(filepath.FromSlash(strings.Trim(m.Subdir, "/")))
+		osDest := filepath.Clean(filepath.FromSlash(strings.Trim(m.Dest, "/")))
+		preps = append(preps, prepared{
+			key:      m.Subdir,
+			osSubdir: osSubdir,
+			prefix:   osSubdir + sep,
+			osDest:   osDest,
+		})
+		counts[m.Subdir] = 0
+	}
+
+	// strip routes each entry (whose first path component is the archive root)
+	// to the first matching mapping, returning its destination-relative path.
+	// The subdir's own directory entry maps to the mapping's dest directory.
+	strip := func(osName string) (string, bool) {
+		parts := strings.SplitN(osName, sep, 2)
+		if len(parts) < 2 {
+			return "", false
+		}
+		below := parts[1]
+		for _, p := range preps {
+			var rel string
+			switch {
+			case below == p.osSubdir:
+				rel = ""
+			case strings.HasPrefix(below, p.prefix):
+				rel = strings.TrimPrefix(below, p.prefix)
+			default:
+				continue
+			}
+			counts[p.key]++
+			return filepath.Join(p.osDest, rel), true
+		}
+		return "", false
+	}
+
+	log.Info("Extracting subtrees", "mappings", len(mappings), "dest", destRoot)
+	if _, err := extractGzipTar(tarball, absRoot, strip); err != nil {
+		return counts, err
+	}
+	return counts, nil
+}
+
 // stripArchiveRoot removes the single top-level directory component that GitHub
 // archives wrap everything in (e.g. "repo-main/"). It is the default strip used
 // by ExtractAndInitProject.
