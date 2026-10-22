@@ -26,6 +26,10 @@ func ParseIndices(indices string) (sailpointsdk.Index, error) {
 		return sailpointsdk.INDEX_IDENTITIES, nil
 	case "roles":
 		return sailpointsdk.INDEX_ROLES, nil
+	case "workflowsummaries":
+		return sailpointsdk.Index("workflowsummaries"), nil
+	case "workflowexecutions":
+		return sailpointsdk.Index("workflowexecutions"), nil
 	default:
 		return "*", fmt.Errorf("index provided is invalid")
 	}
@@ -115,6 +119,22 @@ func PerformSearch(apiClient sailpoint.APIClient, search sailpointsdk.Search) (S
 				return SearchResults, err
 			}
 			SearchResults.Roles = append(SearchResults.Roles, Role)
+
+		case "workflowsummary":
+			var WorkflowSummary WorkflowSummary
+			err := mapstructure.Decode(entry, &WorkflowSummary)
+			if err != nil {
+				return SearchResults, err
+			}
+			SearchResults.WorkflowSummaries = append(SearchResults.WorkflowSummaries, WorkflowSummary)
+
+		case "workflowexecution":
+			var WorkflowExecution WorkflowExecution
+			err := mapstructure.Decode(entry, &WorkflowExecution)
+			if err != nil {
+				return SearchResults, err
+			}
+			SearchResults.WorkflowExecutions = append(SearchResults.WorkflowExecutions, WorkflowExecution)
 		}
 	}
 
@@ -187,6 +207,22 @@ func PerformSearchWithLimit(apiClient sailpoint.APIClient, search sailpointsdk.S
 				return SearchResults, err
 			}
 			SearchResults.Roles = append(SearchResults.Roles, Role)
+
+		case "workflowsummary":
+			var WorkflowSummary WorkflowSummary
+			err := mapstructure.Decode(entry, &WorkflowSummary)
+			if err != nil {
+				return SearchResults, err
+			}
+			SearchResults.WorkflowSummaries = append(SearchResults.WorkflowSummaries, WorkflowSummary)
+
+		case "workflowexecution":
+			var WorkflowExecution WorkflowExecution
+			err := mapstructure.Decode(entry, &WorkflowExecution)
+			if err != nil {
+				return SearchResults, err
+			}
+			SearchResults.WorkflowExecutions = append(SearchResults.WorkflowExecutions, WorkflowExecution)
 		}
 	}
 
@@ -232,6 +268,20 @@ func IterateIndices(SearchResults SearchResults, searchQuery string, folderPath 
 	if len(SearchResults.Roles) > 0 {
 		fileName := "query=" + searchQuery + "&indices=Roles"
 		err := SaveResults(SearchResults.Roles, fileName, folderPath, outputTypes)
+		if err != nil {
+			return err
+		}
+	}
+	if len(SearchResults.WorkflowSummaries) > 0 {
+		fileName := "query=" + searchQuery + "&indices=WorkflowSummaries"
+		err := SaveResults(SearchResults.WorkflowSummaries, fileName, folderPath, outputTypes)
+		if err != nil {
+			return err
+		}
+	}
+	if len(SearchResults.WorkflowExecutions) > 0 {
+		fileName := "query=" + searchQuery + "&indices=WorkflowExecutions"
+		err := SaveResults(SearchResults.WorkflowExecutions, fileName, folderPath, outputTypes)
 		if err != nil {
 			return err
 		}
