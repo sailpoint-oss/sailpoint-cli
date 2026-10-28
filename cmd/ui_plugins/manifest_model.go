@@ -23,8 +23,17 @@ type uiPluginManifest struct {
 	ContentSecurityPolicies map[string][]string `json:"contentSecurityPolicies"`
 	PermissionPolicy        map[string][]string `json:"permissionPolicy"`
 	IframeAllow             map[string][]string `json:"iframeAllow"`
-	State                   *pluginState        `json:"state"`
-	Slots                   []uiPluginSlot      `json:"slots"`
+	// IframeSandbox is optional. A nil pointer means the key was absent from the
+	// manifest, so it is omitted from the UMS payload and any stored value is left
+	// untouched; a non-nil pointer — including an empty slice — is sent verbatim,
+	// so an explicit [] clears previously granted tokens. The pointer is required
+	// to keep "absent" and "present but empty" distinct through encoding/json:
+	// omitempty on a pointer keys on nil only, whereas omitempty on a plain slice
+	// would collapse both cases. UMS owns the token allowlist; the CLI validates
+	// only each token's format.
+	IframeSandbox *[]string      `json:"iframeSandbox,omitempty"`
+	State         *pluginState   `json:"state"`
+	Slots         []uiPluginSlot `json:"slots"`
 }
 
 // uiPluginBuildConfig is local CLI-only config and never sent to backend.

@@ -57,6 +57,7 @@ func generateWorkspaceManifest(alias, name, outDir string, port int) *uiPluginWo
 			ContentSecurityPolicies: map[string][]string{},
 			PermissionPolicy:        map[string][]string{},
 			IframeAllow:             map[string][]string{},
+			IframeSandbox:           &[]string{},
 			Slots:                   []uiPluginSlot{{SlotID: "full-page"}},
 		},
 		Build: &uiPluginBuildConfig{OutDir: outDir, Port: &p},
