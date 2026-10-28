@@ -1,6 +1,7 @@
 package ui_plugins
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -341,6 +342,144 @@ func TestLoadAndValidateWorkspaceManifest_UnsupportedVersion(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "unsupported version") {
 		t.Fatalf("expected unsupported version error, got: %v", err)
+	}
+}
+
+func TestLoadAndValidateWorkspaceManifest_IframeSandboxAbsent(t *testing.T) {
+	path := writeManifestFixture(t, `{
+  "version": 1,
+  "manifest": {
+    "alias": "access-request-plugin",
+    "name": {"en-US": "Access Request"},
+    "description": {"en-US": "Plugin description"},
+    "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
+    "iframeAllow": {}
+  }
+}`)
+
+	cfg, err := loadAndValidateWorkspaceManifest(path)
+	if err != nil {
+		t.Fatalf("expected valid manifest, got err: %v", err)
+	}
+	if cfg.Manifest.IframeSandbox != nil {
+		t.Fatalf("expected absent iframeSandbox to decode as a nil pointer, got: %+v", *cfg.Manifest.IframeSandbox)
+	}
+}
+
+func TestLoadAndValidateWorkspaceManifest_IframeSandboxEmpty(t *testing.T) {
+	path := writeManifestFixture(t, `{
+  "version": 1,
+  "manifest": {
+    "alias": "access-request-plugin",
+    "name": {"en-US": "Access Request"},
+    "description": {"en-US": "Plugin description"},
+    "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
+    "iframeAllow": {},
+    "iframeSandbox": []
+  }
+}`)
+
+	cfg, err := loadAndValidateWorkspaceManifest(path)
+	if err != nil {
+		t.Fatalf("expected valid manifest, got err: %v", err)
+	}
+	if cfg.Manifest.IframeSandbox == nil {
+		t.Fatal("expected a present empty iframeSandbox to decode as a non-nil pointer")
+	}
+	if len(*cfg.Manifest.IframeSandbox) != 0 {
+		t.Fatalf("expected empty iframeSandbox, got: %+v", *cfg.Manifest.IframeSandbox)
+	}
+}
+
+func TestLoadAndValidateWorkspaceManifest_IframeSandboxValidTokens(t *testing.T) {
+	path := writeManifestFixture(t, `{
+  "version": 1,
+  "manifest": {
+    "alias": "access-request-plugin",
+    "name": {"en-US": "Access Request"},
+    "description": {"en-US": "Plugin description"},
+    "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
+    "iframeAllow": {},
+    "iframeSandbox": ["allow-popups", "allow-popups-to-escape-sandbox"]
+  }
+}`)
+
+	cfg, err := loadAndValidateWorkspaceManifest(path)
+	if err != nil {
+		t.Fatalf("expected valid manifest, got err: %v", err)
+	}
+	if cfg.Manifest.IframeSandbox == nil || len(*cfg.Manifest.IframeSandbox) != 2 {
+		t.Fatalf("expected two iframeSandbox tokens, got: %+v", cfg.Manifest.IframeSandbox)
+	}
+}
+
+func TestLoadAndValidateWorkspaceManifest_IframeSandboxUnknownTokenAccepted(t *testing.T) {
+	// A well-formed but unknown token passes the CLI by design; UMS owns the
+	// allowlist and rejects it at request time.
+	path := writeManifestFixture(t, `{
+  "version": 1,
+  "manifest": {
+    "alias": "access-request-plugin",
+    "name": {"en-US": "Access Request"},
+    "description": {"en-US": "Plugin description"},
+    "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
+    "iframeAllow": {},
+    "iframeSandbox": ["allow-forms"]
+  }
+}`)
+
+	if _, err := loadAndValidateWorkspaceManifest(path); err != nil {
+		t.Fatalf("expected well-formed unknown token to pass local validation, got err: %v", err)
+	}
+}
+
+func TestLoadAndValidateWorkspaceManifest_IframeSandboxMalformedTokens(t *testing.T) {
+	cases := map[string]string{
+		"uppercase":       "Allow-Popups",
+		"underscore":      "allow_popups",
+		"leading hyphen":  "-allow",
+		"trailing hyphen": "allow-",
+		"double hyphen":   "allow--popups",
+		"empty token":     "",
+		"space":           "allow popups",
+	}
+
+	for name, token := range cases {
+		t.Run(name, func(t *testing.T) {
+			tokenJSON, err := json.Marshal(token)
+			if err != nil {
+				t.Fatalf("failed to encode token: %v", err)
+			}
+			path := writeManifestFixture(t, `{
+  "version": 1,
+  "manifest": {
+    "alias": "access-request-plugin",
+    "name": {"en-US": "Access Request"},
+    "description": {"en-US": "Plugin description"},
+    "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
+    "iframeAllow": {},
+    "iframeSandbox": [`+string(tokenJSON)+`]
+  }
+}`)
+
+			_, err = loadAndValidateWorkspaceManifest(path)
+			if err == nil {
+				t.Fatalf("expected malformed token %q to fail validation", token)
+			}
+			if !strings.Contains(err.Error(), "manifest.iframeSandbox[0]") {
+				t.Fatalf("expected indexed iframeSandbox error, got: %v", err)
+			}
+		})
 	}
 }
 

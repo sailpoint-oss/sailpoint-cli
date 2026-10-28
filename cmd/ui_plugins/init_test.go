@@ -50,6 +50,23 @@ func TestGenerateWorkspaceManifest_Valid(t *testing.T) {
 	if cfg.Manifest.ContentSecurityPolicies == nil || cfg.Manifest.PermissionPolicy == nil || cfg.Manifest.IframeAllow == nil {
 		t.Error("policy maps must be non-nil")
 	}
+	// iframeSandbox defaults to a present empty array so the --path scaffold and
+	// the fetched template produce the same shape.
+	if cfg.Manifest.IframeSandbox == nil {
+		t.Error("iframeSandbox must be a present empty array, got nil")
+	} else if len(*cfg.Manifest.IframeSandbox) != 0 {
+		t.Errorf("iframeSandbox must default to empty, got: %+v", *cfg.Manifest.IframeSandbox)
+	}
+
+	// The generated manifest marshals the field as [] (not omitted), matching the
+	// template CSTM-598 ships.
+	data, err := json.Marshal(cfg)
+	if err != nil {
+		t.Fatalf("marshal generated manifest: %v", err)
+	}
+	if !strings.Contains(string(data), `"iframeSandbox":[]`) {
+		t.Errorf("expected \"iframeSandbox\":[] in generated manifest, got: %s", data)
+	}
 }
 
 // starterFixtureFiles returns the Angular starter's personalization-relevant
