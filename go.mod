@@ -17,6 +17,7 @@ require (
 	github.com/mrz1836/go-sanitize v1.5.2
 	github.com/olekukonko/tablewriter v1.0.9
 	github.com/pkg/sftp v1.13.9
+	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06
 	github.com/sailpoint-oss/golang-sdk/v3 v3.0.3
 	github.com/sailpoint-oss/jsonslice v0.0.0-20241219164002-1091467abd7d
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966

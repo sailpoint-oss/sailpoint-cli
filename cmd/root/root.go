@@ -12,6 +12,7 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/report"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/rule"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/sanitize"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/scopes"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/sdk"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/search"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/set"
@@ -26,7 +27,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var version = "2.4.0"
+var version = "2.5.0"
 
 //go:embed root.md
 var rootHelp string
@@ -71,6 +72,7 @@ func NewRootCommand() *cobra.Command {
 		sanitize.NewSanitizeCommand(),
 		reassign.NewReassignCommand(),
 		ui_plugins.NewUIPluginsCommand(),
+		scopes.NewScopesCommand(),
 	)
 
 	root.PersistentFlags().StringVarP(&env, "env", "", "", "Environment to use for SailPoint CLI commands")
