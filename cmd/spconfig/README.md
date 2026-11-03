@@ -1,6 +1,6 @@
 # SP-Config
 
-The `spconfig` command makes it easy to perform import and export operations in Identity Security Cloud using the SailPoint CLI.
+The `spconfig` command makes it easy to perform import and export operations in SailPoint Identity Security using the SailPoint CLI.
 
 - [SP-Config](#sp-config)
   - [Download](#download)
@@ -77,7 +77,7 @@ sail spconfig download \
 
 ### Command
 
-Run the following command to begin an spconfig export job in Identity Security Cloud
+Run the following command to begin an spconfig export job in SailPoint Identity Security
 
 ```shell
 sail spconfig export \

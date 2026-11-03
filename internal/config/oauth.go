@@ -365,6 +365,19 @@ func discoverAuthorizeEndpoint(baseURL string) (string, error) {
 	return info.AuthorizeEndpoint, nil
 }
 
+// CheckTenantAPI reports whether baseURL answers {baseURL}/oauth/info like an
+// Identity Security Cloud tenant. It is used to confirm a generated API URL
+// before an environment is saved.
+func CheckTenantAPI(baseURL string) error {
+	parsed, err := assertHTTPSURL(strings.TrimSuffix(baseURL, "/"), "tenant API URL")
+	if err != nil {
+		return err
+	}
+
+	_, err = discoverAuthorizeEndpoint(parsed.Scheme + "://" + parsed.Host)
+	return err
+}
+
 // randomURLSafeString returns byteLength random bytes as a base64url string.
 func randomURLSafeString(byteLength int) (string, error) {
 	buf := make([]byte, byteLength)

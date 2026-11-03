@@ -9,7 +9,6 @@ import (
 )
 
 func TestValidateManifestCommand_Success(t *testing.T) {
-	t.Setenv(experimentalUIPluginsEnvVar, "1")
 	cwd := t.TempDir()
 	writeManifestAtPath(t, filepath.Join(cwd, manifestFileName), `{
   "version": 1,
@@ -40,7 +39,6 @@ func TestValidateManifestCommand_Success(t *testing.T) {
 }
 
 func TestValidateManifestCommand_RejectsExtraArgs(t *testing.T) {
-	t.Setenv(experimentalUIPluginsEnvVar, "1")
 	cwd := t.TempDir()
 	writeManifestAtPath(t, filepath.Join(cwd, manifestFileName), `{
   "version": 1,
@@ -70,7 +68,6 @@ func TestValidateManifestCommand_RejectsExtraArgs(t *testing.T) {
 }
 
 func TestValidateManifestCommand_AliasSuccess(t *testing.T) {
-	t.Setenv(experimentalUIPluginsEnvVar, "1")
 	cwd := t.TempDir()
 	writeManifestAtPath(t, filepath.Join(cwd, manifestFileName), `{
   "version": 1,
@@ -96,7 +93,6 @@ func TestValidateManifestCommand_AliasSuccess(t *testing.T) {
 }
 
 func TestValidateManifestCommand_Failure(t *testing.T) {
-	t.Setenv(experimentalUIPluginsEnvVar, "1")
 	cwd := t.TempDir()
 	writeManifestAtPath(t, filepath.Join(cwd, manifestFileName), `{
   "version": 1,

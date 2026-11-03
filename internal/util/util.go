@@ -105,43 +105,21 @@ func CreateOrUpdateEnvironment(environmentName string, update bool) error {
 
 		fmt.Print("Press ^C at any time to quit.\n\n")
 
-		tenant := ""
-
-		if update && environmentName == "" {
-			tenant = terminal.InputPrompt("Tenant Name (ie: https://{tenant}.identitynow.com): (" + config.GetActiveEnvironment() + ")")
-		} else if update {
-			tenant = terminal.InputPrompt("Tenant Name (ie: https://{tenant}.identitynow.com): (" + getTextBetween(viper.GetString("environments."+environmentName+".tenanturl"), "//", ".") + ")")
-		} else {
-			tenant = terminal.InputPrompt("Tenant Name (ie: https://{tenant}.identitynow.com): (" + environmentName + ")")
+		tenant, tenantUrl, baseUrl, err := promptForTenant(environmentName, update)
+		if err != nil {
+			return err
 		}
 
 		if !update {
 			if environments[tenant] != nil {
-				fmt.Print("Environment already exists\n\n To update the environment use `sail env update `" + tenant + ".\n\n")
+				fmt.Print("Environment already exists\n\n To update the environment use `sail env update " + tenant + "`.\n\n")
 				return nil
 			}
 		}
 
-		if tenant == "" {
-			tenant = environmentName
-		}
-
-		tenantUrl := "https://" + tenant + ".identitynow.com"
-		baseUrl := "https://" + tenant + ".api.identitynow.com"
-
-		fmt.Print("\nThe following two prompts will allow you to set a custom base and tenant url if the generated URL\ndoes not apply. If the generated URL is correct simply press enter to proceed\n\n")
-		confirmTenantUrl := terminal.InputPrompt("Tenant URL (ie: https://{tenant}.identitynow.com): (" + tenantUrl + ")")
-		confirmBaseURL := terminal.InputPrompt("Base URL (ie: https://{tenant}.api.identitynow.com): (" + baseUrl + ")")
+		tenantUrl, baseUrl = confirmTenantUrls(tenantUrl, baseUrl)
 
 		authType := terminal.InputPrompt("Authentication Type (oauth, pat):")
-
-		if confirmTenantUrl != "" {
-			tenantUrl = confirmTenantUrl
-		}
-
-		if confirmBaseURL != "" {
-			baseUrl = confirmBaseURL
-		}
 
 		if authType == "pat" {
 
@@ -199,6 +177,87 @@ func CreateOrUpdateEnvironment(environmentName string, update bool) error {
 		}
 	}
 	return nil
+}
+
+// promptForTenant asks for a tenant name or URL and returns the environment
+// name, tenant URL and API base URL. On update, an empty answer keeps the URLs
+// already stored for the environment.
+func promptForTenant(environmentName string, update bool) (string, string, string, error) {
+	defaultName := environmentName
+	if update && defaultName == "" {
+		defaultName = config.GetActiveEnvironment()
+	}
+
+	storedTenantUrl, storedBaseUrl := "", ""
+	if update {
+		storedTenantUrl = viper.GetString("environments." + defaultName + ".tenanturl")
+		storedBaseUrl = viper.GetString("environments." + defaultName + ".baseurl")
+	}
+
+	promptDefault := defaultName
+	if storedTenantUrl != "" {
+		promptDefault = storedTenantUrl
+	}
+
+	for attempt := 0; attempt < 3; attempt++ {
+		input := terminal.InputPrompt("Tenant name or URL (ie: acme, or https://acme.identitynow-demo.com): (" + promptDefault + ")")
+
+		if input == "" && storedTenantUrl != "" && storedBaseUrl != "" {
+			return defaultName, storedTenantUrl, storedBaseUrl, nil
+		}
+
+		if input == "" {
+			input = defaultName
+		}
+
+		tenant, tenantUrl, baseUrl, err := ParseTenantInput(input)
+		if err != nil {
+			log.Warn("Invalid tenant name or URL", "error", err)
+			continue
+		}
+
+		if environmentName != "" {
+			tenant = environmentName
+		}
+
+		return tenant, tenantUrl, baseUrl, nil
+	}
+
+	return "", "", "", fmt.Errorf("no valid tenant name or URL provided")
+}
+
+// confirmTenantUrls checks the API URL against the tenant. When the check
+// fails, the user can correct the URLs. The URLs are kept even if the check
+// still fails, so tenants that are not reachable from this network still work.
+func confirmTenantUrls(tenantUrl, baseUrl string) (string, string) {
+	err := config.CheckTenantAPI(baseUrl)
+	if err == nil {
+		fmt.Print("\n\u2714 Found tenant at " + tenantUrl + " (API: " + baseUrl + ")\n\n")
+		return tenantUrl, baseUrl
+	}
+	log.Warn("Could not confirm the tenant API URL", "url", baseUrl, "error", err)
+
+	fmt.Print("\nThe following two prompts will allow you to set a custom base and tenant url if the generated URL\ndoes not apply. If the generated URL is correct simply press enter to proceed\n\n")
+	confirmTenantUrl := terminal.InputPrompt("Tenant URL (ie: https://{tenant}.identitynow.com): (" + tenantUrl + ")")
+	confirmBaseURL := terminal.InputPrompt("Base URL (ie: https://{tenant}.api.identitynow.com): (" + baseUrl + ")")
+
+	if confirmTenantUrl != "" {
+		tenantUrl = confirmTenantUrl
+	}
+
+	if confirmBaseURL != "" {
+		baseUrl = confirmBaseURL
+	}
+
+	if confirmTenantUrl != "" || confirmBaseURL != "" {
+		if err := config.CheckTenantAPI(baseUrl); err != nil {
+			log.Warn("Could not confirm the tenant API URL, saving it anyway", "url", baseUrl, "error", err)
+		} else {
+			fmt.Print("\n\u2714 Found tenant at " + tenantUrl + " (API: " + baseUrl + ")\n\n")
+		}
+	}
+
+	return tenantUrl, baseUrl
 }
 
 func SelectIdentity[T search.Identity](identities []search.Identity) (string, error) {

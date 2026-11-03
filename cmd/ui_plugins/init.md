@@ -26,17 +26,17 @@ The alias validation requires an authenticated CLI; `init` fails fast if no auth
 
 ```bash
 # Scaffold a new Angular workspace (interactive prompts for name/alias)
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins init
+sail ui-plugins init
 
 # Scaffold headlessly (no prompts)
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins init "My Plugin" --alias my-plugin
+sail ui-plugins init "My Plugin" --alias my-plugin
 
 # Prepare an existing project
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins init "My Plugin" \
+sail ui-plugins init "My Plugin" \
   --path ./existing-app --out-dir ./dist/app --port 4200
 
 # Overwrite plugin files init manages if they already exist
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins init "My Plugin" --path ./existing-app --out-dir ./dist/app --force
+sail ui-plugins init "My Plugin" --path ./existing-app --out-dir ./dist/app --force
 ```
 
 ====

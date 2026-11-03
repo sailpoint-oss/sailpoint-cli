@@ -15,7 +15,7 @@ func NewClusterCommand() *cobra.Command {
 	help := util.ParseHelp(clusterHelp)
 	cmd := &cobra.Command{
 		Use:     "cluster",
-		Short:   "Manage clusters in Identity Security Cloud",
+		Short:   "Manage clusters in SailPoint Identity Security",
 		Long:    help.Long,
 		Example: help.Example,
 		Aliases: []string{"cl"},

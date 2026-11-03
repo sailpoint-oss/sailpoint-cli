@@ -1,6 +1,6 @@
 ==Long==
 # Create
-Create workflows in Identity Security Cloud. 
+Create workflows in SailPoint Identity Security. 
 
 ## API References:
  - https://developer.sailpoint.com/docs/api/beta/create-workflow

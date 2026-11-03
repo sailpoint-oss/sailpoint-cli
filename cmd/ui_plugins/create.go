@@ -247,7 +247,7 @@ func mapUMSCreateError(status int, body []byte, alias string) error {
 	case http.StatusForbidden:
 		return fmt.Errorf("not authorized to create UI plugins (requires the idn:plugins-ui:create right): %s", message)
 	case http.StatusNotFound:
-		return fmt.Errorf("the UI plugins feature is not enabled for this tenant, or the endpoint is unavailable: %s", message)
+		return fmt.Errorf("the UI plugins feature is not enabled for this tenant, or the idn:ui-plugins-author product license is not provisioned: %s", message)
 	case http.StatusConflict:
 		return fmt.Errorf("a plugin instance with alias %q already exists for this tenant: %s", alias, message)
 	default:

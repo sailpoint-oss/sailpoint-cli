@@ -1,7 +1,7 @@
 ==Long==
 # Environment
 
-Configure SailPoint Identity Security Cloud environments for the CLI
+Configure SailPoint Identity Security environments for the CLI
 ====
 
 ==Example==
@@ -17,6 +17,15 @@ If no environment is provided the CLI will use your tenant name as the name of t
 
 ```bash
 sail environment create
+```
+
+When the CLI asks for the tenant name, you can also paste your tenant URL. This works for tenants that are not on the default `identitynow.com` domain. The CLI derives the environment name, the tenant URL, and the API URL from it. It then checks the API URL with the tenant. If the check passes, the CLI skips the URL confirmation prompts.
+
+```bash
+sail environment create
+Tenant name or URL (ie: acme, or https://acme.identitynow-demo.com): () https://devrel-ga-25031.identitynow-demo.com/
+
+✔ Found tenant at https://devrel-ga-25031.identitynow-demo.com (API: https://devrel-ga-25031.api.identitynow-demo.com)
 ```
 
 ## Switching environments

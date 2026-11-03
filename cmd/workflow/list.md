@@ -2,7 +2,7 @@
 
 # List
 	
-List workflows from Identity Security Cloud.
+List workflows from SailPoint Identity Security.
 
 ## API References
  - https://developer.sailpoint.com/docs/api/beta/list-workflows

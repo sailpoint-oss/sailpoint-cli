@@ -26,8 +26,8 @@ Use `sail ui-plugins create` or `update` for full backend validation.
 ==Example==
 
 ```bash
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins validate-manifest
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins validate
+sail ui-plugins validate-manifest
+sail ui-plugins validate
 ```
 
 ====

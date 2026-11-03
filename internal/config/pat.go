@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -141,11 +142,20 @@ func SetPatTokenExpiry(expiry time.Time) error {
 	return nil
 }
 
+// missingSecretError explains how to store a PAT credential that could not be
+// read from the keyring.
+func missingSecretError(label, envVar, env string, err error) error {
+	if errors.Is(err, keyring.ErrNotFound) {
+		return fmt.Errorf("no PAT %s is stored for environment %q\n\n"+
+			"Run `sail set pat` to store your PAT credentials, or set %s", label, env, envVar)
+	}
+	return fmt.Errorf("failed to read the PAT %s for environment %q from the keyring: %w", label, env, err)
+}
+
 func GetClientID(env string) (string, error) {
 	value, err := keyring.Get("environments.pat.clientid", env)
 	if err != nil {
-		log.Error("issue retrieving clientID", "env", env)
-		return value, err
+		return value, missingSecretError("client ID", "SAIL_CLIENT_ID", env, err)
 	}
 	return value, nil
 }
@@ -182,8 +192,7 @@ func DeletePatClientID(env string) error {
 func GetClientSecret(env string) (string, error) {
 	value, err := keyring.Get("environments.pat.clientsecret", env)
 	if err != nil {
-		log.Error("issue retrieving clientSecret", "env", env)
-		return value, err
+		return value, missingSecretError("client secret", "SAIL_CLIENT_SECRET", env, err)
 	}
 	return value, nil
 }
@@ -276,13 +285,13 @@ func PATLogin() (PATSet, error) {
 		_ = Body.Close()
 	}(resp.Body)
 
-	if resp.StatusCode != http.StatusOK {
-		return set, fmt.Errorf("failed to retrieve access token. status %s", resp.Status)
-	}
-
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return set, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return set, patTokenError(resp.StatusCode, raw, GetActiveEnvironment(), os.Getenv("SAIL_CLIENT_ID") != "")
 	}
 
 	var tResponse TokenResponse
@@ -299,6 +308,32 @@ func PATLogin() (PATSet, error) {
 	return set, nil
 }
 
+// patTokenError turns a failed PAT token response into an error that says why
+// the token request failed and how to fix it. usingEnvVars reports whether the
+// credentials came from SAIL_CLIENT_ID and SAIL_CLIENT_SECRET.
+func patTokenError(status int, body []byte, env string, usingEnvVars bool) error {
+	var tokenErr struct {
+		Error       string `json:"error"`
+		Description string `json:"error_description"`
+	}
+	_ = json.Unmarshal(body, &tokenErr)
+
+	if tokenErr.Error == "invalid_client" || status == http.StatusUnauthorized {
+		fix := "Run `sail set pat` to update the PAT credentials for this environment"
+		if usingEnvVars {
+			fix = "Check the values of SAIL_CLIENT_ID and SAIL_CLIENT_SECRET"
+		}
+		return fmt.Errorf("the tenant rejected the PAT client ID or client secret for environment %q\n\n"+
+			"The PAT may be wrong, deleted, or created in a different tenant. %s", env, fix)
+	}
+
+	detail := strings.TrimSpace(tokenErr.Description)
+	if detail == "" {
+		detail = strings.TrimSpace(string(body))
+	}
+	return fmt.Errorf("failed to get an access token for environment %q (status %d): %s", env, status, detail)
+}
+
 func PromptForClientID() (string, error) {
 	const maxAttempts = 3
 	var ClientID string
@@ -306,7 +341,7 @@ func PromptForClientID() (string, error) {
 
 	for attempt := 1; attempt <= maxAttempts; attempt++ {
 		// Prompt for the Client ID
-		ClientID, err = terminal.PromptPassword("Personal Access Token Client ID:")
+		ClientID, err = terminal.PromptMasked("Personal Access Token Client ID:")
 		if err != nil {
 			return "", err
 		}
@@ -332,7 +367,7 @@ func PromptForClientSecret() (string, error) {
 
 	for attempt := 1; attempt <= maxAttempts; attempt++ {
 		// Prompt for the Client Secret
-		ClientSecret, err = terminal.PromptPassword("Personal Access Token Client Secret:")
+		ClientSecret, err = terminal.PromptMasked("Personal Access Token Client Secret:")
 		if err != nil {
 			return "", err
 		}

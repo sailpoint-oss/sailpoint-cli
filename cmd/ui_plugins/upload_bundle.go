@@ -3,7 +3,6 @@ package ui_plugins
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -14,9 +13,6 @@ import (
 	"path/filepath"
 	"strings"
 )
-
-// 100MB CLI guardrail; backend enforces the real limit
-const maxBundleBytes = 100 << 20
 
 // uploadFile is a single compiled asset to include in an asset bundle
 // upload.
@@ -54,6 +50,8 @@ var assetContentTypes = map[string]string{
 	".ico":   "image/x-icon",
 	".txt":   "text/plain",
 	".pdf":   "application/pdf",
+	".wasm":  "application/wasm",
+	".md":    "text/markdown",
 }
 
 // collectUploadFiles validates the build output directory and gathers
@@ -73,8 +71,6 @@ func collectUploadFiles(root string) ([]uploadFile, error) {
 		return nil, fmt.Errorf("output path %s is not a directory", root)
 	}
 
-	var totalSize int64
-	var errBundleTooLarge = errors.New("bundle exceeds upload guardrail")
 	var files []uploadFile
 	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
@@ -91,20 +87,9 @@ func collectUploadFiles(root string) ([]uploadFile, error) {
 		if err != nil {
 			return err
 		}
-		info, err := d.Info()
-		if err != nil {
-			return err
-		}
-		totalSize += info.Size()
-		if totalSize > maxBundleBytes {
-			return errBundleTooLarge
-		}
 		files = append(files, uploadFile{relPath: filepath.ToSlash(rel), absPath: path})
 		return nil
 	})
-	if errors.Is(err, errBundleTooLarge) {
-		return nil, fmt.Errorf("output directory %s exceeds the %d MB upload guardrail", root, maxBundleBytes>>20)
-	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to read output directory %s: %w", root, err)
 	}
@@ -203,7 +188,7 @@ func mapUMSUploadError(status int, body []byte, alias string) error {
 	case http.StatusForbidden:
 		return fmt.Errorf("not authorized to upload UI plugin assets (requires the idn:plugins-ui:update right): %s", message)
 	case http.StatusNotFound:
-		return fmt.Errorf("plugin instance for alias %q not found, or the UI plugins feature is not enabled for this tenant: %s", alias, message)
+		return fmt.Errorf("plugin instance for alias %q not found, the UI plugins feature is not enabled, or the idn:ui-plugins-author product license is not provisioned for this tenant: %s", alias, message)
 	case http.StatusRequestEntityTooLarge:
 		return fmt.Errorf("asset bundle for plugin %q exceeds the maximum allowed size: %s", alias, message)
 	default:

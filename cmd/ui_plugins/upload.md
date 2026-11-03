@@ -29,10 +29,10 @@ On success a short confirmation is printed. Backend and packaging failures are s
 
 ```bash
 # Upload the compiled assets from sp-ui-plugin.json's build.outDir
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins upload
+sail ui-plugins upload
 
 # Upload from an explicit directory, overriding build.outDir
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins upload --out-dir ./dist/my-app
+sail ui-plugins upload --out-dir ./dist/my-app
 ```
 
 ====

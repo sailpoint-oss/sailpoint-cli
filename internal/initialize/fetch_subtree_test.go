@@ -157,6 +157,99 @@ func TestExtractSubtree_RejectsZipSlip(t *testing.T) {
 	}
 }
 
+func TestExtractSubtrees_RoutesTwoSubtrees(t *testing.T) {
+	workdir := chdirTemp(t)
+	entries := append(starterFixtureEntries(),
+		tarEntry{name: ".agents", dir: true},
+		tarEntry{name: ".agents/skills", dir: true},
+		tarEntry{name: ".agents/skills/agnostic", dir: true},
+		tarEntry{name: ".agents/skills/agnostic/SKILL.md", body: "root skill"},
+	)
+	dest := "proj"
+
+	counts, err := ExtractSubtrees(bytes.NewReader(buildTemplatesTarball(entries)), dest, []SubtreeMapping{
+		{Subdir: "angular/starter", Dest: "."},
+		{Subdir: ".agents/skills", Dest: ".agents/skills"},
+	})
+	if err != nil {
+		t.Fatalf("ExtractSubtrees: %v", err)
+	}
+
+	root := filepath.Join(workdir, dest)
+	// Starter subtree lands at the destination root, prefix stripped.
+	mustExist(t, filepath.Join(root, "package.json"))
+	mustExist(t, filepath.Join(root, "src", "app", "app.ts"))
+	// Root skills land under .agents/skills, not at the root.
+	mustExist(t, filepath.Join(root, ".agents", "skills", "agnostic", "SKILL.md"))
+	// Repo-root siblings outside both mappings are ignored.
+	mustNotExist(t, filepath.Join(root, "README.md"))
+
+	if counts["angular/starter"] == 0 {
+		t.Error("starter mapping should have matched entries")
+	}
+	if counts[".agents/skills"] == 0 {
+		t.Error("skills mapping should have matched entries")
+	}
+}
+
+func TestExtractSubtrees_AbsentMappingIsZeroNotError(t *testing.T) {
+	chdirTemp(t)
+	counts, err := ExtractSubtrees(bytes.NewReader(buildTemplatesTarball(starterFixtureEntries())), "proj", []SubtreeMapping{
+		{Subdir: ".agents/skills", Dest: ".agents/skills"},
+	})
+	if err != nil {
+		t.Fatalf("absent subtree must not error: %v", err)
+	}
+	if counts[".agents/skills"] != 0 {
+		t.Errorf("absent subtree count = %d, want 0", counts[".agents/skills"])
+	}
+}
+
+func TestExtractSubtrees_MergeIntoExistingDest(t *testing.T) {
+	workdir := chdirTemp(t)
+	dest := "proj"
+	// Pre-create the destination with an unrelated file: ExtractSubtrees must
+	// merge in place rather than refuse an existing directory.
+	if err := os.MkdirAll(filepath.Join(workdir, dest), 0755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(workdir, dest, "keep.txt"), []byte("keep"), 0644); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+
+	entries := []tarEntry{
+		{name: ".agents", dir: true},
+		{name: ".agents/skills", dir: true},
+		{name: ".agents/skills/x", dir: true},
+		{name: ".agents/skills/x/SKILL.md", body: "x"},
+	}
+	if _, err := ExtractSubtrees(bytes.NewReader(buildTemplatesTarball(entries)), dest, []SubtreeMapping{
+		{Subdir: ".agents/skills", Dest: ".agents/skills"},
+	}); err != nil {
+		t.Fatalf("ExtractSubtrees into existing dest: %v", err)
+	}
+	mustExist(t, filepath.Join(workdir, dest, "keep.txt"))
+	mustExist(t, filepath.Join(workdir, dest, ".agents", "skills", "x", "SKILL.md"))
+}
+
+func TestExtractSubtrees_RejectsZipSlip(t *testing.T) {
+	workdir := chdirTemp(t)
+	entries := []tarEntry{
+		{name: ".agents", dir: true},
+		{name: ".agents/skills", dir: true},
+		{name: ".agents/skills/../../../evil.txt", body: "must not be written"},
+	}
+	_, err := ExtractSubtrees(bytes.NewReader(buildTemplatesTarball(entries)), "proj", []SubtreeMapping{
+		{Subdir: ".agents/skills", Dest: ".agents/skills"},
+	})
+	if err == nil || !contains(err.Error(), "unsafe path") {
+		t.Fatalf("expected unsafe-path error, got %v", err)
+	}
+	if _, statErr := os.Stat(filepath.Join(workdir, "evil.txt")); statErr == nil {
+		t.Fatal("Zip Slip must not create a file outside the destination")
+	}
+}
+
 func mustExist(t *testing.T, path string) {
 	t.Helper()
 	if _, err := os.Stat(path); err != nil {

@@ -14,10 +14,10 @@ By default a table is printed; an empty tenant prints `No plugin instances found
 
 ```bash
 # List all plugin instances in the current tenant
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins list
+sail ui-plugins list
 
 # Print the raw list as JSON
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins list --json
+sail ui-plugins list --json
 ```
 
 ====

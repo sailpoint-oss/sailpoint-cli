@@ -23,13 +23,13 @@ On success a confirmation with the enabled plugin ID (and alias, when known) is 
 
 ```bash
 # Enable by alias
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins enable access-request-plugin
+sail ui-plugins enable access-request-plugin
 
 # Enable by plugin ID
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins enable 2c918085-7a1e-1b2c-817a-1e1b2c000000
+sail ui-plugins enable 2c918085-7a1e-1b2c-817a-1e1b2c000000
 
 # Print the enabled instance as JSON (scripting)
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins enable access-request-plugin --json
+sail ui-plugins enable access-request-plugin --json
 ```
 
 ====

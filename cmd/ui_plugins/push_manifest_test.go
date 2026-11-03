@@ -394,7 +394,7 @@ func TestRenderUpdateSuccess(t *testing.T) {
 	})
 }
 
-// --- command wiring (cobra + experimental gate), hermetic: fails at validation
+// --- command wiring (cobra), hermetic: fails at validation
 // before any backend call, so no client/network is exercised ---
 
 // Both the canonical name and the update alias must resolve to the same command.
@@ -403,7 +403,6 @@ func TestRenderUpdateSuccess(t *testing.T) {
 func TestPushManifestCommand_InvalidManifestSurfacesValidationError(t *testing.T) {
 	for _, name := range []string{"push-manifest", "update"} {
 		t.Run(name, func(t *testing.T) {
-			t.Setenv(experimentalUIPluginsEnvVar, "1")
 			cwd := t.TempDir()
 			writeManifestAtPath(t, filepath.Join(cwd, manifestFileName), `{
   "version": 1,

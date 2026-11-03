@@ -1,6 +1,6 @@
 # Connectors
 
-The `connectors` command is a CLI interface for the SaaS Connectivity Platform.  This CLI is the best way to create and manage SaaS connectors within your Identity Security Cloud tenant.  Please [read our saas connectivity guide](https://developer.sailpoint.com/docs/connectivity/saas-connectivity) for more information.
+The `connectors` command is a CLI interface for the SaaS Connectivity Platform.  This CLI is the best way to create and manage SaaS connectors within your SailPoint Identity Security tenant.  Please [read our saas connectivity guide](https://developer.sailpoint.com/docs/connectivity/saas-connectivity) for more information.
 
 - [Init project](#init-project)
 - [Create connector](#create-connector)
@@ -24,7 +24,7 @@ This command will create a folder in your current working directory with the sam
 
 ## Create connector
 
-To create a connector entry in your Identity Security Cloud tenant, run the following command.
+To create a connector entry in your SailPoint Identity Security tenant, run the following command.
 
 ```shell
 sail conn create [connectorAlias]
@@ -34,7 +34,7 @@ This will register your connector and give it a unique ID.  See [creating a conn
 
 ## Upload connector
 
-To upload a connector to your Identity Security Cloud tenant, package the connector into a zip file by running `npm run pack-zip` in the project directory and then run the following command.
+To upload a connector to your SailPoint Identity Security tenant, package the connector into a zip file by running `npm run pack-zip` in the project directory and then run the following command.
 
 ```shell
 sail conn upload -c [connectorID | connectorAlias] -f connector.zip
@@ -56,7 +56,7 @@ The entitlement commands require an additional flag (`-t [entitlementType]`).  F
 sail conn invoke entitlement-list -t [entitlementType] -c [connectorID | connectorAlias] -p [config.json] -v [version]
 ```
 
-See [testing your connection in Identity Security Cloud](https://developer.sailpoint.com/docs/connectivity/saas-connectivity/test-build-deploy/#test-your-connector-in-identity-security-cloud) for more information on invoking commands.
+See [testing your connection in SailPoint Identity Security](https://developer.sailpoint.com/docs/connectivity/saas-connectivity/test-build-deploy/#test-your-connector-in-identity-security-cloud) for more information on invoking commands.
 
 ## List connectors
 
@@ -84,7 +84,7 @@ sail conn delete -c [connectorID]
 
 ## Manage tags
 
-Tags allow you to create multiple instances of your connector that can be used in Identity Security Cloud.  The `latest` tag is created by default and is the primary instance, typically used for production purposes.  Tags are similar to branches in a version control system, like git or CVS.  You can create a tag for actively developing the connector, or for any other purpose you see fit.
+Tags allow you to create multiple instances of your connector that can be used in SailPoint Identity Security.  The `latest` tag is created by default and is the primary instance, typically used for production purposes.  Tags are similar to branches in a version control system, like git or CVS.  You can create a tag for actively developing the connector, or for any other purpose you see fit.
 
 A common pattern is to create a `development` tag on a connector from a specific version, like the latest version.
 
@@ -98,7 +98,7 @@ As the connector is developed and the version number increases, update the `deve
 sail conn tags update -c [connectorID | connectorAlias] -n [tagName] -v [version]
 ```
 
-You can test the connector in Identity Security Cloud by selecting the instance of your connector with the `development` tag, which will use whatever version you point to with the update command.
+You can test the connector in SailPoint Identity Security by selecting the instance of your connector with the `development` tag, which will use whatever version you point to with the update command.
 
 To see all of the tags of the connector and what version they point to, run the following command.
 

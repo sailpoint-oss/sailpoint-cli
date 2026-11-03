@@ -3,6 +3,8 @@ package config
 import (
 	"encoding/base64"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 )
@@ -218,5 +220,62 @@ func TestPromptForPasteCodeTrimsInput(t *testing.T) {
 	}
 	if got != "sp1.abc" {
 		t.Fatalf("promptForPasteCode() = %q, want %q", got, "sp1.abc")
+	}
+}
+
+// withTenantServer starts a TLS server that serves /oauth/info with the given
+// status and body, and points oauthHTTPClient at it for the test.
+func withTenantServer(t *testing.T, status int, body string) string {
+	t.Helper()
+
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/oauth/info" {
+			http.NotFound(w, r)
+			return
+		}
+		w.WriteHeader(status)
+		_, _ = w.Write([]byte(body))
+	}))
+	t.Cleanup(server.Close)
+
+	previous := oauthHTTPClient
+	oauthHTTPClient = server.Client()
+	t.Cleanup(func() { oauthHTTPClient = previous })
+
+	return server.URL
+}
+
+func TestCheckTenantAPIAcceptsTenant(t *testing.T) {
+	baseURL := withTenantServer(t, http.StatusOK, `{"authorizeEndpoint":"https://acme.example.com/oauth/authorize"}`)
+
+	if err := CheckTenantAPI(baseURL + "/"); err != nil {
+		t.Fatalf("CheckTenantAPI() error = %v", err)
+	}
+}
+
+func TestCheckTenantAPIRejectsNonTenant(t *testing.T) {
+	cases := map[string]struct {
+		status int
+		body   string
+	}{
+		"not found":        {http.StatusNotFound, "not found"},
+		"missing endpoint": {http.StatusOK, `{}`},
+		"not json":         {http.StatusOK, "<html></html>"},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			baseURL := withTenantServer(t, tc.status, tc.body)
+
+			if err := CheckTenantAPI(baseURL); err == nil {
+				t.Fatal("CheckTenantAPI() error = nil, want error")
+			}
+		})
+	}
+}
+
+func TestCheckTenantAPIRejectsHTTP(t *testing.T) {
+	if err := CheckTenantAPI("http://acme.api.identitynow.com"); err == nil {
+		t.Fatal("CheckTenantAPI() error = nil, want error")
 	}
 }

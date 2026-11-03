@@ -186,7 +186,7 @@ func mapUMSUpdateError(status int, body []byte, alias string) error {
 	case http.StatusForbidden:
 		return fmt.Errorf("not authorized to update UI plugins (requires the idn:plugins-ui:update right): %s", message)
 	case http.StatusNotFound:
-		return fmt.Errorf("plugin instance for alias %q not found, or the UI plugins feature is not enabled for this tenant: %s", alias, message)
+		return fmt.Errorf("plugin instance for alias %q not found, the UI plugins feature is not enabled, or the idn:ui-plugins or idn:ui-plugins-author product license is not provisioned for this tenant: %s", alias, message)
 	case http.StatusConflict:
 		return fmt.Errorf("alias conflict updating plugin instance for alias %q: %s", alias, message)
 	default:

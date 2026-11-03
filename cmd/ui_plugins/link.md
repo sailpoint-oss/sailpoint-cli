@@ -36,10 +36,10 @@ The developer URL is printed to stdout; a short confirmation of the linked port 
 
 ```bash
 # Link using the port from sp-ui-plugin.json's build.port (or the 4200 default)
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins link
+sail ui-plugins link
 
 # Link an explicit port, overriding build.port
-SAIL_EXPERIMENTAL_UI_PLUGINS=1 sail ui-plugins link --port 4300
+sail ui-plugins link --port 4300
 ```
 
 ====

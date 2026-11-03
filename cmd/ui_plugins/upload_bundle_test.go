@@ -90,25 +90,6 @@ func TestCollectUploadFiles(t *testing.T) {
 			t.Fatalf("dotfiles should be skipped, got: %v", got)
 		}
 	})
-
-	t.Run("exceeds size guardrail", func(t *testing.T) {
-		dir := t.TempDir()
-		f, err := os.Create(filepath.Join(dir, "big.js"))
-		if err != nil {
-			t.Fatal(err)
-		}
-		// Sparse file: sets the reported size without writing the bytes.
-		if err := f.Truncate(maxBundleBytes + 1); err != nil {
-			f.Close()
-			t.Fatal(err)
-		}
-		f.Close()
-
-		_, err = collectUploadFiles(dir)
-		if err == nil || !strings.Contains(err.Error(), "guardrail") {
-			t.Fatalf("expected size-guardrail error, got: %v", err)
-		}
-	})
 }
 
 func TestContentTypeForPath(t *testing.T) {
