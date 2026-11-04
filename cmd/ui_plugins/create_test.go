@@ -475,6 +475,86 @@ func TestRunCreate_DryRunAppliesOverrides(t *testing.T) {
 	}
 }
 
+// --- iframeSandbox payload inclusion / omission (POST body) ---
+
+func TestRunCreate_IframeSandboxPayload(t *testing.T) {
+	absent := testManifestJSON // no iframeSandbox key
+	empty := `{
+  "version": 1,
+  "manifest": {
+    "alias": "access-request-plugin",
+    "name": {"en-US": "Access Request"},
+    "description": {"en-US": "Plugin description"},
+    "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
+    "iframeAllow": {},
+    "iframeSandbox": []
+  }
+}`
+	list := `{
+  "version": 1,
+  "manifest": {
+    "alias": "access-request-plugin",
+    "name": {"en-US": "Access Request"},
+    "description": {"en-US": "Plugin description"},
+    "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
+    "iframeAllow": {},
+    "iframeSandbox": ["allow-popups", "allow-modals"]
+  }
+}`
+
+	assertSent := func(t *testing.T, manifest string, check func(t *testing.T, body string)) {
+		t.Helper()
+		fc := &fakeClient{status: http.StatusCreated, body: `{"pluginInstanceId":"pi-123","alias":"access-request-plugin"}`}
+		var out bytes.Buffer
+		if err := runCreate(context.Background(), fc, tempManifestPath(t, manifest), &out, io.Discard, stubCurrentUser, createConfig{}); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if fc.postCalls != 1 {
+			t.Fatalf("expected one POST, got %d", fc.postCalls)
+		}
+		check(t, string(fc.gotBody))
+	}
+
+	t.Run("absent key is omitted from payload", func(t *testing.T) {
+		assertSent(t, absent, func(t *testing.T, body string) {
+			if strings.Contains(body, "iframeSandbox") {
+				t.Fatalf("absent iframeSandbox must not appear in payload, got: %s", body)
+			}
+		})
+	})
+
+	t.Run("present empty array is sent as []", func(t *testing.T) {
+		// The POST body is the manifest object marshalled directly (no "manifest"
+		// wrapper), so iframeSandbox sits at the top level.
+		assertSent(t, empty, func(t *testing.T, body string) {
+			var sent struct {
+				IframeSandbox *[]string `json:"iframeSandbox"`
+			}
+			if err := json.Unmarshal([]byte(body), &sent); err != nil {
+				t.Fatalf("payload is not valid JSON: %v\n%s", err, body)
+			}
+			if sent.IframeSandbox == nil {
+				t.Fatalf("present empty iframeSandbox must be sent (non-null), got: %s", body)
+			}
+			if len(*sent.IframeSandbox) != 0 {
+				t.Fatalf("expected empty array, got: %+v", *sent.IframeSandbox)
+			}
+		})
+	})
+
+	t.Run("present list is sent verbatim", func(t *testing.T) {
+		assertSent(t, list, func(t *testing.T, body string) {
+			if !strings.Contains(body, `"allow-popups"`) || !strings.Contains(body, `"allow-modals"`) {
+				t.Fatalf("expected both tokens in payload, got: %s", body)
+			}
+		})
+	})
+}
+
 // --- pure helpers ---
 
 func TestResolveRestrictToUsers(t *testing.T) {

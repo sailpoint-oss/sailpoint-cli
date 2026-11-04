@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -13,6 +14,13 @@ const (
 	manifestFileName  = "sp-ui-plugin.json"
 	supportedVersion1 = 1
 )
+
+// iframeSandbox tokens are lowercase ASCII words of letters and digits joined by
+// single hyphens (e.g. allow-popups, allow-popups-to-escape-sandbox). The pattern
+// rejects uppercase, underscores, empty strings, and leading/trailing/double
+// hyphens. Membership in the accepted set is enforced by UMS, not here, so a new
+// token needs only a UMS change.
+var iframeSandboxTokenPattern = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
 
 // loadAndValidateWorkspaceManifest is the shared full-validation entrypoint for
 // ui-plugins commands. It performs strict parse + semantic validation.
@@ -93,6 +101,17 @@ func validateWorkspaceManifest(cfg *uiPluginWorkspaceConfig) error {
 	}
 	if manifest.IframeAllow == nil {
 		return fmt.Errorf("manifest.iframeAllow is required (use an empty object {} if the plugin declares no iframe-allow directives)")
+	}
+
+	// iframeSandbox is optional: a nil pointer (absent) and an empty array both
+	// carry no tokens. When present, every token must be well-formed; the CLI does
+	// not check membership (UMS does).
+	if manifest.IframeSandbox != nil {
+		for i, token := range *manifest.IframeSandbox {
+			if !iframeSandboxTokenPattern.MatchString(token) {
+				return fmt.Errorf("manifest.iframeSandbox[%d] %q is not a valid sandbox token (lowercase letters, digits, and hyphens, with a hyphen only between characters)", i, token)
+			}
+		}
 	}
 
 	if cfg.Build != nil {

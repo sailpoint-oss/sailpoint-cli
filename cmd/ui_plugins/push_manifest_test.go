@@ -3,6 +3,7 @@ package ui_plugins
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -68,6 +69,60 @@ func TestRunUpdate_SendsFullManifestNotBuildSection(t *testing.T) {
 	if strings.Contains(body, "outDir") || strings.Contains(body, "8080") {
 		t.Fatalf("local build section must never be sent, got: %s", body)
 	}
+}
+
+func TestRunUpdate_IframeSandboxClearAndOmit(t *testing.T) {
+	absent := testManifestJSON // no iframeSandbox key → stored value left unchanged
+	clear := `{
+  "version": 1,
+  "manifest": {
+    "alias": "access-request-plugin",
+    "name": {"en-US": "Access Request"},
+    "description": {"en-US": "Plugin description"},
+    "slots": [{"slotId": "full-page"}],
+    "contentSecurityPolicies": {},
+    "permissionPolicy": {},
+    "iframeAllow": {},
+    "iframeSandbox": []
+  }
+}`
+
+	patchBodyFor := func(t *testing.T, manifest string) string {
+		t.Helper()
+		c := &seqClient{
+			getQueue:  []stubResp{{status: http.StatusOK, body: resolveOKBody}},
+			patchResp: stubResp{status: http.StatusOK, body: `{}`},
+		}
+		var out bytes.Buffer
+		if err := runUpdate(context.Background(), c, tempManifestPath(t, manifest), &out, io.Discard, stubCurrentUser, updateConfig{}); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		return string(c.patchBody)
+	}
+
+	t.Run("absent key is omitted (leaves stored value unchanged)", func(t *testing.T) {
+		if body := patchBodyFor(t, absent); strings.Contains(body, "iframeSandbox") {
+			t.Fatalf("absent iframeSandbox must not appear in PATCH body, got: %s", body)
+		}
+	})
+
+	t.Run("present empty array is sent to clear grants", func(t *testing.T) {
+		// The PATCH body is the manifest object marshalled directly (no "manifest"
+		// wrapper), so iframeSandbox sits at the top level.
+		body := patchBodyFor(t, clear)
+		var sent struct {
+			IframeSandbox *[]string `json:"iframeSandbox"`
+		}
+		if err := json.Unmarshal([]byte(body), &sent); err != nil {
+			t.Fatalf("PATCH body is not valid JSON: %v\n%s", err, body)
+		}
+		if sent.IframeSandbox == nil {
+			t.Fatalf("present empty iframeSandbox must be sent (non-null) to clear, got: %s", body)
+		}
+		if len(*sent.IframeSandbox) != 0 {
+			t.Fatalf("expected empty array, got: %+v", *sent.IframeSandbox)
+		}
+	})
 }
 
 func TestRunUpdate_JSONPassthrough(t *testing.T) {
