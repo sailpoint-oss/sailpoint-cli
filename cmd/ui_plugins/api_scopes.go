@@ -15,3 +15,13 @@ func UpdateManifestAPIScopes(path string, apiScopes []string) error {
 	cfg.Manifest.APIScopes = apiScopes
 	return writeWorkspaceManifest(path, cfg)
 }
+
+// ReadManifestAPIScopes returns manifest.apiScopes from the workspace manifest
+// at path. The file is validated first.
+func ReadManifestAPIScopes(path string) ([]string, error) {
+	cfg, err := loadAndValidateWorkspaceManifest(path)
+	if err != nil {
+		return nil, err
+	}
+	return cfg.Manifest.APIScopes, nil
+}

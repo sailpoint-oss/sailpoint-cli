@@ -27,10 +27,16 @@ func ParseAuthType(s string) (AuthType, error) {
 
 // Operation status values reported in OperationResult.Status.
 const (
-	StatusScoped      = "scoped"
-	StatusNoScope     = "no-scope"
-	StatusUnsupported = "unsupported"
+	StatusScoped  = "scoped"
+	StatusNoScope = "no-scope"
+	// StatusFallback is an operation that lists no scope for the auth type:
+	// the auth type is null or an empty list, and the operation is not
+	// public. It gets FallbackScope, and the call might not work.
+	StatusFallback = "fallback"
 )
+
+// FallbackScope is used when the API spec lists no scope for an operation.
+const FallbackScope = "sp:scopes:all"
 
 // OperationResult is the scope decision for one distinct operation.
 type OperationResult struct {
@@ -63,6 +69,8 @@ type Result struct {
 // is listed, else the first scope in the list.
 func Resolve(calls []Call, auth AuthType) ([]OperationResult, []string, []string) {
 	byID := map[string]*OperationResult{}
+	// byAuth keeps the scope list from the spec, to tell null from [].
+	byAuth := map[string][]string{}
 	var ids []string
 	for _, c := range calls {
 		r, ok := byID[c.OperationID]
@@ -76,14 +84,16 @@ func Resolve(calls []Call, auth AuthType) ([]OperationResult, []string, []string
 				DefaultScope: c.Operation.DefaultScope,
 			}
 			switch {
-			case alts == nil:
-				r.Status = StatusUnsupported
-			case len(alts) == 0:
+			case c.Operation.Public:
 				r.Status = StatusNoScope
+			case len(alts) == 0:
+				r.Status = StatusFallback
+				r.Alternatives = []string{FallbackScope}
 			default:
 				r.Status = StatusScoped
 			}
 			byID[c.OperationID] = r
+			byAuth[c.OperationID] = alts
 			ids = append(ids, c.OperationID)
 		}
 		r.Calls++
@@ -103,11 +113,7 @@ func Resolve(calls []Call, auth AuthType) ([]OperationResult, []string, []string
 	var warnings []string
 	for _, id := range order {
 		r := byID[id]
-		switch r.Status {
-		case StatusUnsupported:
-			warnings = append(warnings, fmt.Sprintf("%s cannot be called with %s auth", id, auth))
-			continue
-		case StatusNoScope:
+		if r.Status == StatusNoScope {
 			continue
 		}
 		r.Chosen = pick(r.Alternatives, chosen)
@@ -115,7 +121,9 @@ func Resolve(calls []Call, auth AuthType) ([]OperationResult, []string, []string
 			chosen[r.Chosen] = true
 			required = append(required, r.Chosen)
 		}
-		if r.DefaultScope {
+		if r.Status == StatusFallback {
+			warnings = append(warnings, fallbackWarning(id, auth, byAuth[id]))
+		} else if r.DefaultScope {
 			warnings = append(warnings, fmt.Sprintf("%s documents no scope and falls back to %s", id, r.Chosen))
 		}
 	}
@@ -128,6 +136,18 @@ func Resolve(calls []Call, auth AuthType) ([]OperationResult, []string, []string
 	sort.Strings(required)
 	sort.Strings(warnings)
 	return results, required, warnings
+}
+
+func fallbackWarning(id string, auth AuthType, alts []string) string {
+	reason := fmt.Sprintf("does not allow %s auth (%sAuth is null)", auth, auth)
+	if alts != nil {
+		reason = fmt.Sprintf("lists no scope for %s auth (%sAuth is [])", auth, auth)
+	}
+	token := "a user token"
+	if auth == AuthApplication {
+		token = "an application token"
+	}
+	return fmt.Sprintf("%s %s in the API spec. %s was added, but calls with %s might not work", id, reason, FallbackScope, token)
 }
 
 func pick(alts []string, chosen map[string]bool) string {

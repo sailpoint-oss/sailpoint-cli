@@ -79,10 +79,10 @@ func TestRunAnalyzeScopesOnly(t *testing.T) {
 	if err := runAnalyze(opts, &out, &errOut); err != nil {
 		t.Fatal(err)
 	}
-	if got := out.String(); got != "idn:accounts:read\n" {
+	if got := out.String(); got != "idn:accounts:read,sp:scopes:all\n" {
 		t.Errorf("application output = %q", got)
 	}
-	if !strings.Contains(errOut.String(), "listIdentitiesV1 cannot be called with application auth") {
+	if !strings.Contains(errOut.String(), "listIdentitiesV1 does not allow application auth (applicationAuth is null) in the API spec. sp:scopes:all was added, but calls with an application token might not work") {
 		t.Errorf("stderr = %q", errOut.String())
 	}
 }
@@ -164,5 +164,20 @@ func TestRunAnalyzeBadAuthType(t *testing.T) {
 	opts := analyzeOptions{path: t.TempDir(), authType: "service"}
 	if err := runAnalyze(opts, &bytes.Buffer{}, &bytes.Buffer{}); err == nil {
 		t.Error("expected an error for an invalid auth type")
+	}
+}
+
+func TestDisplayPath(t *testing.T) {
+	opts := analyzeOptions{path: "testdata/app"}
+	if got := displayPath(opts, "src/a.ts"); got != "src/a.ts" {
+		t.Errorf("without --path: got %q, want %q", got, "src/a.ts")
+	}
+	opts.absolutePaths = true
+	want, err := filepath.Abs(filepath.Join("testdata", "app", "src", "a.ts"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := displayPath(opts, "src/a.ts"); got != want {
+		t.Errorf("with --path: got %q, want %q", got, want)
 	}
 }

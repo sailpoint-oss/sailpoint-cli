@@ -3,8 +3,10 @@ package scopes
 import (
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -14,6 +16,7 @@ import (
 	scopeanalysis "github.com/sailpoint-oss/sailpoint-cli/internal/scopes"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 //go:embed analyze.md
@@ -25,6 +28,16 @@ type analyzeOptions struct {
 	jsonOutput     bool
 	scopesOnly     bool
 	updateManifest string
+	// absolutePaths prints table locations as absolute paths. It is set when
+	// --path is passed.
+	absolutePaths bool
+	noInteractive bool
+	// interactive runs the walkthrough. The flags that were passed skip their
+	// questions.
+	interactive bool
+	pathSet     bool
+	authTypeSet bool
+	prompt      prompter
 	// manifests overrides the scope data in tests.
 	manifests map[scopeanalysis.Language]*scopeanalysis.Manifest
 	locate    func(scopeanalysis.Language, []string) (string, bool)
@@ -41,22 +54,40 @@ func newAnalyzeCommand() *cobra.Command {
 		Example: help.Example,
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			opts.pathSet = cmd.Flags().Changed("path")
+			opts.authTypeSet = cmd.Flags().Changed("auth-type")
+			opts.absolutePaths = opts.pathSet
+			opts.interactive = !opts.noInteractive && !opts.jsonOutput && !opts.scopesOnly &&
+				term.IsTerminal(int(os.Stdin.Fd())) && term.IsTerminal(int(os.Stdout.Fd()))
+			if opts.interactive {
+				opts.prompt = newTerminalPrompter(cmd.ErrOrStderr())
+			}
 			return runAnalyze(opts, cmd.OutOrStdout(), cmd.ErrOrStderr())
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.path, "path", "p", ".", "Directory to scan")
+	cmd.Flags().StringVarP(&opts.path, "path", "p", ".", "Directory to scan. When set, the table shows absolute file paths")
 	cmd.Flags().StringVar(&opts.authType, "auth-type", string(scopeanalysis.AuthUser), "Token type to report scopes for: user or application")
 	cmd.Flags().BoolVar(&opts.jsonOutput, "json", false, "Print the full report as JSON")
 	cmd.Flags().BoolVar(&opts.scopesOnly, "scopes-only", false, "Print only the required scopes as a comma-separated list")
 	cmd.Flags().StringVar(&opts.updateManifest, "update-manifest", "", "Write the required scopes into apiScopes of a UI plugin manifest (default: "+ui_plugins.ManifestFileName+" in --path)")
 	cmd.Flags().Lookup("update-manifest").NoOptDefVal = ui_plugins.ManifestFileName
+	cmd.Flags().BoolVar(&opts.noInteractive, "no-interactive", false, "Do not ask questions. Use the flags and their defaults")
 	cmd.MarkFlagsMutuallyExclusive("json", "scopes-only")
 
 	return cmd
 }
 
 func runAnalyze(opts analyzeOptions, out, errOut io.Writer) error {
+	if opts.interactive {
+		if err := askAuthType(opts.prompt, &opts); err != nil {
+			return cancelOr(err, errOut)
+		}
+		if err := askFolder(opts.prompt, &opts, errOut); err != nil {
+			return cancelOr(err, errOut)
+		}
+	}
+
 	auth, err := scopeanalysis.ParseAuthType(opts.authType)
 	if err != nil {
 		return err
@@ -85,16 +116,39 @@ func runAnalyze(opts analyzeOptions, out, errOut io.Writer) error {
 			_, _ = fmt.Fprintf(errOut, "Warning: %s\n", w)
 		}
 	default:
-		renderReport(out, res)
+		renderReport(out, res, opts)
 	}
 
 	if opts.updateManifest != "" {
 		return updateManifest(opts, res, out, errOut)
 	}
-	return nil
+	return cancelOr(offerManifestUpdate(opts, res, errOut), errOut)
 }
 
-func renderReport(out io.Writer, res *scopeanalysis.Result) {
+// cancelOr turns errCancelled into a message and a clean exit.
+func cancelOr(err error, errOut io.Writer) error {
+	if errors.Is(err, errCancelled) {
+		_, _ = fmt.Fprintln(errOut, "Cancelled.")
+		return nil
+	}
+	return err
+}
+
+// displayPath returns file, which is relative to the scan root, as it is
+// shown in the table. With --path it is absolute, so that a terminal can open
+// it with a click from any directory.
+func displayPath(opts analyzeOptions, file string) string {
+	if !opts.absolutePaths {
+		return file
+	}
+	abs, err := filepath.Abs(filepath.Join(opts.path, filepath.FromSlash(file)))
+	if err != nil {
+		return file
+	}
+	return abs
+}
+
+func renderReport(out io.Writer, res *scopeanalysis.Result, opts analyzeOptions) {
 	if len(res.Calls) == 0 {
 		_, _ = fmt.Fprintln(out, "No SailPoint SDK calls found.")
 		return
@@ -107,7 +161,7 @@ func renderReport(out io.Writer, res *scopeanalysis.Result) {
 	rows := make([][]string, 0, len(res.Calls))
 	for _, c := range res.Calls {
 		rows = append(rows, []string{
-			c.File + ":" + strconv.Itoa(c.Line),
+			displayPath(opts, c.File) + ":" + strconv.Itoa(c.Line),
 			string(c.Language),
 			c.OperationID,
 			describeScopes(byID[c.OperationID]),
@@ -138,8 +192,8 @@ func renderReport(out io.Writer, res *scopeanalysis.Result) {
 
 func describeScopes(op scopeanalysis.OperationResult) string {
 	switch op.Status {
-	case scopeanalysis.StatusUnsupported:
-		return "(not available for this auth type)"
+	case scopeanalysis.StatusFallback:
+		return scopeanalysis.FallbackScope + " (no scope listed, might not work)"
 	case scopeanalysis.StatusNoScope:
 		return "(no scope needed)"
 	}

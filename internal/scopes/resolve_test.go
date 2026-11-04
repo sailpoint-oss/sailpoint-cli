@@ -2,6 +2,7 @@ package scopes
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -40,29 +41,46 @@ func TestResolveSpecialCases(t *testing.T) {
 		call("publicV1", Operation{UserAuth: []string{}, ApplicationAuth: []string{}, Public: true}),
 		call("undocumentedV1", Operation{UserAuth: []string{"sp:scopes:all"}, DefaultScope: true}),
 		call("userOnlyV1", Operation{UserAuth: []string{"idn:identity:read"}}),
+		call("noScopeV1", Operation{UserAuth: []string{}}),
 	}
 
 	ops, required, warnings := Resolve(calls, AuthUser)
 	if !reflect.DeepEqual(required, []string{"idn:identity:read", "sp:scopes:all"}) {
 		t.Errorf("user required = %v", required)
 	}
-	if ops[0].OperationID != "publicV1" || ops[0].Status != StatusNoScope {
-		t.Errorf("public result = %+v", ops[0])
+	if ops[1].OperationID != "publicV1" || ops[1].Status != StatusNoScope {
+		t.Errorf("public result = %+v", ops[1])
 	}
-	if len(warnings) != 1 {
-		t.Errorf("user warnings = %v, want one default-scope warning", warnings)
+	if ops[0].OperationID != "noScopeV1" || ops[0].Status != StatusFallback || ops[0].Chosen != FallbackScope {
+		t.Errorf("empty userAuth result = %+v", ops[0])
+	}
+	if len(warnings) != 2 {
+		t.Errorf("user warnings = %v, want default-scope and fallback warnings", warnings)
+	}
+	if !containsText(warnings, "noScopeV1 lists no scope for user auth (userAuth is [])") {
+		t.Errorf("user warnings = %v, want an empty userAuth warning", warnings)
 	}
 
 	ops, required, warnings = Resolve(calls, AuthApplication)
-	if len(required) != 0 {
-		t.Errorf("application required = %v, want none", required)
+	if !reflect.DeepEqual(required, []string{"sp:scopes:all"}) {
+		t.Errorf("application required = %v, want [sp:scopes:all]", required)
 	}
-	if ops[2].Status != StatusUnsupported {
-		t.Errorf("userOnlyV1 status = %q, want unsupported", ops[2].Status)
+	if ops[3].Status != StatusFallback {
+		t.Errorf("userOnlyV1 status = %q, want fallback", ops[3].Status)
 	}
-	if len(warnings) != 2 {
-		t.Errorf("application warnings = %v, want two unsupported warnings", warnings)
+	if !containsText(warnings, "userOnlyV1 does not allow application auth (applicationAuth is null)") ||
+		!containsText(warnings, "might not work") {
+		t.Errorf("application warnings = %v", warnings)
 	}
+}
+
+func containsText(list []string, text string) bool {
+	for _, s := range list {
+		if strings.Contains(s, text) {
+			return true
+		}
+	}
+	return false
 }
 
 func TestSnapshotLoads(t *testing.T) {
