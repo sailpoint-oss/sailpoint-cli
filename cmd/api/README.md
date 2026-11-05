@@ -79,7 +79,8 @@ sail api delete /beta/accounts/123
 
 ## Common Options
 
-All commands support the following options:
+The legacy get/post/put/patch/delete commands support the following options;
+the stateless request command's separate options are described above:
 
 - `--header`, `-H`: Set HTTP headers (can be used multiple times, format: 'Key: Value')
 - `--output`, `-o`: Output file to save the response (if not specified, prints to stdout)
