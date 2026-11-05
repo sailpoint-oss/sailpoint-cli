@@ -98,6 +98,12 @@ The request body file is streamed. Credentials and tokens never enter argv.`,
 			}
 			err = json.NewDecoder(io.LimitReader(res.Body, 1<<20)).Decode(&token)
 			res.Body.Close()
+			if res.StatusCode >= 300 {
+				// Preserve authentication refusals/rate-limit headers without
+				// reflecting a credential-bearing token response into job logs.
+				body := []byte(`{"error":"CLI authentication refused","phase":"authentication","requestSubmitted":false}`)
+				return json.NewEncoder(cmd.OutOrStdout()).Encode(requestResponse{"sail-api-response/1", res.StatusCode, res.Header, body})
+			}
 			if res.StatusCode != 200 || err != nil || token.AccessToken == "" || strings.ContainsAny(token.AccessToken, "\r\n") {
 				return fmt.Errorf("authentication failed (HTTP %d)", res.StatusCode)
 			}

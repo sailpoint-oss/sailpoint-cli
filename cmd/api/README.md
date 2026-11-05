@@ -41,6 +41,9 @@ failure, an incomplete envelope or a deadline after a write does not establish
 whether the write occurred. Never retry an uncertain mutation. Headers include
 `Retry-After` and `X-Total-Count` where supplied. Authentication/transport errors
 have fixed diagnostics without credential values or response/request dumps.
+An authentication HTTP refusal also returns its status/headers, with a fixed
+body identifying the authentication phase and `requestSubmitted: false`;
+the token endpoint's raw response is never reflected into the envelope.
 The existing get/post/put/patch/delete commands retain their behavior.
 
 ### GET Request

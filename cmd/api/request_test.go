@@ -133,3 +133,32 @@ func TestStatelessRequestValidationAndDeadline(t *testing.T) {
 		t.Fatalf("deadline/secret handling failed: %v", err)
 	}
 }
+
+func TestStatelessRequestAuthRefusalPreservesStatusWithoutSendingAPIRequest(t *testing.T) {
+	for _, status := range []int{400, 401, 403, 429, 503, 307} {
+		t.Run(http.StatusText(status), func(t *testing.T) {
+			apiCalls := 0
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Path != "/oauth/token" {
+					apiCalls++
+					t.Error("API called after auth refusal")
+				}
+				w.Header().Set("Retry-After", "19")
+				w.Header().Set("Location", "/other")
+				w.WriteHeader(status)
+				io.WriteString(w, `{"error":"never-reflect-fixture-secret"}`)
+			}))
+			defer server.Close()
+			t.Setenv("SAIL_BASE_URL", server.URL)
+			t.Setenv("SAIL_CLIENT_ID", "fixture")
+			t.Setenv("SAIL_CLIENT_SECRET", "fixture-secret")
+			result, logs, err := executeRequest(t, "POST", "/test")
+			if err != nil || result.Status != status || result.Headers.Get("Retry-After") != "19" || apiCalls != 0 {
+				t.Fatalf("invalid auth refusal: %+v %v", result, err)
+			}
+			if strings.Contains(string(result.Body)+logs, "fixture-secret") || !strings.Contains(string(result.Body), `"requestSubmitted":false`) {
+				t.Fatal("unsafe/missing authentication disposition")
+			}
+		})
+	}
+}
