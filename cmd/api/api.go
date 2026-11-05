@@ -19,6 +19,7 @@ func NewAPICommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
+		newRequestCmd(),
 		newGetCmd(),
 		newPostCmd(),
 		newPutCmd(),
