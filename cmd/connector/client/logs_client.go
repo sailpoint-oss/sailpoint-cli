@@ -33,8 +33,8 @@ func NewLogsClient(client client.Client, endpoint string) *LogsClient {
 	}
 }
 
-const LogsEndpoint = "/beta/platform-logs/query"
-const StatsEndpoint = "/beta/platform-logs/stats"
+const LogsEndpoint = "/platform-logs/v1/query"
+const StatsEndpoint = "/platform-logs/v1/stats"
 
 func logsResourceUrl(endpoint string, queryParms *map[string]string, resourceParts ...string) string {
 	u, err := url.Parse(endpoint)

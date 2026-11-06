@@ -17,9 +17,9 @@ import (
 )
 
 const (
-	connectorsEndpoint                    = "/beta/platform-connectors"
-	connectorInstancesEndpoint            = "/beta/connector-instances"
-	connectorCustomizersEndpoint          = "/beta/connector-customizers"
+	connectorsEndpoint                    = "/platform-connectors/v1"
+	connectorInstancesEndpoint            = "/connector-instances/v1"
+	connectorCustomizersEndpoint          = "/connector-customizers/v1"
 	connectorRuntimeDirectExecuteEndpoint = "/sp-conn-runtime-exec/runtime-connector-invoke"
 )
 
@@ -38,7 +38,7 @@ func NewConnCmd(term terminal.Terminal) *cobra.Command {
 		cobra.CheckErr(err)
 	}
 
-	Client := client.NewSpClient(Config)
+	Client := newExperimentalClient(client.NewSpClient(Config))
 
 	conn.PersistentFlags().StringP("conn-endpoint", "e", connectorsEndpoint, "Override connectors endpoint (a path, a url on the configured tenant, or a loopback url for local development)")
 	conn.PersistentFlags().Int64("read-limit", accountReadLimit, "Set read limit for accounts and entitlements read")
