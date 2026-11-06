@@ -1,14 +1,13 @@
 package scopes
 
 import (
-	_ "embed"
 	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
 )
 
-//go:generate go run ./gen -spec https://github.com/sailpoint-oss/api-specs/releases/latest/download/deref-sailpoint-api.json -out data/sailpoint-scopes.json
+//go:generate go run -tags scopesgen ./gen -spec https://github.com/sailpoint-oss/api-specs/releases/latest/download/deref-sailpoint-api.json -out data/sailpoint-scopes.json
 
 // SchemaVersion is the scope manifest format version this package understands.
 const SchemaVersion = 1
@@ -62,18 +61,6 @@ func (op Operation) ScopesFor(auth AuthType) []string {
 		return op.ApplicationAuth
 	}
 	return op.UserAuth
-}
-
-//go:embed data/sailpoint-scopes.json
-var snapshot []byte
-
-// Snapshot returns the scope manifest embedded in the CLI at build time.
-func Snapshot() (*Manifest, error) {
-	m, err := Parse(snapshot)
-	if err != nil {
-		return nil, fmt.Errorf("embedded scope snapshot: %w", err)
-	}
-	return m, nil
 }
 
 // Load reads and parses a scope manifest from disk.

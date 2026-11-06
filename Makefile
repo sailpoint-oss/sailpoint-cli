@@ -1,3 +1,5 @@
+SCOPES_SNAPSHOT := internal/scopes/data/sailpoint-scopes.json
+
 .PHONY: clean
 clean:
 	go clean ./...
@@ -9,7 +11,7 @@ mocks:
 	mockgen -source=internal/terminal/terminal.go -destination=internal/mocks/terminal.go -package=mocks
 
 .PHONY: test
-test:
+test: $(SCOPES_SNAPSHOT)
 	go test -v -count=1 ./...
 
 .PHONY: test-report
@@ -27,8 +29,17 @@ test-race:
 	@echo "Running tests with race detection enabled..."
 	@CGO_ENABLED=1 go test -v -race ./...
 
+# Generates the scope snapshot only when it is missing.
+$(SCOPES_SNAPSHOT):
+	go generate ./internal/scopes/...
+
+# Always downloads the latest spec and regenerates the scope snapshot.
+.PHONY: generate
+generate:
+	go generate ./internal/scopes/...
+
 .PHONY: install
-install:
+install: $(SCOPES_SNAPSHOT)
 	go build -o /usr/local/bin/sail -buildvcs=false
 
 .PHONY: vhs

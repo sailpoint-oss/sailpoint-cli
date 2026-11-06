@@ -113,6 +113,9 @@ func main() {
 		log.Fatalf("encode: %v", err)
 	}
 	out = append(out, '\n')
+	if err := os.MkdirAll(filepath.Dir(*outPath), 0755); err != nil {
+		log.Fatalf("create output directory: %v", err)
+	}
 	if err := os.WriteFile(*outPath, out, 0644); err != nil {
 		log.Fatalf("write: %v", err)
 	}
