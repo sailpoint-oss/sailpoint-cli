@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-//go:generate go run -tags scopesgen ./gen -spec https://github.com/sailpoint-oss/api-specs/releases/latest/download/deref-sailpoint-api.json -out data/sailpoint-scopes.json
+//go:generate go run -tags scopesgen ./gen -spec https://github.com/sailpoint-oss/api-specs/releases/latest/download/deref-sailpoint-api.json -powershell-scopes https://raw.githubusercontent.com/sailpoint-oss/powershell-sdk/main/PSSailpoint/sailpoint-scopes.json -out data/sailpoint-scopes.json
 
 // SchemaVersion is the scope manifest format version this package understands.
 const SchemaVersion = 1

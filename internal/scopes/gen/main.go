@@ -1,11 +1,12 @@
 // Command gen builds the scope snapshot embedded in the CLI from a
 // dereferenced SailPoint OpenAPI bundle.
 //
-//	go run ./gen -spec deref-sailpoint-api.json -out data/sailpoint-scopes.json [-powershell-sdk DIR]
+//	go run -tags scopesgen ./gen -spec deref-sailpoint-api.json -powershell-scopes PSSailpoint/sailpoint-scopes.json -out data/sailpoint-scopes.json
 //
-// When -powershell-sdk points at a powershell-sdk checkout, cmdlet names are
-// read from the generated Api/*.ps1 files. Otherwise they are derived from the
-// operationId with the same verb rules as the SDK generator.
+// Both inputs can be a file path or a URL. PowerShell cmdlet names come from
+// the scope manifest that the PowerShell SDK publishes, because the SDK
+// generator applies verb rules that the CLI does not copy. An operation that
+// the PowerShell SDK does not have yet gets no PowerShell name.
 package main
 
 import (
@@ -18,7 +19,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"sort"
 	"strings"
 	"unicode"
 
@@ -47,14 +47,14 @@ type spec struct {
 func main() {
 	specPath := flag.String("spec", "", "path or URL of a dereferenced OpenAPI JSON bundle")
 	outPath := flag.String("out", "", "output file for the scope snapshot")
-	psSDK := flag.String("powershell-sdk", "", "optional powershell-sdk checkout to read exact cmdlet names from")
+	psScopes := flag.String("powershell-scopes", "", "path or URL of the sailpoint-scopes.json published by the PowerShell SDK")
 	flag.Parse()
-	if *specPath == "" || *outPath == "" {
+	if *specPath == "" || *outPath == "" || *psScopes == "" {
 		flag.Usage()
 		os.Exit(2)
 	}
 
-	raw, err := readSpec(*specPath)
+	raw, err := readSource(*specPath)
 	if err != nil {
 		log.Fatalf("read spec: %v", err)
 	}
@@ -63,12 +63,9 @@ func main() {
 		log.Fatalf("parse spec: %v", err)
 	}
 
-	var cmdlets map[string]string
-	if *psSDK != "" {
-		cmdlets, err = readCmdlets(*psSDK)
-		if err != nil {
-			log.Fatalf("read powershell sdk: %v", err)
-		}
+	cmdlets, err := readCmdlets(*psScopes)
+	if err != nil {
+		log.Fatalf("read powershell scopes: %v", err)
 	}
 
 	m := scopes.Manifest{
@@ -77,7 +74,7 @@ func main() {
 		Operations:    map[string]scopes.Operation{},
 	}
 
-	derived := 0
+	missing := 0
 	for path, item := range s.Paths {
 		for _, method := range httpMethods {
 			rawOp, ok := item[method]
@@ -93,16 +90,15 @@ func main() {
 			}
 			op := buildOperation(so, s.Security, strings.ToUpper(method), path)
 
-			ps, ok := cmdlets[strings.ToUpper(method)+" "+path]
-			if !ok {
-				ps = powershellName(so.OperationID)
-				derived++
-			}
 			op.SDKNames = map[scopes.Language]string{
 				scopes.LangGo:         goName(so.OperationID),
 				scopes.LangPython:     pythonName(so.OperationID),
 				scopes.LangTypeScript: so.OperationID,
-				scopes.LangPowerShell: ps,
+			}
+			if ps, ok := cmdlets[so.OperationID]; ok {
+				op.SDKNames[scopes.LangPowerShell] = ps
+			} else {
+				missing++
 			}
 			m.Operations[so.OperationID] = op
 		}
@@ -119,10 +115,11 @@ func main() {
 	if err := os.WriteFile(*outPath, out, 0644); err != nil {
 		log.Fatalf("write: %v", err)
 	}
-	log.Printf("wrote %d operations to %s (%d derived cmdlet names)", len(m.Operations), *outPath, derived)
+	log.Printf("wrote %d operations to %s (%d not in the PowerShell SDK)", len(m.Operations), *outPath, missing)
 }
 
-func readSpec(src string) ([]byte, error) {
+// readSource reads a local file, or downloads src when it is a URL.
+func readSource(src string) ([]byte, error) {
 	if !strings.HasPrefix(src, "http://") && !strings.HasPrefix(src, "https://") {
 		return os.ReadFile(src)
 	}
@@ -223,76 +220,33 @@ func pythonName(id string) string {
 	return strings.ToLower(s)
 }
 
-// commonVerbs maps operationId verbs that PowerShell does not approve to the
-// verb the SDK generator uses instead.
-var commonVerbs = map[string]string{
-	"Create": "New", "Delete": "Remove", "Cancel": "Suspend", "Patch": "Update",
-	"List": "Get", "Query": "Search", "Run": "Start", "Validate": "Confirm", "Make": "Select",
-	"Post": "New", "Put": "Send", "Generate": "New", "Reject": "Deny",
-}
-
-var approvedVerbs = []string{
-	"Add", "Approve", "Clear", "Close", "Compare", "Complete", "Copy", "Deny", "Disable",
-	"Enable", "Export", "Get", "Import", "Move", "Ping", "Publish", "Remove", "Reset",
-	"Search", "Select", "Send", "Set", "Show", "Start", "Submit", "Suspend", "Sync",
-	"Test", "Unlock", "Update",
-}
-
-// powershellName derives a cmdlet name the way the SDK generator does. It is
-// only used when no powershell-sdk checkout is given.
-func powershellName(id string) string {
-	name := goName(id)
-	for _, verb := range approvedVerbs {
-		if strings.HasPrefix(name, verb) {
-			return verb + "-" + name[len(verb):]
-		}
-	}
-	for verb, replacement := range commonVerbs {
-		if strings.HasPrefix(name, verb) {
-			return replacement + "-" + name[len(verb):]
-		}
-	}
-	return "Invoke-" + name
-}
-
-var (
-	psFunction = regexp.MustCompile(`(?m)^function ([A-Za-z]+-[A-Za-z0-9]+)\s*\{`)
-	psURI      = regexp.MustCompile(`\$LocalVarUri = '([^']+)'`)
-	psMethod   = regexp.MustCompile(`Invoke-ApiClient -Method '([A-Z]+)'`)
-)
-
-// readCmdlets maps "METHOD /path" to the cmdlet name for every generated
-// PowerShell API function in the checkout.
-func readCmdlets(root string) (map[string]string, error) {
-	files, err := filepath.Glob(filepath.Join(root, "PSSailpoint", "*", "src", "*", "Api", "*.ps1"))
+// readCmdlets maps operationId to cmdlet name from the scope manifest that
+// the PowerShell SDK publishes.
+func readCmdlets(src string) (map[string]string, error) {
+	raw, err := readSource(src)
 	if err != nil {
 		return nil, err
 	}
-	if len(files) == 0 {
-		return nil, fmt.Errorf("no PSSailpoint/*/src/*/Api/*.ps1 files under %s", root)
+	var ps struct {
+		SDK        string `json:"sdk"`
+		Operations map[string]struct {
+			SDKName string `json:"sdkName"`
+		} `json:"operations"`
 	}
-	sort.Strings(files)
-	cmdlets := map[string]string{}
-	for _, f := range files {
-		raw, err := os.ReadFile(f)
-		if err != nil {
-			return nil, err
+	if err := json.Unmarshal(raw, &ps); err != nil {
+		return nil, fmt.Errorf("parse %s: %w", src, err)
+	}
+	if ps.SDK != string(scopes.LangPowerShell) {
+		return nil, fmt.Errorf("%s: sdk is %q, want %q", src, ps.SDK, scopes.LangPowerShell)
+	}
+	cmdlets := make(map[string]string, len(ps.Operations))
+	for id, op := range ps.Operations {
+		if op.SDKName != "" {
+			cmdlets[id] = op.SDKName
 		}
-		text := string(raw)
-		locs := psFunction.FindAllStringSubmatchIndex(text, -1)
-		for i, loc := range locs {
-			end := len(text)
-			if i+1 < len(locs) {
-				end = locs[i+1][0]
-			}
-			body := text[loc[1]:end]
-			uri := psURI.FindStringSubmatch(body)
-			method := psMethod.FindStringSubmatch(body)
-			if uri == nil || method == nil {
-				continue
-			}
-			cmdlets[method[1]+" "+uri[1]] = text[loc[2]:loc[3]]
-		}
+	}
+	if len(cmdlets) == 0 {
+		return nil, fmt.Errorf("%s: no cmdlet names found", src)
 	}
 	return cmdlets, nil
 }
