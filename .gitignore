@@ -14,6 +14,8 @@ sailpoint-cli
 
 vendor
 data
+!internal/scopes/data/
+internal/scopes/data/sailpoint-scopes.json
 .DS_Store
 assets/demo_create.json
 assets/demo_update.json
