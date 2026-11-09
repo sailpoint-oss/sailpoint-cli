@@ -8,7 +8,8 @@ release:
   name_template: "SailPoint CLI {{.Version}}"
 
 before:
-  hooks: []
+  hooks:
+    - go generate ./internal/scopes/...
 
 builds:
   - id: windows
