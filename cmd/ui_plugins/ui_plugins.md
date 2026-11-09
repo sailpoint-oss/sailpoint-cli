@@ -18,6 +18,8 @@ Manage UI Plugin workflows in Identity Security Cloud.
 
 Run any command with `--help` for details. `validate-manifest` (alias: `validate`)
 performs offline structural validation of `./sp-ui-plugin.json` without calling UMS.
+`rename` changes a plugin's display name or alias after creation, updating
+`./sp-ui-plugin.json` and the plugin instance together.
 ====
 
 ==Example==
