@@ -1,6 +1,6 @@
 ==Long==
 # UI Plugins
-Manage UI Plugin workflows in Identity Security Cloud.
+Manage UI Plugin workflows in SailPoint Identity Security.
 
 ## Typical flow
 

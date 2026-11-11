@@ -56,7 +56,7 @@ The entitlement commands require an additional flag (`-t [entitlementType]`).  F
 sail conn invoke entitlement-list -t [entitlementType] -c [connectorID | connectorAlias] -p [config.json] -v [version]
 ```
 
-See [testing your connection in SailPoint Identity Security](https://developer.sailpoint.com/docs/connectivity/saas-connectivity/test-build-deploy/#test-your-connector-in-identity-security-cloud) for more information on invoking commands.
+See [testing your connection in SailPoint Identity Security](https://developer.sailpoint.com/docs/connectivity/saas-connectivity/test-build-deploy/#test-your-connector-in-sailpoint-identity-security) for more information on invoking commands.
 
 ## List connectors
 

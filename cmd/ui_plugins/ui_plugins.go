@@ -15,7 +15,7 @@ func NewUIPluginsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "ui-plugins",
 		Aliases: []string{"ui-plugin"},
-		Short:   "Manage UI plugin workflows in Identity Security Cloud",
+		Short:   "Manage UI plugin workflows in SailPoint Identity Security",
 		Long:    help.Long,
 		Example: help.Example,
 		Run: func(cmd *cobra.Command, args []string) {
