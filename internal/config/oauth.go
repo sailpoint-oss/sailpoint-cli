@@ -366,7 +366,7 @@ func discoverAuthorizeEndpoint(baseURL string) (string, error) {
 }
 
 // CheckTenantAPI reports whether baseURL answers {baseURL}/oauth/info like an
-// Identity Security Cloud tenant. It is used to confirm a generated API URL
+// SailPoint Identity Security tenant. It is used to confirm a generated API URL
 // before an environment is saved.
 func CheckTenantAPI(baseURL string) error {
 	parsed, err := assertHTTPSURL(strings.TrimSuffix(baseURL, "/"), "tenant API URL")
