@@ -30,7 +30,8 @@ func NewWhoamiCommand() *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			envFlag := cmd.Flags().Lookup("env")
-			info, err := config.GetAuthInfo(envFlag != nil && envFlag.Changed)
+			debugFlag := cmd.Flags().Lookup("debug")
+			info, err := config.GetAuthInfo(envFlag != nil && envFlag.Changed, debugFlag != nil && debugFlag.Changed)
 			if err != nil {
 				return err
 			}
@@ -85,8 +86,8 @@ func printInfo(out io.Writer, info config.AuthInfo, now time.Time) {
 		row("  Tenant URL", info.TenantURL, info.TenantURLSource)
 	}
 	if info.AuthType == "pat" {
-		row("  Client ID", "from "+info.ClientIDSource, "")
-		row("  Client secret", "from "+info.ClientSecretSource, "")
+		row("  Client ID", fromSource(info.ClientIDSource), "")
+		row("  Client secret", fromSource(info.ClientSecretSource), "")
 	}
 
 	_, _ = fmt.Fprintln(w)
@@ -120,7 +121,6 @@ func printInfo(out io.Writer, info config.AuthInfo, now time.Time) {
 	}
 	row("  Client ID", c.ClientID, "")
 	row("  Tenant", c.Org, "")
-	row("  Tenant ID", c.TenantID, "")
 	row("  Pod", c.Pod, "")
 	row("  Strong auth", fmt.Sprintf("%t", c.StrongAuth), "")
 	if !c.ExpiresAt.IsZero() {
@@ -176,7 +176,27 @@ func age(t, now time.Time) string {
 	return fmt.Sprintf("%d years, %d days ago", days/365, days%365)
 }
 
+// fromSource describes where a PAT credential comes from, such as "from keychain".
+func fromSource(source string) string {
+	if source == config.SourceNone {
+		return source
+	}
+	return "from " + source
+}
+
 // oneLine collapses a multi-line error message so it fits in one aligned row.
+// A line that doesn't end in punctuation gets a period, so the sentences don't run together.
 func oneLine(s string) string {
-	return strings.Join(strings.Fields(s), " ")
+	var parts []string
+	for _, line := range strings.Split(s, "\n") {
+		line = strings.Join(strings.Fields(line), " ")
+		if line == "" {
+			continue
+		}
+		if n := len(parts); n > 0 && !strings.ContainsAny(parts[n-1][len(parts[n-1])-1:], ".!?:") {
+			parts[n-1] += "."
+		}
+		parts = append(parts, line)
+	}
+	return strings.Join(parts, " ")
 }

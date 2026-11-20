@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -34,7 +35,6 @@ type TokenClaims struct {
 	UserName   string   `json:"userName,omitempty"`
 	IdentityID string   `json:"identityId,omitempty"`
 	ClientID   string   `json:"clientId,omitempty"`
-	TenantID   string   `json:"tenantId,omitempty"`
 	Org        string   `json:"org,omitempty"`
 	Pod        string   `json:"pod,omitempty"`
 	Scopes     []string `json:"scopes,omitempty"`
@@ -101,12 +101,6 @@ type PATDetails struct {
 	Scopes    []string   `json:"scopes,omitempty"`
 }
 
-// Thresholds for PAT warnings.
-const (
-	PATAgeWarning    = 365 * 24 * time.Hour
-	PATExpiryWarning = 30 * 24 * time.Hour
-)
-
 // envSet reports whether an environment variable is set to a non-empty value.
 func envSet(name string) bool {
 	v, ok := os.LookupEnv(name)
@@ -136,13 +130,20 @@ func secretSource(envName, keyringService string) string {
 	return SourceNone
 }
 
+// showFullIDs turns off client ID masking. GetAuthInfo sets it.
+var showFullIDs bool
+
 // GetAuthInfo collects the current auth configuration without logging in interactively.
-func GetAuthInfo(envFlagSet bool) (AuthInfo, error) {
+// Client IDs are masked unless debug was turned on for this run with --debug
+// (debugFlagSet) or SAIL_DEBUG. A debug value saved in the config file doesn't
+// count, because the CLI saves --debug to the config file after every command.
+func GetAuthInfo(envFlagSet, debugFlagSet bool) (AuthInfo, error) {
 	var info AuthInfo
 
 	if err := InitConfig(); err != nil {
 		return info, err
 	}
+	showFullIDs = GetDebug() && (debugFlagSet || envSet("SAIL_DEBUG"))
 
 	info.Environment = GetActiveEnvironment()
 	if envFlagSet {
@@ -186,7 +187,7 @@ func GetAuthInfo(envFlagSet bool) (AuthInfo, error) {
 	token, tokenWarnings, err := GetAuthTokenNonInteractive()
 	info.Warnings = append(info.Warnings, tokenWarnings...)
 	if err != nil {
-		info.TokenError = err.Error()
+		info.TokenError = errorReason(err)
 		if info.AuthType == "pat" && (envSet("SAIL_CLIENT_ID") || envSet("SAIL_CLIENT_SECRET")) {
 			info.Warnings = append(info.Warnings, "Login failed with PAT credentials from environment variables. They may be out of date, revoked or for another tenant. Check or unset SAIL_CLIENT_ID and SAIL_CLIENT_SECRET.")
 		}
@@ -212,14 +213,34 @@ func GetAuthInfo(envFlagSet bool) (AuthInfo, error) {
 		clientID, _ := GetPatClientID()
 		pat, err := lookupPAT(token, clientID)
 		if err != nil {
-			info.PATLookupError = err.Error()
+			info.PATLookupError = errorReason(err)
 		} else {
 			info.PAT = pat
-			info.Warnings = append(info.Warnings, patWarnings(*pat, time.Now())...)
 		}
 	}
 
 	return info, nil
+}
+
+// htmlStartPattern finds the start of an HTML page in an error message.
+var htmlStartPattern = regexp.MustCompile(`(?i)<!doctype|<html`)
+
+// htmlTagPattern matches HTML tags, along with the contents of script and style blocks.
+var htmlTagPattern = regexp.MustCompile(`(?is)<(script|style)\b.*?</(script|style)>|<[^>]+>`)
+
+// errorReason returns an error's message without any HTML the server sent with it.
+// When a response isn't JSON, such as a 404 page, the error has the whole body.
+func errorReason(err error) string {
+	msg := err.Error()
+	if loc := htmlStartPattern.FindStringIndex(msg); loc != nil {
+		if reason := strings.TrimRight(strings.TrimSpace(msg[:loc[0]]), ":"); reason != "" {
+			return reason
+		}
+	}
+	if !htmlTagPattern.MatchString(msg) {
+		return strings.TrimSpace(msg)
+	}
+	return strings.Join(strings.Fields(htmlTagPattern.ReplaceAllString(msg, " ")), " ")
 }
 
 // sensitiveEnvVar reports whether a variable's value must never be printed.
@@ -228,8 +249,12 @@ func sensitiveEnvVar(name string) bool {
 	return strings.Contains(upper, "SECRET") || strings.Contains(upper, "TOKEN") || strings.Contains(upper, "PASSWORD")
 }
 
-// maskID shows only the last four characters of an identifier.
+// maskID shows only the last four characters of an identifier, or all of it
+// when debug was turned on for this run.
 func maskID(v string) string {
+	if showFullIDs {
+		return v
+	}
 	if len(v) <= 4 {
 		return strings.Repeat("*", len(v))
 	}
@@ -337,23 +362,6 @@ func lookupPAT(token, clientID string) (*PATDetails, error) {
 	return nil, fmt.Errorf("the PAT in use was not found among your personal access tokens")
 }
 
-// patWarnings flags a PAT that is old or about to expire.
-func patWarnings(pat PATDetails, now time.Time) []string {
-	var warnings []string
-	if !pat.Created.IsZero() && now.Sub(pat.Created) > PATAgeWarning {
-		warnings = append(warnings, fmt.Sprintf("The PAT in use (%q) was created %s, over a year ago. Make sure it's the one you meant to use.", pat.Name, pat.Created.Format("2006-01-02")))
-	}
-	if pat.ExpiresAt != nil {
-		switch left := pat.ExpiresAt.Sub(now); {
-		case left <= 0:
-			warnings = append(warnings, fmt.Sprintf("The PAT in use (%q) expired on %s.", pat.Name, pat.ExpiresAt.Format("2006-01-02")))
-		case left < PATExpiryWarning:
-			warnings = append(warnings, fmt.Sprintf("The PAT in use (%q) expires on %s.", pat.Name, pat.ExpiresAt.Format("2006-01-02")))
-		}
-	}
-	return warnings
-}
-
 // GetAuthTokenNonInteractive returns an access token for the active environment
 // and any warnings about the token cache. It works like GetAuthToken, except it
 // never starts a browser login.
@@ -439,7 +447,6 @@ type rawClaims struct {
 	UserName    string           `json:"user_name"`
 	IdentityID  string           `json:"identity_id"`
 	ClientID    string           `json:"client_id"`
-	TenantID    string           `json:"tenant_id"`
 	Org         string           `json:"org"`
 	Pod         string           `json:"pod"`
 	Scope       interface{}      `json:"scope"`
@@ -469,7 +476,6 @@ func ParseTokenClaims(tokenString string) (TokenClaims, error) {
 		UserName:    raw.UserName,
 		IdentityID:  raw.IdentityID,
 		ClientID:    raw.ClientID,
-		TenantID:    raw.TenantID,
 		Org:         raw.Org,
 		Pod:         raw.Pod,
 		Scopes:      normalizeScopes(raw.Scope),

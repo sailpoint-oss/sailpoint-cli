@@ -114,7 +114,34 @@ func TestPrintInfo_multiLineReason(t *testing.T) {
 	var b bytes.Buffer
 	printInfo(&b, info, time.Now())
 
-	if !strings.Contains(b.String(), "Reason:  the tenant rejected the PAT Check the values of SAIL_CLIENT_ID") {
+	if !strings.Contains(b.String(), "Reason:  the tenant rejected the PAT. Check the values of SAIL_CLIENT_ID") {
 		t.Errorf("reason should be on one line:\n%s", b.String())
+	}
+}
+
+func TestOneLine(t *testing.T) {
+	tests := []struct{ in, want string }{
+		{"single line", "single line"},
+		{"no environment is configured\n\nRun `sail env create`", "no environment is configured. Run `sail env create`"},
+		{"already ends with a period.\nNext", "already ends with a period. Next"},
+		{"ends with a colon:\n  detail", "ends with a colon: detail"},
+		{"  extra   spaces  \n\n\n", "extra spaces"},
+	}
+	for _, tt := range tests {
+		if got := oneLine(tt.in); got != tt.want {
+			t.Errorf("oneLine(%q) = %q, want %q", tt.in, got, tt.want)
+		}
+	}
+}
+
+func TestPrintInfo_credentialsNotSet(t *testing.T) {
+	info := config.AuthInfo{AuthType: "pat", ClientIDSource: config.SourceNone, ClientSecretSource: config.SourceKeyring}
+
+	var b bytes.Buffer
+	printInfo(&b, info, time.Now())
+
+	out := b.String()
+	if strings.Contains(out, "from not set") || !strings.Contains(out, "Client ID:      not set") || !strings.Contains(out, "Client secret:  from keychain") {
+		t.Errorf("unexpected credential sources:\n%s", out)
 	}
 }

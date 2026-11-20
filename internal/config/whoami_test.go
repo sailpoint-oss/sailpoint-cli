@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"reflect"
 	"strings"
 	"testing"
@@ -28,7 +29,6 @@ func TestParseTokenClaims(t *testing.T) {
 		"user_name":   "jane.doe",
 		"identity_id": "2c91808a",
 		"client_id":   "abc123",
-		"tenant_id":   "tenant-1",
 		"org":         "acme",
 		"pod":         "stg01-useast1",
 		"scope":       []string{"sp:scopes:default", "sp:scopes:all"},
@@ -42,7 +42,7 @@ func TestParseTokenClaims(t *testing.T) {
 		t.Fatalf("ParseTokenClaims: %v", err)
 	}
 
-	if got.UserName != "jane.doe" || got.IdentityID != "2c91808a" || got.Org != "acme" || got.Pod != "stg01-useast1" || got.TenantID != "tenant-1" || got.ClientID != "abc123" {
+	if got.UserName != "jane.doe" || got.IdentityID != "2c91808a" || got.Org != "acme" || got.Pod != "stg01-useast1" || got.ClientID != "abc123" {
 		t.Errorf("unexpected identity claims: %+v", got)
 	}
 	if !reflect.DeepEqual(got.Scopes, []string{"sp:scopes:default", "sp:scopes:all"}) {
@@ -125,6 +125,30 @@ func TestCollectEnvVars(t *testing.T) {
 	}
 }
 
+func TestMaskID(t *testing.T) {
+	if got := maskID("0123456789abcdef"); got != "****cdef" {
+		t.Errorf("maskID() = %q, want %q", got, "****cdef")
+	}
+	if got := maskID("abc"); got != "***" {
+		t.Errorf("maskID() = %q, want %q", got, "***")
+	}
+
+	showFullIDs = true
+	t.Cleanup(func() { showFullIDs = false })
+
+	if got := maskID("0123456789abcdef"); got != "0123456789abcdef" {
+		t.Errorf("maskID() with debug = %q, want the full ID", got)
+	}
+	got := collectEnvVars([]string{"SAIL_CLIENT_ID=0123456789abcdef", "SAIL_CLIENT_SECRET=supersecret"})
+	want := []EnvVar{
+		{Name: "SAIL_CLIENT_ID", Value: "0123456789abcdef"},
+		{Name: "SAIL_CLIENT_SECRET", Value: "(set, hidden)"},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("with debug, got %+v, want %+v", got, want)
+	}
+}
+
 func TestDescribeOverrides(t *testing.T) {
 	got := describeOverrides("prod", []override{
 		{"SAIL_CLIENT_ID", "PAT client ID", "old-id", "new-id"},   // differs: warn
@@ -136,38 +160,6 @@ func TestDescribeOverrides(t *testing.T) {
 	}
 	if strings.Contains(got[0], "old-id") || strings.Contains(got[0], "new-id") {
 		t.Errorf("warning must not include credential values: %s", got[0])
-	}
-}
-
-func TestPATWarnings(t *testing.T) {
-	now := time.Date(2026, 11, 17, 0, 0, 0, 0, time.UTC)
-	soon := now.Add(7 * 24 * time.Hour)
-	past := now.Add(-24 * time.Hour)
-	far := now.Add(300 * 24 * time.Hour)
-
-	tests := []struct {
-		name string
-		pat  PATDetails
-		want []string
-	}{
-		{"recent, no expiry", PATDetails{Name: "ci", Created: now.Add(-30 * 24 * time.Hour)}, nil},
-		{"two years old", PATDetails{Name: "ci", Created: now.AddDate(-2, 0, 0)}, []string{"over a year ago"}},
-		{"expires soon", PATDetails{Name: "ci", Created: now, ExpiresAt: &soon}, []string{"expires on"}},
-		{"expired", PATDetails{Name: "ci", Created: now, ExpiresAt: &past}, []string{"expired on"}},
-		{"expires later", PATDetails{Name: "ci", Created: now, ExpiresAt: &far}, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := patWarnings(tt.pat, now)
-			if len(got) != len(tt.want) {
-				t.Fatalf("got %v, want %d warnings", got, len(tt.want))
-			}
-			for i, w := range tt.want {
-				if !strings.Contains(got[i], w) {
-					t.Errorf("warning %q missing %q", got[i], w)
-				}
-			}
-		})
 	}
 }
 
@@ -210,6 +202,28 @@ func TestCachedTokenMatches(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got, _ := cachedTokenMatches(tt.token, tt.clientID); got != tt.want {
 				t.Errorf("got %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestErrorReason(t *testing.T) {
+	tests := []struct {
+		name string
+		err  error
+		want string
+	}{
+		{"plain", errors.New("the PAT in use was not found among your personal access tokens"), "the PAT in use was not found among your personal access tokens"},
+		{"html page after the reason", errors.New(`failed to get an access token for environment "acme" (status 404): <!DOCTYPE html><html><head><style>body{color:red}</style><title>Not Found</title></head><body><h1>404</h1></body></html>`), `failed to get an access token for environment "acme" (status 404)`},
+		{"html element after the reason", errors.New("failed to get an access token (status 502): <html><body>Bad Gateway</body></html>"), "failed to get an access token (status 502)"},
+		{"html only", errors.New("<html><head><script>x()</script></head><body><h1>Not Found</h1></body></html>"), "Not Found"},
+		{"multi-line, no html", errors.New("no environment is configured\n\nRun `sail env create`"), "no environment is configured\n\nRun `sail env create`"},
+		{"stray tags", errors.New("request failed: <b>Not Found</b>"), "request failed: Not Found"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := errorReason(tt.err); got != tt.want {
+				t.Errorf("errorReason() = %q, want %q", got, tt.want)
 			}
 		})
 	}
