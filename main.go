@@ -11,11 +11,18 @@ import (
 )
 
 var rootCmd *cobra.Command
+var stateless bool
 
 func init() {
 
-	cobra.CheckErr(config.InitConfig())
 	rootCmd = root.NewRootCommand()
+	command, _, err := rootCmd.Find(os.Args[1:])
+	stateless = err == nil && command.Annotations["sailpoint.stateless"] == "true"
+	// Version reporting must not read or rewrite credential configuration.
+	stateless = stateless || (len(os.Args) == 2 && os.Args[1] == "--version")
+	if !stateless {
+		cobra.CheckErr(config.InitConfig())
+	}
 
 }
 
@@ -27,8 +34,10 @@ func main() {
 
 	err := rootCmd.Execute()
 
-	if saveErr := config.SaveConfig(); saveErr != nil {
-		log.Warn("Issue saving config file", "error", saveErr)
+	if !stateless {
+		if saveErr := config.SaveConfig(); saveErr != nil {
+			log.Warn("Issue saving config file", "error", saveErr)
+		}
 	}
 
 	// When error occurs, we need to make sure we exit the program with an error code. We

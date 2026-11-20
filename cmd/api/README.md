@@ -6,6 +6,46 @@ Similar to the GitHub CLI's `api` command, this provides a simple way to hit any
 
 ## Usage
 
+### Stateless automation request
+
+`sail api request METHOD /endpoint` uses exactly the complete `SAIL_BASE_URL`,
+`SAIL_CLIENT_ID` and `SAIL_CLIENT_SECRET` environment triple. It does not read or
+write CLI configuration, use the keyring/token cache, prompt, retry, or follow
+redirects. Supply credentials through the execution account's existing secret
+store/environment, never as command arguments. It requests a fresh PAT access
+token per operation. This extra token request is a deliberate alternative to
+reusing an environment cache whose execution identity may differ.
+
+```bash
+sail api request GET '/v3/sources?limit=1' --timeout 120s
+sail api request POST '/beta/sources/source-id/load-accounts' \
+  --body-file multipart.body --content-type 'multipart/form-data; boundary=my-boundary' \
+  --timeout 600s
+```
+
+The body file is streamed with its exact bytes and content length. Multipart
+construction remains the caller's responsibility. `--header 'Key: Value'`
+accepts additional headers, except authentication, cookie, host and framing
+overrides. `--env` and `--debug` are refused. The timeout covers authentication
+and the request. HTTPS is required except for HTTP loopback test servers.
+
+Stdout contains exactly one `sail-api-response/1` JSON envelope:
+
+```json
+{"format":"sail-api-response/1","status":202,"headers":{"Content-Type":["application/json"]},"body":"eyJpZCI6InRhc2staWQifQ=="}
+```
+
+`body` is base64 for the raw response bytes, including non-JSON error pages.
+An HTTP refusal still exits zero; callers must evaluate `status`. Process
+failure, an incomplete envelope or a deadline after a write does not establish
+whether the write occurred. Never retry an uncertain mutation. Headers include
+`Retry-After` and `X-Total-Count` where supplied. Authentication/transport errors
+have fixed diagnostics without credential values or response/request dumps.
+An authentication HTTP refusal also returns its status/headers, with a fixed
+body identifying the authentication phase and `requestSubmitted: false`;
+the token endpoint's raw response is never reflected into the envelope.
+The existing get/post/put/patch/delete commands retain their behavior.
+
 ### GET Request
 
 ```bash
@@ -42,7 +82,8 @@ sail api delete /beta/accounts/123
 
 ## Common Options
 
-All commands support the following options:
+The legacy get/post/put/patch/delete commands support the following options;
+the stateless request command's separate options are described above:
 
 - `--header`, `-H`: Set HTTP headers (can be used multiple times, format: 'Key: Value')
 - `--output`, `-o`: Output file to save the response (if not specified, prints to stdout)
