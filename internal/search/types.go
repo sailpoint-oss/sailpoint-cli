@@ -1,12 +1,14 @@
 package search
 
 type SearchResults struct {
-	AccountActivities []AccountActivity
-	AccessProfiles    []AccessProfile
-	Entitlements      []Entitlement
-	Events            []Event
-	Identities        []Identity
-	Roles             []Role
+	AccountActivities  []AccountActivity
+	AccessProfiles     []AccessProfile
+	Entitlements       []Entitlement
+	Events             []Event
+	Identities         []Identity
+	Roles              []Role
+	WorkflowSummaries  []WorkflowSummary
+	WorkflowExecutions []WorkflowExecution
 }
 
 type AccessProfile struct {
@@ -84,8 +86,8 @@ type AccountActivity struct {
 			ID   string `json:"id,omitempty"`
 		} `json:"source,omitempty"`
 		AttributeRequests []struct {
-			Op    string `json:"op,omitempty"`
-			Name  string `json:"name,omitempty"`
+			Op    string      `json:"op,omitempty"`
+			Name  string      `json:"name,omitempty"`
 			Value interface{} `json:"value,omitempty"`
 		} `json:"attributeRequests,omitempty"`
 	} `json:"originalRequests,omitempty"`
@@ -287,4 +289,42 @@ type Role struct {
 	} `json:"accessProfiles"`
 	AccessProfileCount int      `json:"accessProfileCount"`
 	Tags               []string `json:"tags"`
+}
+
+type WorkflowSummary struct {
+	ID                  string `json:"id"`
+	WorkflowExecutionId string `json:"workflowExecutionId"`
+	EventId             int    `json:"eventId"`
+	WorkflowName        string `json:"workflowName"`
+	WorkflowId          string `json:"workflowId"`
+	Status              string `json:"status"`
+	WorkflowTest        bool   `json:"workflowTest"`
+	RequestId           string `json:"requestId"`
+	Created             string `json:"created"`
+	Synced              string `json:"synced"`
+	Type                string `json:"type"`
+	Owner               struct {
+		Name string `json:"name"`
+		ID   string `json:"id"`
+	} `json:"owner"`
+	Attributes map[string]interface{} `json:"attributes"`
+}
+
+type WorkflowExecution struct {
+	ID             string `json:"id"`
+	WorkflowName   string `json:"workflowName"`
+	WorkflowId     string `json:"workflowId"`
+	Status         string `json:"status"`
+	StartTime      string `json:"startTime"`
+	CloseTime      string `json:"closeTime"`
+	RequestId      string `json:"requestId"`
+	WorkflowTest   bool   `json:"workflowTest"`
+	FailureType    string `json:"failureType"`
+	FailureMessage string `json:"failureMessage"`
+	Synced         string `json:"synced"`
+	Owner          struct {
+		Name string `json:"name"`
+		ID   string `json:"id"`
+	} `json:"owner"`
+	Trigger map[string]interface{} `json:"trigger"`
 }
