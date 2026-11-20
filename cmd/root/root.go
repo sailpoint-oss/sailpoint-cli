@@ -20,6 +20,7 @@ import (
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/transform"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/ui_plugins"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/va"
+	"github.com/sailpoint-oss/sailpoint-cli/cmd/whoami"
 	"github.com/sailpoint-oss/sailpoint-cli/cmd/workflow"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/terminal"
 	"github.com/sailpoint-oss/sailpoint-cli/internal/util"
@@ -73,6 +74,7 @@ func NewRootCommand() *cobra.Command {
 		reassign.NewReassignCommand(),
 		ui_plugins.NewUIPluginsCommand(),
 		scopes.NewScopesCommand(),
+		whoami.NewWhoamiCommand(),
 	)
 
 	root.PersistentFlags().StringVarP(&env, "env", "", "", "Environment to use for SailPoint CLI commands")
