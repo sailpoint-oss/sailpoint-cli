@@ -130,20 +130,13 @@ func secretSource(envName, keyringService string) string {
 	return SourceNone
 }
 
-// showFullIDs turns off client ID masking. GetAuthInfo sets it.
-var showFullIDs bool
-
 // GetAuthInfo collects the current auth configuration without logging in interactively.
-// Client IDs are masked unless debug was turned on for this run with --debug
-// (debugFlagSet) or SAIL_DEBUG. A debug value saved in the config file doesn't
-// count, because the CLI saves --debug to the config file after every command.
-func GetAuthInfo(envFlagSet, debugFlagSet bool) (AuthInfo, error) {
+func GetAuthInfo(envFlagSet bool) (AuthInfo, error) {
 	var info AuthInfo
 
 	if err := InitConfig(); err != nil {
 		return info, err
 	}
-	showFullIDs = GetDebug() && (debugFlagSet || envSet("SAIL_DEBUG"))
 
 	info.Environment = GetActiveEnvironment()
 	if envFlagSet {
@@ -250,9 +243,9 @@ func sensitiveEnvVar(name string) bool {
 }
 
 // maskID shows only the last four characters of an identifier, or all of it
-// when debug was turned on for this run.
+// when debug mode is on (--debug, SAIL_DEBUG or sail set debug).
 func maskID(v string) string {
-	if showFullIDs {
+	if GetDebug() {
 		return v
 	}
 	if len(v) <= 4 {

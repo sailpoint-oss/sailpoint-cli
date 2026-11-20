@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 // fakeToken builds a compact JWS with the given claims. The signature is not
@@ -133,8 +135,8 @@ func TestMaskID(t *testing.T) {
 		t.Errorf("maskID() = %q, want %q", got, "***")
 	}
 
-	showFullIDs = true
-	t.Cleanup(func() { showFullIDs = false })
+	viper.Set("debug", true)
+	t.Cleanup(func() { viper.Set("debug", false) })
 
 	if got := maskID("0123456789abcdef"); got != "0123456789abcdef" {
 		t.Errorf("maskID() with debug = %q, want the full ID", got)

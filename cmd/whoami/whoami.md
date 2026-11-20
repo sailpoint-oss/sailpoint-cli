@@ -5,7 +5,7 @@ Show how the CLI is authenticated against SailPoint Identity Security: the activ
 
 Any `SAIL_*` environment variables that are set are listed, because they override your saved config without telling you. `whoami` warns when one replaces a different saved value. With a PAT, it also looks up the token in your tenant and shows its name, owner, created date and expiry.
 
-Client IDs only show their last four characters unless you add `--debug`.
+Client IDs only show their last four characters unless debug mode is on, with `--debug` or `sail set debug enable`.
 
 `whoami` never opens a browser. It uses the cached token, gets a new PAT token or refreshes an OAuth token when that needs no prompt, and otherwise reports that you're not logged in.
 

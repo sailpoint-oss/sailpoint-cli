@@ -30,8 +30,7 @@ func NewWhoamiCommand() *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			envFlag := cmd.Flags().Lookup("env")
-			debugFlag := cmd.Flags().Lookup("debug")
-			info, err := config.GetAuthInfo(envFlag != nil && envFlag.Changed, debugFlag != nil && debugFlag.Changed)
+			info, err := config.GetAuthInfo(envFlag != nil && envFlag.Changed)
 			if err != nil {
 				return err
 			}
