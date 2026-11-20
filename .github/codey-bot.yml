@@ -1,0 +1,31 @@
+# Codey-Bot Jira sync configuration.
+# Dry-run mode validates wiring without creating Jira issues.
+dryRun: true
+
+spam:
+  enabled: false
+community:
+  welcomeMessage: null
+  newContributorLabel: null
+  autoLabeler: {}
+pr:
+  requireBody: false
+  conventionalCommits: false
+  autoFormat: false
+qualityGate:
+  enabled: false
+stale:
+  enabled: false
+
+jiraSync:
+  enabled: true
+  projectKey: DEVREL
+  epicKey: DEVREL-2335
+  issueType: Task
+  syncIssues: true
+  syncPullRequests: false
+  labels:
+    - github-sync
+    - sailpoint-oss
+    - sdk-cli
+    - repo-sailpoint-cli
